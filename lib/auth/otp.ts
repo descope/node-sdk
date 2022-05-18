@@ -7,7 +7,7 @@ export class OTP {
     this.fetchConfig = fetchConfig;
   }
 
-  signIn(method: DeliveryMethod, identifier: string) {
+  signIn(method: DeliveryMethod, identifier: string): Promise<void> {
     return request(this.fetchConfig, {
       method: "POST",
       url: `signin/otp/${method}`,
@@ -15,7 +15,11 @@ export class OTP {
     });
   }
 
-  signUp(method: DeliveryMethod, identifier: string, user: User) {
+  signUp(
+    method: DeliveryMethod,
+    identifier: string,
+    user: User
+  ): Promise<void> {
     return request(this.fetchConfig, {
       method: "POST",
       url: `signup/otp/${method}`,

@@ -20,7 +20,7 @@ export declare class Auth {
     constructor(fetchConfig: fetchConfig);
     SignInOTP(r: SignInRequest): Promise<void>;
     SignUpOTP(r: SignUpRequest): Promise<void>;
-    VerifyCode(r: VerifyCodeRequest): Promise<unknown>;
-    ValidateSession(token: string): Promise<void>;
+    VerifyCode(r: VerifyCodeRequest): Promise<void>;
+    ValidateSession(token: string): boolean;
 }
 export {};

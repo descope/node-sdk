@@ -27,18 +27,20 @@ export class Auth {
     this.otp = new OTP(fetchConfig);
   }
 
-  async SignInOTP(r: SignInRequest) {
+  async SignInOTP(r: SignInRequest): Promise<void> {
     await this.otp.signIn(r.method, r.identifier);
   }
-  async SignUpOTP(r: SignUpRequest) {
+  async SignUpOTP(r: SignUpRequest): Promise<void> {
     await this.otp.signUp(r.method, r.identifier, r.user);
   }
-  async VerifyCode(r: VerifyCodeRequest) {
+  async VerifyCode(r: VerifyCodeRequest): Promise<void> {
     return request(this.fetchConfig, {
       method: "POST",
       url: `code/verify/${r.method}`,
       data: { [r.method]: r.identifier, code: r.code },
     });
   }
-  async ValidateSession(token: string) {}
+  ValidateSession(token: string): boolean {
+    return token === "";
+  }
 }
