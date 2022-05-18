@@ -1,0 +1,24 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "lib": ["DOM", "es2017"],
+    "allowJs": true,
+    "strict": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": ["lib/**/*"],
+  "exclude": ["**/__mocks__/*"]
+}
