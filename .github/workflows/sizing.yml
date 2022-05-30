@@ -1,4 +1,4 @@
-name: sizing
+name: Sizing
 
 on: [pull_request]
 
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Setup
-        uses: ./../actions/setup
+        uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
       - uses: andresz1/size-limit-action@v1
