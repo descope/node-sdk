@@ -1,4 +1,4 @@
-import { requestConfig } from "./shared";
+import { requestConfig } from "./shared.js";
 
 export class RequestError extends Error {
   request: requestConfig;

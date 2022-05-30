@@ -1,3 +1,4 @@
 # Ignore generated output
 dist
 types
+coverage

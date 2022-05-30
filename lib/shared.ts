@@ -1,16 +1,32 @@
-import { RequestError } from "./errors";
+import { RequestError } from "./errors.js";
+import fetch, { RequestInit, Headers, Response } from "node-fetch";
 
 export type requestConfig = {
   url: string;
   method: "GET" | "DELETE" | "POST" | "PUT";
   params?: Record<string, string | number>;
+  headers?: Record<string, string | number>;
   data?: unknown;
 };
 
-export interface fetchConfig {
+export class fetchConfig {
   baseURL: string;
   headers: Record<string, string>;
   timeout: number;
+  projectId!: string;
+  publicKey?: string;
+
+  constructor() {
+    this.baseURL = "http://localhost:8191/v1/";
+    this.headers = {};
+    this.timeout = 60;
+  }
+}
+
+export class httpResponse<T> {
+  request!: RequestInit;
+  response!: Response;
+  body?: T;
 }
 
 export enum DeliveryMethod {
@@ -29,7 +45,7 @@ export interface User {
 export async function request<T>(
   fetchConfig: fetchConfig,
   requestConfig: requestConfig
-): Promise<T> {
+): Promise<httpResponse<T>> {
   const url = new URL(requestConfig.url, fetchConfig.baseURL);
   if (requestConfig.params) {
     Object.entries(requestConfig.params).forEach(([key, value]) =>
@@ -37,13 +53,25 @@ export async function request<T>(
     );
   }
 
+  const headers = new Headers(fetchConfig.headers);
+  if (requestConfig.method === "POST") {
+    headers.set("Content-Type", "application/json");
+  }
+
+  headers.set("Authorization", "Basic " + btoa(fetchConfig.projectId + ":"));
+
   let response: Response;
+  const options: RequestInit = {
+    method: requestConfig.method,
+    body: JSON.stringify(requestConfig.data),
+    ...fetchConfig,
+    headers,
+  };
   try {
-    response = await fetch(url.toString(), {
-      method: requestConfig.method,
-      body: JSON.stringify(requestConfig.data),
-      ...fetchConfig,
-    });
+    console.log(
+      `requesting ${url.toString()} with options [${JSON.stringify(options)}]`
+    );
+    response = await fetch(url.toString(), options);
   } catch (e) {
     const err = e as Error;
     throw new RequestError(err.message, requestConfig);
@@ -51,7 +79,7 @@ export async function request<T>(
 
   let responseJSON;
   try {
-    responseJSON = await response.json();
+    responseJSON = (await response.json()) as T;
   } catch (e) {
     const err = e as Error;
     throw new RequestError(
@@ -60,9 +88,13 @@ export async function request<T>(
     );
   }
 
-  if (response.status >= 400) {
-    throw new RequestError(responseJSON, requestConfig);
+  try {
+    if (response.status >= 400) {
+      throw new RequestError(JSON.stringify(responseJSON), requestConfig);
+    }
+  } catch (error) {
+    console.error(error);
   }
 
-  return responseJSON as T;
+  return { request: options, response, body: responseJSON };
 }

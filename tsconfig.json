@@ -2,8 +2,10 @@
   "compileOnSave": true,
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
+    "module": "es2015",
     "lib": ["DOM", "es2017"],
+    "moduleResolution": "node",
+		"baseUrl": "lib",
     "allowJs": true,
     "strict": true,
     "declaration": true,
@@ -16,8 +18,10 @@
     "outDir": "dist",
     "alwaysStrict": true,
     "strictNullChecks": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+		"paths": {
+			"@testutils/*": ["./testutils/*"]
+		}
   },
   "include": ["lib/**/*"],
   "exclude": ["**/__mocks__/*"]

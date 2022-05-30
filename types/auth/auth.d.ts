@@ -1,26 +1,30 @@
-import { fetchConfig, DeliveryMethod, User } from "./../shared";
-import { OTP } from "./otp";
-interface VerifyCodeRequest {
-    method: DeliveryMethod;
+import { fetchConfig, DeliveryMethod, User, httpResponse } from "./../shared.js";
+import { OTP } from "./otp.js";
+import * as jose from "jose";
+interface VerifyCodeRequest extends SignInRequest {
     code: string;
-    identifier: string;
+}
+interface Token {
+    sub?: string;
+    exp?: number;
+    iss?: string;
 }
 interface SignInRequest {
     method: DeliveryMethod;
     identifier: string;
 }
-interface SignUpRequest {
-    method: DeliveryMethod;
-    identifier: string;
+interface SignUpRequest extends SignInRequest {
     user: User;
 }
 export declare class Auth {
     private fetchConfig;
     otp: OTP;
-    constructor(fetchConfig: fetchConfig);
-    SignInOTP(r: SignInRequest): Promise<void>;
-    SignUpOTP(r: SignUpRequest): Promise<void>;
-    VerifyCode(r: VerifyCodeRequest): Promise<void>;
-    ValidateSession(token: string): boolean;
+    keys: Record<string, jose.KeyLike | Uint8Array>;
+    constructor(conf: fetchConfig);
+    SignInOTP(r: SignInRequest): Promise<httpResponse<void>>;
+    SignUpOTP(r: SignUpRequest): Promise<httpResponse<void>>;
+    VerifyCode(r: VerifyCodeRequest): Promise<Token | undefined>;
+    ValidateSession(sessionToken: string, refreshToken: string): Promise<Token | null>;
+    getKey: jose.JWTVerifyGetKey;
 }
 export {};
