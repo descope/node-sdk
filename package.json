@@ -70,9 +70,9 @@
   },
   "size-limit": [
     {
-      "limit": "500 kb",
+      "limit": "100 kb",
       "path": "dist/*",
-      "ignore": ["node_modules/*"]
+      "ignore": ["node:*"]
     }
   ],
   "dependencies": {
