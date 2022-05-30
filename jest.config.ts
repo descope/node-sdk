@@ -20,9 +20,8 @@ export default {
 
 	preset: 'ts-jest',
 	testEnvironment: 'jsdom',
-	moduleDirectories: ['node_modules', 'src'],
+	moduleDirectories: ['node_modules', 'lib'],
 
-	setupFilesAfterEnv: ['<rootDir>/testutils/jestSetup.ts'],
 	rootDir: compilerOptions.baseUrl,
 	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
 		prefix: '<rootDir>'

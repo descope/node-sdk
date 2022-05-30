@@ -7,6 +7,7 @@
     "moduleResolution": "node",
 		"baseUrl": "lib",
     "allowJs": true,
+    "resolveJsonModule": true,
     "strict": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,6 +24,6 @@
 			"@testutils/*": ["./testutils/*"]
 		}
   },
-  "include": ["lib/**/*"],
-  "exclude": ["**/__mocks__/*"]
+  "include": ["lib/**/*", "jest.config.ts"],
+  "exclude": ["**/__mocks__/*", "coverage", "node_modules"]
 }
