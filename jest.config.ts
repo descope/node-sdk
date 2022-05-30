@@ -19,7 +19,6 @@ export default {
 	},
 
 	preset: 'ts-jest',
-	testEnvironment: 'jsdom',
 	moduleDirectories: ['node_modules', 'lib'],
 
 	rootDir: compilerOptions.baseUrl,
