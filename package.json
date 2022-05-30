@@ -24,6 +24,7 @@
     "build": "rm -rf dist types && babel lib --out-dir dist --extensions '.ts' && tsc --declaration --outDir types --emitDeclarationOnly",
     "format": "prettier --write lib",
     "check-format": "prettier --check lib",
+    "size": "npm run build && size-limit",
     "lint": "eslint lib",
     "test": "jest  --passWithNoTests --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*"
   },
@@ -70,7 +71,8 @@
   "size-limit": [
     {
       "limit": "500 kb",
-      "path": "dist/*.js"
+      "path": "dist/*",
+      "ignore": ["node_modules/*"]
     }
   ],
   "dependencies": {
