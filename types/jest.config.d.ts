@@ -10,7 +10,6 @@ declare const _default: {
         };
     };
     preset: string;
-    testEnvironment: string;
     moduleDirectories: string[];
     rootDir: string;
     moduleNameMapper: {

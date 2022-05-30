@@ -80,8 +80,8 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
-coverage
+dist/
+coverage/
 *.crt
 *.key
 

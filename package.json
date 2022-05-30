@@ -25,7 +25,6 @@
     "format": "prettier --write lib",
     "check-format": "prettier --check lib",
     "lint": "eslint lib",
-		"size": "npm run prod && size-limit",
     "test": "jest  --passWithNoTests --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*"
   },
   "author": "Descope",
@@ -38,6 +37,7 @@
     "@babel/core": "^7.17.12",
     "@babel/preset-env": "^7.17.12",
     "@babel/preset-typescript": "^7.17.12",
+    "@size-limit/preset-small-lib": "^7.0.8",
     "@types/jest": "^27.5.1",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^15.14.9",
@@ -67,12 +67,12 @@
       "prefer-rest-params": 0
     }
   },
-	"size-limit": [
-		{
-			"limit": "500 kb",
-			"path": "dist/*.js"
-		}
-	],
+  "size-limit": [
+    {
+      "limit": "500 kb",
+      "path": "dist/*.js"
+    }
+  ],
   "dependencies": {
     "jose": "^4.8.1",
     "node-fetch": "^3.2.4"
