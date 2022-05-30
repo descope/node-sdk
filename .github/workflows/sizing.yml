@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Setup
-        uses: ./.github/actions/setup
+        uses: ./../actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
       - uses: andresz1/size-limit-action@v1

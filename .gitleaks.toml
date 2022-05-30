@@ -648,7 +648,6 @@ regexes = [
     ]
 paths = [
     '''gitleaks.toml''',
-    '''(.*?)(jpg|gif|doc|pdf|bin|svg|socket)$''',
-    '''(go.mod|go.sum)$''',
-	"vendor/",
+    '''(.*?)(jpg|gif|doc|pdf|bin|svg|socket|js|ts|json)$''',
+	"node_modules/",
 ]

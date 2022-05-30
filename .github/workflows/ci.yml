@@ -46,6 +46,8 @@ jobs:
         uses: ./.github/actions/setup
       - name: gitleaks-action
         uses: zricethezav/gitleaks-action@master
+        with:
+          config-path: .gitleaks.toml
 
   unit-test:
     name: Run Unit Tests
