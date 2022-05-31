@@ -5,7 +5,6 @@
   "type": "module",
   "main": "example.js",
   "scripts": {
-    "test": ""
   },
   "repository": {
     "type": "git",

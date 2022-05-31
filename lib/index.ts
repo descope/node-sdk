@@ -1,2 +1,1 @@
-export { Auth } from "./auth/auth.js";
-export { DeliveryMethod } from "./shared.js";
+export { DeliveryMethod, FetchConfig } from './shared.js';

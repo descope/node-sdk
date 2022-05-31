@@ -1,31 +1,24 @@
-import { httpResponse } from "./../shared";
-import { fetchConfig, request, DeliveryMethod, User } from "../shared.js";
+import { httpResponse } from '../shared';
+import { FetchConfig, request, DeliveryMethod, User } from '../shared.js';
 
-export class OTP {
-  private fetchConfig: fetchConfig;
+export default class OTP {
+  private fetchConfig: FetchConfig;
 
-  constructor(fetchConfig: fetchConfig) {
+  constructor(fetchConfig: FetchConfig) {
     this.fetchConfig = fetchConfig;
   }
 
-  signIn(
-    method: DeliveryMethod,
-    identifier: string
-  ): Promise<httpResponse<void>> {
+  signIn(method: DeliveryMethod, identifier: string): Promise<httpResponse<void>> {
     return request(this.fetchConfig, {
-      method: "POST",
+      method: 'POST',
       url: `auth/signin/otp/${method}`,
       data: { [method]: identifier },
     });
   }
 
-  signUp(
-    method: DeliveryMethod,
-    identifier: string,
-    user: User
-  ): Promise<httpResponse<void>> {
+  signUp(method: DeliveryMethod, identifier: string, user: User): Promise<httpResponse<void>> {
     return request(this.fetchConfig, {
-      method: "POST",
+      method: 'POST',
       url: `auth/signup/otp/${method}`,
       data: { [method]: identifier, user },
     });

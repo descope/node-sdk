@@ -1,14 +1,20 @@
-import {
-  fetchConfig,
-  request,
-  DeliveryMethod,
-  User,
-  httpResponse,
-} from "./../shared.js";
-import { OTP } from "./otp.js";
-import * as jose from "jose";
+import { Response } from 'node-fetch';
+import * as jose from 'jose';
+import { FetchConfig, request, DeliveryMethod, User, httpResponse, logger } from '../shared.js';
+import OTP from './otp.js';
 
-interface VerifyCodeRequest extends SignInRequest {
+interface SignInRequest {
+  deliveryMethod: DeliveryMethod;
+  identifier: string;
+}
+
+interface SignUpRequest extends SignInRequest {
+  user: User;
+}
+
+interface VerifyCodeRequest {
+  deliveryMethod: DeliveryMethod;
+  identifier: string;
   code: string;
 }
 
@@ -17,81 +23,92 @@ interface Token {
   exp?: number;
   iss?: string;
 }
-interface SignInRequest {
-  method: DeliveryMethod;
-  identifier: string;
-}
-interface SignUpRequest extends SignInRequest {
-  user: User;
+
+interface AuthenticationInfo {
+  token?: Token;
+  cookies?: string[];
 }
 
-export class Auth {
-  private fetchConfig: fetchConfig;
+export default class Auth {
+  private fetchConfig: FetchConfig;
+
   otp: OTP;
+
   keys: Record<string, jose.KeyLike | Uint8Array> = {};
 
-  constructor(conf: fetchConfig) {
-    this.fetchConfig = { ...new fetchConfig(), ...conf };
+  constructor(conf: FetchConfig) {
+    this.fetchConfig = { ...new FetchConfig(), ...conf };
     this.otp = new OTP(this.fetchConfig);
   }
 
-  async SignInOTP(r: SignInRequest): Promise<httpResponse<void>> {
-    return await this.otp.signIn(r.method, r.identifier);
-  }
   async SignUpOTP(r: SignUpRequest): Promise<httpResponse<void>> {
-    return await this.otp.signUp(r.method, r.identifier, r.user);
-  }
-  async VerifyCode(r: VerifyCodeRequest): Promise<Token | undefined> {
-    const res = await request<Token>(this.fetchConfig, {
-      method: "POST",
-      url: `auth/code/verify/${r.method}`,
-      data: { [r.method]: r.identifier, code: r.code },
-    });
-    return res.body;
+    return this.otp.signUp(r.deliveryMethod, r.identifier, r.user);
   }
 
-  async ValidateSession(
-    sessionToken: string,
-    refreshToken: string
-  ): Promise<Token | null> {
-    if (sessionToken === "") throw Error("empty session token");
+  async SignInOTP(r: SignInRequest): Promise<httpResponse<void>> {
+    return this.otp.signIn(r.deliveryMethod, r.identifier);
+  }
+
+  async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined> {
+    const res = await request<Token>(this.fetchConfig, {
+      method: 'POST',
+      url: `auth/code/verify/${r.deliveryMethod}`,
+      data: { [r.deliveryMethod]: r.identifier, code: r.code },
+    });
+    return { token: res.body, cookies: this.parseCookies(res.response) };
+  }
+
+  async ValidateSession(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo | undefined> {
+    if (sessionToken === '') throw Error('empty session token');
+
     try {
       const res = await jose.jwtVerify(sessionToken, this.getKey, {
-        algorithms: ["ES384"],
+        algorithms: ['ES384'],
       });
-      return { ...res.payload };
+      return { token: res.payload };
     } catch (error) {
       const res = await jose.jwtVerify(refreshToken, this.getKey, {
-        algorithms: ["ES384"],
+        algorithms: ['ES384'],
       });
       if (res) {
-        console.log("request refresh token", res);
+        logger.log('requesting new session token');
+        try {
+          const httpRes = await request<Token>(this.fetchConfig, {
+            method: 'GET',
+            url: 'refresh',
+            cookies: { DS: sessionToken, DSR: refreshToken },
+          });
+          return { token: httpRes.body, cookies: this.parseCookies(httpRes.response) };
+        } catch (error) {}
       }
     }
-    return null;
+    return undefined;
   }
 
+  parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie'];
+
   getKey: jose.JWTVerifyGetKey = async (
-    header: jose.JWTHeaderParameters
+    header: jose.JWTHeaderParameters,
   ): Promise<jose.KeyLike | Uint8Array> => {
-    const currentKid = header?.kid || "";
+    const currentKid = header?.kid || '';
     if (!this.keys[currentKid]) {
       const publicKeys = await request(
-        { ...this.fetchConfig, baseURL: "http://localhost:8152/v1/" },
+        { ...this.fetchConfig, baseURL: 'http://localhost:8152/v1/' },
         {
-          method: "GET",
+          method: 'GET',
           url: `keys/${this.fetchConfig.projectId}`,
-        }
+        },
       );
 
       (publicKeys.body as jose.JWK[]).forEach(async (key) => {
-        this.keys[key?.kid || ""] = await jose.importJWK(key);
+        this.keys[key?.kid || ''] = await jose.importJWK(key);
       });
     }
 
     if (this.keys[currentKid]) {
       return this.keys[currentKid];
     }
-    throw Error("failed to fetch matching key");
+
+    throw Error('failed to fetch matching key');
   };
 }

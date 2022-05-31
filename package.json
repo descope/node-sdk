@@ -25,7 +25,7 @@
     "format": "prettier --write lib",
     "check-format": "prettier --check lib",
     "size": "npm run build && size-limit",
-    "lint": "eslint lib",
+    "lint": "eslint lib/**/*.ts --fix",
     "test": "jest  --passWithNoTests --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*"
   },
   "author": "Descope",
@@ -44,8 +44,16 @@
     "@types/node": "^15.14.9",
     "@types/node-fetch": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
-    "@typescript-eslint/parser": "^5.25.0",
+    "@typescript-eslint/parser": "^5.27.0",
     "eslint": "^8.15.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.4.6",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^8.0.1",
     "jest": "^28.1.0",
     "prettier": "2.6.2",
     "ts-jest": "^28.0.2",
@@ -72,7 +80,9 @@
     {
       "limit": "100 kb",
       "path": "dist/*",
-      "ignore": ["node:*"]
+      "ignore": [
+        "node:*"
+      ]
     }
   ],
   "dependencies": {
