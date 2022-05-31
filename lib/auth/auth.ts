@@ -58,7 +58,10 @@ export default class Auth {
     return { token: res.body, cookies: this.parseCookies(res.response) };
   }
 
-  async ValidateSession(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo | undefined> {
+  async ValidateSession(
+    sessionToken: string,
+    refreshToken: string,
+  ): Promise<AuthenticationInfo | undefined> {
     if (sessionToken === '') throw Error('empty session token');
 
     try {
@@ -79,7 +82,9 @@ export default class Auth {
             cookies: { DS: sessionToken, DSR: refreshToken },
           });
           return { token: httpRes.body, cookies: this.parseCookies(httpRes.response) };
-        } catch (error) {}
+        } catch (requestErr) {
+          logger.error('failed to fetch refresh session token', requestErr);
+        }
       }
     }
     return undefined;
