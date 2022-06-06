@@ -1,5 +1,5 @@
 import express from "express";
-import { Auth, DeliveryMethod } from "node-sdk";
+import Auth, { DeliveryMethod } from "node-sdk";
 import * as fs from "fs";
 import * as https from "https";
 

@@ -1,11 +1,11 @@
-import { RequestError } from './errors.js';
+import { RequestError } from './errors';
 import fetch, { RequestInit, Headers, Response } from 'node-fetch';
 
 export class Logger {
   log(message: string): void {
     console.log(message);
   }
-  error(message: string, error: unknown): void {
+  error(message: string, error?: unknown): void {
     console.error(message, error);
   }
   debug(message: string): void {
@@ -13,11 +13,24 @@ export class Logger {
   }
 }
 
-export var logger = new Logger();
+export interface ILogger {
+  log(message: string): void;
+  error(message: string, error?: unknown): void;
+  debug(message: string): void;
+}
+
+export var logger: ILogger = new Logger();
+
+export enum HTTPMethods {
+  get = 'GET',
+  delete = 'DELETE',
+  post = 'POST',
+  put = 'PUT',
+}
 
 export type requestConfig = {
   url: string;
-  method: 'GET' | 'DELETE' | 'POST' | 'PUT';
+  method: HTTPMethods;
   params?: Record<string, string | number>;
   headers?: Record<string, string | number>;
   cookies?: Record<string, string>;
@@ -38,6 +51,10 @@ export class FetchConfig {
   }
 }
 
+export class AuthConfig extends FetchConfig {
+  logger?: ILogger;
+}
+
 export class httpResponse<T> {
   request!: RequestInit;
   response!: Response;
@@ -52,10 +69,19 @@ export enum DeliveryMethod {
 
 export interface User {
   username: string;
-  name: string;
-  email: string;
-  phone: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
+
+export const HTTP_STATUS_CODE = {
+  ok: 200,
+  badRequest: 400,
+  unauthorized: 401,
+  forbidden: 403,
+  notFound: 404,
+  internalServerError: 500,
+};
 
 export async function request<T>(
   fetchConfig: FetchConfig,
@@ -69,7 +95,7 @@ export async function request<T>(
   }
 
   const headers = new Headers(fetchConfig.headers);
-  if (requestConfig.method === 'POST') {
+  if (requestConfig.method === HTTPMethods.post) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -92,8 +118,7 @@ export async function request<T>(
     logger.log(`requesting ${url.toString()} with options [${JSON.stringify(options)}]`);
     response = await fetch(url.toString(), options);
   } catch (e) {
-    const err = e as Error;
-    throw new RequestError(err.message, requestConfig);
+    throw new RequestError(requestConfig, e as Error);
   }
 
   let tResponse;
@@ -101,18 +126,12 @@ export async function request<T>(
     tResponse = (await response.json()) as T;
   } catch (e) {
     const err = e as Error;
-    throw new RequestError(
-      `Unable to parse JSON response from server: ${err.message}`,
-      requestConfig,
-    );
+    throw new RequestError(requestConfig, err);
   }
 
-  try {
-    if (response.status >= 400) {
-      throw new RequestError(JSON.stringify(tResponse), requestConfig);
-    }
-  } catch (error) {
-    logger.error(`request to ${url.toString()} failed with `, error);
+  if (response.status >= 400) {
+    logger.error(`request to ${url.toString()} failed with status ${response.status}`);
+    throw new RequestError(requestConfig);
   }
 
   return { request: options, response, body: tResponse };

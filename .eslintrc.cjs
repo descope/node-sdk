@@ -35,5 +35,5 @@ module.exports = {
       }
    ]
   },
-  ignorePatterns: [".eslintrc.cjs", "build/*", "dist/*", "coverage/*"]
+  ignorePatterns: [".eslintrc.cjs", "build/*", "dist/*", "coverage/*", "**/testutils/*"]
 };

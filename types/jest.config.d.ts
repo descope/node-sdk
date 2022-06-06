@@ -10,11 +10,18 @@ declare const _default: {
         };
     };
     preset: string;
+    transform: {
+        "^.+\\.(ts|tsx)$": string;
+        "^.+\\.(js)$": string;
+    };
+    transformIgnorePatterns: never[];
+    testPathIgnorePatterns: string[];
     moduleDirectories: string[];
-    rootDir: string;
     moduleNameMapper: {
         [key: string]: string | string[];
     } | undefined;
+    modulePaths: string[];
+    rootDir: string;
     testTimeout: number;
 };
 export default _default;

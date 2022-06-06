@@ -8,6 +8,7 @@
 		"baseUrl": "lib",
     "allowJs": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "strict": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
@@ -21,9 +22,9 @@
     "strictNullChecks": true,
     "isolatedModules": true,
 		"paths": {
-			"@testutils/*": ["./testutils/*"]
+			"@testutils/*": ["lib/testutils/*"]
 		}
   },
   "include": ["lib/**/*", "jest.config.ts"],
-  "exclude": ["**/__mocks__/*", "coverage", "node_modules"]
+  "exclude": ["**/__mocks__/*", "coverage", "node_modules", "**/testutils/*"]
 }

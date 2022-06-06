@@ -1,5 +1,4 @@
-import { httpResponse } from '../shared';
-import { FetchConfig, request, DeliveryMethod, User } from '../shared.js';
+import { FetchConfig, request, DeliveryMethod, User, httpResponse, HTTPMethods } from '../shared';
 
 export default class OTP {
   private fetchConfig: FetchConfig;
@@ -8,19 +7,19 @@ export default class OTP {
     this.fetchConfig = fetchConfig;
   }
 
-  signIn(method: DeliveryMethod, identifier: string): Promise<httpResponse<void>> {
+  signUp(method: DeliveryMethod, identifier: string, user?: User): Promise<httpResponse<void>> {
     return request(this.fetchConfig, {
-      method: 'POST',
-      url: `auth/signin/otp/${method}`,
-      data: { [method]: identifier },
+      method: HTTPMethods.post,
+      url: `auth/signup/otp/${method}`,
+      data: { [method]: identifier, user },
     });
   }
 
-  signUp(method: DeliveryMethod, identifier: string, user: User): Promise<httpResponse<void>> {
+  signIn(method: DeliveryMethod, identifier: string): Promise<httpResponse<void>> {
     return request(this.fetchConfig, {
-      method: 'POST',
-      url: `auth/signup/otp/${method}`,
-      data: { [method]: identifier, user },
+      method: HTTPMethods.post,
+      url: `auth/signin/otp/${method}`,
+      data: { [method]: identifier },
     });
   }
 }

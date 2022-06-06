@@ -4,5 +4,5 @@
     "@babel/preset-typescript"
   ],
   "targets": "node 14",
-  "ignore": ["**/__mocks__/**"]
+  "ignore": ["**/*.test.ts", "**/testutils/*"]
 }
