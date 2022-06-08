@@ -33,13 +33,13 @@ app.get("/verify", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.get("/private", test, (req, res) => {
+app.get("/private", authMiddleware, (req, res) => {
   const { identifier, method } = getMethodAndIdentifier(req);
   clientAuth.SignUpOTP({ method, identifier });
   res.sendStatus(200);
 });
 
-const test = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req)
     const out = await clientAuth.ValidateSession(cookies["DS"], cookies["DSR"])

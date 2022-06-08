@@ -1,3 +1,4 @@
+import { JWTError } from 'errors';
 import nock from 'nock';
 import { getError, MockAuthConfig } from '../testutils/helpers';
 import { DeliveryMethod, HTTP_STATUS_CODE } from '../shared';
@@ -206,6 +207,15 @@ describe('Authentication tests', () => {
       const auth = new Auth(conf);
       const error = await getError(async () => auth.ValidateSession('', ''));
       expect(error?.message).toContain('empty');
+    });
+
+    test('validate expired jwts', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      const auth = new Auth(conf);
+      const error = await getError(async () =>
+        auth.ValidateSession(GetMocks().JWT.expired, GetMocks().JWT.expired),
+      );
+      expect(error).toBeInstanceOf(JWTError);
     });
   });
 });

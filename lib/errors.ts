@@ -8,3 +8,5 @@ export class RequestError extends Error {
     this.request = request;
   }
 }
+
+export class JWTError extends Error {}
