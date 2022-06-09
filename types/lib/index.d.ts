@@ -1,3 +1,5 @@
 import { Auth } from 'auth/auth';
-export { DeliveryMethod, FetchConfig } from './shared';
+export { JWTError } from './errors';
+export { DeliveryMethod, AuthConfig } from './shared';
+export type { IRequestConfig } from './shared';
 export default Auth;

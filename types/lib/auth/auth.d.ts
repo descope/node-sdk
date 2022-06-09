@@ -28,8 +28,8 @@ export declare class Auth {
     otp: OTP;
     keys: Record<string, jose.KeyLike | Uint8Array>;
     constructor(conf: AuthConfig);
-    SignUpOTP(r: SignUpRequest): Promise<void | Error>;
-    SignInOTP(r: SignInRequest): Promise<void | Error>;
+    SignUpOTP(r: SignUpRequest): Promise<void>;
+    SignInOTP(r: SignInRequest): Promise<void>;
     VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined>;
     ValidateSession(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo | undefined>;
     parseCookies: (response: Response) => string[];

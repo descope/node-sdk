@@ -1,14 +1,21 @@
-import { FetchConfig, request, DeliveryMethod, User, httpResponse, HTTPMethods } from '../shared';
+import {
+  IRequestConfig,
+  request,
+  DeliveryMethod,
+  User,
+  httpResponse,
+  HTTPMethods,
+} from '../shared';
 
 export default class OTP {
-  private fetchConfig: FetchConfig;
+  private requestConfig: IRequestConfig;
 
-  constructor(fetchConfig: FetchConfig) {
-    this.fetchConfig = fetchConfig;
+  constructor(requestConfig: IRequestConfig) {
+    this.requestConfig = requestConfig;
   }
 
   signUp(method: DeliveryMethod, identifier: string, user?: User): Promise<httpResponse<void>> {
-    return request(this.fetchConfig, {
+    return request(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/signup/otp/${method}`,
       data: { [method]: identifier, user },
@@ -16,7 +23,7 @@ export default class OTP {
   }
 
   signIn(method: DeliveryMethod, identifier: string): Promise<httpResponse<void>> {
-    return request(this.fetchConfig, {
+    return request(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/signin/otp/${method}`,
       data: { [method]: identifier },

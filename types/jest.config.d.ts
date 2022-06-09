@@ -11,8 +11,8 @@ declare const _default: {
     };
     preset: string;
     transform: {
-        "^.+\\.(ts|tsx)$": string;
-        "^.+\\.(js)$": string;
+        '^.+\\.(ts|tsx)$': string;
+        '^.+\\.(js)$': string;
     };
     transformIgnorePatterns: never[];
     testPathIgnorePatterns: string[];

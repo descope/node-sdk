@@ -1,4 +1,4 @@
-import nock from 'nock';
+import nock, { Options } from 'nock';
 import { AuthConfig } from '../shared';
 
 export class MockAuthConfig extends AuthConfig {
@@ -9,11 +9,15 @@ export class MockAuthConfig extends AuthConfig {
 
   mockGet = (route: string) => nock(this.baseURL!).get(route);
 
-  mockPost = (route: string, bodyCallback: (body: any) => void) =>
-    nock(this.baseURL!).post(route, (body) => {
-      bodyCallback(body);
-      return true;
-    });
+  mockPost = (route: string, bodyCallback?: (body: any) => void, options?: Options) =>
+    nock(this.baseURL!).post(
+      route,
+      (body) => {
+        bodyCallback && bodyCallback(body);
+        return true;
+      },
+      options,
+    );
 
   mockDelete = (route: string) => nock(this.baseURL!).delete(route);
 }

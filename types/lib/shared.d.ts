@@ -24,15 +24,20 @@ export declare type requestConfig = {
     cookies?: Record<string, string>;
     data?: unknown;
 };
-export declare class FetchConfig {
+export interface IRequestConfig {
+    baseURL?: string;
+    headers?: Record<string, string>;
+    timeout?: number;
+    projectId: string;
+    publicKey?: string;
+}
+export declare class AuthConfig implements IRequestConfig {
     baseURL: string;
     headers: Record<string, string>;
     timeout: number;
     projectId: string;
     publicKey?: string;
     constructor();
-}
-export declare class AuthConfig extends FetchConfig {
     logger?: ILogger;
 }
 export declare class httpResponse<T> {
@@ -59,4 +64,4 @@ export declare const HTTP_STATUS_CODE: {
     notFound: number;
     internalServerError: number;
 };
-export declare function request<T>(fetchConfig: FetchConfig, requestConfig: requestConfig): Promise<httpResponse<T>>;
+export declare function request<T>(fetchConfig: IRequestConfig, requestConfig: requestConfig): Promise<httpResponse<T>>;

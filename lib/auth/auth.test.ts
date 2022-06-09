@@ -205,17 +205,32 @@ describe('Authentication tests', () => {
     test('validate session empty jwt', async () => {
       const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
       const auth = new Auth(conf);
-      const error = await getError(async () => auth.ValidateSession('', ''));
+      const error = await getError(async () => await auth.ValidateSession('', ''));
       expect(error?.message).toContain('empty');
     });
 
     test('validate expired jwts', async () => {
       const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
       const auth = new Auth(conf);
-      const error = await getError(async () =>
-        auth.ValidateSession(GetMocks().JWT.expired, GetMocks().JWT.expired),
+      const error = await getError(
+        async () => await auth.ValidateSession(GetMocks().JWT.expired, GetMocks().JWT.expired),
       );
       expect(error).toBeInstanceOf(JWTError);
+    });
+
+    test('refresh refresh jwt failure', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockGet(`/keys/${GetMocks().projectID}`)
+        .once()
+        .reply(HTTP_STATUS_CODE.ok, [GetMocks().PublicKeys.valid]);
+      conf.mockGet('/refresh').once().reply(HTTP_STATUS_CODE.internalServerError, {});
+
+      const auth = new Auth(conf);
+      const res = await getError(async () => {
+        await auth.ValidateSession(GetMocks().JWT.expired, GetMocks().JWT.valid);
+      });
+      expect(res instanceof JWTError).toBeTruthy();
     });
   });
 });

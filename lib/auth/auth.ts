@@ -2,7 +2,7 @@ import { Response } from 'node-fetch';
 import * as jose from 'jose';
 import { JWTError } from 'errors';
 import {
-  FetchConfig,
+  IRequestConfig,
   AuthConfig,
   request,
   DeliveryMethod,
@@ -39,15 +39,15 @@ export interface AuthenticationInfo {
 }
 
 export class Auth {
-  private fetchConfig: FetchConfig;
+  private requestConfig: IRequestConfig;
 
   otp: OTP;
 
   keys: Record<string, jose.KeyLike | Uint8Array> = {};
 
   constructor(conf: AuthConfig) {
-    this.fetchConfig = { ...new FetchConfig(), ...conf };
-    this.otp = new OTP(this.fetchConfig);
+    this.requestConfig = { ...new AuthConfig(), ...conf };
+    this.otp = new OTP(this.requestConfig);
   }
 
   async SignUpOTP(r: SignUpRequest): Promise<void> {
@@ -59,7 +59,7 @@ export class Auth {
   }
 
   async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined> {
-    const res = await request<Token>(this.fetchConfig, {
+    const res = await request<Token>(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/code/verify/${r.deliveryMethod}`,
       data: { [r.deliveryMethod]: r.identifier, code: r.code },
@@ -86,7 +86,7 @@ export class Auth {
         if (res) {
           logger.log('requesting new session token');
           try {
-            const httpRes = await request<Token>(this.fetchConfig, {
+            const httpRes = await request<Token>(this.requestConfig, {
               method: HTTPMethods.get,
               url: 'refresh',
               cookies: { DS: sessionToken, DSR: refreshToken },
@@ -94,6 +94,7 @@ export class Auth {
             return { token: httpRes.body, cookies: this.parseCookies(httpRes.response) };
           } catch (requestErr) {
             logger.error('failed to fetch refresh session token', requestErr);
+            throw new JWTError('could not validate tokens');
           }
         }
       } catch (refreshTokenErr) {
@@ -111,9 +112,9 @@ export class Auth {
   ): Promise<jose.KeyLike | Uint8Array> => {
     const currentKid = header?.kid || '';
     if (!this.keys[currentKid]) {
-      const publicKeys = await request<jose.JWK[]>(this.fetchConfig, {
+      const publicKeys = await request<jose.JWK[]>(this.requestConfig, {
         method: HTTPMethods.get,
-        url: `keys/${this.fetchConfig.projectId}`,
+        url: `keys/${this.requestConfig.projectId}`,
       });
 
       if (publicKeys.body) {

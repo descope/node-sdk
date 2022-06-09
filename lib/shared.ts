@@ -37,7 +37,15 @@ export type requestConfig = {
   data?: unknown;
 };
 
-export class FetchConfig {
+export interface IRequestConfig {
+  baseURL?: string;
+  headers?: Record<string, string>;
+  timeout?: number;
+  projectId: string;
+  publicKey?: string;
+}
+
+export class AuthConfig implements IRequestConfig {
   baseURL: string;
   headers: Record<string, string>;
   timeout: number;
@@ -49,9 +57,6 @@ export class FetchConfig {
     this.headers = {};
     this.timeout = 60;
   }
-}
-
-export class AuthConfig extends FetchConfig {
   logger?: ILogger;
 }
 
@@ -84,7 +89,7 @@ export const HTTP_STATUS_CODE = {
 };
 
 export async function request<T>(
-  fetchConfig: FetchConfig,
+  fetchConfig: IRequestConfig,
   requestConfig: requestConfig,
 ): Promise<httpResponse<T>> {
   const url = new URL(requestConfig.url, fetchConfig.baseURL);
@@ -115,7 +120,7 @@ export async function request<T>(
     headers,
   };
   try {
-    logger.log(`requesting ${url.toString()} with options [${JSON.stringify(options)}]`);
+    logger.debug(`requesting ${url.toString()} with options [${JSON.stringify(options)}]`);
     response = await fetch(url.toString(), options);
   } catch (e) {
     throw new RequestError(requestConfig, e as Error);
