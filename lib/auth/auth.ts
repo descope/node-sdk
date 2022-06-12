@@ -40,7 +40,9 @@ export interface AuthenticationInfo {
 
 export class Auth {
   private requestConfig: IRequestConfig;
+
   private otp: OTP;
+
   private keys: Record<string, jose.KeyLike | Uint8Array> = {};
 
   constructor(conf: Config) {

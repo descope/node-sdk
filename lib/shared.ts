@@ -22,7 +22,7 @@ export interface ILogger {
 export var logger: ILogger = new defaultLogger();
 
 export function setLogger(l: ILogger) {
-  logger = l
+  logger = l;
 }
 
 export enum HTTPMethods {

@@ -6,9 +6,9 @@ export class DescopeClient {
 
   constructor(conf: Config) {
     if (conf.logger) {
-        setLogger(conf.logger)
+      setLogger(conf.logger);
     } else {
-        setLogger(new defaultLogger())
+      setLogger(new defaultLogger());
     }
     this.Auth = new Auth(conf);
   }

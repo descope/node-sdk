@@ -1,5 +1,5 @@
-import { JWTError, RequestError, WebError } from '../errors';
 import nock from 'nock';
+import { JWTError, RequestError, WebError } from '../errors';
 import { getError, MockAuthConfig } from '../testutils/helpers';
 import { DeliveryMethod, HTTP_STATUS_CODE } from '../shared';
 import { GetMocks } from '../testutils/mocks';
@@ -122,12 +122,14 @@ describe('Authentication tests', () => {
         .once()
         .reply(HTTP_STATUS_CODE.badRequest, { message: '[] bad', code: 2 });
       const auth = new Auth(conf);
-      const err = await getError<WebError>(async () => auth.SignUpOTP({
-        deliveryMethod: DeliveryMethod.SMS,
-        identifier: 'test',
-        user: { username: 'user' },
-      }));
-      expect(err.message).toContain('bad')
+      const err = await getError<WebError>(async () =>
+        auth.SignUpOTP({
+          deliveryMethod: DeliveryMethod.SMS,
+          identifier: 'test',
+          user: { username: 'user' },
+        }),
+      );
+      expect(err.message).toContain('bad');
     });
 
     test('sms request error failure', async () => {
@@ -138,15 +140,18 @@ describe('Authentication tests', () => {
           expect(body?.sms).toEqual('test');
           expect(body?.user?.username).toEqual('user');
         })
-        .once().replyWithError("this is error")
+        .once()
+        .replyWithError('this is error');
       const auth = new Auth(conf);
-      const err = await getError<RequestError>(async () => auth.SignUpOTP({
-        deliveryMethod: DeliveryMethod.SMS,
-        identifier: 'test',
-        user: { username: 'user' },
-      }));
-      expect(err.message).toContain('error')
-      expect(err.request?.url).toBe(url)
+      const err = await getError<RequestError>(async () =>
+        auth.SignUpOTP({
+          deliveryMethod: DeliveryMethod.SMS,
+          identifier: 'test',
+          user: { username: 'user' },
+        }),
+      );
+      expect(err.message).toContain('error');
+      expect(err.request?.url).toBe(url);
     });
   });
 
