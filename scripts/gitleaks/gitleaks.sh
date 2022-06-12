@@ -8,12 +8,12 @@ lint_find_secrets() {
 		echo "Done installing gitleaks"
 	fi
 	echo "  - Finding leaks in git log"
-	gitleaks detect -v --redact  -c ${CURRENT_DIR}/.gitleaks.toml
+	gitleaks detect -v --redact  -c scripts/gitleaks/.gitleaks.toml
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
 	echo "  - Finding leaks in local repo"
-	gitleaks detect --no-git -v --redact -c ${CURRENT_DIR}/.gitleaks.toml
+	gitleaks detect --no-git -v --redact -c scripts/gitleaks/.gitleaks.toml
 	if [ $? -ne 0 ]; then
 		exit 1
 	fi
