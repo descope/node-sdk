@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git://github.com/descope/node-sdk.git"
   },
+  "scripts": {
+    "start": "node example.js"
+  },
   "author": "descope",
   "license": "MIT",
   "bugs": {
@@ -16,6 +19,6 @@
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
     "express": "^4.18.1",
-    "node-sdk": "file:../../node-sdk"
+    "node-sdk": "file:../dist"
   }
 }

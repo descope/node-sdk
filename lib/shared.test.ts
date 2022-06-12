@@ -1,7 +1,7 @@
 import { MockAuthConfig, getError } from './testutils/helpers';
 import nock from 'nock';
-import { HTTPMethods, HTTP_STATUS_CODE, request } from 'shared';
-import { RequestError } from 'errors';
+import { HTTPMethods, HTTP_STATUS_CODE, request } from './shared';
+import { RequestError } from './errors';
 
 describe('shared tests', () => {
   beforeEach(() => {

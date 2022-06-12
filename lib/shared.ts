@@ -1,7 +1,7 @@
-import { RequestError } from './errors';
+import { RequestError, WebError } from './errors';
 import fetch, { RequestInit, Headers, Response } from 'node-fetch';
 
-export class Logger {
+export class defaultLogger {
   log(message: string): void {
     console.log(message);
   }
@@ -19,7 +19,11 @@ export interface ILogger {
   debug(message: string): void;
 }
 
-export var logger: ILogger = new Logger();
+export var logger: ILogger = new defaultLogger();
+
+export function setLogger(l: ILogger) {
+  logger = l
+}
 
 export enum HTTPMethods {
   get = 'GET',
@@ -45,10 +49,10 @@ export interface IRequestConfig {
   publicKey?: string;
 }
 
-export class AuthConfig implements IRequestConfig {
-  baseURL: string;
-  headers: Record<string, string>;
-  timeout: number;
+export class Config implements IRequestConfig {
+  baseURL?: string;
+  headers?: Record<string, string>;
+  timeout?: number;
   projectId!: string;
   publicKey?: string;
 
@@ -126,18 +130,21 @@ export async function request<T>(
     throw new RequestError(requestConfig, e as Error);
   }
 
-  let tResponse;
+  let tResponse: unknown;
   try {
-    tResponse = (await response.json()) as T;
+    tResponse = await response.json();
   } catch (e) {
     const err = e as Error;
     throw new RequestError(requestConfig, err);
   }
 
   if (response.status >= 400) {
-    logger.error(`request to ${url.toString()} failed with status ${response.status}`);
-    throw new RequestError(requestConfig);
+    const webError = tResponse as WebError;
+    logger.error(
+      `request to ${url.toString()} failed with status ${response.status}: ${webError?.message}`,
+    );
+    throw webError;
   }
 
-  return { request: options, response, body: tResponse };
+  return { request: options, response, body: tResponse as T };
 }

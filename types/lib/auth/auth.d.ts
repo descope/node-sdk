@@ -1,7 +1,6 @@
 import { Response } from 'node-fetch';
 import * as jose from 'jose';
-import { AuthConfig, DeliveryMethod, User } from '../shared';
-import OTP from './otp';
+import { Config, DeliveryMethod, User } from '../shared';
 export interface SignInRequest {
     deliveryMethod: DeliveryMethod;
     identifier: string;
@@ -24,10 +23,10 @@ export interface AuthenticationInfo {
     cookies?: string[];
 }
 export declare class Auth {
-    private fetchConfig;
-    otp: OTP;
-    keys: Record<string, jose.KeyLike | Uint8Array>;
-    constructor(conf: AuthConfig);
+    private requestConfig;
+    private otp;
+    private keys;
+    constructor(conf: Config);
     SignUpOTP(r: SignUpRequest): Promise<void>;
     SignInOTP(r: SignInRequest): Promise<void>;
     VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined>;

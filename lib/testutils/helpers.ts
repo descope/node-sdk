@@ -1,8 +1,8 @@
 import nock, { Options } from 'nock';
-import { AuthConfig } from '../shared';
+import { Config } from '../shared';
 
-export class MockAuthConfig extends AuthConfig {
-  constructor(conf?: Partial<AuthConfig>) {
+export class MockAuthConfig extends Config {
+  constructor(conf?: Partial<Config>) {
     super();
     Object.assign(this, conf);
   }

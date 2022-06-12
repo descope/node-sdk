@@ -1,9 +1,9 @@
 import { Response } from 'node-fetch';
 import * as jose from 'jose';
-import { JWTError } from 'errors';
+import { JWTError } from '../errors';
 import {
   IRequestConfig,
-  AuthConfig,
+  Config,
   request,
   DeliveryMethod,
   User,
@@ -40,13 +40,11 @@ export interface AuthenticationInfo {
 
 export class Auth {
   private requestConfig: IRequestConfig;
+  private otp: OTP;
+  private keys: Record<string, jose.KeyLike | Uint8Array> = {};
 
-  otp: OTP;
-
-  keys: Record<string, jose.KeyLike | Uint8Array> = {};
-
-  constructor(conf: AuthConfig) {
-    this.requestConfig = { ...new AuthConfig(), ...conf };
+  constructor(conf: Config) {
+    this.requestConfig = { ...new Config(), ...conf };
     this.otp = new OTP(this.requestConfig);
   }
 

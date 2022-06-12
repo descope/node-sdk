@@ -1,4 +1,4 @@
-import { JWTError } from 'errors';
+import { JWTError, RequestError, WebError } from '../errors';
 import nock from 'nock';
 import { getError, MockAuthConfig } from '../testutils/helpers';
 import { DeliveryMethod, HTTP_STATUS_CODE } from '../shared';
@@ -110,6 +110,43 @@ describe('Authentication tests', () => {
         user: { username: 'user' },
       });
       expect(res).toBeUndefined();
+    });
+
+    test('sms web error failure', async () => {
+      const conf = new MockAuthConfig();
+      conf
+        .mockPost(`/auth/signup/otp/${DeliveryMethod.SMS}`, (body) => {
+          expect(body?.sms).toEqual('test');
+          expect(body?.user?.username).toEqual('user');
+        })
+        .once()
+        .reply(HTTP_STATUS_CODE.badRequest, { message: '[] bad', code: 2 });
+      const auth = new Auth(conf);
+      const err = await getError<WebError>(async () => auth.SignUpOTP({
+        deliveryMethod: DeliveryMethod.SMS,
+        identifier: 'test',
+        user: { username: 'user' },
+      }));
+      expect(err.message).toContain('bad')
+    });
+
+    test('sms request error failure', async () => {
+      const conf = new MockAuthConfig();
+      const url = `auth/signup/otp/${DeliveryMethod.SMS}`;
+      conf
+        .mockPost(`/${url}`, (body) => {
+          expect(body?.sms).toEqual('test');
+          expect(body?.user?.username).toEqual('user');
+        })
+        .once().replyWithError("this is error")
+      const auth = new Auth(conf);
+      const err = await getError<RequestError>(async () => auth.SignUpOTP({
+        deliveryMethod: DeliveryMethod.SMS,
+        identifier: 'test',
+        user: { username: 'user' },
+      }));
+      expect(err.message).toContain('error')
+      expect(err.request?.url).toBe(url)
     });
   });
 

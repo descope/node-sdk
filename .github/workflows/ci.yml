@@ -47,10 +47,9 @@ jobs:
         uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
-      - name: gitleaks-action
-        uses: gitleaks/gitleaks-action@v2
-        with:
-          config-path: .gitleaks.toml
+        run: |
+          npm run leaks
+        shell: bash
 
   unit-test:
     name: 👔 Run Unit Tests

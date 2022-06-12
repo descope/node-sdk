@@ -1,5 +1,5 @@
 import { RequestInit, Response } from 'node-fetch';
-export declare class Logger {
+export declare class defaultLogger {
     log(message: string): void;
     error(message: string, error?: unknown): void;
     debug(message: string): void;
@@ -10,6 +10,7 @@ export interface ILogger {
     debug(message: string): void;
 }
 export declare var logger: ILogger;
+export declare function setLogger(l: ILogger): void;
 export declare enum HTTPMethods {
     get = "GET",
     delete = "DELETE",
@@ -31,10 +32,10 @@ export interface IRequestConfig {
     projectId: string;
     publicKey?: string;
 }
-export declare class AuthConfig implements IRequestConfig {
-    baseURL: string;
-    headers: Record<string, string>;
-    timeout: number;
+export declare class Config implements IRequestConfig {
+    baseURL?: string;
+    headers?: Record<string, string>;
+    timeout?: number;
     projectId: string;
     publicKey?: string;
     constructor();
