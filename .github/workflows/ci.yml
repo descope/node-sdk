@@ -47,6 +47,7 @@ jobs:
         uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
+      - name: Gitleaks
         run: |
           npm run leaks
         shell: bash
