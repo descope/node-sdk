@@ -1,9 +1,9 @@
-import { requestConfig } from './shared';
+import { requestData } from './shared';
 
 export class RequestError extends Error {
-  request: requestConfig;
+  request: requestData;
 
-  constructor(request: requestConfig, error?: Error, message?: string) {
+  constructor(request: requestData, error?: Error, message?: string) {
     super(error?.message || message);
     this.request = request;
     this.name = error?.name || '';
@@ -14,7 +14,7 @@ export class RequestError extends Error {
 export interface WebError extends Error {
   code: number;
   details: string[];
-  message: string;
+  error: string;
 }
 
 export class JWTError extends Error {}

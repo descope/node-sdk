@@ -17,6 +17,9 @@
       "request": "launch",
       "name": "Example App",
       "skipFiles": ["<node_internals>/**"],
+      "env": {
+          "DESCOPE_PROJECT_ID": "<insert here>"
+      },
       "program": "${workspaceFolder}/example/example.js"
     }
   ]

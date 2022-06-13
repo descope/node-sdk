@@ -1,11 +1,11 @@
 import express from 'express';
-import { DescopeClient, DeliveryMethod } from 'node-sdk';
+import { DescopeClient, DeliveryMethod, OAuthProvider } from 'node-sdk';
 import * as fs from 'fs';
 import * as https from 'https';
 
 const app = express();
 const port = 443;
-const clientAuth = new DescopeClient({ projectId: '<insert here>' });
+const clientAuth = new DescopeClient({ projectId: process.env.DECOPSE_PROJECT_ID });
 var options = {
   key: fs.readFileSync('server.key'),
   cert: fs.readFileSync('server.crt'),
@@ -48,6 +48,17 @@ app.get('/verify', async (req, res) => {
   }
 });
 
+app.get('/oauth', async (req, res) => {
+  const provider = req.query.provider || OAuthProvider.facebook;
+  try {
+    const url = await clientAuth.Auth.StartOAuth(provider);
+    res.redirect(url);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
 const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
@@ -66,6 +77,20 @@ const authMiddleware = async (req, res, next) => {
 
 app.get('/private', authMiddleware, (_, res) => {
   res.sendStatus(200);
+});
+
+app.get('/logout', authMiddleware, async (_, res) => {
+  try {
+    const cookies = parseCookies(req);
+    const out = await clientAuth.Auth.Logout(cookies['DS'], cookies['DSR']);
+    if (out?.cookies) {
+      res.set('Set-Cookie', out.cookies);
+    }
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
 });
 
 https.createServer(options, app).listen(port, () => {

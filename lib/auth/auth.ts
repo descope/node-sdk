@@ -1,6 +1,6 @@
 import { Response } from 'node-fetch';
-import * as jose from 'jose';
-import { JWTError } from '../errors';
+import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, JWTVerifyGetKey, importJWK } from 'jose';
+import { JWTError, RequestError } from '../errors';
 import {
   IRequestConfig,
   Config,
@@ -9,8 +9,12 @@ import {
   User,
   logger,
   HTTPMethods,
+  OAuthProvider,
+  LOCATION_HEADER,
 } from '../shared';
 import OTP from './otp';
+
+const parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie'];
 
 export interface SignInRequest {
   deliveryMethod: DeliveryMethod;
@@ -37,13 +41,12 @@ export interface AuthenticationInfo {
   token?: Token;
   cookies?: string[];
 }
-
 export class Auth {
   private requestConfig: IRequestConfig;
 
   private otp: OTP;
 
-  private keys: Record<string, jose.KeyLike | Uint8Array> = {};
+  private keys: Record<string, KeyLike | Uint8Array> = {};
 
   constructor(conf: Config) {
     this.requestConfig = { ...new Config(), ...conf };
@@ -58,13 +61,37 @@ export class Auth {
     await this.otp.signIn(r.deliveryMethod, r.identifier);
   }
 
-  async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined> {
+  async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo> {
     const res = await request<Token>(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/code/verify/${r.deliveryMethod}`,
       data: { [r.deliveryMethod]: r.identifier, code: r.code },
     });
-    return { token: res.body, cookies: this.parseCookies(res.response) };
+    return { token: res.body, cookies: parseCookies(res.response) };
+  }
+
+  async Logout(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo> {
+    const res = await request<Token>(this.requestConfig, {
+      method: HTTPMethods.post,
+      url: `auth/logoutall`,
+      data: { cookies: { DS: sessionToken, DSR: refreshToken } },
+    });
+    return { cookies: parseCookies(res.response) };
+  }
+
+  async StartOAuth(provider: OAuthProvider): Promise<string> {
+    const data = {
+      method: HTTPMethods.get,
+      url: `oauth/authorize`,
+      params: { provider },
+    };
+    const res = await request(this.requestConfig, data);
+
+    const url = res.response.headers?.get(LOCATION_HEADER);
+    if (!url) {
+      throw new RequestError(data, undefined, `failed to get url from ${LOCATION_HEADER} header`);
+    }
+    return url;
   }
 
   async ValidateSession(
@@ -74,13 +101,13 @@ export class Auth {
     if (sessionToken === '') throw Error('empty session token');
 
     try {
-      const res = await jose.jwtVerify(sessionToken, this.getKey, {
+      const res = await jwtVerify(sessionToken, this.getKey, {
         algorithms: ['ES384'],
       });
       return { token: res.payload };
     } catch (error) {
       try {
-        const res = await jose.jwtVerify(refreshToken, this.getKey, {
+        const res = await jwtVerify(refreshToken, this.getKey, {
           algorithms: ['ES384'],
         });
         if (res) {
@@ -91,7 +118,7 @@ export class Auth {
               url: 'refresh',
               cookies: { DS: sessionToken, DSR: refreshToken },
             });
-            return { token: httpRes.body, cookies: this.parseCookies(httpRes.response) };
+            return { token: httpRes.body, cookies: parseCookies(httpRes.response) };
           } catch (requestErr) {
             logger.error('failed to fetch refresh session token', requestErr);
             throw new JWTError('could not validate tokens');
@@ -105,14 +132,10 @@ export class Auth {
     return undefined;
   }
 
-  parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie'];
-
-  getKey: jose.JWTVerifyGetKey = async (
-    header: jose.JWTHeaderParameters,
-  ): Promise<jose.KeyLike | Uint8Array> => {
+  getKey: JWTVerifyGetKey = async (header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> => {
     const currentKid = header?.kid || '';
     if (!this.keys[currentKid]) {
-      const publicKeys = await request<jose.JWK[]>(this.requestConfig, {
+      const publicKeys = await request<JWK[]>(this.requestConfig, {
         method: HTTPMethods.get,
         url: `keys/${this.requestConfig.projectId}`,
       });
@@ -120,7 +143,7 @@ export class Auth {
       if (publicKeys.body) {
         await Promise.all(
           publicKeys.body?.map(async (key) => {
-            this.keys[key?.kid || ''] = await jose.importJWK(key);
+            this.keys[key?.kid || ''] = await importJWK(key);
           }),
         );
       }

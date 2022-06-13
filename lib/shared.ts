@@ -1,6 +1,8 @@
 import { RequestError, WebError } from './errors';
 import fetch, { RequestInit, Headers, Response } from 'node-fetch';
 
+export const LOCATION_HEADER = 'Location';
+
 export class defaultLogger {
   log(message: string): void {
     console.log(message);
@@ -32,7 +34,7 @@ export enum HTTPMethods {
   put = 'PUT',
 }
 
-export type requestConfig = {
+export type requestData = {
   url: string;
   method: HTTPMethods;
   params?: Record<string, string | number>;
@@ -83,7 +85,7 @@ export interface User {
   phone?: string;
 }
 
-export const HTTP_STATUS_CODE = {
+export const HTTPStatusCode = {
   ok: 200,
   badRequest: 400,
   unauthorized: 401,
@@ -92,42 +94,52 @@ export const HTTP_STATUS_CODE = {
   internalServerError: 500,
 };
 
+export enum OAuthProvider {
+  facebook = 'facebook',
+  github = 'github',
+  google = 'google',
+  microsoft = 'microsoft',
+  gitlab = 'gitlab',
+  apple = 'apple',
+}
+
 export async function request<T>(
-  fetchConfig: IRequestConfig,
-  requestConfig: requestConfig,
+  requestConfig: IRequestConfig,
+  requestData: requestData,
 ): Promise<httpResponse<T>> {
-  const url = new URL(requestConfig.url, fetchConfig.baseURL);
-  if (requestConfig.params) {
-    Object.entries(requestConfig.params).forEach(([key, value]) =>
+  const url = new URL(requestData.url, requestConfig.baseURL);
+  if (requestData.params) {
+    Object.entries(requestData.params).forEach(([key, value]) =>
       url.searchParams.append(key, String(value)),
     );
   }
 
-  const headers = new Headers(fetchConfig.headers);
-  if (requestConfig.method === HTTPMethods.post) {
+  const headers = new Headers(requestConfig.headers);
+  if (requestData.method === HTTPMethods.post) {
     headers.set('Content-Type', 'application/json');
   }
 
-  headers.set('Authorization', 'Basic ' + btoa(`${fetchConfig.projectId}:`));
+  headers.set('Authorization', 'Basic ' + btoa(`${requestConfig.projectId}:`));
 
-  if (requestConfig.cookies) {
-    Object.entries(requestConfig.cookies).forEach((key, value) => {
+  if (requestData.cookies) {
+    Object.entries(requestData.cookies).forEach((key, value) => {
       headers.append('Cookie', `${key}=${value}`);
     });
   }
 
   let response: Response;
   const options: RequestInit = {
-    method: requestConfig.method,
-    body: JSON.stringify(requestConfig.data),
-    ...fetchConfig,
+    method: requestData.method,
+    redirect: 'manual',
+    body: JSON.stringify(requestData.data),
+    ...requestConfig,
     headers,
   };
   try {
     logger.debug(`requesting ${url.toString()} with options [${JSON.stringify(options)}]`);
     response = await fetch(url.toString(), options);
   } catch (e) {
-    throw new RequestError(requestConfig, e as Error);
+    throw new RequestError(requestData, e as Error);
   }
 
   let tResponse: unknown;
@@ -135,7 +147,7 @@ export async function request<T>(
     tResponse = await response.json();
   } catch (e) {
     const err = e as Error;
-    throw new RequestError(requestConfig, err);
+    throw new RequestError(requestData, err);
   }
 
   if (response.status >= 400) {

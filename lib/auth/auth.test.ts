@@ -1,7 +1,7 @@
 import nock from 'nock';
 import { JWTError, RequestError, WebError } from '../errors';
 import { getError, MockAuthConfig } from '../testutils/helpers';
-import { DeliveryMethod, HTTP_STATUS_CODE } from '../shared';
+import { DeliveryMethod, HTTPStatusCode, LOCATION_HEADER, OAuthProvider } from '../shared';
 import { GetMocks } from '../testutils/mocks';
 import { Auth } from './auth';
 
@@ -18,7 +18,7 @@ describe('Authentication tests', () => {
           expect(body?.email).toContain('test');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignInOTP({
         deliveryMethod: DeliveryMethod.email,
@@ -34,7 +34,7 @@ describe('Authentication tests', () => {
           expect(body?.sms).toContain('test');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignInOTP({ deliveryMethod: DeliveryMethod.SMS, identifier: 'test' });
       expect(res).toBeUndefined();
@@ -47,7 +47,7 @@ describe('Authentication tests', () => {
           expect(body?.whatsapp).toContain('test');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignInOTP({
         deliveryMethod: DeliveryMethod.whatsapp,
@@ -66,7 +66,7 @@ describe('Authentication tests', () => {
           expect(body?.user?.username).toEqual('user');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignUpOTP({
         deliveryMethod: DeliveryMethod.whatsapp,
@@ -84,7 +84,7 @@ describe('Authentication tests', () => {
           expect(body?.user?.username).toEqual('user');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignUpOTP({
         deliveryMethod: DeliveryMethod.email,
@@ -102,7 +102,7 @@ describe('Authentication tests', () => {
           expect(body?.user?.username).toEqual('user');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {});
+        .reply(HTTPStatusCode.ok, {});
       const auth = new Auth(conf);
       const res = await auth.SignUpOTP({
         deliveryMethod: DeliveryMethod.SMS,
@@ -120,7 +120,7 @@ describe('Authentication tests', () => {
           expect(body?.user?.username).toEqual('user');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.badRequest, { message: '[] bad', code: 2 });
+        .reply(HTTPStatusCode.badRequest, { message: '[] bad', code: 2 });
       const auth = new Auth(conf);
       const err = await getError<WebError>(async () =>
         auth.SignUpOTP({
@@ -164,7 +164,7 @@ describe('Authentication tests', () => {
           expect(body?.code).toEqual('1111');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {}, { 'Set-Cookie': ['hello'] });
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] });
       const auth = new Auth(conf);
       const res = await auth.VerifyCode({
         deliveryMethod: DeliveryMethod.whatsapp,
@@ -183,7 +183,7 @@ describe('Authentication tests', () => {
           expect(body?.code).toEqual('1111');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {}, { 'Set-Cookie': ['hello'] });
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] });
       const auth = new Auth(conf);
       const res = await auth.VerifyCode({
         deliveryMethod: DeliveryMethod.email,
@@ -202,7 +202,7 @@ describe('Authentication tests', () => {
           expect(body?.code).toEqual('1111');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {}, { 'Set-Cookie': ['hello'] });
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] });
       const auth = new Auth(conf);
       const res = await auth.VerifyCode({
         deliveryMethod: DeliveryMethod.SMS,
@@ -214,13 +214,79 @@ describe('Authentication tests', () => {
     });
   });
 
+  describe('logout', () => {
+    test('valid logout', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockPost(`/auth/logoutall`)
+        .once()
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['DS=', 'DSR='] });
+      const auth = new Auth(conf);
+      const res = await auth.Logout(GetMocks().JWT.valid, GetMocks().JWT.valid);
+      expect(res).not.toBeUndefined();
+      expect(res?.cookies).toHaveLength(2);
+      expect(res?.cookies && res.cookies[0]).toBe('DS=');
+      expect(res?.cookies && res.cookies[1]).toBe('DSR=');
+    });
+
+    test('logout failure', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockPost(`/auth/logoutall`)
+        .once()
+        .reply(HTTPStatusCode.internalServerError, { error: 'this is an error' });
+      const auth = new Auth(conf);
+      const res = await getError<WebError>(async () =>
+        auth.Logout(GetMocks().JWT.valid, GetMocks().JWT.valid),
+      );
+      expect(res).not.toBeUndefined();
+      expect(res?.error).toBe('this is an error');
+    });
+  });
+
+  describe('OAuth', () => {
+    const url = 'http://test.com';
+    test('OAuth redirect', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockGet(`/oauth/authorize?provider=github`)
+        .once()
+        .reply(HTTPStatusCode.ok, {}, { [LOCATION_HEADER]: url });
+      const auth = new Auth(conf);
+      const res = await auth.StartOAuth(OAuthProvider.github);
+      expect(res).toBe(url);
+    });
+
+    test('OAuth failure', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockGet(`/oauth/authorize?provider=apple`)
+        .once()
+        .reply(HTTPStatusCode.badRequest, { error: 'this is an error' }, {});
+      const auth = new Auth(conf);
+      const res = await getError<WebError>(async () => auth.StartOAuth(OAuthProvider.apple));
+      expect(res?.error).toContain('error');
+    });
+
+    test('OAuth no location header', async () => {
+      const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
+      conf
+        .mockGet(`/oauth/authorize?provider=apple`)
+        .once()
+        .reply(HTTPStatusCode.ok, {}, {});
+      const auth = new Auth(conf);
+      const res = await getError<RequestError>(async () => auth.StartOAuth(OAuthProvider.apple));
+      expect(res?.request?.url).toContain('oauth/authorize');
+    });
+  });
+
   describe('validate session', () => {
     test('valid jwt', async () => {
       const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
       conf
         .mockGet(`/keys/${GetMocks().projectID}`)
         .once()
-        .reply(HTTP_STATUS_CODE.ok, [GetMocks().PublicKeys.valid]);
+        .reply(HTTPStatusCode.ok, [GetMocks().PublicKeys.valid]);
       const auth = new Auth(conf);
       const res = await auth.ValidateSession(GetMocks().JWT.valid, GetMocks().JWT.valid);
       expect(res).not.toBeUndefined();
@@ -231,11 +297,11 @@ describe('Authentication tests', () => {
       conf
         .mockGet(`/keys/${GetMocks().projectID}`)
         .once()
-        .reply(HTTP_STATUS_CODE.ok, [GetMocks().PublicKeys.valid]);
+        .reply(HTTPStatusCode.ok, [GetMocks().PublicKeys.valid]);
       conf
         .mockGet('/refresh')
         .once()
-        .reply(HTTP_STATUS_CODE.ok, {}, { 'Set-Cookie': ['hello'] });
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] });
 
       const auth = new Auth(conf);
       const res = await auth.ValidateSession(GetMocks().JWT.expired, GetMocks().JWT.valid);
@@ -265,8 +331,8 @@ describe('Authentication tests', () => {
       conf
         .mockGet(`/keys/${GetMocks().projectID}`)
         .once()
-        .reply(HTTP_STATUS_CODE.ok, [GetMocks().PublicKeys.valid]);
-      conf.mockGet('/refresh').once().reply(HTTP_STATUS_CODE.internalServerError, {});
+        .reply(HTTPStatusCode.ok, [GetMocks().PublicKeys.valid]);
+      conf.mockGet('/refresh').once().reply(HTTPStatusCode.internalServerError, {});
 
       const auth = new Auth(conf);
       const res = await getError(async () => {

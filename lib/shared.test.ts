@@ -1,6 +1,6 @@
 import { MockAuthConfig, getError } from './testutils/helpers';
 import nock from 'nock';
-import { HTTPMethods, HTTP_STATUS_CODE, request } from './shared';
+import { HTTPMethods, HTTPStatusCode, request } from './shared';
 import { RequestError } from './errors';
 
 describe('shared tests', () => {
@@ -17,7 +17,7 @@ describe('shared tests', () => {
     const baseURL = 'http://hello.com';
     test('GET request with query params', async () => {
       const conf = new MockAuthConfig({ baseURL });
-      conf.mockGet(`/test?param=test`).once().reply(HTTP_STATUS_CODE.ok, { test: 'test' });
+      conf.mockGet(`/test?param=test`).once().reply(HTTPStatusCode.ok, { test: 'test' });
       const res = await request<dummyResponse>(
         { projectId, baseURL },
         {
@@ -47,7 +47,7 @@ describe('shared tests', () => {
           },
         )
         .once()
-        .reply(HTTP_STATUS_CODE.ok, { test: 'test' });
+        .reply(HTTPStatusCode.ok, { test: 'test' });
 
       const res = await request<dummyResponse>(
         { projectId, baseURL },
@@ -69,7 +69,7 @@ describe('shared tests', () => {
           expect(body?.email).toContain('test');
         })
         .once()
-        .reply(HTTP_STATUS_CODE.unauthorized);
+        .reply(HTTPStatusCode.unauthorized);
 
       const res = await getError(async () =>
         request(
@@ -86,7 +86,7 @@ describe('shared tests', () => {
 
     test('POST request 404', async () => {
       const conf = new MockAuthConfig();
-      conf.mockPost(`/test`).once().reply(HTTP_STATUS_CODE.notFound);
+      conf.mockPost(`/test`).once().reply(HTTPStatusCode.notFound);
 
       const res = await getError(async () =>
         request(

@@ -1,4 +1,5 @@
 import { RequestInit, Response } from 'node-fetch';
+export declare const LOCATION_HEADER = "Location";
 export declare class defaultLogger {
     log(message: string): void;
     error(message: string, error?: unknown): void;
@@ -17,7 +18,7 @@ export declare enum HTTPMethods {
     post = "POST",
     put = "PUT"
 }
-export declare type requestConfig = {
+export declare type requestData = {
     url: string;
     method: HTTPMethods;
     params?: Record<string, string | number>;
@@ -57,7 +58,7 @@ export interface User {
     email?: string;
     phone?: string;
 }
-export declare const HTTP_STATUS_CODE: {
+export declare const HTTPStatusCode: {
     ok: number;
     badRequest: number;
     unauthorized: number;
@@ -65,4 +66,12 @@ export declare const HTTP_STATUS_CODE: {
     notFound: number;
     internalServerError: number;
 };
-export declare function request<T>(fetchConfig: IRequestConfig, requestConfig: requestConfig): Promise<httpResponse<T>>;
+export declare enum OAuthProvider {
+    facebook = "facebook",
+    github = "github",
+    google = "google",
+    microsoft = "microsoft",
+    gitlab = "gitlab",
+    apple = "apple"
+}
+export declare function request<T>(requestConfig: IRequestConfig, requestData: requestData): Promise<httpResponse<T>>;

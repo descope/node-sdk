@@ -1,12 +1,12 @@
-import { requestConfig } from './shared';
+import { requestData } from './shared';
 export declare class RequestError extends Error {
-    request: requestConfig;
-    constructor(request: requestConfig, error?: Error, message?: string);
+    request: requestData;
+    constructor(request: requestData, error?: Error, message?: string);
 }
 export interface WebError extends Error {
     code: number;
     details: string[];
-    message: string;
+    error: string;
 }
 export declare class JWTError extends Error {
 }

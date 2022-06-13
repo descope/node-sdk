@@ -1,6 +1,5 @@
-import { Response } from 'node-fetch';
-import * as jose from 'jose';
-import { Config, DeliveryMethod, User } from '../shared';
+import { JWTVerifyGetKey } from 'jose';
+import { Config, DeliveryMethod, User, OAuthProvider } from '../shared';
 export interface SignInRequest {
     deliveryMethod: DeliveryMethod;
     identifier: string;
@@ -29,8 +28,9 @@ export declare class Auth {
     constructor(conf: Config);
     SignUpOTP(r: SignUpRequest): Promise<void>;
     SignInOTP(r: SignInRequest): Promise<void>;
-    VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo | undefined>;
+    VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo>;
+    Logout(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo>;
+    StartOAuth(provider: OAuthProvider): Promise<string>;
     ValidateSession(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo | undefined>;
-    parseCookies: (response: Response) => string[];
-    getKey: jose.JWTVerifyGetKey;
+    getKey: JWTVerifyGetKey;
 }
