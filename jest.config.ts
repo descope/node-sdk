@@ -11,7 +11,6 @@ export default {
   collectCoverageFrom: ['<rootDir>/**/*.{js,jsx,ts,tsx}'],
   coveragePathIgnorePatterns: ['testutils', 'index.ts'],
 
-  // A set of global variables that need to be available in all test environments
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.json',

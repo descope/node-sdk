@@ -29,14 +29,14 @@ export declare type requestData = {
 export interface IRequestConfig {
     baseURL?: string;
     headers?: Record<string, string>;
-    timeout?: number;
+    timeoutSeconds?: number;
     projectId: string;
     publicKey?: string;
 }
 export declare class Config implements IRequestConfig {
     baseURL?: string;
     headers?: Record<string, string>;
-    timeout?: number;
+    timeoutSeconds?: number;
     projectId: string;
     publicKey?: string;
     constructor();

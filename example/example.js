@@ -1,14 +1,30 @@
 import express from 'express';
-import { DescopeClient, DeliveryMethod, OAuthProvider } from 'node-sdk';
+import { DescopeClient, DeliveryMethod, OAuthProvider } from '@descope/node-sdk';
 import * as fs from 'fs';
 import * as https from 'https';
 
 const app = express();
 const port = 443;
-const clientAuth = new DescopeClient({ projectId: process.env.DECOPSE_PROJECT_ID });
+const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
 var options = {
   key: fs.readFileSync('server.key'),
   cert: fs.readFileSync('server.crt'),
+};
+
+const authMiddleware = async (req, res, next) => {
+  try {
+    const cookies = parseCookies(req);
+    const out = await clientAuth.Auth.ValidateSession(cookies['DS'], cookies['DSR']);
+    if (out?.cookies) {
+      res.set('Set-Cookie', out.cookies);
+    }
+    next();
+  } catch (e) {
+    console.log(e);
+    res.status(401).json({
+      error: new Error('Unauthorized!'),
+    });
+  }
 };
 
 app.get('/signup', async (req, res) => {
@@ -58,22 +74,6 @@ app.get('/oauth', async (req, res) => {
     res.sendStatus(401);
   }
 });
-
-const authMiddleware = async (req, res, next) => {
-  try {
-    const cookies = parseCookies(req);
-    const out = await clientAuth.Auth.ValidateSession(cookies['DS'], cookies['DSR']);
-    if (out?.cookies) {
-      res.set('Set-Cookie', out.cookies);
-    }
-    next();
-  } catch (e) {
-    console.log(e);
-    res.status(401).json({
-      error: new Error('Unauthorized!'),
-    });
-  }
-};
 
 app.get('/private', authMiddleware, (_, res) => {
   res.sendStatus(200);

@@ -1,5 +1,5 @@
 {
-  "name": "node-sdk",
+  "name": "@descope/node-sdk",
   "version": "1.0.0",
   "description": "A wrapper for the Descope API",
   "types": "./types/lib/index.d.ts",

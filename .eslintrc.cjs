@@ -1,7 +1,5 @@
 const fs = require('fs');
 
-const prettierOptions = JSON.parse(fs.readFileSync(`${__dirname}/.prettierrc`, 'utf8'));
-
 module.exports = {
   root: true,
   extends: ['airbnb-base', 'prettier', 'plugin:jest/recommended', 'plugin:import/typescript', 'airbnb-typescript/base'],

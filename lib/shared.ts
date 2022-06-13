@@ -46,7 +46,7 @@ export type requestData = {
 export interface IRequestConfig {
   baseURL?: string;
   headers?: Record<string, string>;
-  timeout?: number;
+  timeoutSeconds?: number;
   projectId: string;
   publicKey?: string;
 }
@@ -54,14 +54,14 @@ export interface IRequestConfig {
 export class Config implements IRequestConfig {
   baseURL?: string;
   headers?: Record<string, string>;
-  timeout?: number;
+  timeoutSeconds?: number;
   projectId!: string;
   publicKey?: string;
 
   constructor() {
     this.baseURL = 'http://localhost:8191/v1/';
     this.headers = {};
-    this.timeout = 60;
+    this.timeoutSeconds = 60;
   }
   logger?: ILogger;
 }
@@ -134,6 +134,7 @@ export async function request<T>(
     body: JSON.stringify(requestData.data),
     ...requestConfig,
     headers,
+    timeout: (requestConfig.timeoutSeconds || 0) * 1000,
   };
   try {
     logger.debug(`requesting ${url.toString()} with options [${JSON.stringify(options)}]`);
@@ -153,7 +154,9 @@ export async function request<T>(
   if (response.status >= 400) {
     const webError = tResponse as WebError;
     logger.error(
-      `request to ${url.toString()} failed with status ${response.status}: ${webError?.message}`,
+      `request to ${url.toString()} failed with status ${response.status}${
+        webError?.message ? `: ${webError?.message}` : ''
+      }`,
     );
     throw webError;
   }

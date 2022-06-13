@@ -19,6 +19,6 @@
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
     "express": "^4.18.1",
-    "node-sdk": "file:../dist"
+    "@descope/node-sdk": "file:../dist"
   }
 }
