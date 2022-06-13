@@ -270,10 +270,7 @@ describe('Authentication tests', () => {
 
     test('OAuth no location header', async () => {
       const conf = new MockAuthConfig({ projectId: GetMocks().projectID });
-      conf
-        .mockGet(`/oauth/authorize?provider=apple`)
-        .once()
-        .reply(HTTPStatusCode.ok, {}, {});
+      conf.mockGet(`/oauth/authorize?provider=apple`).once().reply(HTTPStatusCode.ok, {}, {});
       const auth = new Auth(conf);
       const res = await getError<RequestError>(async () => auth.StartOAuth(OAuthProvider.apple));
       expect(res?.request?.url).toContain('oauth/authorize');
