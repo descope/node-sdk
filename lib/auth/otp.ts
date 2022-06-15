@@ -5,6 +5,7 @@ import {
   User,
   httpResponse,
   HTTPMethods,
+  Token,
 } from '../shared';
 
 export default class OTP {
@@ -26,7 +27,19 @@ export default class OTP {
     return request(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/signin/otp/${method}`,
-      data: { [method]: identifier },
+      data: { externalID: identifier },
+    });
+  }
+
+  verifyCode(
+    method: DeliveryMethod,
+    identifier: string,
+    code: string,
+  ): Promise<httpResponse<Token>> {
+    return request<Token>(this.requestConfig, {
+      method: HTTPMethods.post,
+      url: `auth/code/verify/${method}`,
+      data: { externalID: identifier, code },
     });
   }
 }

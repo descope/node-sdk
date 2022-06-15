@@ -1,4 +1,3 @@
-import { Response } from 'node-fetch';
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, JWTVerifyGetKey, importJWK } from 'jose';
 import { JWTError, RequestError } from '../errors';
 import {
@@ -11,10 +10,10 @@ import {
   HTTPMethods,
   OAuthProvider,
   LOCATION_HEADER,
+  parseCookies,
+  Token,
 } from '../shared';
 import OTP from './otp';
-
-const parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie'];
 
 export interface SignInRequest {
   deliveryMethod: DeliveryMethod;
@@ -29,12 +28,6 @@ export interface VerifyCodeRequest {
   deliveryMethod: DeliveryMethod;
   identifier: string;
   code: string;
-}
-
-export interface Token {
-  sub?: string;
-  exp?: number;
-  iss?: string;
 }
 
 export interface AuthenticationInfo {
@@ -62,11 +55,7 @@ export class Auth {
   }
 
   async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo> {
-    const res = await request<Token>(this.requestConfig, {
-      method: HTTPMethods.post,
-      url: `auth/code/verify/${r.deliveryMethod}`,
-      data: { [r.deliveryMethod]: r.identifier, code: r.code },
-    });
+    const res = await this.otp.verifyCode(r.deliveryMethod, r.identifier, r.code);
     return { token: res.body, cookies: parseCookies(res.response) };
   }
 

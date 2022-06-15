@@ -43,6 +43,12 @@ export type requestData = {
   data?: unknown;
 };
 
+export interface Token {
+  sub?: string;
+  exp?: number;
+  iss?: string;
+}
+
 export interface IRequestConfig {
   baseURL?: string;
   headers?: Record<string, string>;
@@ -102,6 +108,8 @@ export enum OAuthProvider {
   gitlab = 'gitlab',
   apple = 'apple',
 }
+
+export const parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie'];
 
 export async function request<T>(
   requestConfig: IRequestConfig,

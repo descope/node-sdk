@@ -15,7 +15,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/signin/otp/${DeliveryMethod.email}`, (body) => {
-          expect(body?.email).toContain('test');
+          expect(body?.externalID).toContain('test');
         })
         .once()
         .reply(HTTPStatusCode.ok, {});
@@ -31,7 +31,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/signin/otp/${DeliveryMethod.SMS}`, (body) => {
-          expect(body?.sms).toContain('test');
+          expect(body?.externalID).toContain('test');
         })
         .once()
         .reply(HTTPStatusCode.ok, {});
@@ -44,7 +44,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/signin/otp/${DeliveryMethod.whatsapp}`, (body) => {
-          expect(body?.whatsapp).toContain('test');
+          expect(body?.externalID).toContain('test');
         })
         .once()
         .reply(HTTPStatusCode.ok, {});
@@ -160,7 +160,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/code/verify/${DeliveryMethod.whatsapp}`, (body) => {
-          expect(body?.whatsapp).toEqual('test');
+          expect(body?.externalID).toEqual('test');
           expect(body?.code).toEqual('1111');
         })
         .once()
@@ -179,7 +179,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/code/verify/${DeliveryMethod.email}`, (body) => {
-          expect(body?.email).toEqual('test');
+          expect(body?.externalID).toEqual('test');
           expect(body?.code).toEqual('1111');
         })
         .once()
@@ -198,7 +198,7 @@ describe('Authentication tests', () => {
       const conf = new MockAuthConfig();
       conf
         .mockPost(`/auth/code/verify/${DeliveryMethod.SMS}`, (body) => {
-          expect(body?.sms).toEqual('test');
+          expect(body?.externalID).toEqual('test');
           expect(body?.code).toEqual('1111');
         })
         .once()
