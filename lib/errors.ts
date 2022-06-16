@@ -18,3 +18,9 @@ export interface WebError extends Error {
 }
 
 export class JWTError extends Error {}
+
+export class ProjectIdMissingError extends Error {
+  constructor() {
+    super('Project ID is missing');
+  }
+}

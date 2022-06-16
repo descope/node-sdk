@@ -3,7 +3,8 @@ const fs = require('fs');
 module.exports = {
   root: true,
   extends: ['airbnb-base', 'prettier', 'plugin:jest/recommended', 'plugin:import/typescript', 'airbnb-typescript/base'],
-  plugins: [ 		"@typescript-eslint",
+  plugins: [
+  "@typescript-eslint",
   "prettier",
   "import",
   "prefer-arrow",

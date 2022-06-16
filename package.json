@@ -67,19 +67,6 @@
     "ts-jest": "^28.0.3",
     "typescript": "^4.6.4"
   },
-  "eslintConfig": {
-    "extends": "airbnb",
-    "env": {
-      "commonjs": true,
-      "node": true,
-      "mocha": true
-    },
-    "rules": {
-      "no-underscore-dangle": 0,
-      "strict": 0,
-      "prefer-rest-params": 0
-    }
-  },
   "size-limit": [
     {
       "limit": "100 kb",
