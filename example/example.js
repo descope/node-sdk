@@ -20,14 +20,13 @@ const authMiddleware = async (req, res, next) => {
     }
     next();
   } catch (e) {
-    console.log(e);
     res.status(401).json({
       error: new Error('Unauthorized!'),
     });
   }
 };
 
-app.get('/signup', async (req, res) => {
+app.get('/otp/signup', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
     await clientAuth.Auth.SignUpOTP({ identifier, deliveryMethod });
@@ -38,7 +37,7 @@ app.get('/signup', async (req, res) => {
   }
 });
 
-app.get('/signin', async (req, res) => {
+app.get('/otp/signin', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
     await clientAuth.Auth.SignInOTP({ identifier, deliveryMethod });
@@ -49,7 +48,7 @@ app.get('/signin', async (req, res) => {
   }
 });
 
-app.get('/verify', async (req, res) => {
+app.get('/otp/verify', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   const code = req.query.code;
   try {
@@ -75,11 +74,11 @@ app.get('/oauth', async (req, res) => {
   }
 });
 
-app.get('/private', authMiddleware, (_, res) => {
+app.get('/private', authMiddleware, (_unused, res) => {
   res.sendStatus(200);
 });
 
-app.get('/logout', authMiddleware, async (_, res) => {
+app.get('/logout', authMiddleware, async (_unused, res) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.Auth.Logout(cookies['DS'], cookies['DSR']);
@@ -98,13 +97,13 @@ https.createServer(options, app).listen(port, () => {
 });
 
 const getMethodAndIdentifier = (req) => {
-  if (req.query?.email) {
+  if (req.query.email) {
     return { identifier: req.query.email, deliveryMethod: DeliveryMethod.email };
   }
-  if (req.query?.sms) {
+  if (req.query.sms) {
     return { identifier: req.query.sms, deliveryMethod: DeliveryMethod.SMS };
   }
-  if (req.query?.whatsapp) {
+  if (req.query.whatsapp) {
     return { identifier: req.query.whatsapp, deliveryMethod: DeliveryMethod.whatsapp };
   }
   return { identifier: '', deliveryMethod: DeliveryMethod.email };

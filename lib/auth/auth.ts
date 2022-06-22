@@ -1,38 +1,39 @@
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, JWTVerifyGetKey, importJWK } from 'jose';
-import { JWTError, RequestError } from '../errors';
+import { IConfig } from '../shared/types';
+import { JWTError, RequestError } from '../shared/errors';
 import {
   IRequestConfig,
   Config,
   request,
   DeliveryMethod,
   User,
-  logger,
   HTTPMethods,
   OAuthProvider,
   LOCATION_HEADER,
   parseCookies,
   Token,
+  ILogger,
 } from '../shared';
-import OTP from './otp';
+import { OTP } from './otp';
 
 export interface SignInRequest {
-  deliveryMethod: DeliveryMethod;
-  identifier: string;
+  deliveryMethod: DeliveryMethod
+  identifier: string
 }
 
 export interface SignUpRequest extends SignInRequest {
-  user?: User;
+  user?: User
 }
 
 export interface VerifyCodeRequest {
-  deliveryMethod: DeliveryMethod;
-  identifier: string;
-  code: string;
+  deliveryMethod: DeliveryMethod
+  identifier: string
+  code: string
 }
 
 export interface AuthenticationInfo {
-  token?: Token;
-  cookies?: string[];
+  token?: Token
+  cookies?: string[]
 }
 export class Auth {
   private requestConfig: IRequestConfig;
@@ -41,8 +42,11 @@ export class Auth {
 
   private keys: Record<string, KeyLike | Uint8Array> = {};
 
-  constructor(conf: Config) {
+  private logger?: ILogger;
+
+  constructor(conf: IConfig) {
     this.requestConfig = { ...new Config(), ...conf };
+    this.logger = conf.logger;
     this.otp = new OTP(this.requestConfig);
   }
 
@@ -90,35 +94,44 @@ export class Auth {
     if (sessionToken === '') throw Error('empty session token');
 
     try {
-      const res = await jwtVerify(sessionToken, this.getKey, {
-        algorithms: ['ES384'],
-      });
-      return { token: res.payload };
+      return await this.validateToken(sessionToken);
     } catch (error) {
       try {
-        const res = await jwtVerify(refreshToken, this.getKey, {
-          algorithms: ['ES384'],
-        });
+        const res = await this.validateToken(refreshToken);
         if (res) {
-          logger.log('requesting new session token');
-          try {
-            const httpRes = await request<Token>(this.requestConfig, {
-              method: HTTPMethods.get,
-              url: 'refresh',
-              cookies: { DS: sessionToken, DSR: refreshToken },
-            });
-            return { token: httpRes.body, cookies: parseCookies(httpRes.response) };
-          } catch (requestErr) {
-            logger.error('failed to fetch refresh session token', requestErr);
-            throw new JWTError('could not validate tokens');
-          }
+          return this.refreshSessionToken(sessionToken, refreshToken);
         }
       } catch (refreshTokenErr) {
-        logger.error('failed to validate refresh token', refreshTokenErr);
+        this.logger?.error('failed to validate refresh token', refreshTokenErr);
         throw new JWTError('could not validate tokens');
       }
     }
     return undefined;
+  }
+
+  async validateToken(token: string): Promise<AuthenticationInfo> {
+    const res = await jwtVerify(token, this.getKey, {
+      algorithms: ['ES384'],
+    });
+    return { token: res.payload };
+  }
+
+  async refreshSessionToken(
+    sessionToken: string,
+    refreshToken: string,
+  ): Promise<AuthenticationInfo> {
+    this.logger?.log('requesting new session token');
+    try {
+      const httpRes = await request<Token>(this.requestConfig, {
+        method: HTTPMethods.get,
+        url: 'refresh',
+        cookies: { DS: sessionToken, DSR: refreshToken },
+      });
+      return { token: httpRes.body, cookies: parseCookies(httpRes.response) };
+    } catch (requestErr) {
+      this.logger?.error('failed to fetch refresh session token', requestErr);
+      throw new JWTError('could not validate tokens');
+    }
   }
 
   getKey: JWTVerifyGetKey = async (header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> => {

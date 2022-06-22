@@ -1,20 +1,14 @@
-import { ProjectIdMissingError } from './errors';
-import { Auth } from './auth/auth';
-import { Config, setLogger, defaultLogger } from './shared';
+import { IConfig } from './shared/types'
+import { MissingArgumentError } from './shared/errors'
+import { Auth } from './auth/auth'
 
 export class DescopeClient {
-  Auth: Auth;
+  Auth: Auth
 
-  constructor(conf: Config) {
+  constructor(conf: IConfig) {
     if (!conf.projectId) {
-      throw new ProjectIdMissingError();
+      throw new MissingArgumentError('projectId')
     }
-
-    if (conf.logger) {
-      setLogger(conf.logger);
-    } else {
-      setLogger(new defaultLogger());
-    }
-    this.Auth = new Auth(conf);
+    this.Auth = new Auth(conf)
   }
 }

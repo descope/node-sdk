@@ -1,6 +1,6 @@
-import { MockAuthConfig, getError } from './testutils/helpers';
 import nock from 'nock';
-import { HTTPMethods, HTTPStatusCode, request } from './shared';
+import { MockAuthConfig, getError } from '../testutils/helpers';
+import { HTTPMethods, HTTPStatusCode, request } from '.';
 import { RequestError } from './errors';
 
 describe('shared tests', () => {
@@ -8,7 +8,7 @@ describe('shared tests', () => {
     nock.cleanAll();
   });
 
-  class dummyResponse {
+  class DummyResponse {
     test?: string;
   }
 
@@ -18,7 +18,7 @@ describe('shared tests', () => {
     test('GET request with query params', async () => {
       const conf = new MockAuthConfig({ baseURL });
       conf.mockGet(`/test?param=test`).once().reply(HTTPStatusCode.ok, { test: 'test' });
-      const res = await request<dummyResponse>(
+      const res = await request<DummyResponse>(
         { projectId, baseURL },
         {
           method: HTTPMethods.get,
@@ -42,14 +42,14 @@ describe('shared tests', () => {
               'Content-Type': 'application/json',
               test: 'test',
               Cookie: 'key=value',
-              Authorization: 'Basic ' + btoa(`${projectId}:`),
+              Authorization: `Basic ${btoa(`${projectId}:`)}`,
             },
           },
         )
         .once()
         .reply(HTTPStatusCode.ok, { test: 'test' });
 
-      const res = await request<dummyResponse>(
+      const res = await request<DummyResponse>(
         { projectId, baseURL },
         {
           method: HTTPMethods.post,

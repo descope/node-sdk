@@ -1,4 +1,4 @@
 export { DescopeClient } from './api';
-export { JWTError } from './errors';
+export { JWTError, MissingArgumentError as ProjectIdMissingError } from './shared/errors';
 export { DeliveryMethod, Config, OAuthProvider } from './shared';
-export type { IRequestConfig } from './shared';
+export type { IConfig } from './shared';

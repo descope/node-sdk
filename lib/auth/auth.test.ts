@@ -1,5 +1,5 @@
 import nock from 'nock';
-import { JWTError, RequestError, WebError } from '../errors';
+import { JWTError, RequestError, ServiceError } from '../shared/errors';
 import { getError, MockAuthConfig } from '../testutils/helpers';
 import { DeliveryMethod, HTTPStatusCode, LOCATION_HEADER, OAuthProvider } from '../shared';
 import { GetMocks } from '../testutils/mocks';
@@ -122,7 +122,7 @@ describe('Authentication tests', () => {
         .once()
         .reply(HTTPStatusCode.badRequest, { message: '[] bad', code: 2 });
       const auth = new Auth(conf);
-      const err = await getError<WebError>(async () =>
+      const err = await getError<ServiceError>(async () =>
         auth.SignUpOTP({
           deliveryMethod: DeliveryMethod.SMS,
           identifier: 'test',
@@ -236,7 +236,7 @@ describe('Authentication tests', () => {
         .once()
         .reply(HTTPStatusCode.internalServerError, { error: 'this is an error' });
       const auth = new Auth(conf);
-      const res = await getError<WebError>(async () =>
+      const res = await getError<ServiceError>(async () =>
         auth.Logout(GetMocks().JWT.valid, GetMocks().JWT.valid),
       );
       expect(res).not.toBeUndefined();
@@ -264,7 +264,7 @@ describe('Authentication tests', () => {
         .once()
         .reply(HTTPStatusCode.badRequest, { error: 'this is an error' }, {});
       const auth = new Auth(conf);
-      const res = await getError<WebError>(async () => auth.StartOAuth(OAuthProvider.apple));
+      const res = await getError<ServiceError>(async () => auth.StartOAuth(OAuthProvider.apple));
       expect(res?.error).toContain('error');
     });
 
