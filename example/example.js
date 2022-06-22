@@ -5,7 +5,7 @@ import * as https from 'https';
 
 const app = express();
 const port = 443;
-const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
+const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID, baseURL: 'http://localhost:8191/v1/' });
 var options = {
   key: fs.readFileSync('server.key'),
   cert: fs.readFileSync('server.crt'),

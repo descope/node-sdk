@@ -43,6 +43,9 @@ module.exports = {
       "single",
       { "avoidEscape": true, "allowTemplateLiterals": true }
     ],
+    "semi": ["error", "never"],
+    "@typescript-eslint/semi": "off",
+    "no-unexpected-multiline": "error",
     "@typescript-eslint/comma-dangle": ["off"],
     "comma-dangle": ["off"],
     "no-console": 2,
