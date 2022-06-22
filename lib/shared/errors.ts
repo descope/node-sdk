@@ -1,12 +1,12 @@
 /* eslint max-classes-per-file: 0 */
 export class RequestError extends Error {
-  request: any;
+  request: any
 
   constructor(request: any, error?: Error, message?: string) {
-    super(error?.message || message);
-    this.request = request;
-    this.name = error?.name || '';
-    this.stack = error?.stack;
+    super(error?.message || message)
+    this.request = request
+    this.name = error?.name || ''
+    this.stack = error?.stack
   }
 }
 
@@ -20,6 +20,6 @@ export class JWTError extends Error {}
 
 export class MissingArgumentError extends Error {
   constructor(argument: string) {
-    super(`the argument "${argument}" is missing`);
+    super(`the argument "${argument}" is missing`)
   }
 }

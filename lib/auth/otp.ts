@@ -6,7 +6,7 @@ import {
   HttpResponse,
   HTTPMethods,
   Token,
-} from '../shared';
+} from '../shared'
 
 export interface IOTP {
   // signUp - Use to create a new user based on the given identifier either email or a phone.
@@ -30,10 +30,10 @@ export interface IOTP {
 }
 
 export class OTP implements IOTP {
-  private requestConfig: IRequestConfig;
+  private requestConfig: IRequestConfig
 
   constructor(requestConfig: IRequestConfig) {
-    this.requestConfig = requestConfig;
+    this.requestConfig = requestConfig
   }
 
   signUp(method: DeliveryMethod, identifier: string, user?: User): Promise<HttpResponse<void>> {
@@ -41,7 +41,7 @@ export class OTP implements IOTP {
       method: HTTPMethods.post,
       url: `auth/signup/otp/${method}`,
       data: { [method]: identifier, user },
-    });
+    })
   }
 
   signIn(method: DeliveryMethod, identifier: string): Promise<HttpResponse<void>> {
@@ -49,7 +49,7 @@ export class OTP implements IOTP {
       method: HTTPMethods.post,
       url: `auth/signin/otp/${method}`,
       data: { externalID: identifier },
-    });
+    })
   }
 
   verifyCode(
@@ -61,6 +61,6 @@ export class OTP implements IOTP {
       method: HTTPMethods.post,
       url: `auth/code/verify/${method}`,
       data: { externalID: identifier, code },
-    });
+    })
   }
 }

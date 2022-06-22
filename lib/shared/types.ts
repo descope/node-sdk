@@ -1,4 +1,4 @@
-import { ILogger, DefaultLogger } from './logger';
+import { ILogger, DefaultLogger } from './logger'
 
 export enum HTTPMethods {
   get = 'GET',
@@ -45,7 +45,7 @@ export const HTTPStatusCode = {
   forbidden: 403,
   notFound: 404,
   internalServerError: 500,
-};
+}
 
 export enum OAuthProvider {
   facebook = 'facebook',
@@ -57,22 +57,22 @@ export enum OAuthProvider {
 }
 
 export class Config implements IConfig {
-  baseURL?: string;
+  baseURL?: string
 
-  headers?: Record<string, string>;
+  headers?: Record<string, string>
 
-  timeoutSeconds?: number;
+  timeoutSeconds?: number
 
-  projectId!: string;
+  projectId!: string
 
-  publicKey?: string;
+  publicKey?: string
 
   constructor() {
-    this.baseURL = 'http://localhost:8191/v1/';
-    this.headers = {};
-    this.timeoutSeconds = 60;
-    this.logger = new DefaultLogger();
+    this.baseURL = 'http://localhost:8191/v1/'
+    this.headers = {}
+    this.timeoutSeconds = 60
+    this.logger = new DefaultLogger()
   }
 
-  logger: ILogger;
+  logger: ILogger
 }

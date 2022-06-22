@@ -2,15 +2,15 @@
 
 export class DefaultLogger {
   log(message: string): void {
-    console.log(message);
+    console.log(message)
   }
 
   error(message: string, error?: unknown): void {
-    console.error(message, error);
+    console.error(message, error)
   }
 
   debug(message: string): void {
-    console.debug(message);
+    console.debug(message)
   }
 }
 
