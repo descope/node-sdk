@@ -77,3 +77,6 @@ typings/
 dist/
 *.crt
 *.key
+
+# VS Code
+!.vscode/launch.json.default
