@@ -1,0 +1,76 @@
+name: CI
+
+on: push
+
+env:
+  NODE_VERSION: 16.14
+
+jobs:
+  build:
+    name: 👷 Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Building
+        run: npm run build
+      - name: 🆙⬆️ Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-sdk-${{github.sha}}
+          path: build/
+
+  eslint:
+    name: 🪥 ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - run: npm run check-format
+      - run: npm run lint
+
+  gitleaks:
+    name: 🔒 Run Git leaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Gitleaks
+        run: |
+          npm run leaks
+        shell: bash
+
+  unit-test:
+    name: 👔 Run Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [14, 16, 18]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node-version: ${{ matrix.version }}
+      - name: Testing
+        run: npm test
+      - name: Coverage check
+        uses: devmasx/coverage-check-action@v1.2.0
+        with:
+          type: lcov
+          min_coverage: 95
+          result_path: coverage/lcov.info
+          token: ${{ github.token }}

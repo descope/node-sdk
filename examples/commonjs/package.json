@@ -1,0 +1,23 @@
+{
+  "name": "node-sdk-commonjs-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "example.cjs",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/descope/node-sdk.git"
+  },
+  "scripts": {
+    "start": "node example.cjs"
+  },
+  "author": "descope",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/descope/node-sdk/issues"
+  },
+  "homepage": "https://github.com/descope/node-sdk#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "@descope/node-sdk": "file:../../dist"
+  }
+}

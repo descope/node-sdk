@@ -1,0 +1,24 @@
+// run the command to modify and use in VS Code:
+// cp launch.json.default launch.json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": ["--inspect-brk", "${workspaceFolder}/node_modules/.bin/jest", "--runInBand"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Run Example: Express",
+      "env": {
+          "DESCOPE_PROJECT_ID": "<insert here>"
+      },
+      "program": "${workspaceFolder}/example/example.js"
+    }
+  ]
+}
