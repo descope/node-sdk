@@ -1,5 +1,5 @@
 import fetch, { RequestInit, Headers, Response } from 'node-fetch'
-import { RequestError, ServiceError } from './errors'
+import { RequestError, ServerError } from './errors'
 import { HTTPMethods, IConfig } from './types'
 
 export const LOCATION_HEADER = 'Location'
@@ -74,7 +74,7 @@ export async function request<T>(
   }
 
   if (response.status >= 400) {
-    const webError = tResponse as ServiceError
+    const webError = tResponse as ServerError
     requestConfig.logger?.error(
       `request to ${url.toString()} failed with status ${response.status}${
         webError?.message ? `: ${webError?.message}` : ''

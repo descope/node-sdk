@@ -10,7 +10,7 @@ export class RequestError extends Error {
   }
 }
 
-export interface ServiceError extends Error {
+export interface ServerError extends Error {
   code: number
   details: string[]
   error: string

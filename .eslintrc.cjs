@@ -44,6 +44,9 @@ module.exports = {
       { "avoidEscape": true, "allowTemplateLiterals": true }
     ],
     "semi": ["error", "never"],
+    "space-before-blocks": 2,
+    "space-before-function-paren": 2,
+    "no-multi-spaces": 2,
     "@typescript-eslint/semi": "off",
     "no-unexpected-multiline": "error",
     "@typescript-eslint/comma-dangle": ["off"],

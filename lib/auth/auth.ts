@@ -35,6 +35,7 @@ export interface AuthenticationInfo {
   token?: Token
   cookies?: string[]
 }
+
 export class Auth {
   private requestConfig: IRequestConfig
 

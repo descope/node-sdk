@@ -76,7 +76,6 @@
     }
   ],
   "dependencies": {
-    "cd": "^0.3.3",
     "jose": "^4.8.1",
     "node-fetch": "^2.6.7"
   }
