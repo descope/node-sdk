@@ -25,6 +25,6 @@
       "@testutils/*": ["lib/testutils/*"]
     }
   },
-  "include": ["lib/**/*", "jest.config.ts"],
+  "include": ["lib/**/*"],
   "exclude": ["**/__mocks__/*", "coverage", "node_modules", "**/testutils/*"]
 }

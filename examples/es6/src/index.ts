@@ -1,17 +1,17 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { DescopeClient, DeliveryMethod, OAuthProvider } from '@descope/node-sdk';
 import * as fs from 'fs';
 import * as https from 'https';
 
 const app = express();
 const port = 443;
-const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID, baseURL: 'http://localhost:8191/v1/' });
+const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || "", baseURL: 'http://localhost:8191/v1/' });
 var options = {
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.crt'),
+  key: fs.readFileSync('../../server.key'),
+  cert: fs.readFileSync('../../server.crt'),
 };
 
-const authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.Auth.ValidateSession(cookies['DS'], cookies['DSR']);
@@ -26,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-app.get('/otp/signup', async (req, res) => {
+app.get('/otp/signup', async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
     await clientAuth.Auth.SignUpOTP({ identifier, deliveryMethod });
@@ -37,7 +37,7 @@ app.get('/otp/signup', async (req, res) => {
   }
 });
 
-app.get('/otp/signin', async (req, res) => {
+app.get('/otp/signin', async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
     await clientAuth.Auth.SignInOTP({ identifier, deliveryMethod });
@@ -48,9 +48,9 @@ app.get('/otp/signin', async (req, res) => {
   }
 });
 
-app.get('/otp/verify', async (req, res) => {
+app.get('/otp/verify', async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
-  const code = req.query.code;
+  const code = req.query.code as string;
   try {
     const out = await clientAuth.Auth.VerifyCode({ identifier, deliveryMethod, code });
     if (out?.cookies) {
@@ -63,8 +63,8 @@ app.get('/otp/verify', async (req, res) => {
   }
 });
 
-app.get('/oauth', async (req, res) => {
-  const provider = req.query.provider || OAuthProvider.facebook;
+app.get('/oauth', async (req: Request, res: Response) => {
+  const provider = req.query.provider as OAuthProvider || OAuthProvider.facebook;
   try {
     const url = await clientAuth.Auth.StartOAuth(provider);
     res.redirect(url);
@@ -74,11 +74,11 @@ app.get('/oauth', async (req, res) => {
   }
 });
 
-app.get('/private', authMiddleware, (_unused, res) => {
+app.get('/private', authMiddleware, (_unused: Request, res: Response) => {
   res.sendStatus(200);
 });
 
-app.get('/logout', authMiddleware, async (_unused, res) => {
+app.get('/logout', authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.Auth.Logout(cookies['DS'], cookies['DSR']);
@@ -96,21 +96,21 @@ https.createServer(options, app).listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const getMethodAndIdentifier = (req) => {
+const getMethodAndIdentifier = (req: Request): { identifier: string, deliveryMethod: DeliveryMethod } => {
   if (req.query.email) {
-    return { identifier: req.query.email, deliveryMethod: DeliveryMethod.email };
+    return { identifier: req.query.email as string, deliveryMethod: DeliveryMethod.email };
   }
   if (req.query.sms) {
-    return { identifier: req.query.sms, deliveryMethod: DeliveryMethod.SMS };
+    return { identifier: req.query.sms as string, deliveryMethod: DeliveryMethod.SMS };
   }
   if (req.query.whatsapp) {
-    return { identifier: req.query.whatsapp, deliveryMethod: DeliveryMethod.whatsapp };
+    return { identifier: req.query.whatsapp as string, deliveryMethod: DeliveryMethod.whatsapp };
   }
   return { identifier: '', deliveryMethod: DeliveryMethod.email };
 };
 
-const parseCookies = (request) => {
-  const list = {};
+const parseCookies = (request: Request) => {
+  const list: { [key: string]: string } = {};
   const cookieHeader = request.headers?.cookie;
   if (!cookieHeader) return list;
 

@@ -1,0 +1,28 @@
+{
+  "name": "node-sdk-ts-es6-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "example.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/descope/node-sdk.git"
+  },
+  "scripts": {
+    "build": "tsc && tspath -f",
+    "start": "node dist/index.js"
+  },
+  "author": "descope",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/descope/node-sdk/issues"
+  },
+  "homepage": "https://github.com/descope/node-sdk#readme",
+  "dependencies": {
+    "@descope/node-sdk": "file:../../dist",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/@descope/node-sdk": "file:../../dist"
+  }
+}

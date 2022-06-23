@@ -68,7 +68,7 @@ export class Config implements IConfig {
   publicKey?: string
 
   constructor() {
-    this.baseURL = 'http://localhost:8191/v1/'
+    this.baseURL = 'https://descope.com/v1/'
     this.headers = {}
     this.timeoutSeconds = 60
     this.logger = new DefaultLogger()
