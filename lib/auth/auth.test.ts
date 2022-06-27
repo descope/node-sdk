@@ -214,6 +214,259 @@ describe('Authentication tests', () => {
     })
   })
 
+  describe('magic link sign in', () => {
+    const magicLinkURI = 'http://test.com/verify'
+    test('email defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signin/magiclink/${DeliveryMethod.email}`, (body) => {
+          expect(body?.externalID).toContain('test')
+          expect(body?.URI).toBe(magicLinkURI)
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignInMagicLink({
+        deliveryMethod: DeliveryMethod.email,
+        identifier: 'test',
+        URI: magicLinkURI,
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('email defaults cross device', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signin/magiclink/${DeliveryMethod.email}`, (body) => {
+          expect(body?.externalID).toContain('test')
+          expect(body?.crossDevice).toBeTruthy()
+          expect(body?.URI).toBe(magicLinkURI)
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignInMagicLinkCrossDevice({
+        deliveryMethod: DeliveryMethod.email,
+        identifier: 'test',
+        URI: magicLinkURI,
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('sms defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signin/magiclink/${DeliveryMethod.SMS}`, (body) => {
+          expect(body?.externalID).toContain('test')
+          expect(body?.URI).toBe(magicLinkURI)
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignInMagicLink({
+        deliveryMethod: DeliveryMethod.SMS,
+        identifier: 'test',
+        URI: magicLinkURI,
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('whatsapp defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signin/magiclink/${DeliveryMethod.whatsapp}`, (body) => {
+          expect(body?.externalID).toContain('test')
+          expect(body?.URI).toBe(magicLinkURI)
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignInMagicLink({
+        deliveryMethod: DeliveryMethod.whatsapp,
+        identifier: 'test',
+        URI: magicLinkURI,
+      })
+      expect(res).toBeUndefined()
+    })
+  })
+
+  describe('magic link sign up', () => {
+    const magicLinkURI = 'http://test.com/verify'
+    test('whatsapp defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signup/magiclink/${DeliveryMethod.whatsapp}`, (body) => {
+          expect(body?.whatsapp).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignUpMagicLink({
+        deliveryMethod: DeliveryMethod.whatsapp,
+        identifier: 'test',
+        URI: magicLinkURI,
+        user: { username: 'user' },
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('whatsapp defaults cross device', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signup/magiclink/${DeliveryMethod.whatsapp}`, (body) => {
+          expect(body?.whatsapp).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.crossDevice).toBeTruthy
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignUpMagicLinkCrossDevice({
+        deliveryMethod: DeliveryMethod.whatsapp,
+        identifier: 'test',
+        URI: magicLinkURI,
+        user: { username: 'user' },
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('email defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signup/magiclink/${DeliveryMethod.email}`, (body) => {
+          expect(body?.email).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignUpMagicLink({
+        deliveryMethod: DeliveryMethod.email,
+        identifier: 'test',
+        URI: magicLinkURI,
+        user: { username: 'user' },
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('sms defaults', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signup/magiclink/${DeliveryMethod.SMS}`, (body) => {
+          expect(body?.sms).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {})
+      const auth = new Auth(conf)
+      const res = await auth.SignUpMagicLink({
+        deliveryMethod: DeliveryMethod.SMS,
+        identifier: 'test',
+        user: { username: 'user' },
+        URI: magicLinkURI,
+      })
+      expect(res).toBeUndefined()
+    })
+
+    test('sms web error failure', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/signup/magiclink/${DeliveryMethod.SMS}`, (body) => {
+          expect(body?.sms).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .reply(HTTPStatusCode.badRequest, { message: '[] bad', code: 2 })
+      const auth = new Auth(conf)
+      const err = await getError<ServerError>(async () =>
+        auth.SignUpMagicLink({
+          deliveryMethod: DeliveryMethod.SMS,
+          identifier: 'test',
+          URI: magicLinkURI,
+          user: { username: 'user' },
+        }),
+      )
+      expect(err.message).toContain('bad')
+    })
+
+    test('sms request error failure', async () => {
+      const conf = new MockAuthConfig()
+      const url = `auth/signup/magiclink/${DeliveryMethod.SMS}`
+      conf
+        .mockPost(`/${url}`, (body) => {
+          expect(body?.sms).toEqual('test')
+          expect(body?.URI).toBe(magicLinkURI)
+          expect(body?.user?.username).toEqual('user')
+        })
+        .once()
+        .replyWithError('this is error')
+      const auth = new Auth(conf)
+      const err = await getError<RequestError>(async () =>
+        auth.SignUpMagicLink({
+          deliveryMethod: DeliveryMethod.SMS,
+          identifier: 'test',
+          URI: magicLinkURI,
+          user: { username: 'user' },
+        }),
+      )
+      expect(err.message).toContain('error')
+      expect(err.request?.url).toBe(url)
+    })
+  })
+
+  describe('magic link verify', () => {
+    test('verify magic link token', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/magiclink/verify`, (body) => {
+          expect(body?.token).toEqual('a')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] })
+      const auth = new Auth(conf)
+      const res = await auth.VerifyMagicLink({
+        token: 'a',
+      })
+      expect(res?.cookies).toHaveLength(1)
+      expect(res?.cookies ? res?.cookies[0] : '').toBe('hello')
+    })
+  })
+
+  describe('magic session', () => {
+    test('verify magic link token', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/magiclink/session`, (body) => {
+          expect(body?.pendingRef).toEqual('a')
+        })
+        .once()
+        .reply(HTTPStatusCode.ok, {}, { 'Set-Cookie': ['hello'] })
+      const auth = new Auth(conf)
+      const res = await auth.GetMagicLinkSession('a')
+      expect(res?.cookies).toHaveLength(1)
+      expect(res?.cookies ? res?.cookies[0] : '').toBe('hello')
+    })
+
+    test('verify magic link token not ready', async () => {
+      const conf = new MockAuthConfig()
+      conf
+        .mockPost(`/auth/magiclink/session`, (body) => {
+          expect(body?.pendingRef).toEqual('a')
+        })
+        .once()
+        .reply(HTTPStatusCode.unauthorized, {})
+      const auth = new Auth(conf)
+      const res = await auth.GetMagicLinkSession('a')
+      expect(res).toBeUndefined()
+    })
+  })
+
   describe('logout', () => {
     test('valid logout', async () => {
       const conf = new MockAuthConfig({ projectId: GetMocks().projectID })

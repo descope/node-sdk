@@ -75,6 +75,7 @@ export async function request<T>(
 
   if (response.status >= 400) {
     const webError = tResponse as ServerError
+    webError.status = response.status
     requestConfig.logger?.error(
       `request to ${url.toString()} failed with status ${response.status}${
         webError?.message ? `: ${webError?.message}` : ''

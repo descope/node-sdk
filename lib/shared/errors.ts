@@ -11,6 +11,7 @@ export class RequestError extends Error {
 }
 
 export interface ServerError extends Error {
+  status: number
   code: number
   details: string[]
   error: string

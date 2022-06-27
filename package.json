@@ -61,6 +61,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.1",
     "jest": "^28.1.0",
+    "jsdoc": "^3.6.10",
     "nock": "^13.2.4",
     "prettier": "2.6.2",
     "ts-jest": "^28.0.3",

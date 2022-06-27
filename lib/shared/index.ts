@@ -3,3 +3,4 @@ export { DeliveryMethod, OAuthProvider, Config, HTTPMethods, HTTPStatusCode } fr
 export { HttpResponse, request, LOCATION_HEADER, parseCookies } from './http'
 export type { ILogger } from './logger'
 export type { RequestData } from './http'
+export type { ServerError } from './errors'
