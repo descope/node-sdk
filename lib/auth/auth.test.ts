@@ -318,7 +318,7 @@ describe('Authentication tests', () => {
         .mockPost(`/auth/signup/magiclink/${DeliveryMethod.whatsapp}`, (body) => {
           expect(body?.whatsapp).toEqual('test')
           expect(body?.URI).toBe(magicLinkURI)
-          expect(body?.crossDevice).toBeTruthy
+          expect(body?.crossDevice).toBeTruthy()
           expect(body?.user?.username).toEqual('user')
         })
         .once()
