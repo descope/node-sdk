@@ -1,6 +1,17 @@
-import fetch, { RequestInit, Headers, Response } from 'node-fetch'
+import { btoa } from 'buffer'
+import fetch, { RequestInit, Headers, Response, Request } from 'node-fetch'
+import { URL } from 'url'
 import { RequestError, ServerError } from './errors'
 import { HTTPMethods, IConfig } from './types'
+
+// @ts-ignore
+globalThis.fetch = fetch
+// @ts-ignore
+globalThis.Headers = Headers
+// @ts-ignore
+globalThis.Request = Request
+// @ts-ignore
+globalThis.Response = Response
 
 export const LOCATION_HEADER = 'Location'
 
@@ -9,7 +20,7 @@ export type RequestData = {
   method: HTTPMethods
   params?: Record<string, string | number>
   headers?: Record<string, string | number>
-  cookies?: Record<string, string>
+  password?: string
   data?: unknown
 }
 
@@ -20,8 +31,6 @@ export class HttpResponse<T> {
 
   body?: T
 }
-
-export const parseCookies = (response: Response): string[] => response.headers?.raw()['set-cookie']
 
 export async function request<T>(
   requestConfig: IConfig,
@@ -39,13 +48,10 @@ export async function request<T>(
     headers.set('Content-Type', 'application/json')
   }
 
-  headers.set('Authorization', `Basic ${btoa(`${requestConfig.projectId}:`)}`)
-
-  if (requestData.cookies) {
-    Object.entries(requestData.cookies).forEach((key, value) => {
-      headers.append('Cookie', `${key}=${value}`)
-    })
-  }
+  headers.set(
+    'Authorization',
+    `Basic ${btoa(`${requestConfig.projectId}:${requestData.password}`)}`,
+  )
 
   let response: Response
   const options: RequestInit = {

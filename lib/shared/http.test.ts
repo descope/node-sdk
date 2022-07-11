@@ -1,4 +1,5 @@
 import nock from 'nock'
+import { btoa } from 'buffer'
 import { MockAuthConfig, getError } from '../testutils/helpers'
 import { HTTPMethods, HTTPStatusCode, request } from '.'
 import { RequestError } from './errors'
@@ -54,7 +55,6 @@ describe('shared tests', () => {
         {
           method: HTTPMethods.post,
           url: `test`,
-          cookies: { key: 'value' },
           headers: { test: 'test' },
           data: { email: 'test' },
         },

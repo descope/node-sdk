@@ -79,4 +79,5 @@ dist/
 *.key
 
 # VS Code
+.vscode/
 !.vscode/launch.json.default

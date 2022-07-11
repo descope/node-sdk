@@ -1,29 +1,30 @@
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, JWTVerifyGetKey, importJWK } from 'jose'
-import { ServerError, JWTError, RequestError } from '../shared/errors'
-import { MagicLink } from './magiclink'
-import { IConfig } from '../shared/types'
+import DescopeSdk from '@descope/web-js-sdk'
+import { MissingArgumentError, JWTError, RequestError } from '../shared/errors'
+import { IConfig, Delivery } from '../shared/types'
 import {
   IRequestConfig,
   Config,
   request,
-  DeliveryMethod,
   User,
   HTTPMethods,
   OAuthProvider,
   LOCATION_HEADER,
-  parseCookies,
   Token,
   ILogger,
 } from '../shared'
-import { OTP } from './otp'
+
+function validateDeliveryMethod(deliveryMethod: Delivery) {
+  if (!deliveryMethod) throw new MissingArgumentError('deliveryMethod')
+}
 
 export interface SignInRequest {
-  deliveryMethod: DeliveryMethod
+  deliveryMethod: Delivery
   identifier: string
 }
 
 export interface SignUpRequest {
-  deliveryMethod: DeliveryMethod
+  deliveryMethod: Delivery
   identifier: string
   user?: User
 }
@@ -41,7 +42,7 @@ export interface VerifyMagicLinkRequest {
 }
 
 export interface VerifyCodeRequest {
-  deliveryMethod: DeliveryMethod
+  deliveryMethod: Delivery
   identifier: string
   code: string
 }
@@ -54,75 +55,71 @@ export interface AuthenticationInfo {
 export class Auth {
   private requestConfig: IRequestConfig
 
-  private otp: OTP
-
-  magicLink: MagicLink
-
   private keys: Record<string, KeyLike | Uint8Array> = {}
 
   private logger?: ILogger
 
+  private sdk
+
   constructor(conf: IConfig) {
     this.requestConfig = { ...new Config(), ...conf }
     this.logger = conf.logger
-    this.otp = new OTP(this.requestConfig)
-    this.magicLink = new MagicLink(this.requestConfig)
+    this.sdk = DescopeSdk(conf)
   }
 
   async SignUpOTP(r: SignUpRequest): Promise<void> {
-    await this.otp.signUp(r.deliveryMethod, r.identifier, r.user)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.otp.signUp[r.deliveryMethod](r.identifier, r.user)
   }
 
   async SignInOTP(r: SignInRequest): Promise<void> {
-    await this.otp.signIn(r.deliveryMethod, r.identifier)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.otp.signUp[r.deliveryMethod](r.identifier)
   }
 
   async VerifyCode(r: VerifyCodeRequest): Promise<AuthenticationInfo> {
-    const res = await this.otp.verifyCode(r.deliveryMethod, r.identifier, r.code)
-    return { token: res.body, cookies: parseCookies(res.response) }
+    validateDeliveryMethod(r.deliveryMethod)
+    const res = await this.sdk.otp.verify[r.deliveryMethod](r.identifier, r.code)
+    return { token: res.data }
   }
 
   async SignUpMagicLink(r: SignUpMagicLinkRequest): Promise<void> {
-    await this.magicLink.signUp(r.deliveryMethod, r.identifier, r.URI, r.user)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.magicLink.signUp[r.deliveryMethod](r.identifier, r.URI, r.user)
   }
 
   async SignInMagicLink(r: SignInMagicLinkRequest): Promise<void> {
-    await this.magicLink.signIn(r.deliveryMethod, r.identifier, r.URI)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.magicLink.signIn[r.deliveryMethod](r.identifier, r.URI)
   }
 
   async SignUpMagicLinkCrossDevice(r: SignUpMagicLinkRequest): Promise<void> {
-    await this.magicLink.signUpCrossDevice(r.deliveryMethod, r.identifier, r.URI, r.user)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.magicLink.crossDevice.signUp[r.deliveryMethod](r.identifier, r.URI, r.user)
   }
 
   async SignInMagicLinkCrossDevice(r: SignInMagicLinkRequest): Promise<void> {
-    await this.magicLink.signInCrossDevice(r.deliveryMethod, r.identifier, r.URI)
+    validateDeliveryMethod(r.deliveryMethod)
+    await this.sdk.magicLink.crossDevice.signIn[r.deliveryMethod](r.identifier, r.URI)
   }
 
   async VerifyMagicLink(r: VerifyMagicLinkRequest): Promise<AuthenticationInfo> {
-    const res = await this.magicLink.verify(r.token)
-    return { token: res.body, cookies: parseCookies(res.response) }
+    const res = await this.sdk.magicLink.crossDevice.verify(r.token)
+    return { token: res.data }
   }
 
-  async GetMagicLinkSession(ref: string): Promise<AuthenticationInfo | undefined> {
-    try {
-      const res = await this.magicLink.getSession(ref)
-      return { token: res.body, cookies: parseCookies(res.response) }
-    } catch (error) {
-      const serverError = error as ServerError
-      if (serverError?.status === 401) {
-        return undefined
-      }
-      throw error
-    }
+  async GetMagicLinkSession(ref: string): Promise<AuthenticationInfo> {
+    const res = await this.sdk.magicLink.crossDevice.waitForSession(ref)
+    return { token: res.data }
   }
 
   async Logout(sessionToken: string, refreshToken: string): Promise<AuthenticationInfo> {
-    const res = await request<Token>(this.requestConfig, {
+    await request<Token>(this.requestConfig, {
       method: HTTPMethods.post,
       url: `auth/logoutall`,
       data: { cookies: { DS: sessionToken, DSR: refreshToken } },
     })
-    return { cookies: parseCookies(res.response) }
+    return {}
   }
 
   async StartOAuth(provider: OAuthProvider): Promise<string> {
@@ -152,7 +149,7 @@ export class Auth {
       try {
         const res = await this.validateToken(refreshToken)
         if (res) {
-          return this.refreshSessionToken(sessionToken, refreshToken)
+          return this.refreshSessionToken(refreshToken)
         }
       } catch (refreshTokenErr) {
         this.logger?.error('failed to validate refresh token', refreshTokenErr)
@@ -169,18 +166,15 @@ export class Auth {
     return { token: res.payload }
   }
 
-  async refreshSessionToken(
-    sessionToken: string,
-    refreshToken: string,
-  ): Promise<AuthenticationInfo> {
+  async refreshSessionToken(refreshToken: string): Promise<AuthenticationInfo> {
     this.logger?.log('requesting new session token')
     try {
       const httpRes = await request<Token>(this.requestConfig, {
         method: HTTPMethods.get,
         url: 'refresh',
-        cookies: { DS: sessionToken, DSR: refreshToken },
+        password: refreshToken,
       })
-      return { token: httpRes.body, cookies: parseCookies(httpRes.response) }
+      return { token: httpRes.body }
     } catch (requestErr) {
       this.logger?.error('failed to fetch refresh session token', requestErr)
       throw new JWTError('could not validate tokens')

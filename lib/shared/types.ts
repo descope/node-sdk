@@ -25,7 +25,7 @@ export interface IConfig extends IRequestConfig {
   logger?: ILogger
 }
 
-export enum DeliveryMethod {
+export enum Delivery {
   email = 'email',
   SMS = 'sms',
   whatsapp = 'whatsapp',
