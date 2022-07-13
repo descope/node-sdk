@@ -75,6 +75,8 @@ typings/
 
 # build and example files
 dist/
+*.crt
+*.key
 
 # VS Code
 .vscode/
