@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
-import DescopeClient from '../../../dist/index1.js'
-import type { DeliveryMethod, OAuthProvider } from '../../../dist/index1.js'
+import DescopeClient from '@descope/node-sdk'
+import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk'
 import * as fs from 'fs'
 import * as https from 'https'
 import path from 'path';
