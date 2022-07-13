@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "ts-node --esm src/index.ts"
+    "start": "DESCOPE_API_BASE_URL='http://localhost:8000/' ts-node --esm src/index.ts"
   },
   "author": "descope",
   "license": "MIT",
