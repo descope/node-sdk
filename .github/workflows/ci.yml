@@ -12,10 +12,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Setup
-        uses: ./.github/actions/setup
+      - name: Setup Node.js 🔠
+        uses: actions/setup-node@v3
         with:
-          node_version: ${{ env.NODE_VERSION }}
+          node-version: ${{ inputs.node_version }}
+      - name: Cache node modules 💸
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies 🪛
+        shell: bash
+        run: npm ci --ignore-scripts
+          env:
+            CI: true
+            NODE_AUTH_TOKEN: ${{ secrets.CI_NPM_READ_ORG }}
       - name: Building
         run: npm run build
       - name: 🆙⬆️ Upload Artifacts
