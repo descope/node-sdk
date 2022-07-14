@@ -45,12 +45,10 @@ export const withCookie =
   async (...args: T): Promise<SdkResponse> => {
     const resp = await fn(...args)
 
-    let sessionJwt
-    let refreshJwt
+    // eslint-disable-next-line prefer-const
+    let [sessionJwt, refreshJwt] = resp.data.jwts
     let cookie
 
-    // eslint-disable-next-line prefer-const
-    ([sessionJwt, refreshJwt] = resp.data.jwts)
     if (!refreshJwt) {
       cookie = resp.response?.headers.get('set-cookie')
       refreshJwt = getCookieValue(cookie, refreshTokenCookieName)
