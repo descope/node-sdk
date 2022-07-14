@@ -1,7 +1,7 @@
 import createSdk from '@descope/web-js-sdk'
-import { bulkWrapWith, withCookie } from 'helpers'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
-import { AuthenticationInfo } from 'types'
+import { bulkWrapWith, withCookie } from './helpers'
+import { AuthenticationInfo } from './types'
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/web-js-sdk'
 

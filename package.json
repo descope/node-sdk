@@ -2,7 +2,7 @@
   "name": "@descope/node-sdk",
   "version": "1.0.0",
   "description": "A wrapper for the Descope API",
-  "typings": "./dist/index",
+  "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "exports": {
     "require": "./dist/index.js",

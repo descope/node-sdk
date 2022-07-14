@@ -9,8 +9,8 @@ const app = express()
 const port = 443
 
 const options = {
-  key: fs.readFileSync(path.resolve('../server.key')),
-  cert: fs.readFileSync(path.resolve('../server.crt')),
+  key: fs.readFileSync(path.resolve('./server.key')),
+  cert: fs.readFileSync(path.resolve('./server.crt')),
 }
 
 const clientAuth = {
@@ -20,7 +20,7 @@ const clientAuth = {
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = parseCookies(req)
-    const out = await clientAuth.auth.ValidateSession(cookies['DS'], cookies['DSR'])
+    const out = await clientAuth.auth.validateSession(cookies['DS'], cookies['DSR'])
     if (out?.cookies) {
       res.set('Set-Cookie', out.cookies)
     }
