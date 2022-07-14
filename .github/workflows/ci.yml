@@ -15,24 +15,7 @@ jobs:
       - name: Setup Node.js 🔠
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ inputs.node_version }}
-      - name: Cache node modules 💸
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Install Dependencies 🪛
-        shell: bash
-        run: npm ci --ignore-scripts
-          env:
-            CI: true
-            NODE_AUTH_TOKEN: ${{ secrets.CI_NPM_READ_ORG }}
+          node_version: ${{ env.NODE_VERSION }}
       - name: Building
         run: npm run build
       - name: 🆙⬆️ Upload Artifacts
@@ -50,6 +33,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
         with:
+          token: ${{ secrets.CI_NPM_READ_ORG }}
           node_version: ${{ env.NODE_VERSION }}
       - run: npm run check-format
       - run: npm run lint
@@ -63,6 +47,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
         with:
+          token: ${{ secrets.CI_NPM_READ_ORG }}
           node_version: ${{ env.NODE_VERSION }}
       - name: Gitleaks
         run: |
@@ -81,6 +66,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
         with:
+          token: ${{ secrets.CI_NPM_READ_ORG }}
           node-version: ${{ matrix.version }}
       - name: Testing
         run: npm test

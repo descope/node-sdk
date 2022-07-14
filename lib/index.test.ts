@@ -1,6 +1,6 @@
 import { SdkResponse } from '@descope/web-js-sdk'
-import { refreshTokenCookieName } from './constants'
 import { JWTHeaderParameters } from 'jose'
+import { refreshTokenCookieName } from './constants'
 import createSdk from '.'
 
 const validToken =
