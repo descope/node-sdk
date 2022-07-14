@@ -4,6 +4,9 @@ inputs:
   node_version:
     description: Node version to use
     required: true
+  token:
+    description: Token
+    required: true
 runs:
   using: composite
   steps:
@@ -11,6 +14,8 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.node_version }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
 
     - name: Cache node modules 💸
       uses: actions/cache@v3
