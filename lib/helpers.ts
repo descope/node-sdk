@@ -1,38 +1,7 @@
 import type { SdkResponse } from '@descope/web-js-sdk'
 import { refreshTokenCookieName } from './constants'
 
-type CookieOptions = {
-  domain?: string
-  expires?: Date
-  httpOnly?: boolean
-  path?: string
-  secure?: boolean
-  sameSite?: 'strict' | 'lax' | 'none'
-}
-
-const generateCookie = (name: string, value: string, options: CookieOptions = {}) => {
-  let cookie = `${name}=${value};`
-
-  if (options.expires) {
-    cookie += `Expires=${options.expires.toUTCString()};`
-  }
-  if (options.domain) {
-    cookie += `Domain=${options.domain};`
-  }
-  if (options.path) {
-    cookie += `Path=${options.path};`
-  }
-  if (options.secure) {
-    cookie += `Secure;`
-  }
-  if (options.httpOnly) {
-    cookie += `HttpOnly;`
-  }
-  if (options.sameSite) {
-    cookie += `SameSite=${options.sameSite};`
-  }
-  return cookie
-}
+const generateCookie = (name: string, value: string) => `${name}=${value};`
 
 const getCookieValue = (cookie: string | null | undefined, name: string) => {
   const match = cookie?.match(RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
