@@ -68,7 +68,8 @@ export default (...args: Parameters<typeof createSdk>) => {
       if (!sessionToken) throw Error('session token must not be empty')
 
       try {
-        return await this.validateToken(sessionToken)
+        const token = await this.validateToken(sessionToken)
+        return token
       } catch (error) {
         try {
           await this.validateToken(refreshToken)
