@@ -77,7 +77,7 @@
     }
   ],
   "dependencies": {
-    "@descope/web-js-sdk": "file:../web-js-sdk",
+    "@descope/web-js-sdk": "0.0.20",
     "jose": "4.8.1",
     "node-fetch": "2.6.7"
   }
