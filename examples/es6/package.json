@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "example.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git://github.com/descope/node-sdk.git"
   },
   "scripts": {
-    "build": "tsc && tspath -f",
-    "start": "node dist/index.js"
+    "build": "tsc",
+    "start": "ts-node --esm src/index.ts",
+    "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
   },
   "author": "descope",
   "license": "MIT",
@@ -23,6 +25,6 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
-    "@types/@descope/node-sdk": "file:../../dist"
+    "ts-node": "^10.8.2"
   }
 }

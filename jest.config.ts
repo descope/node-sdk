@@ -9,7 +9,6 @@ export default {
   coverageDirectory: '../coverage',
 
   collectCoverageFrom: ['<rootDir>/**/*.{js,jsx,ts,tsx}'],
-  coveragePathIgnorePatterns: ['testutils', 'index.ts'],
 
   globals: {
     'ts-jest': {

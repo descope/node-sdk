@@ -4,6 +4,9 @@ inputs:
   node_version:
     description: Node version to use
     required: true
+  token:
+    description: Token
+    required: true
 runs:
   using: composite
   steps:
@@ -11,10 +14,13 @@ runs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.node_version }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
 
     - name: Cache node modules 💸
       uses: actions/cache@v3
       env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
         cache-name: cache-node-modules
       with:
         path: ~/.npm
@@ -26,3 +32,5 @@ runs:
     - name: Install Dependencies 🪛
       shell: bash
       run: npm i
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
