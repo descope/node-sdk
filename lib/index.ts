@@ -1,7 +1,19 @@
 import createSdk from '@descope/web-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
+import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
+
+if (!globalThis.fetch) {
+  // @ts-ignore
+  globalThis.fetch = fetch
+  // @ts-ignore
+  globalThis.Headers = Headers
+  // @ts-ignore
+  globalThis.Request = Request
+  // @ts-ignore
+  globalThis.Response = Response
+}
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/web-js-sdk'
 
