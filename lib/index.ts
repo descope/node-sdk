@@ -1,20 +1,26 @@
 import createSdk from '@descope/web-js-sdk'
+import { bulkWrapWith, withCookie } from 'helpers'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
-
-interface Token {
-  sub?: string
-  exp?: number
-  iss?: string
-}
-interface AuthenticationInfo {
-  token?: Token
-  cookies?: string[]
-}
+import { AuthenticationInfo } from 'types'
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/web-js-sdk'
 
 export default (...args: Parameters<typeof createSdk>) => {
   const sdk = createSdk(...args)
+
+  bulkWrapWith(
+    sdk,
+    [
+      'otp.verify.*',
+      'magicLink.verify',
+      'magicLink.crossDevice.signUp.*',
+      'magicLink.crossDevice.signIn.*',
+      'oauth.verify',
+      // saml?
+      // refresh?
+    ],
+    withCookie,
+  )
 
   const { projectId, logger } = args[0]
 
@@ -55,7 +61,7 @@ export default (...args: Parameters<typeof createSdk>) => {
       return { token: res.payload }
     },
 
-    async ValidateSession(
+    async validateSession(
       sessionToken: string,
       refreshToken: string,
     ): Promise<AuthenticationInfo | undefined> {
