@@ -41,7 +41,13 @@ jobs:
         run: npm run build 
         working-directory: examples/es6
         env:
-          CI: true          
+          CI: true 
+
+      - name: Build example cert
+        run: npm run generateCerts 
+        working-directory: examples/es6
+        env:
+          CI: true                    
 
       - name: Build example docker image
         working-directory: examples/es6
