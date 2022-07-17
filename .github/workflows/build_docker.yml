@@ -1,0 +1,52 @@
+name: build example docker image
+
+on: push
+
+env:
+  NODE_VERSION: 16.14
+  EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1
+
+jobs:
+  docker-build:
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Install dependencies
+        run: npm i
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Install dependencies example
+        run: npm i
+        working-directory: examples/es6
+        env:
+          CI: true
+
+      - name: Build example
+        run: npm run build 
+        working-directory: examples/es6
+        env:
+          CI: true          
+
+      - name: Build example docker image
+        working-directory: examples/es6
+        run: |
+          docker build . --tag ${{ env.EXAMPLE_IMAGE_NAME }}           
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push the tagged Docker image
+        run: docker push ${{ env.EXAMPLE_IMAGE_NAME }} 
