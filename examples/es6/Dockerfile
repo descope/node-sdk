@@ -4,10 +4,6 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-COPY dist-sdk/dist ../../dist
-
-COPY dist-sdk/package.json ../../package.json
-
 RUN npm install
 
 COPY . . 
