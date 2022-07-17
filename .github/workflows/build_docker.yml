@@ -9,6 +9,9 @@ env:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
+      contents: read
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
