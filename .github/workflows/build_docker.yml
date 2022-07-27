@@ -62,3 +62,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push the tagged Docker image
         run: docker push ${{ env.EXAMPLE_IMAGE_NAME }} 
+        
