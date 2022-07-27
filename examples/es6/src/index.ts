@@ -4,6 +4,7 @@ import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk'
 import * as fs from 'fs'
 import * as https from 'https'
 import path from 'path';
+import process from 'process';
 
 const app = express()
 const port = 443
@@ -12,6 +13,8 @@ const options = {
   key: fs.readFileSync(path.resolve('./server.key')),
   cert: fs.readFileSync(path.resolve('./server.crt')),
 }
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const clientAuth = {
   auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
@@ -33,6 +36,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 }
 
 app.get('/otp/signup', async (req: Request, res: Response) => {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
     await clientAuth.auth.otp.signUp[deliveryMethod](identifier)
