@@ -20,8 +20,7 @@ const options = {
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const clientAuth = {
-  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console, 
-    baseURL: 'https://172.17.0.1:8443/v1/' }),
+  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
