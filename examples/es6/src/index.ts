@@ -41,8 +41,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 }
 
 app.post('/otp/signup', jsonParser, async (req: Request, res: Response) => {
-  console.log(req)
   console.log(req.body)
+  console.log(req.body.email)
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
