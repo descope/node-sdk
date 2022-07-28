@@ -36,6 +36,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 }
 
 app.post('/otp/signup', async (req: Request, res: Response) => {
+  console.log(req.body)
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
