@@ -4,7 +4,7 @@ on: push
 
 env:
   NODE_VERSION: 16.14
-  EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1
+  EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1.1
 
 jobs:
   docker-build:
@@ -62,4 +62,3 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push the tagged Docker image
         run: docker push ${{ env.EXAMPLE_IMAGE_NAME }} 
-        
