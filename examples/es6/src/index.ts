@@ -5,7 +5,7 @@ import * as fs from 'fs'
 import * as https from 'https'
 import path from 'path';
 import process from 'process';
-import bodyParser from "body-parser";
+import bodyParser from 'body-parser';
 
 const app = express()
 var jsonParser = bodyParser.json()
