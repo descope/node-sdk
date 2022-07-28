@@ -7,8 +7,6 @@ import path from 'path';
 import process from 'process';
 import bodyParser from "body-parser";
 
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
 const app = express()
 var jsonParser = bodyParser.json()
 
@@ -41,8 +39,6 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 }
 
 app.post('/otp/signup', jsonParser, async (req: Request, res: Response) => {
-  console.log(req.body)
-  console.log(req.body.email)
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
@@ -54,7 +50,7 @@ app.post('/otp/signup', jsonParser, async (req: Request, res: Response) => {
   }
 })
 
-app.post('/otp/signin', async (req: Request, res: Response) => {
+app.post('/otp/signin', jsonParser, async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
     await clientAuth.auth.otp.signIn[deliveryMethod](identifier)
@@ -65,7 +61,7 @@ app.post('/otp/signin', async (req: Request, res: Response) => {
   }
 })
 
-app.post('/otp/verify', async (req: Request, res: Response) => {
+app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   const code = req.body.code as string
   try {
@@ -80,7 +76,7 @@ app.post('/otp/verify', async (req: Request, res: Response) => {
   }
 })
 
-app.post('/oauth', (req: Request, res: Response) => {
+app.post('/oauth', jsonParser, (req: Request, res: Response) => {
   const provider: OAuthProvider = (req.body.provider as OAuthProvider)
   try {
     const url =  clientAuth.auth.oauth.start[provider]()
@@ -91,11 +87,11 @@ app.post('/oauth', (req: Request, res: Response) => {
   }
 })
 
-app.post('/private', authMiddleware, (_unused: Request, res: Response) => {
+app.get('/private', authMiddleware, (_unused: Request, res: Response) => {
   res.sendStatus(200)
 })
 
-app.post('/logout', authMiddleware, async (req: Request, res: Response) => {
+app.post('/logout', jsonParser, authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req)
     const out = await clientAuth.auth.logout(cookies['DS'])
