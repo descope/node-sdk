@@ -9,6 +9,7 @@ env:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       packages: write
       contents: read
