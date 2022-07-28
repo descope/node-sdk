@@ -5,8 +5,8 @@ import * as fs from 'fs'
 import * as https from 'https'
 import path from 'path';
 import process from 'process';
+import bodyParser from "body-parser";
 
-var bodyParser = require('body-parser')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 const app = express()
