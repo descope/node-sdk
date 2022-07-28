@@ -10,6 +10,8 @@ var bodyParser = require('body-parser')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 const app = express()
+var jsonParser = bodyParser.json()
+
 const port = 443
 
 const options = {
@@ -38,7 +40,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
-app.post('/otp/signup', urlencodedParser, async (req: Request, res: Response) => {
+app.post('/otp/signup', jsonParser, async (req: Request, res: Response) => {
+  console.log(req)
   console.log(req.body)
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
