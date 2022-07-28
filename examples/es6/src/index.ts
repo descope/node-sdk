@@ -17,8 +17,6 @@ const options = {
   cert: fs.readFileSync(path.resolve('./server.crt')),
 }
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const clientAuth = {
   auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
 }
@@ -39,7 +37,6 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 }
 
 app.post('/otp/signup', jsonParser, async (req: Request, res: Response) => {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
     await clientAuth.auth.otp.signUp[deliveryMethod](identifier)
