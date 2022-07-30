@@ -55,7 +55,7 @@
     "eslint-plugin-jest": "^26.4.6",
     "eslint-plugin-jest-dom": "^4.0.2",
     "eslint-plugin-jest-formatting": "^3.1.0",
-    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-no-only-tests": "^3.0.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.1",
