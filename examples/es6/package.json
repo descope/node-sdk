@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "example.js",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git://github.com/descope/node-sdk.git"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c",
     "start": "ts-node --esm src/index.ts",
     "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
   },
@@ -24,7 +23,12 @@
     "express": "^4.18.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.0",
     "@types/express": "^4.17.13",
+    "rollup-plugin-delete": "^2.0.0",
     "ts-node": "^10.8.2"
   }
 }
