@@ -3,7 +3,7 @@ name: build example docker image
 on: push
 
 env:
-  NODE_VERSION: 16.14
+  NODE_VERSION: 18
   EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1.1
 
 jobs:
