@@ -4,12 +4,12 @@ on: push
 
 env:
   NODE_VERSION: 18
-  EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1.1
+  EXAMPLE_IMAGE_NAME: ghcr.io/descope/node-example:0.1.2
 
 jobs:
   docker-build:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
+    #if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       packages: write
       contents: read

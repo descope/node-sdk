@@ -84,7 +84,7 @@ app.post('/oauth', jsonParser, (req: Request, res: Response) => {
   }
 })
 
-app.get('/private', authMiddleware, (_unused: Request, res: Response) => {
+app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {
   res.sendStatus(200)
 })
 
