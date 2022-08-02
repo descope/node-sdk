@@ -63,6 +63,7 @@ app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
   const code = req.body.code as string
   try {
     const out = await clientAuth.auth.otp.verify[deliveryMethod](code, identifier )
+    console.log(out.data.jwts)
     if (out.data.jwts) {
       res.set('Set-Cookie', out.data.jwts)
     }
