@@ -66,7 +66,6 @@ app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
     if (out.data.jwts) {
       console.log("out.data.jwts")
       res.set('Set-Cookie', out.data.jwts)
-      res.statusMessage
       res.status(200).send({ jwt :  out.data.jwts[0]});
     } else {
       res.sendStatus(401)
