@@ -1,6 +1,6 @@
 import { SdkResponse } from '@descope/web-js-sdk'
 import { JWTHeaderParameters } from 'jose'
-import { refreshTokenCookieName } from './constants'
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
 
 const validToken =
@@ -136,7 +136,7 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { ...data, cookie: `${refreshTokenCookieName}=${data.jwts[1]};` },
+            data: { ...data, cookie: `${sessionTokenCookieName}=${data.jwts[0]};${refreshTokenCookieName}=${data.jwts[1]};` },
           }),
         )
       })
@@ -152,7 +152,7 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { jwts: [...data.jwts, 'refreshJwt'], cookie },
+            data: { jwts: [...data.jwts, 'refreshJwt'], cookie: `${sessionTokenCookieName}=sessionJwt;${cookie}` },
           }),
         )
       })
