@@ -25,7 +25,6 @@ export const withCookie =
       cookie += generateCookie(refreshTokenCookieName, refreshJwt)
     }
 
-
     return { ...resp, data: { ...resp.data, jwts: [sessionJwt, refreshJwt], cookie } }
   }
 

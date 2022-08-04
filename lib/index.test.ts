@@ -136,7 +136,10 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { ...data, cookie: `${sessionTokenCookieName}=${data.jwts[0]};${refreshTokenCookieName}=${data.jwts[1]};` },
+            data: {
+              ...data,
+              cookie: `${sessionTokenCookieName}=${data.jwts[0]};${refreshTokenCookieName}=${data.jwts[1]};`,
+            },
           }),
         )
       })
@@ -152,7 +155,10 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { jwts: [...data.jwts, 'refreshJwt'], cookie: `${sessionTokenCookieName}=sessionJwt;${cookie}` },
+            data: {
+              jwts: [...data.jwts, 'refreshJwt'],
+              cookie: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
+            },
           }),
         )
       })
