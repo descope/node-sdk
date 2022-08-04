@@ -15,7 +15,7 @@ export const withCookie =
     const resp = await fn(...args)
 
     // eslint-disable-next-line prefer-const
-    let {sessionJwt, refreshJwt} = resp.data;
+    let { sessionJwt, refreshJwt } = resp.data
     let cookie = generateCookie(sessionTokenCookieName, sessionJwt)
 
     if (!refreshJwt) {
