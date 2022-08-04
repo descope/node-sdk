@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "example.js",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git://github.com/descope/node-sdk.git"
