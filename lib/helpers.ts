@@ -15,7 +15,7 @@ export const withCookie =
     const resp = await fn(...args)
 
     // eslint-disable-next-line prefer-const
-    let [sessionJwt, refreshJwt] = resp.data.jwts
+    let {sessionJwt, refreshJwt} = resp.data;
     let cookie = generateCookie(sessionTokenCookieName, sessionJwt)
 
     if (!refreshJwt) {
@@ -25,7 +25,7 @@ export const withCookie =
       cookie += generateCookie(refreshTokenCookieName, refreshJwt)
     }
 
-    return { ...resp, data: { ...resp.data, jwts: [sessionJwt, refreshJwt], cookie } }
+    return { ...resp, data: { ...resp.data, refreshJwt, cookie } }
   }
 
 export const wrapWith = <T extends Record<string, any>>(
