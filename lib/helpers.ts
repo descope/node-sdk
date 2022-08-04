@@ -19,7 +19,7 @@ export const withCookie =
     let cookie = generateCookie(sessionTokenCookieName, sessionJwt)
 
     if (!refreshJwt) {
-      cookie += resp.response?.headers.get('set-cookie')!
+      cookie += resp.response?.headers.get('set-cookie') || ''
       refreshJwt = getCookieValue(cookie, refreshTokenCookieName)
     } else {
       cookie += generateCookie(refreshTokenCookieName, refreshJwt)
