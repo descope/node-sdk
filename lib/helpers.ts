@@ -1,5 +1,5 @@
 import type { SdkResponse } from '@descope/web-js-sdk'
-import { refreshTokenCookieName } from './constants'
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 const generateCookie = (name: string, value: string) => `${name}=${value};`
 
@@ -15,17 +15,17 @@ export const withCookie =
     const resp = await fn(...args)
 
     // eslint-disable-next-line prefer-const
-    let [sessionJwt, refreshJwt] = resp.data.jwts
-    let cookie
+    let { sessionJwt, refreshJwt } = resp.data
+    let cookie = generateCookie(sessionTokenCookieName, sessionJwt)
 
     if (!refreshJwt) {
-      cookie = resp.response?.headers.get('set-cookie')
+      cookie += resp.response?.headers.get('set-cookie') || ''
       refreshJwt = getCookieValue(cookie, refreshTokenCookieName)
     } else {
-      cookie = generateCookie(refreshTokenCookieName, refreshJwt)
+      cookie += generateCookie(refreshTokenCookieName, refreshJwt)
     }
 
-    return { ...resp, data: { ...resp.data, jwts: [sessionJwt, refreshJwt], cookie } }
+    return { ...resp, data: { ...resp.data, refreshJwt, cookie } }
   }
 
 export const wrapWith = <T extends Record<string, any>>(

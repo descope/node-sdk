@@ -63,12 +63,8 @@ app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
   const code = req.body.code as string
   try {
     const out = await clientAuth.auth.otp.verify[deliveryMethod](code, identifier )
-    if (out.data.jwts) {
-      console.log("out.data.jwts")
-      res.set('Set-Cookie', out.data.jwts)
-      res.status(200).send({ jwt :  out.data.jwts[0]});
-    } else {
-      res.sendStatus(401)
+    if (out.data.cookie) {
+      res.set('Set-Cookie', out.data.cookie)
     }
   } catch (error) {
     console.log(error)
@@ -95,8 +91,8 @@ app.post('/logout', jsonParser, authMiddleware, async (req: Request, res: Respon
   try {
     const cookies = parseCookies(req)
     const out = await clientAuth.auth.logout(cookies['DS'])
-    if (out.data.jwts) {
-      res.set('Set-Cookie', out.data.jwts[0])
+    if (out.data.cookie) {
+      res.set('Set-Cookie', out.data.cookie)
     }
     res.sendStatus(200)
   } catch (error) {
