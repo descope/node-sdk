@@ -22,10 +22,14 @@ const clientAuth = {
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  console.log("in authMiddleware")
   try {
     const cookies = parseCookies(req)
+    console.log("before validateSession")
     const out = await clientAuth.auth.validateSession(cookies['DS'], cookies['DSR'])
+    console.log("after validateSession")
     if (out?.cookies) {
+      console.log("in  cookies")
       res.set('Set-Cookie', out.cookies)
     }
     next()
