@@ -63,19 +63,14 @@ app.post('/otp/signin', jsonParser, async (req: Request, res: Response) => {
 })
 
 app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
-  console.log("in /otp/verify")
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   const code = req.body.code as string
-  console.log("before try")
   try {
     const out = await clientAuth.auth.otp.verify[deliveryMethod](code, identifier )
-    console.log("out")
     if (out.data.cookie) {
-      console.log("in cookie")
       res.set('Set-Cookie', out.data.cookie)
-      console.log("after cookie")
-      res.sendStatus(200)
     }
+    res.sendStatus(200)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
