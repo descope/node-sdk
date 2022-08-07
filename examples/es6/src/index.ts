@@ -74,6 +74,7 @@ app.post('/otp/verify', jsonParser, async (req: Request, res: Response) => {
       console.log("in cookie")
       res.set('Set-Cookie', out.data.cookie)
       console.log("after cookie")
+      res.sendStatus(200)
     }
   } catch (error) {
     console.log(error)
