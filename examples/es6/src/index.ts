@@ -17,7 +17,7 @@ const options = {
 }
 
 const clientAuth = {
-  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
+  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', baseUrl: process.env.DESCOPE_API_BASE_URL, logger: console }),
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
