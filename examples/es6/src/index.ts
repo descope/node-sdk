@@ -17,7 +17,7 @@ const options = {
 }
 
 const clientAuth = {
-  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
+  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console, baseUrl: 'http://localhost:8000' }),
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -76,8 +76,7 @@ app.post('/totp/signup', async (req: Request, res: Response) => {
   const { identifier } = getMethodAndIdentifier(req)
   try {
     const out = await clientAuth.auth.totp.signUp(identifier)
-    console.log(JSON.stringify(out.data))
-    var img = Buffer.from(out.data.image, 'base64');
+    var img = Buffer.from(out.data?.image, 'base64');
     res.writeHead(200, {
       'Content-Type': 'image/png',
       'Content-Length': img.length
@@ -94,7 +93,6 @@ app.post('/totp/verify', async (req: Request, res: Response) => {
   const code = req.body.code as string
   try {
     const out = await clientAuth.auth.totp.verify(identifier, code)
-    console.log(JSON.stringify(out.data))
     if (out.data?.cookies) {
       res.set('Set-Cookie', out.data.cookies)
     }
