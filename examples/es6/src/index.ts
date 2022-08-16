@@ -61,7 +61,7 @@ app.post('/otp/verify', async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   const code = req.body.code as string
   try {
-    const out = await clientAuth.auth.otp.verify[deliveryMethod](code, identifier)
+    const out = await clientAuth.auth.otp.verify[deliveryMethod](identifier, code)
     if (out.data.cookies) {
       res.set('Set-Cookie', out.data.cookies)
     }
