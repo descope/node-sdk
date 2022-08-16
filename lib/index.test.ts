@@ -147,7 +147,7 @@ describe('sdk', () => {
           expect.objectContaining({
             data: {
               ...data,
-              cookie: `${sessionTokenCookieName}=${data.sessionJwt};${refreshTokenCookieName}=${data.refreshJwt};`,
+              cookies: `${sessionTokenCookieName}=${data.sessionJwt};${refreshTokenCookieName}=${data.refreshJwt};`,
             },
           }),
         )
@@ -167,7 +167,7 @@ describe('sdk', () => {
             data: {
               refreshJwt: 'refreshJwt',
               sessionJwt: 'sessionJwt',
-              cookie: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
+              cookies: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
             },
           }),
         )

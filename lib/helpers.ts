@@ -16,16 +16,16 @@ export const withCookie =
 
     // eslint-disable-next-line prefer-const
     let { sessionJwt, refreshJwt } = resp.data
-    let cookie = generateCookie(sessionTokenCookieName, sessionJwt)
+    let cookies = generateCookie(sessionTokenCookieName, sessionJwt)
 
     if (!refreshJwt) {
-      cookie += resp.response?.headers.get('set-cookie') || ''
-      refreshJwt = getCookieValue(cookie, refreshTokenCookieName)
+      cookies += resp.response?.headers.get('set-cookie') || ''
+      refreshJwt = getCookieValue(cookies, refreshTokenCookieName)
     } else {
-      cookie += generateCookie(refreshTokenCookieName, refreshJwt)
+      cookies += generateCookie(refreshTokenCookieName, refreshJwt)
     }
 
-    return { ...resp, data: { ...resp.data, refreshJwt, cookie } }
+    return { ...resp, data: { ...resp.data, refreshJwt, cookies } }
   }
 
 export const wrapWith = <T extends Record<string, any>>(
