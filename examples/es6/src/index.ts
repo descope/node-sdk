@@ -17,7 +17,7 @@ const options = {
 }
 
 const clientAuth = {
-  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console, baseUrl: 'http://localhost:8000' }),
+  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', logger: console }),
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -142,6 +142,30 @@ app.post('/webauthn/signin/start', async (req: Request, res: Response) => {
 app.post('/webauthn/signin/finish', async (req: Request, res: Response) => {
   try {
     const credentials = await clientAuth.auth.webauthn.signIn.finish(req.body.transactionId, req.body.response);
+    if (credentials.data?.cookies) {
+      res.set('Set-Cookie', credentials.data.cookies)
+    }
+    res.status(200).send(credentials.data)
+  } catch (error) {
+    console.log(error)
+    res.sendStatus(401)
+  }
+})
+
+app.post('/webauthn/add/start', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const cookies = parseCookies(req)
+    const credentials = await clientAuth.auth.webauthn.add.start(req.query.id as string, req.query.origin as string, cookies['DSR']);
+    res.status(200).send(credentials.data)
+  } catch (error) {
+    console.log(error)
+    res.sendStatus(401)
+  }
+})
+
+app.post('/webauthn/add/finish', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const credentials = await clientAuth.auth.webauthn.add.finish(req.body.transactionId, req.body.response);
     if (credentials.data?.cookies) {
       res.set('Set-Cookie', credentials.data.cookies)
     }

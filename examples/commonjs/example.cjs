@@ -144,6 +144,30 @@ const https = require('https');
     }
   })
 
+  app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
+    try {
+      const cookies = parseCookies(req)
+      const credentials = await clientAuth.auth.webauthn.add.start(req.query.id, req.query.origin, cookies['DSR']);
+      res.status(200).send(credentials.data)
+    } catch (error) {
+      console.log(error)
+      res.sendStatus(401)
+    }
+  })
+
+  app.post('/webauthn/add/finish', authMiddleware, async (req, res) => {
+    try {
+      const credentials = await clientAuth.auth.webauthn.add.finish(req.body.transactionId, req.body.response);
+      if (credentials.data?.cookies) {
+        res.set('Set-Cookie', credentials.data.cookies)
+      }
+      res.status(200).send(credentials.data)
+    } catch (error) {
+      console.log(error)
+      res.sendStatus(401)
+    }
+  })
+
   app.get('/oauth', async (req, res) => {
     const provider = req.query.provider;
     try {
