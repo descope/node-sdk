@@ -1,6 +1,6 @@
 import { SdkResponse } from '@descope/web-js-sdk'
 import { JWTHeaderParameters } from 'jose'
-import { refreshTokenCookieName } from './constants'
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
 
 const validToken =
@@ -128,7 +128,7 @@ describe('sdk', () => {
       ]
 
       it.each(paths)('should generate cookie from body jwt for %s', async (path) => {
-        const data = { jwts: ['sessionJwt', 'refreshJwt'] }
+        const data = { sessionJwt: 'sessionJwt', refreshJwt: 'refreshJwt' }
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
@@ -140,13 +140,16 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { ...data, cookie: `${refreshTokenCookieName}=${data.jwts[1]};` },
+            data: {
+              ...data,
+              cookie: `${sessionTokenCookieName}=${data.sessionJwt};${refreshTokenCookieName}=${data.refreshJwt};`,
+            },
           }),
         )
       })
 
       it.each(paths)('should generate jwt from cookie for %s', async (path) => {
-        const data = { jwts: ['sessionJwt'] }
+        const data = { sessionJwt: 'sessionJwt' }
         const cookie = `${refreshTokenCookieName}=refreshJwt;`
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
           ok: true,
@@ -156,7 +159,11 @@ describe('sdk', () => {
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
           expect.objectContaining({
-            data: { jwts: [...data.jwts, 'refreshJwt'], cookie },
+            data: {
+              refreshJwt: 'refreshJwt',
+              sessionJwt: 'sessionJwt',
+              cookie: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
+            },
           }),
         )
       })
