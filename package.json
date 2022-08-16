@@ -83,7 +83,7 @@
     }
   ],
   "dependencies": {
-    "@descope/core-js-sdk": "0.0.41-alpha.6",
+    "@descope/core-js-sdk": "0.0.41-alpha.7",
     "jose": "4.8.1",
     "node-fetch": "2.6.7"
   }
