@@ -1,4 +1,4 @@
-import createSdk from '@descope/web-js-sdk'
+import createSdk from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
@@ -15,7 +15,7 @@ if (!globalThis.fetch) {
   globalThis.Response = Response
 }
 
-export type { DeliveryMethod, OAuthProvider } from '@descope/web-js-sdk'
+export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
 
 export default (...args: Parameters<typeof createSdk>) => {
   const sdk = createSdk(...args)

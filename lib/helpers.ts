@@ -1,4 +1,4 @@
-import type { SdkResponse } from '@descope/web-js-sdk'
+import type { SdkResponse } from '@descope/core-js-sdk'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 const generateCookie = (name: string, value: string) => `${name}=${value};`

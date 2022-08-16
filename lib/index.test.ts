@@ -1,4 +1,4 @@
-import { SdkResponse } from '@descope/web-js-sdk'
+import { SdkResponse } from '@descope/core-js-sdk'
 import { JWTHeaderParameters } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
