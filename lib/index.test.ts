@@ -124,12 +124,16 @@ describe('sdk', () => {
         ...generatePathFromKeys(sdk, 'magicLink.crossDevice.signUp'),
         ...generatePathFromKeys(sdk, 'magicLink.crossDevice.signIn'),
         'magicLink.verify',
-        'oauth.verify',
+        'oauth.exchange',
       ]
 
       it.each(paths)('should generate cookie from body jwt for %s', async (path) => {
         const data = { sessionJwt: 'sessionJwt', refreshJwt: 'refreshJwt' }
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(data),
+        } as Response)
+        jest.spyOn(sdk.httpClient, 'get').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
         } as Response)

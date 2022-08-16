@@ -1,6 +1,6 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A wrapper for the Descope API",
   "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -26,7 +26,8 @@
     "size": "npm run build && size-limit",
     "lint": "eslint lib/**/*.ts --fix",
     "leaks": "bash ./scripts/gitleaks/gitleaks.sh",
-    "test": "jest --forceExit --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*"
+    "test": "jest --forceExit --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*",
+    "prepublishOnly": "npm run build"
   },
   "author": "Descope",
   "bugs": {
@@ -77,7 +78,7 @@
     }
   ],
   "dependencies": {
-    "@descope/web-js-sdk": "0.0.20",
+    "@descope/web-js-sdk": "0.0.40",
     "jose": "4.8.1",
     "node-fetch": "2.6.7"
   }
