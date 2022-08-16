@@ -1,7 +1,7 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.0.3",
-  "description": "A wrapper for the Descope API",
+  "version": "1.0.4-alpha.1",
+  "description": "Node.js library used to integrate with Descope",
   "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "exports": {
@@ -35,6 +35,10 @@
     "url": "git://github.com/descope/node-sdk/issues"
   },
   "license": "MIT",
+  "keywords": [
+    "descope",
+    "authentication"
+  ],
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.17.12",
@@ -79,7 +83,7 @@
     }
   ],
   "dependencies": {
-    "@descope/web-js-sdk": "0.0.41",
+    "@descope/core-js-sdk": "0.0.41-alpha.6",
     "jose": "4.8.1",
     "node-fetch": "2.6.7"
   }

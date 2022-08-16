@@ -1,5 +1,3 @@
-![Node-SDK](https://github.com/descope/node-sdk/actions/workflows/ci.yml/badge.svg)
+# Descope Node.js SDK
 
-# descope Node SDK
-
-Node.js client library used to integrate with Descope
+Node.js library used to integrate with Descope
