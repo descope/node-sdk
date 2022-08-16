@@ -28,8 +28,11 @@ export default (...args: Parameters<typeof createSdk>) => {
       'magicLink.crossDevice.signUp.*',
       'magicLink.crossDevice.signIn.*',
       'oauth.exchange',
-      // saml?
-      // refresh?
+      'saml.exchange',
+      'totp.verify',
+      'webauthn.signIn.finish',
+      'webauthn.signUp.finish',
+      'refresh',
     ],
     withCookie,
   )

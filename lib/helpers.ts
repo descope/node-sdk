@@ -39,7 +39,7 @@ export const wrapWith = <T extends Record<string, any>>(
   const pathSections = typeof path === 'string' ? path.split('.') : path
   const section = pathSections.shift() || ('' as keyof T)
 
-  if (path.length === 0 || section === '*') {
+  if (pathSections.length === 0 || section === '*') {
     const wrap = (key: keyof T) => {
       if (key && typeof obj[key] === 'function') {
         // eslint-disable-next-line no-param-reassign

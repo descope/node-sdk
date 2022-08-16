@@ -125,6 +125,11 @@ describe('sdk', () => {
         ...generatePathFromKeys(sdk, 'magicLink.crossDevice.signIn'),
         'magicLink.verify',
         'oauth.exchange',
+        'saml.exchange',
+        'totp.verify',
+        'webauthn.signIn.finish',
+        'webauthn.signUp.finish',
+        'refresh',
       ]
 
       it.each(paths)('should generate cookie from body jwt for %s', async (path) => {
