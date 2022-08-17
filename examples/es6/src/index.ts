@@ -179,8 +179,22 @@ app.post('/webauthn/add/finish', authMiddleware, async (req: Request, res: Respo
 app.post('/oauth', async (req: Request, res: Response) => {
   const provider: OAuthProvider = (req.body.provider as OAuthProvider)
   try {
-    const out =  await clientAuth.auth.oauth.start[provider]()
-    res.redirect(out.data)
+    const out =  await clientAuth.auth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
+    res.status(200).send(out.data.url)
+  } catch (error) {
+    console.log(error)
+    res.sendStatus(500)
+  }
+})
+
+app.get('/oauth/finish', async (req: Request, res: Response) => {
+  const code = req.query.code as string
+  try {
+    const out = await clientAuth.auth.oauth.exchange(code)
+    if (out.data.cookies) {
+      res.set('Set-Cookie', out.data.cookies)
+    }
+    res.sendStatus(200)
   } catch (error) {
     console.log(error)
     res.sendStatus(500)

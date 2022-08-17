@@ -168,17 +168,30 @@ const https = require('https');
     }
   })
 
-  app.get('/oauth', async (req, res) => {
-    const provider = req.query.provider;
+  app.post('/oauth', async (req, res) => {
+    const provider = req.body.provider
     try {
-      const url = await clientAuth.oauth.start(provider);
-      res.redirect(url);
+      const out = await clientAuth.auth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
+      res.status(200).send(out.data.url)
     } catch (error) {
-      console.log(error);
-      res.sendStatus(401);
+      console.log(error)
+      res.sendStatus(500)
     }
-  });
+  })
 
+  app.get('/oauth/finish', async (req, res) => {
+    const code = req.query.code
+    try {
+      const out = await clientAuth.auth.oauth.exchange(code)
+      if (out.data.cookies) {
+        res.set('Set-Cookie', out.data.cookies)
+      }
+      res.sendStatus(200)
+    } catch (error) {
+      console.log(error)
+      res.sendStatus(500)
+    }
+  })
   app.get('/private', authMiddleware, (_unused, res) => {
     res.sendStatus(200);
   });
