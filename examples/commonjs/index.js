@@ -9,8 +9,8 @@ app.use(bodyParser.json());
 const port = 443;
 const clientAuth = DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID, logger: console });
 var options = {
-  key: fs.readFileSync('../../server.key'),
-  cert: fs.readFileSync('../../server.crt'),
+  key: fs.readFileSync('./server.key'),
+  cert: fs.readFileSync('./server.crt'),
 };
 
 const authMiddleware = async (req, res, next) => {

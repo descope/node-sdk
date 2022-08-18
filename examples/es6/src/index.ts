@@ -12,8 +12,8 @@ app.use(bodyParser.json())
 const port = 443
 
 const options = {
-  key: fs.readFileSync(path.resolve('../../server.key')),
-  cert: fs.readFileSync(path.resolve('../../server.crt')),
+  key: fs.readFileSync(path.resolve('./server.key')),
+  cert: fs.readFileSync(path.resolve('./server.crt')),
 }
 
 const clientAuth = {
