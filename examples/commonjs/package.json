@@ -8,8 +8,7 @@
     "url": "git://github.com/descope/node-sdk.git"
   },
   "scripts": {
-    "start": "node index.js",
-    "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
+    "start": "node index.js"
   },
   "author": "descope",
   "license": "MIT",

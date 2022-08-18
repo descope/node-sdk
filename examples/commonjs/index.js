@@ -1,11 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const https = require('https');
-const DescopeClient = require('@descope/node-sdk')
+const DescopeClient = require('@descope/node-sdk');
+const bodyParser = require('body-parser');
 
 const app = express();
+app.use(bodyParser.json());
 const port = 443;
-const clientAuth = DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
+const clientAuth = DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID, logger: console });
 var options = {
   key: fs.readFileSync('../../server.key'),
   cert: fs.readFileSync('../../server.crt'),
@@ -15,7 +17,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.validateSession(cookies['DS'], cookies['DSR']);
-    if (out?.cookies) {
+    if (out && out.cookies) {
       res.set('Set-Cookie', out.cookies);
     }
     next();
@@ -29,7 +31,7 @@ const authMiddleware = async (req, res, next) => {
 app.post('/otp/signup', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
-    await clientAuth.auth.otp.signUp[deliveryMethod](identifier)
+    await clientAuth.otp.signUp[deliveryMethod](identifier)
     res.sendStatus(200)
   } catch (error) {
     console.log(error)
@@ -40,7 +42,7 @@ app.post('/otp/signup', async (req, res) => {
 app.post('/otp/signin', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
-    await clientAuth.auth.otp.signIn[deliveryMethod](identifier)
+    await clientAuth.otp.signIn[deliveryMethod](identifier)
     res.sendStatus(200)
   } catch (error) {
     console.log(error)
@@ -53,7 +55,7 @@ app.post('/otp/verify', async (req, res) => {
   const code = req.body.code
   try {
     const out = await clientAuth.otp.verify[deliveryMethod](identifier, code)
-    if (out.data.cookies) {
+    if (out && out.data && out.data.cookies) {
       res.set('Set-Cookie', out.data.cookies)
     }
     res.sendStatus(200)
@@ -84,7 +86,7 @@ app.post('/totp/verify', async (req, res) => {
   const code = req.body.code
   try {
     const out = await clientAuth.totp.verify(identifier, code)
-    if (out.data?.cookies) {
+    if (out && out.data && out.data.cookies) {
       res.set('Set-Cookie', out.data.cookies)
     }
     res.sendStatus(200)
@@ -109,7 +111,7 @@ app.post('/webauthn/signup/start', async (req, res) => {
 app.post('/webauthn/signup/finish', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signUp.finish(req.body.transactionId, req.body.response);
-    if (credentials.data?.cookies) {
+    if (credentials.data && credentials.data.cookies) {
       res.set('Set-Cookie', credentials.data.cookies)
     }
     res.status(200).send(credentials.data)
@@ -133,7 +135,7 @@ app.post('/webauthn/signin/start', async (req, res) => {
 app.post('/webauthn/signin/finish', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signIn.finish(req.body.transactionId, req.body.response);
-    if (credentials.data?.cookies) {
+    if (credentials.data && credentials.data.cookies) {
       res.set('Set-Cookie', credentials.data.cookies)
     }
     res.status(200).send(credentials.data)
@@ -157,7 +159,7 @@ app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
 app.post('/webauthn/add/finish', authMiddleware, async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.add.finish(req.body.transactionId, req.body.response);
-    if (credentials.data?.cookies) {
+    if (credentials.data && credentials.data.cookies) {
       res.set('Set-Cookie', credentials.data.cookies)
     }
     res.status(200).send(credentials.data)
@@ -182,7 +184,7 @@ app.get('/oauth/finish', async (req, res) => {
   const code = req.query.code
   try {
     const out = await clientAuth.oauth.exchange(code)
-    if (out.data.cookies) {
+    if (out && out.data && out.data.cookies) {
       res.set('Set-Cookie', out.data.cookies)
     }
     res.sendStatus(200)
@@ -199,7 +201,7 @@ app.post('/logout', authMiddleware, async (_unused, res) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.logout(cookies['DS'], cookies['DSR']);
-    if (out?.cookies) {
+    if (out && out.cookies) {
       res.set('Set-Cookie', out.cookies);
     }
     res.sendStatus(200);
@@ -214,26 +216,26 @@ https.createServer(options, app).listen(port, () => {
 });
 
 const getMethodAndIdentifier = (req) => {
-  if (req.query.email) {
-    return { identifier: req.query.email, deliveryMethod: DeliveryMethod.email };
+  if (req.body.email) {
+    return { identifier: req.body.email, deliveryMethod: DescopeClient.DeliveryMethods.email };
   }
-  if (req.query.sms) {
-    return { identifier: req.query.sms, deliveryMethod: DeliveryMethod.SMS };
+  if (req.body.sms) {
+    return { identifier: req.body.sms, deliveryMethod: DescopeClient.DeliveryMethods.SMS };
   }
-  if (req.query.whatsapp) {
-    return { identifier: req.query.whatsapp, deliveryMethod: DeliveryMethod.whatsapp };
+  if (req.body.whatsapp) {
+    return { identifier: req.body.whatsapp, deliveryMethod: DescopeClient.DeliveryMethods.whatsapp };
   }
-  return { identifier: '', deliveryMethod: DeliveryMethod.email };
+  return { identifier: '', deliveryMethod: DescopeClient.DeliveryMethods.email };
 };
 
 const parseCookies = (request) => {
   const list = {};
-  const cookieHeader = request.headers?.cookie;
+  const cookieHeader = request.headers && request.headers.cookie;
   if (!cookieHeader) return list;
 
   cookieHeader.split(`;`).forEach(function (cookie) {
     let [name, ...rest] = cookie.split(`=`);
-    name = name?.trim();
+    name = (name || '').trim();
     if (!name) return;
     const value = rest.join(`=`).trim();
     if (!value) return;
