@@ -3,7 +3,7 @@ name: Sizing
 on: [pull_request]
 
 env:
-  NODE_VERSION: 16.14
+  NODE_VERSION: 16.10
 
 jobs:
   sizing:
