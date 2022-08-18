@@ -201,14 +201,27 @@ if (out.data.cookies) {
 }
 ```
 
-### 4. Session Validation
+### 3. Session Validation
 
 Session validation checks to see that the visitor to your website or application is who they say they are, by comparing the value in the validation variables against the session data that is already stored.
 
 ```javascript
 const out = await descopeClient.validateSession(session_jwt, refresh_jwt);
-if (out?.cookies) {
+if (out.cookies) {
     res.set('Set-Cookie', out.cookies);
+}
+```
+
+### 4. Error handling 
+
+Each authentication function may return an error upon authentication failure or bad request. In case of an error, you will recieve an sdk response with `ok` equal to false and the error details are also included, such as the `errorCode` and the `errorDescription`. Needless to say, the `data` will be empty whenever an error occur.
+
+```javascript
+const out = await descopeClient.oauth.start.facebook();
+if (!out.ok) {
+    console.log(`an error has occured [code: ${out.errorCode}] with message: "${out.errorDescription}"`)
+} else {
+    ...
 }
 ```
 
