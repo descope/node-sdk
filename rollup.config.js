@@ -29,7 +29,7 @@ export default [
 			file: packageJson.main,
 			format: 'cjs',
 			sourcemap: true,
-			// exports: 'default',
+			exports: 'default',
 		},
 		plugins,
 		external
