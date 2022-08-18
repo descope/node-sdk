@@ -6,6 +6,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from "@rollup/plugin-json";
 import fs from 'fs'
+import { babel } from '@rollup/plugin-babel';
 
 const packageJson = require('./package.json');
 
@@ -29,9 +30,9 @@ export default [
 			file: packageJson.main,
 			format: 'cjs',
 			sourcemap: true,
-			// exports: 'default',
+			exports: 'default',
 		},
-		plugins,
+		plugins: plugins.concat(babel({ babelHelpers: 'bundled' })),
 		external
 	},
 	{
