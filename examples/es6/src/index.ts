@@ -49,7 +49,7 @@ app.post('/otp/signup', async (req: Request, res: Response) => {
 app.post('/otp/signin', async (req: Request, res: Response) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
-    const data = await clientAuth.auth.otp.signIn[deliveryMethod](identifier)
+    await clientAuth.auth.otp.signIn[deliveryMethod](identifier)
     res.sendStatus(200)
   } catch (error) {
     console.log(error)

@@ -1,12 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const https = require('https');
+const sdk = require('@descope/node-sdk');
+
 
 (async () => {
-  const { DescopeClient, DeliveryMethod } = await import('@descope/node-sdk');
   const app = express();
   const port = 443;
-  const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
+  const clientAuth = new sdk.default({ projectId: process.env.DESCOPE_PROJECT_ID });
   var options = {
     key: fs.readFileSync('../../server.key'),
     cert: fs.readFileSync('../../server.crt'),
@@ -27,42 +28,42 @@ const https = require('https');
     }
   };
 
-  app.get('/otp/signup', async (req, res) => {
-    const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  app.post('/otp/signup', async (req, res) => {
+    const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
     try {
-      await clientAuth.Auth.SignUpOTP({ identifier, deliveryMethod });
-      res.sendStatus(200);
+      await clientAuth.auth.otp.signUp[deliveryMethod](identifier)
+      res.sendStatus(200)
     } catch (error) {
-      console.log(error);
-      res.sendStatus(401);
+      console.log(error)
+      res.sendStatus(401)
     }
-  });
+  })
 
-  app.get('/otp/signin', async (req, res) => {
-    const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  app.post('/otp/signin', async (req, res) => {
+    const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
     try {
-      await clientAuth.Auth.SignInOTP({ identifier, deliveryMethod });
-      res.sendStatus(200);
+      await clientAuth.auth.otp.signIn[deliveryMethod](identifier)
+      res.sendStatus(200)
     } catch (error) {
-      console.log(error);
-      res.sendStatus(401);
+      console.log(error)
+      res.sendStatus(401)
     }
-  });
+  })
 
-  app.get('/otp/verify', async (req, res) => {
-    const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
-    const code = req.query.code;
+  app.post('/otp/verify', async (req, res) => {
+    const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
+    const code = req.body.code
     try {
-      const out = await clientAuth.Auth.VerifyCode({ identifier, deliveryMethod, code });
-      if (out?.cookies) {
-        res.set('Set-Cookie', out.cookies);
+      const out = await clientAuth.otp.verify[deliveryMethod](identifier, code)
+      if (out.data.cookies) {
+        res.set('Set-Cookie', out.data.cookies)
       }
-      res.sendStatus(200);
+      res.sendStatus(200)
     } catch (error) {
-      console.log(error);
-      res.sendStatus(401);
+      console.log(error)
+      res.sendStatus(401)
     }
-  });
+  })
 
   app.post('/totp/signup', async (req, res) => {
     const { identifier } = getMethodAndIdentifier(req)
@@ -147,7 +148,7 @@ const https = require('https');
   app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
     try {
       const cookies = parseCookies(req)
-      const credentials = await clientAuth.auth.webauthn.add.start(req.query.id, req.query.origin, cookies['DSR']);
+      const credentials = await clientAuth.webauthn.add.start(req.query.id, req.query.origin, cookies['DSR']);
       res.status(200).send(credentials.data)
     } catch (error) {
       console.log(error)
@@ -157,7 +158,7 @@ const https = require('https');
 
   app.post('/webauthn/add/finish', authMiddleware, async (req, res) => {
     try {
-      const credentials = await clientAuth.auth.webauthn.add.finish(req.body.transactionId, req.body.response);
+      const credentials = await clientAuth.webauthn.add.finish(req.body.transactionId, req.body.response);
       if (credentials.data?.cookies) {
         res.set('Set-Cookie', credentials.data.cookies)
       }
@@ -171,7 +172,7 @@ const https = require('https');
   app.post('/oauth', async (req, res) => {
     const provider = req.body.provider
     try {
-      const out = await clientAuth.auth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
+      const out = await clientAuth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
       res.status(200).send(out.data.url)
     } catch (error) {
       console.log(error)
@@ -182,7 +183,7 @@ const https = require('https');
   app.get('/oauth/finish', async (req, res) => {
     const code = req.query.code
     try {
-      const out = await clientAuth.auth.oauth.exchange(code)
+      const out = await clientAuth.oauth.exchange(code)
       if (out.data.cookies) {
         res.set('Set-Cookie', out.data.cookies)
       }
@@ -192,11 +193,11 @@ const https = require('https');
       res.sendStatus(500)
     }
   })
-  app.get('/private', authMiddleware, (_unused, res) => {
+  app.post('/api/private', authMiddleware, (_unused, res) => {
     res.sendStatus(200);
   });
 
-  app.get('/logout', authMiddleware, async (_unused, res) => {
+  app.post('/logout', authMiddleware, async (_unused, res) => {
     try {
       const cookies = parseCookies(req);
       const out = await clientAuth.logout(cookies['DS'], cookies['DSR']);

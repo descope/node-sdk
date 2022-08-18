@@ -21,13 +21,14 @@
   },
   "scripts": {
     "build": "rm -rf dist types && babel lib --out-dir dist --extensions '.ts' && tsc --declaration --outDir dist --emitDeclarationOnly",
-    "quick": "npm i && npm run build && cd examples/es6/ && npm i && npm start",
+    "quick": "npm i && npm run build && npm run generateCerts && cd examples/es6/ && npm i && npm start",
     "format": "prettier --write lib",
     "check-format": "prettier --check lib",
     "size": "npm run build && size-limit",
     "lint": "eslint lib/**/*.ts --fix",
     "leaks": "bash ./scripts/gitleaks/gitleaks.sh",
     "test": "jest --forceExit --config jest.config.ts --coverage --ci --detectOpenHandles .*test.*",
+    "generateCerts": "test -f ./server.key && test -f ./examples/server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./examples/server.key -out ./examples/server.crt",
     "prepublishOnly": "npm run build"
   },
   "author": "Descope",
