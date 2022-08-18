@@ -5,7 +5,7 @@ const DescopeClient = require('@descope/node-sdk')
 
 const app = express();
 const port = 443;
-const clientAuth = new DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
+const clientAuth = DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID });
 var options = {
   key: fs.readFileSync('../../server.key'),
   cert: fs.readFileSync('../../server.crt'),
