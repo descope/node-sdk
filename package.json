@@ -30,7 +30,6 @@
     "lint": "eslint lib/**/*.ts --fix",
     "leaks": "bash ./scripts/gitleaks/gitleaks.sh",
     "test": "jest --forceExit --coverage --ci --detectOpenHandles .*test.*",
-    "generateCerts": "test -f ./server.key && test -f ./examples/server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./examples/server.key -out ./examples/server.crt",
     "prepublishOnly": "npm run build"
   },
   "author": "Descope",
