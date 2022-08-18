@@ -254,4 +254,3 @@ export DESCOPE_PROJECT_ID=<ProjectID>
 ## License
 
 The Descope ExpresSDK for Go is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/go-sdk/blob/main/LICENSE).
-
