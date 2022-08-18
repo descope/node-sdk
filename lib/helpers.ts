@@ -34,7 +34,7 @@ export const wrapWith = <T extends Record<string, any>>(
   wrappingFn: Function,
   // eslint-disable-next-line consistent-return
 ): void => {
-  if (!obj) return obj
+  if (!obj) return
 
   const pathSections = typeof path === 'string' ? path.split('.') : path
   const section = pathSections.shift() || ('' as keyof T)

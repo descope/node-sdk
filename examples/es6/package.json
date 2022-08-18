@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "start": "ts-node --esm src/index.ts",
+    "start": "DESCOPE_PROJECT_ID=123 ts-node --esm src/index.ts",
     "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
   },
   "author": "descope",
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
-    "@descope/node-sdk": "file:../../dist",
+    "@descope/node-sdk": "file:../..",
     "express": "^4.18.1"
   },
   "devDependencies": {

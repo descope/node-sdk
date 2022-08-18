@@ -17,7 +17,7 @@ if (!globalThis.fetch) {
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
 
-export default (...args: Parameters<typeof createSdk>) => {
+const sdk = (...args: Parameters<typeof createSdk>) => {
   const sdk = createSdk(...args)
 
   bulkWrapWith(
@@ -99,3 +99,9 @@ export default (...args: Parameters<typeof createSdk>) => {
     },
   }
 }
+
+const sdkWithAttributes = sdk as typeof sdk & { DeliveryMethods: typeof createSdk.DeliveryMethods }
+
+sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
+
+export default sdkWithAttributes
