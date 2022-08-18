@@ -15,13 +15,12 @@ if (!globalThis.fetch) {
   globalThis.Response = Response
 }
 
-export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
 
 const sdk = (...args: Parameters<typeof createSdk>) => {
-  const sdk = createSdk(...args)
+  const coreSdk = createSdk(...args)
 
   bulkWrapWith(
-    sdk,
+    coreSdk,
     [
       'otp.verify.*',
       'magicLink.verify',
@@ -43,7 +42,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
 
   const fetchKeys = async () => {
     const publicKeys: JWK[] =
-      (await sdk.httpClient.get(`keys/${projectId}`).then((resp) => resp.json())) || []
+      (await coreSdk.httpClient.get(`keys/${projectId}`).then((resp) => resp.json())) || []
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
     )
@@ -55,7 +54,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
   }
 
   return {
-    ...sdk,
+    ...coreSdk,
 
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
       if (!header?.kid) throw Error('header.kid must not be empty')
@@ -105,3 +104,6 @@ const sdkWithAttributes = sdk as typeof sdk & { DeliveryMethods: typeof createSd
 sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
 
 export default sdkWithAttributes
+
+export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
+
