@@ -8,7 +8,8 @@
     "url": "git://github.com/descope/node-sdk.git"
   },
   "scripts": {
-    "start": "node example.cjs"
+    "start": "node example.js",
+    "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
   },
   "author": "descope",
   "license": "MIT",
@@ -18,6 +19,6 @@
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
     "express": "^4.18.1",
-    "@descope/node-sdk": "file:../../dist"
+    "@descope/node-sdk": "file:../.."
   }
 }

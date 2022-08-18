@@ -1,30 +1,21 @@
 {
-  "compileOnSave": true,
-  "compilerOptions": {
-    "target": "es2017",
-    "module": "es2015",
-    "lib": ["DOM", "es2017"],
-    "moduleResolution": "node",
-    "baseUrl": "lib",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "declaration": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "preserveConstEnums": true,
-    "outDir": "dist",
-    "alwaysStrict": true,
-    "strictNullChecks": true,
-    "isolatedModules": true,
-    "paths": {
-      "@testutils/*": ["lib/testutils/*"]
-    }
-  },
-  "include": ["lib/**/*"],
-  "exclude": ["**/__mocks__/*", "coverage", "node_modules", "**/testutils/*"]
+	"compilerOptions": {
+		"rootDir": ".",
+		"target": "es6",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": false,
+		"skipLibCheck": true,
+		"strict": false,
+		"esModuleInterop": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"declarationDir": "dts",
+		"typeRoots": ["./node_modules/@types"]
+	},
+
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules", "build", "dist", "test", "examples"]
 }
