@@ -16,7 +16,7 @@ const plugins = [
 	json(),
 	commonjs(),
 	resolve(),
-	// terser()
+	terser()
 ]
 const input = './lib/index.ts'
 const external = (id) => !id.startsWith('\0') && !id.startsWith('.') && !id.startsWith('/')
