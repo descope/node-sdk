@@ -1,6 +1,6 @@
 # Descope Node.js SDK
 
-Use the Descope NodeJS SDK for NodeJS/Express to quickly and easily add user authentication to your application or website. If you need more background on how the ExpresSDKs work, [click here](/sdk/index.mdx). 
+Use the Descope NodeJS SDK for NodeJS/Express to quickly and easily add user authentication to your application or website.
 
 
 ## ExpressStart with OTP Authentication
@@ -32,7 +32,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -105,7 +105,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -171,7 +171,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -231,7 +231,8 @@ export DESCOPE_PROJECT_ID=<ProjectID>
 
 **TL;DR**: Run `npm run quick`
 
-1. Run this command in the root of the project to build the examples.
+Run the following commands in the root of the project to build and run the examples.
+1. Run this to start the ES6 typescript module example
 
     ```code bash
     npm i
@@ -241,7 +242,7 @@ export DESCOPE_PROJECT_ID=<ProjectID>
     npm start
     ```
 
-2. Run a specific example
+2. Run this to start the commonjs example
 
     ```code bash
     npm i
