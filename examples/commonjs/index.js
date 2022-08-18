@@ -28,11 +28,32 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+const returnOK = (res, out) => {
+  res.setHeader('Content-Type', 'application/json');
+  if (!out.ok) {
+    res.status(400).send(out.error)
+  } else if (out.data) {
+    res.status(200).send(out.data)
+  } else {
+    res.sendStatus(200)
+  }
+}
+
+const setCookies = (res, out) => {
+  if (out && out.ok && out.data && out.data.cookies) {
+    res.set('Set-Cookie', out.data.cookies)
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).send(out.data)
+  } else {
+    res.sendStatus(401)
+  }
+}
+
 app.post('/otp/signup', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
-    await clientAuth.otp.signUp[deliveryMethod](identifier)
-    res.sendStatus(200)
+    const out = await clientAuth.otp.signUp[deliveryMethod](identifier)
+    returnOK(res, out)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -42,8 +63,8 @@ app.post('/otp/signup', async (req, res) => {
 app.post('/otp/signin', async (req, res) => {
   const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
   try {
-    await clientAuth.otp.signIn[deliveryMethod](identifier)
-    res.sendStatus(200)
+    const out = await clientAuth.otp.signIn[deliveryMethod](identifier)
+    returnOK(res, out)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -55,10 +76,7 @@ app.post('/otp/verify', async (req, res) => {
   const code = req.body.code
   try {
     const out = await clientAuth.otp.verify[deliveryMethod](identifier, code)
-    if (out && out.data && out.data.cookies) {
-      res.set('Set-Cookie', out.data.cookies)
-    }
-    res.sendStatus(200)
+    setCookies(res, out)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -86,10 +104,7 @@ app.post('/totp/verify', async (req, res) => {
   const code = req.body.code
   try {
     const out = await clientAuth.totp.verify(identifier, code)
-    if (out && out.data && out.data.cookies) {
-      res.set('Set-Cookie', out.data.cookies)
-    }
-    res.sendStatus(200)
+    setCookies(res, out)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -101,7 +116,7 @@ app.use('/webauthn', express.static('../demo.html'))
 app.post('/webauthn/signup/start', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signUp.start(req.body.externalID, req.query.origin, req.body.displayName);
-    res.status(200).send(credentials.data)
+    returnOK(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -111,10 +126,7 @@ app.post('/webauthn/signup/start', async (req, res) => {
 app.post('/webauthn/signup/finish', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signUp.finish(req.body.transactionId, req.body.response);
-    if (credentials.data && credentials.data.cookies) {
-      res.set('Set-Cookie', credentials.data.cookies)
-    }
-    res.status(200).send(credentials.data)
+    setCookies(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -124,8 +136,7 @@ app.post('/webauthn/signup/finish', async (req, res) => {
 app.post('/webauthn/signin/start', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signIn.start(req.query.id, req.query.origin);
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(credentials.data)
+    returnOK(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -135,10 +146,7 @@ app.post('/webauthn/signin/start', async (req, res) => {
 app.post('/webauthn/signin/finish', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signIn.finish(req.body.transactionId, req.body.response);
-    if (credentials.data && credentials.data.cookies) {
-      res.set('Set-Cookie', credentials.data.cookies)
-    }
-    res.status(200).send(credentials.data)
+    setCookies(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -149,7 +157,7 @@ app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
   try {
     const cookies = parseCookies(req)
     const credentials = await clientAuth.webauthn.add.start(req.query.id, req.query.origin, cookies['DSR']);
-    res.status(200).send(credentials.data)
+    returnOK(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -159,10 +167,7 @@ app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
 app.post('/webauthn/add/finish', authMiddleware, async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.add.finish(req.body.transactionId, req.body.response);
-    if (credentials.data && credentials.data.cookies) {
-      res.set('Set-Cookie', credentials.data.cookies)
-    }
-    res.status(200).send(credentials.data)
+    setCookies(res, credentials)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -184,10 +189,7 @@ app.get('/oauth/finish', async (req, res) => {
   const code = req.query.code
   try {
     const out = await clientAuth.oauth.exchange(code)
-    if (out && out.data && out.data.cookies) {
-      res.set('Set-Cookie', out.data.cookies)
-    }
-    res.sendStatus(200)
+    setCookies(res, out)
   } catch (error) {
     console.log(error)
     res.sendStatus(500)
@@ -201,10 +203,7 @@ app.post('/logout', authMiddleware, async (_unused, res) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.logout(cookies['DS'], cookies['DSR']);
-    if (out && out.cookies) {
-      res.set('Set-Cookie', out.cookies);
-    }
-    res.sendStatus(200);
+    setCookies(res, out)
   } catch (error) {
     console.log(error);
     res.sendStatus(401);

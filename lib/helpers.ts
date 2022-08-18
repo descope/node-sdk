@@ -14,6 +14,10 @@ export const withCookie =
   async (...args: T): Promise<SdkResponse> => {
     const resp = await fn(...args)
 
+    if (!resp.data) {
+      return resp
+    }
+
     // eslint-disable-next-line prefer-const
     let { sessionJwt, refreshJwt } = resp.data
     let cookies = generateCookie(sessionTokenCookieName, sessionJwt)

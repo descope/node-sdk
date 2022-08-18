@@ -1,6 +1,6 @@
 # Descope Node.js SDK
 
-Use the Descope NodeJS SDK for NodeJS/Express to quickly and easily add user authentication to your application or website. If you need more background on how the ExpresSDKs work, [click here](/sdk/index.mdx). 
+Use the Descope NodeJS SDK for NodeJS/Express to quickly and easily add user authentication to your application or website.
 
 
 ## ExpressStart with OTP Authentication
@@ -32,7 +32,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -105,7 +105,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -171,7 +171,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     import DescopeClient from '@descope/node-sdk';
     const descopeClient = DescopeClient({ projectId: <ProjectID> });
     ```
-or
+    or
 
     ```javascript
     const sdk = require('@descope/node-sdk');
@@ -201,14 +201,27 @@ if (out.data.cookies) {
 }
 ```
 
-### 4. Session Validation
+### 3. Session Validation
 
 Session validation checks to see that the visitor to your website or application is who they say they are, by comparing the value in the validation variables against the session data that is already stored.
 
 ```javascript
 const out = await descopeClient.validateSession(session_jwt, refresh_jwt);
-if (out?.cookies) {
+if (out.cookies) {
     res.set('Set-Cookie', out.cookies);
+}
+```
+
+### 4. Error handling 
+
+Each authentication function may return an error upon authentication failure or bad request. In case of an error, you will recieve an sdk response with `ok` equal to false and the error details are also included, such as the `errorCode` and the `errorDescription`. Needless to say, the `data` will be empty whenever an error occur.
+
+```javascript
+const out = await descopeClient.oauth.start.facebook();
+if (!out.ok) {
+    console.log(`an error has occured [code: ${out.errorCode}] with message: "${out.errorDescription}"`)
+} else {
+    ...
 }
 ```
 
@@ -231,7 +244,8 @@ export DESCOPE_PROJECT_ID=<ProjectID>
 
 **TL;DR**: Run `npm run quick`
 
-1. Run this command in the root of the project to build the examples.
+Run the following commands in the root of the project to build and run the examples.
+1. Run this to start the ES6 typescript module example
 
     ```code bash
     npm i
@@ -241,7 +255,7 @@ export DESCOPE_PROJECT_ID=<ProjectID>
     npm start
     ```
 
-2. Run a specific example
+2. Run this to start the commonjs example
 
     ```code bash
     npm i
