@@ -15,7 +15,6 @@ if (!globalThis.fetch) {
   globalThis.Response = Response
 }
 
-
 const sdk = (...args: Parameters<typeof createSdk>) => {
   const coreSdk = createSdk(...args)
 
@@ -106,4 +105,3 @@ sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
 export default sdkWithAttributes
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
-
