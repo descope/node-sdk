@@ -3,7 +3,7 @@ import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
-import { refreshTokenCookieName, sessionTokenCookieName } from './constants';
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 if (!globalThis.fetch) {
   // @ts-ignore
@@ -99,7 +99,11 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
   }
 }
 
-const sdkWithAttributes = sdk as typeof sdk & { DeliveryMethods: typeof createSdk.DeliveryMethods, RefreshTokenCookieName: typeof refreshTokenCookieName, SessionTokenCookieName: typeof sessionTokenCookieName }
+const sdkWithAttributes = sdk as typeof sdk & {
+  DeliveryMethods: typeof createSdk.DeliveryMethods
+  RefreshTokenCookieName: typeof refreshTokenCookieName
+  SessionTokenCookieName: typeof sessionTokenCookieName
+}
 
 sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
 sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName
