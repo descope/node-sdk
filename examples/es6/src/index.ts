@@ -24,7 +24,7 @@ const clientAuth = {
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = parseCookies(req)
-    const out = await clientAuth.auth.validateSession(cookies['DS'], cookies['DSR'])
+    const out = await clientAuth.auth.validateSession(cookies[DescopeClient.SessionTokenCookieName], cookies[DescopeClient.RefreshTokenCookieName])
     if (out?.cookies) {
       res.set('Set-Cookie', out.cookies)
     }
@@ -164,7 +164,7 @@ app.post('/webauthn/signin/finish', async (req: Request, res: Response) => {
 app.post('/webauthn/add/start', authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req)
-    const credentials = await clientAuth.auth.webauthn.add.start(req.query.id as string, req.query.origin as string, cookies['DSR']);
+    const credentials = await clientAuth.auth.webauthn.add.start(req.query.id as string, req.query.origin as string, cookies[DescopeClient.RefreshTokenCookieName]);
     returnOK(res, credentials)
   } catch (error) {
     console.log(error)
