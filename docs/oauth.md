@@ -15,7 +15,7 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     npm i --save @descope/node-sdk
      ```
 
-* Import and initialize the ExpresSDK for NodeJS client in your source code
+* Import and initialize the NodeJS client in your source code
 
     ```javascript
     import DescopeClient from '@descope/node-sdk';
