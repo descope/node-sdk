@@ -3,6 +3,7 @@ import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 if (!globalThis.fetch) {
   // @ts-ignore
@@ -40,8 +41,10 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
   const keys: Record<string, KeyLike | Uint8Array> = {}
 
   const fetchKeys = async () => {
-    const publicKeys: JWK[] =
-      (await coreSdk.httpClient.get(`keys/${projectId}`).then((resp) => resp.json())) || []
+    const publicKeys: JWK[] = await coreSdk.httpClient
+      .get(`v1/keys/${projectId}`)
+      .then((resp) => resp.json())
+    if (!Array.isArray(publicKeys)) return {}
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
     )
@@ -98,9 +101,15 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
   }
 }
 
-const sdkWithAttributes = sdk as typeof sdk & { DeliveryMethods: typeof createSdk.DeliveryMethods }
+const sdkWithAttributes = sdk as typeof sdk & {
+  DeliveryMethods: typeof createSdk.DeliveryMethods
+  RefreshTokenCookieName: typeof refreshTokenCookieName
+  SessionTokenCookieName: typeof sessionTokenCookieName
+}
 
 sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
+sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName
+sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName
 
 export default sdkWithAttributes
 

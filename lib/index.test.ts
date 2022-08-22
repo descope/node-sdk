@@ -147,7 +147,10 @@ describe('sdk', () => {
           expect.objectContaining({
             data: {
               ...data,
-              cookies: `${sessionTokenCookieName}=${data.sessionJwt};${refreshTokenCookieName}=${data.refreshJwt};`,
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+              ],
             },
           }),
         )
@@ -155,7 +158,7 @@ describe('sdk', () => {
 
       it.each(paths)('should generate jwt from cookie for %s', async (path) => {
         const data = { sessionJwt: 'sessionJwt' }
-        const cookie = `${refreshTokenCookieName}=refreshJwt;`
+        const cookie = `${refreshTokenCookieName}=refreshJwt; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
@@ -167,7 +170,10 @@ describe('sdk', () => {
             data: {
               refreshJwt: 'refreshJwt',
               sessionJwt: 'sessionJwt',
-              cookies: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                cookie,
+              ],
             },
           }),
         )
