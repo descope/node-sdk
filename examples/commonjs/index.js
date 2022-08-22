@@ -16,7 +16,7 @@ var options = {
 const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
-    const out = await clientAuth.validateSession(cookies['DS'], cookies['DSR']);
+    const out = await clientAuth.validateSession(cookies[DescopeClient.SessionTokenCookieName], cookies[DescopeClient.RefreshTokenCookieName]);
     if (out && out.cookies) {
       res.set('Set-Cookie', out.cookies);
     }
@@ -156,7 +156,7 @@ app.post('/webauthn/signin/finish', async (req, res) => {
 app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
   try {
     const cookies = parseCookies(req)
-    const credentials = await clientAuth.webauthn.add.start(req.query.id, req.query.origin, cookies['DSR']);
+    const credentials = await clientAuth.webauthn.add.start(req.query.id, req.query.origin, cookies[DescopeClient.RefreshTokenCookieName]);
     returnOK(res, credentials)
   } catch (error) {
     console.log(error)
