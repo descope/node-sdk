@@ -1,7 +1,10 @@
 import type { SdkResponse } from '@descope/core-js-sdk'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
-const generateCookie = (name: string, value: string) => `${name}=${value};`
+const generateCookie = (name: string, value: string, options?: any) =>
+  `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
+    options?.cookieMaxAge || ''
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`
 
 const getCookieValue = (cookie: string | null | undefined, name: string) => {
   const match = cookie?.match(RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
@@ -19,14 +22,19 @@ export const withCookie =
     }
 
     // eslint-disable-next-line prefer-const
-    let { sessionJwt, refreshJwt } = resp.data
-    let cookies = generateCookie(sessionTokenCookieName, sessionJwt)
+    let { sessionJwt, refreshJwt, ...rest } = resp.data
+    const cookies = [generateCookie(sessionTokenCookieName, sessionJwt, rest)]
 
     if (!refreshJwt) {
-      cookies += resp.response?.headers.get('set-cookie') || ''
-      refreshJwt = getCookieValue(cookies, refreshTokenCookieName)
+      if (resp.response?.headers.get('set-cookie')) {
+        refreshJwt = getCookieValue(
+          resp.response?.headers.get('set-cookie'),
+          refreshTokenCookieName,
+        )
+        cookies.push(resp.response?.headers.get('set-cookie')!)
+      }
     } else {
-      cookies += generateCookie(refreshTokenCookieName, refreshJwt)
+      cookies.push(generateCookie(refreshTokenCookieName, refreshJwt, rest))
     }
 
     return { ...resp, data: { ...resp.data, refreshJwt, cookies } }
