@@ -1,6 +1,6 @@
 ## OAuth Authentication
 
-In the examples below, we assume using the Descope builtin oauth provider, in that case, we dont need to define any specific application details.
+In the examples below, we assume using the Descope builtin OAuth provider application, in that case, we dont need to define any specific application details.
 If this is not the case, you may need sign in to [Descope console](https://app.descope.com) to update selected OAuth provider(s) application details.
 
 ### Prerequisites
@@ -28,8 +28,6 @@ Replace any instance of  `<ProjectID>` in the code below with your company's Pro
     const descopeClient = sdk({ projectId: <ProjectID> });
     ```
 
-* Make sure to set the return url to exchange in the Descope Oauth authentication methods settings or use the start first argument.
-
 ### 1. Customer Sign-up/Sign-In
 
 In your OAuth start flow (for example, `myapp.com/login-with-facebook`) generate a url to redirect the user to. In the example below we start a facebook login request and return the url the end-user need to access to authenticate.
@@ -56,7 +54,7 @@ if (!out.ok) {
 
 ### 2. Customer Exchange
 
-In your exchange for any of the oauth provider (for example, `mydomain.com/exchange`) verify the code from the provider by using the exchange method. 
+In your exchange for any of the OAuth provider (for example, `mydomain.com/exchange`) verify the code from the provider by using the exchange method. 
 
 ```javascript
 const code = req.query.code
