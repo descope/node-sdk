@@ -6,7 +6,7 @@ Use the Descope NodeJS SDK for NodeJS/Express to quickly and easily add user aut
 
 Replace any instance of `<ProjectID>` in the code below with your company's Project ID, which can be found in the [Descope console](https://app.descope.com).
 
-Run the following code in your project. These commands will add the Descope ExpresSDK for Python as a project dependency, and set the `DESCOPE_PROJECT_ID` variable to a valid \<ProjectID\>.
+Run the following code in your project. These commands will add the Descope SDK for Node as a project dependency, and set the `DESCOPE_PROJECT_ID` variable to a valid \<ProjectID\>.
 
 ```bash
 npm i --save @descope/node-sdk
