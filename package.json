@@ -84,18 +84,6 @@
     "ts-node": "^10.8.2",
     "typescript": "^4.6.4"
   },
-  "size-limit": [
-    {
-      "name": "ESM",
-      "limit": "20 kb",
-      "path": "dist/*.esm.js"
-    }, 
-    {
-      "name": "CommonJS",
-      "limit": "30 kb",
-      "path": "dist/cjs/*.cjs.js"
-    }
-  ],
   "dependencies": {
     "@descope/core-js-sdk": "0.0.41-alpha.10",
     "jose": "4.8.1",
