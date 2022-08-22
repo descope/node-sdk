@@ -86,8 +86,14 @@
   },
   "size-limit": [
     {
-      "limit": "100 kb",
-      "path": "dist/**/*.js"
+      "name": "ESM",
+      "limit": "20 kb",
+      "path": "dist/*.esm.js"
+    }, 
+    {
+      "name": "CommonJS",
+      "limit": "30 kb",
+      "path": "dist/cjs/*.cjs.js"
     }
   ],
   "dependencies": {
