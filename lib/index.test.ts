@@ -147,7 +147,10 @@ describe('sdk', () => {
           expect.objectContaining({
             data: {
               ...data,
-              cookies: [`${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`, `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`],
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+              ],
             },
           }),
         )
@@ -167,7 +170,10 @@ describe('sdk', () => {
             data: {
               refreshJwt: 'refreshJwt',
               sessionJwt: 'sessionJwt',
-              cookies: [`${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`, cookie],
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                cookie,
+              ],
             },
           }),
         )
