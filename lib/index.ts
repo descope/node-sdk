@@ -42,7 +42,8 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
 
   const fetchKeys = async () => {
     const publicKeys: JWK[] =
-      (await coreSdk.httpClient.get(`keys/${projectId}`).then((resp) => resp.json())) || []
+      (await coreSdk.httpClient.get(`v1/keys/${projectId}`).then((resp) => resp.json()))
+    if (!Array.isArray(publicKeys)) return {}
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
     )
