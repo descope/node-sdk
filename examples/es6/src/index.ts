@@ -193,8 +193,8 @@ app.post('/oauth', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/oauth/finish', async (req: Request, res: Response) => {
-  const code = req.query.code as string
+app.post('/oauth/finish', async (req: Request, res: Response) => {
+  const code = req.body.code as string
   try {
     const out = await clientAuth.auth.oauth.exchange(code)
     returnCookies(res, out)
