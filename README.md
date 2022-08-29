@@ -43,20 +43,22 @@ Run the following commands in the root of the project to build and run the examp
 1. Run this to start the ES6 typescript module example
 
     ```code bash
-    npm i
-    npm run build
-    cd examples/es6
-    npm i
+    npm i && \
+    npm run build && \
+    cd examples/es6 && \
+    npm i && \
+    npm run generateCerts && \
     npm start
     ```
 
 2. Run this to start the commonjs example
 
     ```code bash
-    npm i
-    npm run build
-    cd examples/commonjs
-    npm i
+    npm i && \
+    npm run build && \
+    cd examples/commonjs && \
+    npm i && \
+    npm run generateCerts && \
     npm start
     ```
 
