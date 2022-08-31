@@ -65,10 +65,10 @@ export default [
 ];
 
 function cjsPackage() {
-  return {
-    name: 'cjsPackage',
-    buildEnd: () => {
-			fs.writeFileSync('./dist/cjs/package.json', JSON.stringify({type: 'commonjs'}))
-    }
-  }
+	return {
+		name: 'cjsPackage',
+		buildEnd: () => {
+			fs.writeFileSync('./dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }))
+		}
+	}
 }
