@@ -72,7 +72,8 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     },
 
     async validateToken(token: string): Promise<AuthenticationInfo> {
-      const res = await jwtVerify(token, this.getKey, { algorithms: ['ES384'] })
+      // Do not hard-code the algo because library does not support `None` so all are valid
+      const res = await jwtVerify(token, this.getKey, { issuer: projectId, clockTolerance: 5 })
 
       return { token: res.payload }
     },
