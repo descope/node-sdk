@@ -92,9 +92,9 @@ describe('sdk', () => {
   })
 
   describe('ValidateSession', () => {
-    it('should throw an error when session token is empty', async () => {
-      await expect(sdk.validateSession('', validToken)).rejects.toThrow(
-        'session token must not be empty',
+    it('should throw an error when both session and refresh tokens are empty', async () => {
+      await expect(sdk.validateSession('', '')).rejects.toThrow(
+        'both refresh token and session token are empty',
       )
     })
     it('should return the token when session token is valid', async () => {
@@ -113,6 +113,14 @@ describe('sdk', () => {
         .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
 
       await expect(sdk.validateSession(expiredToken, validToken)).resolves.toEqual('data')
+      expect(spyRefresh).toHaveBeenCalledWith(validToken)
+    })
+    it('should return the token when refresh token is valid', async () => {
+      const spyRefresh = jest
+        .spyOn(sdk, 'refresh')
+        .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
+
+      await expect(sdk.validateSession('', validToken)).resolves.toEqual('data')
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
     })
   })

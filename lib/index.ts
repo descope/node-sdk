@@ -81,21 +81,34 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       sessionToken: string,
       refreshToken: string,
     ): Promise<AuthenticationInfo | undefined> {
-      if (!sessionToken) throw Error('session token must not be empty')
+      if (!sessionToken && !refreshToken)
+        throw Error('both refresh token and session token are empty')
 
-      try {
-        const token = await this.validateToken(sessionToken)
-        return token
-      } catch (error) {
+      if (sessionToken) {
         try {
-          await this.validateToken(refreshToken)
-
-          return (await this.refresh(refreshToken)).data
-        } catch (refreshTokenErr) {
-          logger?.error('failed to validate refresh token', refreshTokenErr)
-
+          const token = await this.validateToken(sessionToken)
+          return token
+        } catch (error) {
+          if (refreshToken) {
+            try {
+              await this.validateToken(refreshToken)
+              return (await this.refresh(refreshToken)).data
+            } catch (refreshTokenErr) {
+              logger?.error('failed to validate refresh token', refreshTokenErr)
+              throw Error('could not validate tokens')
+            }
+          }
+          logger?.error('failed to validate session token and no refresh token provided', error)
           throw Error('could not validate tokens')
         }
+      }
+      // We are here so sessionToken was not provided
+      try {
+        await this.validateToken(refreshToken)
+        return (await this.refresh(refreshToken)).data
+      } catch (refreshTokenErr) {
+        logger?.error('failed to validate refresh token', refreshTokenErr)
+        throw Error('could not validate tokens')
       }
     },
   }
