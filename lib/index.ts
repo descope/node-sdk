@@ -90,26 +90,20 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
           const token = await this.validateToken(sessionToken)
           return token
         } catch (error) {
-          if (refreshToken) {
-            try {
-              await this.validateToken(refreshToken)
-              return (await this.refresh(refreshToken)).data
-            } catch (refreshTokenErr) {
-              logger?.error('failed to validate refresh token', refreshTokenErr)
-              throw Error('could not validate tokens')
-            }
+          if (!refreshToken) {
+            logger?.error('failed to validate session token and no refresh token provided', error)
+            throw Error('could not validate tokens')
           }
-          logger?.error('failed to validate session token and no refresh token provided', error)
-          throw Error('could not validate tokens')
         }
       }
-      // We are here so sessionToken was not provided
-      try {
-        await this.validateToken(refreshToken)
-        return (await this.refresh(refreshToken)).data
-      } catch (refreshTokenErr) {
-        logger?.error('failed to validate refresh token', refreshTokenErr)
-        throw Error('could not validate tokens')
+      if (refreshToken) {
+        try {
+          await this.validateToken(refreshToken)
+          return (await this.refresh(refreshToken)).data
+        } catch (refreshTokenErr) {
+          logger?.error('failed to validate refresh token', refreshTokenErr)
+          throw Error('could not validate tokens')
+        }
       }
     },
   }
