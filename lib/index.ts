@@ -105,6 +105,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
           throw Error('could not validate tokens')
         }
       }
+      throw Error('could not validate token')
     },
   }
 }
