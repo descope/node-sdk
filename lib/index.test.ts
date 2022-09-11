@@ -3,7 +3,9 @@ import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'j
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
 
-let validToken: string; let expiredToken: string; let publicKeys: JWK
+let validToken: string
+let expiredToken: string
+let publicKeys: JWK
 
 const logger = {
   log: jest.fn(),
