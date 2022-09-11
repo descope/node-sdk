@@ -5,6 +5,7 @@ import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
+/* istanbul ignore next */
 if (!globalThis.fetch) {
   // @ts-ignore
   globalThis.fetch = fetch
@@ -72,7 +73,8 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     },
 
     async validateToken(token: string): Promise<AuthenticationInfo> {
-      const res = await jwtVerify(token, this.getKey, { algorithms: ['ES384'] })
+      // Do not hard-code the algo because library does not support `None` so all are valid
+      const res = await jwtVerify(token, this.getKey, { issuer: projectId, clockTolerance: 5 })
 
       return { token: res.payload }
     },
@@ -81,22 +83,31 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       sessionToken: string,
       refreshToken: string,
     ): Promise<AuthenticationInfo | undefined> {
-      if (!sessionToken) throw Error('session token must not be empty')
+      if (!sessionToken && !refreshToken)
+        throw Error('both refresh token and session token are empty')
 
-      try {
-        const token = await this.validateToken(sessionToken)
-        return token
-      } catch (error) {
+      if (sessionToken) {
+        try {
+          const token = await this.validateToken(sessionToken)
+          return token
+        } catch (error) {
+          if (!refreshToken) {
+            logger?.error('failed to validate session token and no refresh token provided', error)
+            throw Error('could not validate tokens')
+          }
+        }
+      }
+      if (refreshToken) {
         try {
           await this.validateToken(refreshToken)
-
           return (await this.refresh(refreshToken)).data
         } catch (refreshTokenErr) {
           logger?.error('failed to validate refresh token', refreshTokenErr)
-
           throw Error('could not validate tokens')
         }
       }
+      /* istanbul ignore next */
+      throw Error('could not validate token')
     },
   }
 }
