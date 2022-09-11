@@ -107,6 +107,11 @@ describe('sdk', () => {
         token: { exp: 1981398111, iss: 'project-id' },
       })
     })
+    it('should throw an error when session token expired and no refresh token', async () => {
+      await expect(sdk.validateSession(expiredToken, '')).rejects.toThrow(
+        'could not validate tokens',
+      )
+    })
     it('should throw an error when both refresh & session tokens expired', async () => {
       await expect(sdk.validateSession(expiredToken, expiredToken)).rejects.toThrow(
         'could not validate tokens',

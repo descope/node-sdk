@@ -5,6 +5,7 @@ import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
+/* istanbul ignore next */
 if (!globalThis.fetch) {
   // @ts-ignore
   globalThis.fetch = fetch
@@ -105,6 +106,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
           throw Error('could not validate tokens')
         }
       }
+      /* istanbul ignore next */
       throw Error('could not validate token')
     },
   }
