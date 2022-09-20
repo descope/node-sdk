@@ -17,6 +17,7 @@ export const withCookie =
   async (...args: T): Promise<SdkResponse> => {
     const resp = await fn(...args)
 
+    // istanbul ignore next
     if (!resp.data) {
       return resp
     }
@@ -57,6 +58,7 @@ export const wrapWith = <T extends Record<string, any>>(
         // eslint-disable-next-line no-param-reassign
         obj[key] = wrappingFn(obj[key])
       } else {
+        // istanbul ignore next
         throw Error(`cannot wrap value at key "${key.toString()}"`)
       }
     }
