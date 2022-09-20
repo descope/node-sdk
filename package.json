@@ -99,6 +99,6 @@
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {
-    "tslib": ">=2.4.0"
+    "tslib": ">=1.14.1"
   }
 }
