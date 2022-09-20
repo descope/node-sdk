@@ -1,6 +1,6 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.0.4-alpha.5",
+  "version": "1.0.4-alpha.6",
   "description": "Node.js library used to integrate with Descope",
   "typings": "./dist/index.d.ts",
   "main": "dist/cjs/index.cjs.js",
@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "rimraf dist && rollup -c",
-    "quick": "npm i && npm run build && npm run generateCerts && cd examples/es6/ && npm i && npm start",
+    "quick": "npm i && npm run build && cd examples/es6/ && npm i && npm run generateCerts && npm start",
     "format": "prettier --write lib",
     "check-format": "prettier --check lib",
     "size": "npm run build && size-limit",
@@ -70,7 +70,7 @@
     "jest": "^28.1.0",
     "jsdoc": "^3.6.10",
     "nock": "^13.2.4",
-    "prettier": "2.6.2",
+    "prettier": "^2.7.1",
     "rollup": "^2.62.0",
     "rollup-plugin-auto-external": "^2.0.0",
     "rollup-plugin-browsersync": "^1.3.3",
@@ -84,18 +84,9 @@
     "ts-node": "^10.8.2",
     "typescript": "^4.6.4"
   },
-  "size-limit": [
-    {
-      "limit": "100 kb",
-      "path": "dist/*",
-      "ignore": [
-        "node:*"
-      ]
-    }
-  ],
   "dependencies": {
-    "@descope/core-js-sdk": "0.0.41-alpha.9",
-    "jose": "4.8.1",
+    "@descope/core-js-sdk": "0.0.41-alpha.17",
+    "jose": "4.9.3",
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {

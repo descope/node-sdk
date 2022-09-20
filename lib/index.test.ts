@@ -1,12 +1,11 @@
 import { SdkResponse } from '@descope/core-js-sdk'
-import { JWTHeaderParameters } from 'jose'
+import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
 
-const validToken =
-  'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzM4NCIsImtpZCI6IjBhZDk5ODY5ZjJkNGU1N2YzZjcxYzY4MzAwYmE4NGZhIn0.eyJleHAiOjE5ODEzOTgxMTF9.MHSHryNl0oU3ZBjWc0pFIBKlXHcXU0vcoO3PpRg8MIQ8M14k4sTsUqJfxXCTbxh24YKE6w0XFBh9B4L7vjIY7iVZPM44LXNEzUFyyX3m6eN_iAavGKPKdKnao2ayNeu1'
-const expiredToken =
-  'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzM4NCIsImtpZCI6IjBhZDk5ODY5ZjJkNGU1N2YzZjcxYzY4MzAwYmE4NGZhIn0.eyJleHAiOjExODEzOTgxMTF9.Qbi7klMrWKSM2z89AtMyDk_lRYnxxz0WApEO5iPikEcAzemmJyR_7b1IvHVxR4uQgCZrH46anUD0aTtPG7k3PpMjP2o2pDHWgY0mWlxW0lDlMqkrvZtBPC7qa_NJTHFl'
+let validToken: string
+let expiredToken: string
+let publicKeys: JWK
 
 const logger = {
   log: jest.fn(),
@@ -19,38 +18,44 @@ const sdk = createSdk({
   logger,
 })
 
-const publicKeys = {
-  crv: 'P-384',
-  d: 'FfTHqwIAM3OMj808FlAL59OkwdXnfmc8FAXtTqyKnfu023kXHtDrAjEwMEBnOC3O',
-  key_ops: ['sign'],
-  kty: 'EC',
-  x: 'c9ZzWUHmgUpCiDMpxaIhPxORaFqMx_HB6DQUmFM0M1GFCdxoaZwAPv2KONgoaRxZ',
-  y: 'zTt0paDnsE98Sd7erCVvLWLGGnGcjbOVy5C3m6AI116hUV5JeFAspBe_uDTnAfBD',
-  alg: 'ES384',
-  use: 'sig',
-  kid: '0ad99869f2d4e57f3f71c68300ba84fa',
-}
-
-jest
-  .spyOn(sdk.httpClient, 'get')
-  .mockResolvedValue({ json: () => Promise.resolve([publicKeys]) } as Response)
-
 const get = (obj: Record<string, any>, path: string) =>
   path.split('.').reduce((acc, part) => acc[part], obj) as Function
 const generatePathFromKeys = (obj: Record<string, any>, path: string) =>
   Object.keys(get(obj, path)).map((key) => `${path}.${key}`)
 
 describe('sdk', () => {
+  beforeAll(async () => {
+    const { publicKey, privateKey } = await generateKeyPair('ES384')
+    validToken = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey)
+    expiredToken = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt(1181398100)
+      .setIssuer('project-id')
+      .setExpirationTime(1181398111)
+      .sign(privateKey)
+    publicKeys = await exportJWK(publicKey)
+    publicKeys.alg = 'ES384'
+    publicKeys.kid = '0ad99869f2d4e57f3f71c68300ba84fa'
+    publicKeys.use = 'sig'
+    jest
+      .spyOn(sdk.httpClient, 'get')
+      .mockResolvedValue({ json: () => Promise.resolve([publicKeys]) } as Response)
+  })
   afterEach(() => {
     jest.clearAllMocks()
   })
   describe('validateToken', () => {
     it('should return the token payload when valid', async () => {
       const resp = await sdk.validateToken(validToken)
-
-      expect(resp).toEqual({
+      expect(resp).toMatchObject({
         token: {
           exp: 1981398111,
+          iss: 'project-id',
         },
       })
     })
@@ -92,15 +97,20 @@ describe('sdk', () => {
   })
 
   describe('ValidateSession', () => {
-    it('should throw an error when session token is empty', async () => {
-      await expect(sdk.validateSession('', validToken)).rejects.toThrow(
-        'session token must not be empty',
+    it('should throw an error when both session and refresh tokens are empty', async () => {
+      await expect(sdk.validateSession('', '')).rejects.toThrow(
+        'both refresh token and session token are empty',
       )
     })
     it('should return the token when session token is valid', async () => {
-      await expect(sdk.validateSession(validToken, '')).resolves.toEqual({
-        token: { exp: 1981398111 },
+      await expect(sdk.validateSession(validToken, '')).resolves.toMatchObject({
+        token: { exp: 1981398111, iss: 'project-id' },
       })
+    })
+    it('should throw an error when session token expired and no refresh token', async () => {
+      await expect(sdk.validateSession(expiredToken, '')).rejects.toThrow(
+        'could not validate tokens',
+      )
     })
     it('should throw an error when both refresh & session tokens expired', async () => {
       await expect(sdk.validateSession(expiredToken, expiredToken)).rejects.toThrow(
@@ -113,6 +123,14 @@ describe('sdk', () => {
         .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
 
       await expect(sdk.validateSession(expiredToken, validToken)).resolves.toEqual('data')
+      expect(spyRefresh).toHaveBeenCalledWith(validToken)
+    })
+    it('should return the token when refresh token is valid', async () => {
+      const spyRefresh = jest
+        .spyOn(sdk, 'refresh')
+        .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
+
+      await expect(sdk.validateSession('', validToken)).resolves.toEqual('data')
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
     })
   })
@@ -147,7 +165,10 @@ describe('sdk', () => {
           expect.objectContaining({
             data: {
               ...data,
-              cookies: `${sessionTokenCookieName}=${data.sessionJwt};${refreshTokenCookieName}=${data.refreshJwt};`,
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+              ],
             },
           }),
         )
@@ -155,7 +176,7 @@ describe('sdk', () => {
 
       it.each(paths)('should generate jwt from cookie for %s', async (path) => {
         const data = { sessionJwt: 'sessionJwt' }
-        const cookie = `${refreshTokenCookieName}=refreshJwt;`
+        const cookie = `${refreshTokenCookieName}=refreshJwt; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
@@ -167,7 +188,10 @@ describe('sdk', () => {
             data: {
               refreshJwt: 'refreshJwt',
               sessionJwt: 'sessionJwt',
-              cookies: `${sessionTokenCookieName}=sessionJwt;${cookie}`,
+              cookies: [
+                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                cookie,
+              ],
             },
           }),
         )

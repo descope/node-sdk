@@ -3,7 +3,9 @@ import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
 import { AuthenticationInfo } from './types'
+import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
+/* istanbul ignore next */
 if (!globalThis.fetch) {
   // @ts-ignore
   globalThis.fetch = fetch
@@ -40,8 +42,10 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
   const keys: Record<string, KeyLike | Uint8Array> = {}
 
   const fetchKeys = async () => {
-    const publicKeys: JWK[] =
-      (await coreSdk.httpClient.get(`keys/${projectId}`).then((resp) => resp.json())) || []
+    const publicKeys: JWK[] = await coreSdk.httpClient
+      .get(`v1/keys/${projectId}`)
+      .then((resp) => resp.json())
+    if (!Array.isArray(publicKeys)) return {}
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
     )
@@ -69,7 +73,8 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     },
 
     async validateToken(token: string): Promise<AuthenticationInfo> {
-      const res = await jwtVerify(token, this.getKey, { algorithms: ['ES384'] })
+      // Do not hard-code the algo because library does not support `None` so all are valid
+      const res = await jwtVerify(token, this.getKey, { issuer: projectId, clockTolerance: 5 })
 
       return { token: res.payload }
     },
@@ -78,29 +83,44 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       sessionToken: string,
       refreshToken: string,
     ): Promise<AuthenticationInfo | undefined> {
-      if (!sessionToken) throw Error('session token must not be empty')
+      if (!sessionToken && !refreshToken)
+        throw Error('both refresh token and session token are empty')
 
-      try {
-        const token = await this.validateToken(sessionToken)
-        return token
-      } catch (error) {
+      if (sessionToken) {
+        try {
+          const token = await this.validateToken(sessionToken)
+          return token
+        } catch (error) {
+          if (!refreshToken) {
+            logger?.error('failed to validate session token and no refresh token provided', error)
+            throw Error('could not validate tokens')
+          }
+        }
+      }
+      if (refreshToken) {
         try {
           await this.validateToken(refreshToken)
-
           return (await this.refresh(refreshToken)).data
         } catch (refreshTokenErr) {
           logger?.error('failed to validate refresh token', refreshTokenErr)
-
           throw Error('could not validate tokens')
         }
       }
+      /* istanbul ignore next */
+      throw Error('could not validate token')
     },
   }
 }
 
-const sdkWithAttributes = sdk as typeof sdk & { DeliveryMethods: typeof createSdk.DeliveryMethods }
+const sdkWithAttributes = sdk as typeof sdk & {
+  DeliveryMethods: typeof createSdk.DeliveryMethods
+  RefreshTokenCookieName: typeof refreshTokenCookieName
+  SessionTokenCookieName: typeof sessionTokenCookieName
+}
 
 sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
+sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName
+sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName
 
 export default sdkWithAttributes
 
