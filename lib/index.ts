@@ -126,7 +126,8 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       }
 
       try {
-        return await this.validateToken(sessionJwt)
+        const token = await this.validateToken(sessionJwt)
+        return token
       } catch (error) {
         logger?.error('failed to validate session token from access key', error)
         throw Error('could not exchange access key')
