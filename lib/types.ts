@@ -7,4 +7,5 @@ interface Token {
 export interface AuthenticationInfo {
   token?: Token
   cookies?: string[]
+  jwt?: string
 }

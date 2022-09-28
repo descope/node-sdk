@@ -2,6 +2,7 @@ import { SdkResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
+import { AuthenticationInfo } from './types'
 
 let validToken: string
 let expiredToken: string
@@ -132,6 +133,35 @@ describe('sdk', () => {
 
       await expect(sdk.validateSession('', validToken)).resolves.toEqual('data')
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
+    })
+  })
+
+  describe('exchangeAccessKey', () => {
+    it('should fail when the server call throws', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockRejectedValueOnce('error')
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key')
+    })
+    it('should fail when getting an unexpected response from the server', async () => {
+      const spyExchange = jest
+        .spyOn(sdk.accessKey, 'exchange')
+        .mockResolvedValueOnce({ data: {} } as SdkResponse)
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key')
+    })
+    it('should fail when the session token the server returns is invalid', async () => {
+      const spyExchange = jest
+        .spyOn(sdk.accessKey, 'exchange')
+        .mockResolvedValueOnce({ data: { sessionJwt: expiredToken } } as SdkResponse)
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key')
+    })
+    it('should return the same session token it got from the server', async () => {
+      const spyExchange = jest
+        .spyOn(sdk.accessKey, 'exchange')
+        .mockResolvedValueOnce({ data: { sessionJwt: validToken } } as SdkResponse)
+      const expected: AuthenticationInfo = {
+        jwt: validToken,
+      }
+      await expect(sdk.exchangeAccessKey('key')).resolves.toEqual(expect.objectContaining(expected))
+      expect(spyExchange).toHaveBeenCalledWith('key')
     })
   })
 
