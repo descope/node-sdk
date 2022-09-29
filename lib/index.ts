@@ -1,9 +1,14 @@
 import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
-import { bulkWrapWith, withCookie } from './helpers'
-import { AuthenticationInfo, ExchangeAccessKeyResult } from './types'
-import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
+import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers'
+import { AuthenticationInfo } from './types'
+import {
+  refreshTokenCookieName,
+  sessionTokenCookieName,
+  permissionsClaimName,
+  rolesClaimName,
+} from './constants'
 
 /* istanbul ignore next */
 if (!globalThis.fetch) {
@@ -17,7 +22,7 @@ if (!globalThis.fetch) {
   globalThis.Response = Response
 }
 
-const sdk = (...args: Parameters<typeof createSdk>) => {
+const nodeSdk = (...args: Parameters<typeof createSdk>) => {
   const coreSdk = createSdk(...args)
 
   bulkWrapWith(
@@ -41,6 +46,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
 
   const keys: Record<string, KeyLike | Uint8Array> = {}
 
+  /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
     const publicKeys: JWK[] = await coreSdk.httpClient
       .get(`v1/keys/${projectId}`)
@@ -56,9 +62,10 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     )
   }
 
-  return {
+  const sdk = {
     ...coreSdk,
 
+    /** Get the key that can validate the given JWT KID in the header. Can retrieve the public key from local cache or from Descope. */
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
       if (!header?.kid) throw Error('header.kid must not be empty')
 
@@ -72,23 +79,35 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       return keys[header.kid]
     },
 
-    async validateToken(token: string): Promise<AuthenticationInfo> {
+    /**
+     * Validate the given JWT with the right key and make sure the issuer is correct
+     * @param jwt the JWT string to parse and validate
+     * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
+     */
+    async validateJwt(jwt: string): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(token, this.getKey, { issuer: projectId, clockTolerance: 5 })
+      const res = await jwtVerify(jwt, sdk.getKey, { issuer: projectId, clockTolerance: 5 })
 
-      return { token: res.payload }
+      return { jwt, token: res.payload }
     },
 
+    /**
+     * Validate session based on at least one of session and refresh JWTs. You must provide at least one of them.
+     *
+     * @param sessionToken session JWT
+     * @param refreshToken refresh JWT
+     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     */
     async validateSession(
-      sessionToken: string,
-      refreshToken: string,
-    ): Promise<AuthenticationInfo | undefined> {
+      sessionToken?: string,
+      refreshToken?: string,
+    ): Promise<AuthenticationInfo> {
       if (!sessionToken && !refreshToken)
         throw Error('both refresh token and session token are empty')
 
       if (sessionToken) {
         try {
-          const token = await this.validateToken(sessionToken)
+          const token = await sdk.validateJwt(sessionToken)
           return token
         } catch (error) {
           if (!refreshToken) {
@@ -99,8 +118,13 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       }
       if (refreshToken) {
         try {
-          await this.validateToken(refreshToken)
-          return (await this.refresh(refreshToken)).data
+          await sdk.validateJwt(refreshToken)
+          const jwtResp = await sdk.refresh(refreshToken)
+          if (jwtResp.ok) {
+            const token = await sdk.validateJwt(jwtResp.data?.sessionJwt)
+            return token
+          }
+          throw Error(jwtResp.error?.message)
         } catch (refreshTokenErr) {
           logger?.error('failed to validate refresh token', refreshTokenErr)
           throw Error('could not validate tokens')
@@ -110,10 +134,17 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       throw Error('could not validate token')
     },
 
-    async exchangeAccessKey(accessKey: string): Promise<ExchangeAccessKeyResult> {
+    /**
+     * Exchange API key (access key) for a session key
+     * @param accessKey access key to exchange for a session JWT
+     * @returns AuthneticationInfo with session JWT data
+     */
+    async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
+      if (!accessKey) throw Error('access key must not be empty')
+
       let resp: SdkResponse<ExchangeAccessKeyResponse>
       try {
-        resp = await this.accessKey.exchange(accessKey)
+        resp = await sdk.accessKey.exchange(accessKey)
       } catch (error) {
         logger?.error('failed to exchange access key', error)
         throw Error('could not exchange access key')
@@ -126,17 +157,81 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       }
 
       try {
-        const token = await this.validateToken(sessionJwt)
-        return { ...token, sessionJwt }
+        const token = await sdk.validateJwt(sessionJwt)
+        return token
       } catch (error) {
-        logger?.error('failed to validate session token from access key', error)
+        logger?.error('failed to parse jwt from access key', error)
         throw Error('could not exchange access key')
       }
     },
+
+    /**
+     * Make sure that all given permissions exist on the parsed JWT top level claims
+     * @param authInfo JWT parsed info
+     * @param permissions list of permissions to make sure they exist on te JWT claims
+     * @returns true if all permissions exist, false otherwise
+     */
+    validatePermissions(authInfo: AuthenticationInfo, permissions: string[]): boolean {
+      return sdk.validateTenantPermissions(authInfo, null, permissions)
+    },
+
+    /**
+     * Make sure that all given permissions exist on the parsed JWT tenant claims
+     * @param authInfo JWT parsed info
+     * @param permissions list of permissions to make sure they exist on te JWT claims
+     * @returns true if all permissions exist, false otherwise
+     */
+    validateTenantPermissions(
+      authInfo: AuthenticationInfo,
+      tenant: string,
+      permissions: string[],
+    ): boolean {
+      const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant)
+      return permissions.every((perm) => granted.includes(perm))
+    },
+
+    /**
+     * Make sure that all given roles exist on the parsed JWT top level claims
+     * @param authInfo JWT parsed info
+     * @param roles list of roles to make sure they exist on te JWT claims
+     * @returns true if all roles exist, false otherwise
+     */
+    validateRoles(authInfo: AuthenticationInfo, roles: string[]): boolean {
+      return sdk.validateTenantRoles(authInfo, null, roles)
+    },
+
+    /**
+     * Make sure that all given roles exist on the parsed JWT tenant claims
+     * @param authInfo JWT parsed info
+     * @param roles list of roles to make sure they exist on te JWT claims
+     * @returns true if all roles exist, false otherwise
+     */
+    validateTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): boolean {
+      const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant)
+      return roles.every((role) => membership.includes(role))
+    },
   }
+
+  return sdk
 }
 
-const sdkWithAttributes = sdk as typeof sdk & {
+/** Descope SDK client with delivery methods enum.
+ *
+ * Please see full documentation at {@link https://docs.descope.com/guides Descope Docs}
+ * @example Usage
+ *
+ * ```js
+ * import descopeSdk from '@descope/node-sdk';
+ *
+ * const myProjectId = 'xxx';
+ * const sdk = descopeSdk({ projectId: myProjectId });
+ *
+ * const userIdentifier = 'identifier';
+ * sdk.otp.signIn.email(userIdentifier);
+ * const jwtResponse = sdk.otp.verify.email(userIdentifier, codeFromEmail);
+ * ```
+ */
+const sdkWithAttributes = nodeSdk as typeof nodeSdk & {
   DeliveryMethods: typeof createSdk.DeliveryMethods
   RefreshTokenCookieName: typeof refreshTokenCookieName
   SessionTokenCookieName: typeof sessionTokenCookieName
