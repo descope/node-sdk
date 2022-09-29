@@ -111,7 +111,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     },
 
     async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
-      let resp: SdkResponse
+      let resp: SdkResponse<any>
       try {
         resp = await this.accessKey.exchange(accessKey)
       } catch (error) {
