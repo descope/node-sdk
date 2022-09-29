@@ -1,9 +1,14 @@
 import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
-import { bulkWrapWith, withCookie } from './helpers'
+import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers'
 import { AuthenticationInfo } from './types'
-import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
+import {
+  refreshTokenCookieName,
+  sessionTokenCookieName,
+  permissionsClaimName,
+  rolesClaimName,
+} from './constants'
 
 /* istanbul ignore next */
 if (!globalThis.fetch) {
@@ -134,6 +139,28 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
         logger?.error('failed to parse jwt from access key', error)
         throw Error('could not exchange access key')
       }
+    },
+
+    validatePermissions(authInfo: AuthenticationInfo, permissions: string[]): boolean {
+      return sdk.validateTenantPermissions(authInfo, null, permissions)
+    },
+
+    validateTenantPermissions(
+      authInfo: AuthenticationInfo,
+      tenant: string,
+      permissions: string[],
+    ): boolean {
+      const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant)
+      return permissions.every((perm) => granted.includes(perm))
+    },
+
+    validateRoles(authInfo: AuthenticationInfo, roles: string[]): boolean {
+      return sdk.validateTenantRoles(authInfo, null, roles)
+    },
+
+    validateTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): boolean {
+      const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant)
+      return roles.every((role) => membership.includes(role))
     },
   }
 

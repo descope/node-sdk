@@ -1,12 +1,20 @@
 import { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
-import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
 import { AuthenticationInfo } from './types'
+import {
+  refreshTokenCookieName,
+  sessionTokenCookieName,
+  authorizedTenantsClaimName,
+  permissionsClaimName,
+  rolesClaimName,
+} from './constants'
 
 let validToken: string
 let expiredToken: string
 let publicKeys: JWK
+let permAuthInfo: AuthenticationInfo
+let permTenantAuthInfo: AuthenticationInfo
 
 const logger = {
   log: jest.fn(),
@@ -39,6 +47,18 @@ describe('sdk', () => {
       .setIssuer('project-id')
       .setExpirationTime(1181398111)
       .sign(privateKey)
+    permAuthInfo = {
+      jwt: 'jwt',
+      token: { [permissionsClaimName]: ['foo', 'bar'], [rolesClaimName]: ['abc', 'xyz'] },
+    }
+    permTenantAuthInfo = {
+      jwt: 'jwt',
+      token: {
+        [authorizedTenantsClaimName]: {
+          kuku: { [permissionsClaimName]: ['foo', 'bar'], [rolesClaimName]: ['abc', 'xyz'] },
+        },
+      },
+    }
     publicKeys = await exportJWK(publicKey)
     publicKeys.alg = 'ES384'
     publicKeys.kid = '0ad99869f2d4e57f3f71c68300ba84fa'
@@ -166,6 +186,41 @@ describe('sdk', () => {
       }
       await expect(sdk.exchangeAccessKey('key')).resolves.toMatchObject(expected)
       expect(spyExchange).toHaveBeenCalledWith('key')
+    })
+  })
+
+  describe('validatePermissionsRoles', () => {
+    it('should always succeed with empty requirements', () => {
+      expect(sdk.validatePermissions(permAuthInfo, [])).toStrictEqual(true)
+      expect(sdk.validateTenantPermissions(permTenantAuthInfo, 'kuku', [])).toStrictEqual(true)
+      expect(sdk.validateRoles(permAuthInfo, [])).toStrictEqual(true)
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', [])).toStrictEqual(true)
+    })
+    it('should succeed when requirements are met', () => {
+      expect(sdk.validatePermissions(permAuthInfo, ['foo'])).toStrictEqual(true)
+      expect(
+        sdk.validateTenantPermissions(permTenantAuthInfo, 'kuku', ['foo', 'bar']),
+      ).toStrictEqual(true)
+      expect(sdk.validateRoles(permAuthInfo, ['abc'])).toStrictEqual(true)
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz'])).toStrictEqual(
+        true,
+      )
+    })
+    it('should fail when wrong function is used', () => {
+      expect(sdk.validatePermissions(permTenantAuthInfo, ['foo'])).toStrictEqual(false)
+      expect(sdk.validateTenantPermissions(permAuthInfo, 'kuku', ['foo'])).toStrictEqual(false)
+      expect(sdk.validateRoles(permTenantAuthInfo, ['abc'])).toStrictEqual(false)
+      expect(sdk.validateTenantRoles(permAuthInfo, 'kuku', ['abc'])).toStrictEqual(false)
+    })
+    it('should fail when requirements are not met', () => {
+      expect(sdk.validatePermissions(permAuthInfo, ['foo', 'bar', 'qux'])).toStrictEqual(false)
+      expect(
+        sdk.validateTenantPermissions(permTenantAuthInfo, 'kuku', ['foo', 'bar', 'qux']),
+      ).toStrictEqual(false)
+      expect(sdk.validateRoles(permAuthInfo, ['abc', 'xyz', 'tuv'])).toStrictEqual(false)
+      expect(
+        sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz', 'tuv']),
+      ).toStrictEqual(false)
     })
   })
 

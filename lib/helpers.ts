@@ -1,5 +1,10 @@
 import type { SdkResponse } from '@descope/core-js-sdk'
-import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
+import { AuthenticationInfo } from './types'
+import {
+  refreshTokenCookieName,
+  sessionTokenCookieName,
+  authorizedTenantsClaimName,
+} from './constants'
 
 const generateCookie = (name: string, value: string, options?: any) =>
   `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
@@ -77,3 +82,17 @@ export const bulkWrapWith = (
   paths: string[],
   wrappingFn: Parameters<typeof wrapWith>[2],
 ) => paths.forEach((path: string) => wrapWith(obj, path, wrappingFn))
+
+export function getAuthorizationClaimItems(
+  authInfo: AuthenticationInfo,
+  claim: string,
+  tenant?: string,
+): string[] {
+  let value: unknown
+  if (tenant) {
+    value = authInfo.token[authorizedTenantsClaimName]?.[tenant]?.[claim]
+  } else {
+    value = authInfo.token[claim]
+  }
+  return Array.isArray(value) ? value : []
+}
