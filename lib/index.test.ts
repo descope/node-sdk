@@ -2,7 +2,7 @@ import { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
-import { AuthenticationInfo } from './types'
+import { ExchangeAccessKeyResult } from './types'
 
 let validToken: string
 let expiredToken: string
@@ -160,10 +160,11 @@ describe('sdk', () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
         data: { sessionJwt: validToken },
       } as SdkResponse<ExchangeAccessKeyResponse>)
-      const expected: AuthenticationInfo = {
-        jwt: validToken,
+      const expected: ExchangeAccessKeyResult = {
+        token: { exp: 1981398111, iss: 'project-id' },
+        sessionJwt: validToken,
       }
-      await expect(sdk.exchangeAccessKey('key')).resolves.toEqual(expect.objectContaining(expected))
+      await expect(sdk.exchangeAccessKey('key')).resolves.toMatchObject(expected)
       expect(spyExchange).toHaveBeenCalledWith('key')
     })
   })

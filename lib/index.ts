@@ -2,7 +2,7 @@ import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
-import { AuthenticationInfo } from './types'
+import { AuthenticationInfo, ExchangeAccessKeyResult } from './types'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 /* istanbul ignore next */
@@ -76,7 +76,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       // Do not hard-code the algo because library does not support `None` so all are valid
       const res = await jwtVerify(token, this.getKey, { issuer: projectId, clockTolerance: 5 })
 
-      return { token: res.payload, jwt: token }
+      return { token: res.payload }
     },
 
     async validateSession(
@@ -110,7 +110,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       throw Error('could not validate token')
     },
 
-    async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
+    async exchangeAccessKey(accessKey: string): Promise<ExchangeAccessKeyResult> {
       let resp: SdkResponse<ExchangeAccessKeyResponse>
       try {
         resp = await this.accessKey.exchange(accessKey)
@@ -127,7 +127,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
 
       try {
         const token = await this.validateToken(sessionJwt)
-        return token
+        return { ...token, sessionJwt }
       } catch (error) {
         logger?.error('failed to validate session token from access key', error)
         throw Error('could not exchange access key')

@@ -7,5 +7,9 @@ interface Token {
 export interface AuthenticationInfo {
   token?: Token
   cookies?: string[]
-  jwt?: string
+}
+
+export interface ExchangeAccessKeyResult {
+  token: Token
+  sessionJwt: string
 }
