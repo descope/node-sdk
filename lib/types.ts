@@ -2,14 +2,11 @@ interface Token {
   sub?: string
   exp?: number
   iss?: string
+  [claim: string]: unknown
 }
 
 export interface AuthenticationInfo {
-  token?: Token
-  cookies?: string[]
-}
-
-export interface ExchangeAccessKeyResult {
+  jwt: string
   token: Token
-  sessionJwt: string
+  cookies?: string[]
 }

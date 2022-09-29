@@ -2,7 +2,7 @@ import { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
-import { ExchangeAccessKeyResult } from './types'
+import { AuthenticationInfo } from './types'
 
 let validToken: string
 let expiredToken: string
@@ -52,7 +52,7 @@ describe('sdk', () => {
   })
   describe('validateToken', () => {
     it('should return the token payload when valid', async () => {
-      const resp = await sdk.validateToken(validToken)
+      const resp = await sdk.validateJwt(validToken)
       expect(resp).toMatchObject({
         token: {
           exp: 1981398111,
@@ -62,7 +62,7 @@ describe('sdk', () => {
     })
 
     it('should reject with a proper error message when token expired', async () => {
-      await expect(sdk.validateToken(expiredToken)).rejects.toThrow(
+      await expect(sdk.validateJwt(expiredToken)).rejects.toThrow(
         '"exp" claim timestamp check failed',
       )
     })
@@ -160,9 +160,9 @@ describe('sdk', () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
         data: { sessionJwt: validToken },
       } as SdkResponse<ExchangeAccessKeyResponse>)
-      const expected: ExchangeAccessKeyResult = {
+      const expected: AuthenticationInfo = {
+        jwt: validToken,
         token: { exp: 1981398111, iss: 'project-id' },
-        sessionJwt: validToken,
       }
       await expect(sdk.exchangeAccessKey('key')).resolves.toMatchObject(expected)
       expect(spyExchange).toHaveBeenCalledWith('key')
