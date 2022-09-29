@@ -1,4 +1,4 @@
-import { SdkResponse } from '@descope/core-js-sdk'
+import { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 import createSdk from '.'
@@ -145,21 +145,21 @@ describe('sdk', () => {
     it('should fail when getting an unexpected response from the server', async () => {
       const spyExchange = jest
         .spyOn(sdk.accessKey, 'exchange')
-        .mockResolvedValueOnce({ data: {} } as SdkResponse<any>)
+        .mockResolvedValueOnce({ data: {} } as SdkResponse<ExchangeAccessKeyResponse>)
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key')
       expect(spyExchange).toHaveBeenCalledWith('key')
     })
     it('should fail when the session token the server returns is invalid', async () => {
-      const spyExchange = jest
-        .spyOn(sdk.accessKey, 'exchange')
-        .mockResolvedValueOnce({ data: { sessionJwt: expiredToken } } as SdkResponse<any>)
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        data: { sessionJwt: expiredToken },
+      } as SdkResponse<ExchangeAccessKeyResponse>)
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key')
       expect(spyExchange).toHaveBeenCalledWith('key')
     })
     it('should return the same session token it got from the server', async () => {
-      const spyExchange = jest
-        .spyOn(sdk.accessKey, 'exchange')
-        .mockResolvedValueOnce({ data: { sessionJwt: validToken } } as SdkResponse<any>)
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        data: { sessionJwt: validToken },
+      } as SdkResponse<ExchangeAccessKeyResponse>)
       const expected: AuthenticationInfo = {
         jwt: validToken,
       }

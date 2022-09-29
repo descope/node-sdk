@@ -1,4 +1,4 @@
-import createSdk, { SdkResponse } from '@descope/core-js-sdk'
+import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
@@ -111,7 +111,7 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
     },
 
     async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
-      let resp: SdkResponse<any>
+      let resp: SdkResponse<ExchangeAccessKeyResponse>
       try {
         resp = await this.accessKey.exchange(accessKey)
       } catch (error) {
