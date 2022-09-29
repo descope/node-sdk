@@ -8,3 +8,8 @@ export interface AuthenticationInfo {
   token?: Token
   cookies?: string[]
 }
+
+export interface ExchangeAccessKeyResult {
+  token: Token
+  sessionJwt: string
+}

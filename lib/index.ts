@@ -1,8 +1,8 @@
-import createSdk from '@descope/core-js-sdk'
+import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie } from './helpers'
-import { AuthenticationInfo } from './types'
+import { AuthenticationInfo, ExchangeAccessKeyResult } from './types'
 import { refreshTokenCookieName, sessionTokenCookieName } from './constants'
 
 /* istanbul ignore next */
@@ -108,6 +108,30 @@ const sdk = (...args: Parameters<typeof createSdk>) => {
       }
       /* istanbul ignore next */
       throw Error('could not validate token')
+    },
+
+    async exchangeAccessKey(accessKey: string): Promise<ExchangeAccessKeyResult> {
+      let resp: SdkResponse<ExchangeAccessKeyResponse>
+      try {
+        resp = await this.accessKey.exchange(accessKey)
+      } catch (error) {
+        logger?.error('failed to exchange access key', error)
+        throw Error('could not exchange access key')
+      }
+
+      const { sessionJwt } = resp.data
+      if (!sessionJwt) {
+        logger?.error('failed to parse exchange access key response')
+        throw Error('could not exchange access key')
+      }
+
+      try {
+        const token = await this.validateToken(sessionJwt)
+        return { ...token, sessionJwt }
+      } catch (error) {
+        logger?.error('failed to validate session token from access key', error)
+        throw Error('could not exchange access key')
+      }
     },
   }
 }
