@@ -120,7 +120,7 @@ describe('sdk', () => {
     it('should refresh session token when it expired and refresh token is valid', async () => {
       const spyRefresh = jest
         .spyOn(sdk, 'refresh')
-        .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
+        .mockResolvedValueOnce({ data: 'data' } as SdkResponse<any>)
 
       await expect(sdk.validateSession(expiredToken, validToken)).resolves.toEqual('data')
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
@@ -128,7 +128,7 @@ describe('sdk', () => {
     it('should return the token when refresh token is valid', async () => {
       const spyRefresh = jest
         .spyOn(sdk, 'refresh')
-        .mockResolvedValueOnce({ data: 'data' } as SdkResponse)
+        .mockResolvedValueOnce({ data: 'data' } as SdkResponse<any>)
 
       await expect(sdk.validateSession('', validToken)).resolves.toEqual('data')
       expect(spyRefresh).toHaveBeenCalledWith(validToken)

@@ -13,8 +13,8 @@ const getCookieValue = (cookie: string | null | undefined, name: string) => {
 
 // eslint-disable-next-line import/prefer-default-export
 export const withCookie =
-  <T extends Array<any>, U extends Promise<SdkResponse>>(fn: (...args: T) => U) =>
-  async (...args: T): Promise<SdkResponse> => {
+  <T extends Array<any>, U extends Promise<SdkResponse<any>>>(fn: (...args: T) => U) =>
+  async (...args: T): Promise<SdkResponse<any>> => {
     const resp = await fn(...args)
 
     // istanbul ignore next
