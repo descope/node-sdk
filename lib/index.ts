@@ -46,6 +46,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
 
   const keys: Record<string, KeyLike | Uint8Array> = {}
 
+  /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
     const publicKeys: JWK[] = await coreSdk.httpClient
       .get(`v1/keys/${projectId}`)
@@ -64,6 +65,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
   const sdk = {
     ...coreSdk,
 
+    /** Get the key that can validate the given JWT KID in the header. Can retrieve the public key from local cache or from Descope. */
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
       if (!header?.kid) throw Error('header.kid must not be empty')
 
@@ -77,6 +79,11 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       return keys[header.kid]
     },
 
+    /**
+     * Validate the given JWT with the right key and make sure the issuer is correct
+     * @param jwt the JWT string to parse and validate
+     * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
+     */
     async validateJwt(jwt: string): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
       const res = await jwtVerify(jwt, sdk.getKey, { issuer: projectId, clockTolerance: 5 })
@@ -84,8 +91,15 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       return { jwt, token: res.payload }
     },
 
+    /**
+     * Validate session based on at least one of session and refresh JWTs. You must provide at least one of them.
+     *
+     * @param sessionToken session JWT
+     * @param refreshToken refresh JWT
+     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     */
     async validateSession(
-      sessionToken: string,
+      sessionToken?: string,
       refreshToken?: string,
     ): Promise<AuthenticationInfo> {
       if (!sessionToken && !refreshToken)
@@ -105,7 +119,12 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       if (refreshToken) {
         try {
           await sdk.validateJwt(refreshToken)
-          return (await sdk.refresh(refreshToken)).data as any // the types here don't actually match
+          const jwtResp = await sdk.refresh(refreshToken)
+          if (jwtResp.ok) {
+            const token = await sdk.validateJwt(jwtResp.data?.sessionJwt)
+            return token
+          }
+          throw Error(jwtResp.error?.message)
         } catch (refreshTokenErr) {
           logger?.error('failed to validate refresh token', refreshTokenErr)
           throw Error('could not validate tokens')
@@ -115,6 +134,11 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       throw Error('could not validate token')
     },
 
+    /**
+     * Exchange API key (access key) for a session key
+     * @param accessKey access key to exchange for a session JWT
+     * @returns AuthneticationInfo with session JWT data
+     */
     async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty')
 
@@ -141,10 +165,22 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       }
     },
 
+    /**
+     * Make sure that all given permissions exist on the parsed JWT top level claims
+     * @param authInfo JWT parsed info
+     * @param permissions list of permissions to make sure they exist on te JWT claims
+     * @returns true if all permissions exist, false otherwise
+     */
     validatePermissions(authInfo: AuthenticationInfo, permissions: string[]): boolean {
       return sdk.validateTenantPermissions(authInfo, null, permissions)
     },
 
+    /**
+     * Make sure that all given permissions exist on the parsed JWT tenant claims
+     * @param authInfo JWT parsed info
+     * @param permissions list of permissions to make sure they exist on te JWT claims
+     * @returns true if all permissions exist, false otherwise
+     */
     validateTenantPermissions(
       authInfo: AuthenticationInfo,
       tenant: string,
@@ -154,10 +190,22 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       return permissions.every((perm) => granted.includes(perm))
     },
 
+    /**
+     * Make sure that all given roles exist on the parsed JWT top level claims
+     * @param authInfo JWT parsed info
+     * @param roles list of roles to make sure they exist on te JWT claims
+     * @returns true if all roles exist, false otherwise
+     */
     validateRoles(authInfo: AuthenticationInfo, roles: string[]): boolean {
       return sdk.validateTenantRoles(authInfo, null, roles)
     },
 
+    /**
+     * Make sure that all given roles exist on the parsed JWT tenant claims
+     * @param authInfo JWT parsed info
+     * @param roles list of roles to make sure they exist on te JWT claims
+     * @returns true if all roles exist, false otherwise
+     */
     validateTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): boolean {
       const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant)
       return roles.every((role) => membership.includes(role))
@@ -167,6 +215,22 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
   return sdk
 }
 
+/** Descope SDK client with delivery methods enum.
+ *
+ * Please see full documentation at {@link https://docs.descope.com/guides Descope Docs}
+ * @example Usage
+ *
+ * ```js
+ * import descopeSdk from '@descope/node-sdk';
+ *
+ * const myProjectId = 'xxx';
+ * const sdk = descopeSdk({ projectId: myProjectId });
+ *
+ * const userIdentifier = 'identifier';
+ * sdk.otp.signIn.email(userIdentifier);
+ * const jwtResponse = sdk.otp.verify.email(userIdentifier, codeFromEmail);
+ * ```
+ */
 const sdkWithAttributes = nodeSdk as typeof nodeSdk & {
   DeliveryMethods: typeof createSdk.DeliveryMethods
   RefreshTokenCookieName: typeof refreshTokenCookieName

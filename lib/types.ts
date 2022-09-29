@@ -1,3 +1,4 @@
+/** Parsed JWT token */
 interface Token {
   sub?: string
   exp?: number
@@ -5,6 +6,7 @@ interface Token {
   [claim: string]: unknown
 }
 
+/** All information regarding token including the raw JWT, parsed JWT and cookies */
 export interface AuthenticationInfo {
   jwt: string
   token: Token

@@ -1,3 +1,4 @@
+import { JWTResponse } from './../../core-js-sdk/src/sdk/types';
 import { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
 import { JWK, SignJWT, exportJWK, JWTHeaderParameters, generateKeyPair } from 'jose'
 import createSdk from '.'
@@ -141,9 +142,9 @@ describe('sdk', () => {
     it('should refresh session token when it expired and refresh token is valid', async () => {
       const spyRefresh = jest
         .spyOn(sdk, 'refresh')
-        .mockResolvedValueOnce({ data: 'data' } as SdkResponse<any>)
+        .mockResolvedValueOnce({ data: {sessionJwt: validToken} } as SdkResponse<JWTResponse>)
 
-      await expect(sdk.validateSession(expiredToken, validToken)).resolves.toEqual('data')
+      await expect(sdk.validateSession(expiredToken, validToken)).resolves.toHaveProperty('jwt', validToken)
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
     })
     it('should return the token when refresh token is valid', async () => {
