@@ -141,15 +141,24 @@ describe('sdk', () => {
     it('should refresh session token when it expired and refresh token is valid', async () => {
       const spyRefresh = jest
         .spyOn(sdk, 'refresh')
-        .mockResolvedValueOnce({ ok: true, data: {sessionJwt: validToken} } as SdkResponse<JWTResponse>)
+        .mockResolvedValueOnce({
+          ok: true,
+          data: { sessionJwt: validToken },
+        } as SdkResponse<JWTResponse>)
 
-      await expect(sdk.validateSession(expiredToken, validToken)).resolves.toHaveProperty('jwt', validToken)
+      await expect(sdk.validateSession(expiredToken, validToken)).resolves.toHaveProperty(
+        'jwt',
+        validToken,
+      )
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
     })
     it('should return the token when refresh token is valid', async () => {
       const spyRefresh = jest
         .spyOn(sdk, 'refresh')
-        .mockResolvedValueOnce({ ok: true, data: {sessionJwt: validToken} } as SdkResponse<JWTResponse>)
+        .mockResolvedValueOnce({
+          ok: true,
+          data: { sessionJwt: validToken },
+        } as SdkResponse<JWTResponse>)
 
       await expect(sdk.validateSession('', validToken)).resolves.toHaveProperty('jwt', validToken)
       expect(spyRefresh).toHaveBeenCalledWith(validToken)
