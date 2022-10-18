@@ -86,7 +86,7 @@
   },
   "dependencies": {
     "@descope/core-js-sdk": "0.0.41-alpha.20",
-    "jose": "4.9.3",
+    "jose": "4.10.0",
     "node-fetch": "2.6.7"
   },
   "peerDependencies": {
