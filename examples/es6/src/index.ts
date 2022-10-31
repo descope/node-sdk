@@ -1,12 +1,12 @@
-import { SdkResponse } from '@descope/core-js-sdk';
+import { SdkResponse } from '@descope/core-js-sdk'
 import express, { Request, Response, NextFunction } from 'express'
 import DescopeClient from '@descope/node-sdk'
 import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk'
 import * as fs from 'fs'
 import * as https from 'https'
-import path from 'path';
-import process from 'process';
-import bodyParser from 'body-parser';
+import path from 'path'
+import process from 'process'
+import bodyParser from 'body-parser'
 
 const app = express()
 app.use(bodyParser.json())
@@ -18,13 +18,20 @@ const options = {
 }
 
 const clientAuth = {
-  auth: DescopeClient({ projectId: process.env.DESCOPE_PROJECT_ID || '', baseUrl: process.env.DESCOPE_API_BASE_URL, logger: console }),
+  auth: DescopeClient({
+    projectId: process.env.DESCOPE_PROJECT_ID || '',
+    baseUrl: process.env.DESCOPE_API_BASE_URL,
+    logger: console,
+  }),
 }
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = parseCookies(req)
-    const out = await clientAuth.auth.validateSession(cookies[DescopeClient.SessionTokenCookieName], cookies[DescopeClient.RefreshTokenCookieName])
+    const out = await clientAuth.auth.validateSession(
+      cookies[DescopeClient.SessionTokenCookieName],
+      cookies[DescopeClient.RefreshTokenCookieName],
+    )
     if (out?.cookies) {
       res.set('Set-Cookie', out.cookies)
     }
@@ -36,8 +43,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
-const returnOK = (res: Response, out: SdkResponse) => {
-  res.setHeader('Content-Type', 'application/json');
+const returnOK = (res: Response, out: SdkResponse<any>) => {
+  res.setHeader('Content-Type', 'application/json')
   if (!out.ok) {
     res.status(400).send(out.error)
   } else if (out.data) {
@@ -47,10 +54,10 @@ const returnOK = (res: Response, out: SdkResponse) => {
   }
 }
 
-const returnCookies = (res: Response, out: SdkResponse) => {
+const returnCookies = (res: Response, out: SdkResponse<any>) => {
   if (out.ok && out.data?.cookies) {
     res.set('Set-Cookie', out.data.cookies)
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json')
     res.status(200).send(out.data)
   } else {
     res.sendStatus(401)
@@ -95,12 +102,12 @@ app.post('/totp/signup', async (req: Request, res: Response) => {
   const { identifier } = getMethodAndIdentifier(req)
   try {
     const out = await clientAuth.auth.totp.signUp(identifier)
-    var img = Buffer.from(out.data?.image, 'base64');
+    var img = Buffer.from(out?.data?.image || '', 'base64')
     res.writeHead(200, {
       'Content-Type': 'image/png',
-      'Content-Length': img.length
-    });
-    res.end(img); 
+      'Content-Length': img.length,
+    })
+    res.end(img)
   } catch (error) {
     console.log(error)
     res.sendStatus(401)
@@ -123,7 +130,11 @@ app.use('/webauthn', express.static('../demo.html'))
 
 app.post('/webauthn/signup/start', async (req: Request, res: Response) => {
   try {
-    const credentials = await clientAuth.auth.webauthn.signUp.start(req.body.externalID, req.query.origin as string, req.body.displayName);
+    const credentials = await clientAuth.auth.webauthn.signUp.start(
+      req.body.externalID,
+      req.query.origin as string,
+      req.body.displayName,
+    )
     returnOK(res, credentials)
   } catch (error) {
     console.log(error)
@@ -133,7 +144,10 @@ app.post('/webauthn/signup/start', async (req: Request, res: Response) => {
 
 app.post('/webauthn/signup/finish', async (req: Request, res: Response) => {
   try {
-    const credentials = await clientAuth.auth.webauthn.signUp.finish(req.body.transactionId, req.body.response);
+    const credentials = await clientAuth.auth.webauthn.signUp.finish(
+      req.body.transactionId,
+      req.body.response,
+    )
     returnCookies(res, credentials)
   } catch (error) {
     console.log(error)
@@ -143,7 +157,10 @@ app.post('/webauthn/signup/finish', async (req: Request, res: Response) => {
 
 app.post('/webauthn/signin/start', async (req: Request, res: Response) => {
   try {
-    const credentials = await clientAuth.auth.webauthn.signIn.start(req.query.id as string, req.query.origin as string);
+    const credentials = await clientAuth.auth.webauthn.signIn.start(
+      req.query.id as string,
+      req.query.origin as string,
+    )
     returnOK(res, credentials)
   } catch (error) {
     console.log(error)
@@ -153,7 +170,10 @@ app.post('/webauthn/signin/start', async (req: Request, res: Response) => {
 
 app.post('/webauthn/signin/finish', async (req: Request, res: Response) => {
   try {
-    const credentials = await clientAuth.auth.webauthn.signIn.finish(req.body.transactionId, req.body.response);
+    const credentials = await clientAuth.auth.webauthn.signIn.finish(
+      req.body.transactionId,
+      req.body.response,
+    )
     returnCookies(res, credentials)
   } catch (error) {
     console.log(error)
@@ -164,7 +184,11 @@ app.post('/webauthn/signin/finish', async (req: Request, res: Response) => {
 app.post('/webauthn/add/start', authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req)
-    const credentials = await clientAuth.auth.webauthn.add.start(req.query.id as string, req.query.origin as string, cookies[DescopeClient.RefreshTokenCookieName]);
+    const credentials = await clientAuth.auth.webauthn.update.start(
+      req.query.id as string,
+      req.query.origin as string,
+      cookies[DescopeClient.RefreshTokenCookieName],
+    )
     returnOK(res, credentials)
   } catch (error) {
     console.log(error)
@@ -174,7 +198,10 @@ app.post('/webauthn/add/start', authMiddleware, async (req: Request, res: Respon
 
 app.post('/webauthn/add/finish', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const credentials = await clientAuth.auth.webauthn.add.finish(req.body.transactionId, req.body.response);
+    const credentials = await clientAuth.auth.webauthn.update.finish(
+      req.body.transactionId,
+      req.body.response,
+    )
     returnCookies(res, credentials)
   } catch (error) {
     console.log(error)
@@ -183,10 +210,12 @@ app.post('/webauthn/add/finish', authMiddleware, async (req: Request, res: Respo
 })
 
 app.post('/oauth', async (req: Request, res: Response) => {
-  const provider: OAuthProvider = (req.body.provider as OAuthProvider)
+  const provider: OAuthProvider = req.body.provider as OAuthProvider
   try {
-    const out =  await clientAuth.auth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
-    res.status(200).send(out.data.url)
+    const out = await clientAuth.auth.oauth.start[provider](
+      `https://localhost:${port}/oauth/finish`,
+    )
+    res.status(200).send(out?.data?.url)
   } catch (error) {
     console.log(error)
     res.sendStatus(500)
@@ -205,7 +234,7 @@ app.get('/oauth/finish', async (req: Request, res: Response) => {
 })
 
 app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {
-  console.log("Private API")
+  console.log('Private API')
   res.sendStatus(200)
 })
 

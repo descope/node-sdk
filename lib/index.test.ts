@@ -292,4 +292,28 @@ describe('sdk', () => {
       })
     })
   })
+
+  describe('hooks', () => {
+    it('should add descope headers to request', async () => {
+      jest.resetModules()
+      const coreSdk = jest.fn()
+      jest.doMock('@descope/core-js-sdk', () => coreSdk)
+      const createNodeSdk = require('.').default // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        logger,
+      })
+
+      const returnedConf = coreSdk.mock.calls[0][0].hooks.beforeRequest({})
+
+      expect(returnedConf).toEqual({
+        headers: {
+          'x-descope-sdk-name': 'nodejs',
+          'x-descope-sdk-node-version': '16.18.0',
+          'x-descope-sdk-version': 'one.two.three',
+        },
+      })
+    })
+  })
 })

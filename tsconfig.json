@@ -1,21 +1,21 @@
 {
-	"compilerOptions": {
-		"rootDir": ".",
-		"target": "es2017",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": false,
-		"skipLibCheck": true,
-		"strict": false,
-		"esModuleInterop": true,
-		"module": "esnext",
-		"moduleResolution": "node",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"declaration": true,
-		"declarationDir": "dts",
-		"typeRoots": ["./node_modules/@types"]
-	},
+  "compilerOptions": {
+    "rootDir": ".",
+    "target": "es2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationDir": "dts",
+    "typeRoots": ["./node_modules/@types"]
+  },
 
-	"include": ["**/*.ts"],
-	"exclude": ["node_modules", "build", "dist", "test", "examples"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "build", "dist", "test"]
 }

@@ -1,4 +1,8 @@
-import createSdk, { SdkResponse, ExchangeAccessKeyResponse } from '@descope/core-js-sdk'
+import createSdk, {
+  SdkResponse,
+  ExchangeAccessKeyResponse,
+  RequestConfig,
+} from '@descope/core-js-sdk'
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers'
@@ -9,6 +13,8 @@ import {
   permissionsClaimName,
   rolesClaimName,
 } from './constants'
+
+declare const BUILD_VERSION: string
 
 /* istanbul ignore next */
 if (!globalThis.fetch) {
@@ -23,7 +29,19 @@ if (!globalThis.fetch) {
 }
 
 const nodeSdk = (...args: Parameters<typeof createSdk>) => {
-  const coreSdk = createSdk(...args)
+  const funcArgs: typeof args = [...args]
+  funcArgs[0].hooks = funcArgs[0].hooks || {}
+  const origBeforeRequest = funcArgs[0].hooks.beforeRequest
+  funcArgs[0].hooks.beforeRequest = (config: RequestConfig) => {
+    const conf = config
+    conf.headers = {
+      'x-descope-sdk-name': 'nodejs',
+      'x-descope-sdk-node-version': process?.versions?.node || '',
+      'x-descope-sdk-version': BUILD_VERSION,
+    }
+    return origBeforeRequest?.(conf) || conf
+  }
+  const coreSdk = createSdk(...funcArgs)
 
   bulkWrapWith(
     coreSdk,
