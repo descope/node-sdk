@@ -2,8 +2,8 @@ import { SdkResponse } from '@descope/core-js-sdk'
 import express, { Request, Response, NextFunction } from 'express'
 import DescopeClient from '@descope/node-sdk'
 import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk'
-import * as fs from 'fs'
-import * as https from 'https'
+import { readFileSync } from 'fs'
+import { createServer } from 'https'
 import path from 'path'
 import process from 'process'
 import bodyParser from 'body-parser'
@@ -13,8 +13,8 @@ app.use(bodyParser.json())
 const port = 443
 
 const options = {
-  key: fs.readFileSync(path.resolve('./server.key')),
-  cert: fs.readFileSync(path.resolve('./server.crt')),
+  key: readFileSync(path.resolve('./server.key')),
+  cert: readFileSync(path.resolve('./server.crt')),
 }
 
 const clientAuth = {
@@ -43,7 +43,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
-const returnOK = (res: Response, out: SdkResponse<any>) => {
+const returnOK = (res: Response, out: SdkResponse<never>) => {
   res.setHeader('Content-Type', 'application/json')
   if (!out.ok) {
     res.status(400).send(out.error)
@@ -54,7 +54,7 @@ const returnOK = (res: Response, out: SdkResponse<any>) => {
   }
 }
 
-const returnCookies = (res: Response, out: SdkResponse<any>) => {
+const returnCookies = (res: Response, out: SdkResponse<never>) => {
   if (out.ok && out.data?.cookies) {
     res.set('Set-Cookie', out.data.cookies)
     res.setHeader('Content-Type', 'application/json')
@@ -102,7 +102,7 @@ app.post('/totp/signup', async (req: Request, res: Response) => {
   const { identifier } = getMethodAndIdentifier(req)
   try {
     const out = await clientAuth.auth.totp.signUp(identifier)
-    var img = Buffer.from(out?.data?.image || '', 'base64')
+    const img = Buffer.from(out?.data?.image!, 'base64')
     res.writeHead(200, {
       'Content-Type': 'image/png',
       'Content-Length': img.length,
@@ -241,7 +241,7 @@ app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {
 app.post('/logout', authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req)
-    const out = await clientAuth.auth.logout(cookies['DS'])
+    const out = await clientAuth.auth.logout(cookies.DS)
     returnCookies(res, out)
   } catch (error) {
     console.log(error)
@@ -249,7 +249,7 @@ app.post('/logout', authMiddleware, async (req: Request, res: Response) => {
   }
 })
 
-https.createServer(options, app).listen(port, () => {
+createServer(options, app).listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
@@ -273,7 +273,7 @@ const parseCookies = (request: Request) => {
   const cookieHeader = request.headers?.cookie
   if (!cookieHeader) return list
 
-  cookieHeader.split(`;`).forEach(function (cookie: string) {
+  cookieHeader.split(`;`).forEach((cookie: string) => {
     let [name, ...rest] = cookie.split(`=`)
     name = name?.trim()
     if (!name) return
