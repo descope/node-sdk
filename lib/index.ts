@@ -35,6 +35,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
   funcArgs[0].hooks.beforeRequest = (config: RequestConfig) => {
     const conf = config;
     conf.headers = {
+      ...conf.headers,
       'x-descope-sdk-name': 'nodejs',
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
