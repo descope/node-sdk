@@ -51,41 +51,41 @@
 
       function ensureWebauthn() {
         if (!window.PublicKeyCredential) {
-          alert("WebAuthn isn't supported by this browser or hostname")
+          alert("WebAuthn isn't supported by this browser or hostname");
         } else {
-          console.log('Webauthn is supported')
+          console.log('Webauthn is supported');
         }
       }
 
       async function performRegister() {
-        const username = document.getElementById('email')
+        const username = document.getElementById('email');
         if (!username || !username.value) {
-          alert('Please enter a username')
-          return
+          alert('Please enter a username');
+          return;
         }
 
         try {
-          await register(username.value)
-          alert('Register succeeded')
+          await register(username.value);
+          alert('Register succeeded');
         } catch (err) {
-          console.error('Register failed', err)
-          alert(`Register failed: ${err}`)
+          console.error('Register failed', err);
+          alert(`Register failed: ${err}`);
         }
       }
 
       async function performLogin() {
-        const username = document.getElementById('email')
+        const username = document.getElementById('email');
         if (!username || !username.value) {
-          alert('Please enter a username')
-          return
+          alert('Please enter a username');
+          return;
         }
 
         try {
-          await login(username.value)
-          alert('Login succeeded')
+          await login(username.value);
+          alert('Login succeeded');
         } catch (err) {
-          console.error('Login failed', err)
-          alert(`Login failed: ${err}`)
+          console.error('Login failed', err);
+          alert(`Login failed: ${err}`);
         }
       }
 
@@ -95,26 +95,26 @@
         const user = {
           externalID: username,
           displayName: 'John Appleseed',
-        }
+        };
 
         const startResponse = await serverPost(
           `webauthn/signup/start?origin=${encodeURIComponent(document.location.origin)}`,
           user,
-        )
-        console.log('Received register start response', startResponse)
+        );
+        console.log('Received register start response', startResponse);
 
-        const credentialOptions = decodeCredentialOptions(startResponse.options)
+        const credentialOptions = decodeCredentialOptions(startResponse.options);
         const credential = await navigator.credentials.create({
           publicKey: credentialOptions.publicKey,
-        })
-        const credentialResponse = encodeCredentialResponse(credential)
-        console.log('Sending credential', credentialResponse)
+        });
+        const credentialResponse = encodeCredentialResponse(credential);
+        console.log('Sending credential', credentialResponse);
 
         const finishResponse = await serverPost('webauthn/signup/finish', {
           transactionId: startResponse.transactionId,
           response: credentialResponse,
-        })
-        console.log('Received register finish response', finishResponse)
+        });
+        console.log('Received register finish response', finishResponse);
       }
 
       async function login(username) {
@@ -122,35 +122,37 @@
           `webauthn/signin/start?id=${encodeURIComponent(username)}&origin=${encodeURIComponent(
             document.location.origin,
           )}`,
-        )
-        console.log('Received login start response', startResponse)
+        );
+        console.log('Received login start response', startResponse);
 
-        const assertionOptions = decodeAssertionOptions(startResponse.options)
-        const assertion = await navigator.credentials.get({ publicKey: assertionOptions.publicKey })
-        const assertionResponse = encodeAssertionResponse(assertion)
-        console.log('Sending assertion', assertionResponse)
+        const assertionOptions = decodeAssertionOptions(startResponse.options);
+        const assertion = await navigator.credentials.get({
+          publicKey: assertionOptions.publicKey,
+        });
+        const assertionResponse = encodeAssertionResponse(assertion);
+        console.log('Sending assertion', assertionResponse);
 
         const finishResponse = await serverPost('webauthn/signin/finish', {
           transactionId: startResponse.transactionId,
           response: assertionResponse,
-        })
-        console.log('Received login finish response', finishResponse)
+        });
+        console.log('Received login finish response', finishResponse);
       }
 
       /// Serialization
 
       function decodeCredentialOptions(string) {
-        if (!string) return
-        const options = JSON.parse(string)
+        if (!string) return;
+        const options = JSON.parse(string);
 
-        options.publicKey.challenge = decodeBase64Url(options.publicKey.challenge)
-        options.publicKey.user.id = decodeBase64Url(options.publicKey.user.id)
+        options.publicKey.challenge = decodeBase64Url(options.publicKey.challenge);
+        options.publicKey.user.id = decodeBase64Url(options.publicKey.user.id);
 
         options.publicKey.excludeCredentials?.forEach((item) => {
-          item.id = decodeBase64Url(item.id)
-        })
+          item.id = decodeBase64Url(item.id);
+        });
 
-        return options
+        return options;
       }
 
       function encodeCredentialResponse(credential) {
@@ -162,19 +164,19 @@
             attestationObject: encodeBase64Url(credential.response.attestationObject),
             clientDataJSON: encodeBase64Url(credential.response.clientDataJSON),
           },
-        })
+        });
       }
 
       function decodeAssertionOptions(string) {
-        const options = JSON.parse(string)
+        const options = JSON.parse(string);
 
-        options.publicKey.challenge = decodeBase64Url(options.publicKey.challenge)
+        options.publicKey.challenge = decodeBase64Url(options.publicKey.challenge);
 
         options.publicKey.allowCredentials?.forEach((item) => {
-          item.id = decodeBase64Url(item.id)
-        })
+          item.id = decodeBase64Url(item.id);
+        });
 
-        return options
+        return options;
       }
 
       function encodeAssertionResponse(assertion) {
@@ -188,18 +190,18 @@
             signature: encodeBase64Url(assertion.response.signature),
             userHandle: encodeBase64Url(assertion.response.userHandle),
           },
-        })
+        });
       }
 
       function decodeBase64Url(value) {
-        return Uint8Array.from(atob(value), (c) => c.charCodeAt(0)).buffer
+        return Uint8Array.from(atob(value), (c) => c.charCodeAt(0)).buffer;
       }
 
       function encodeBase64Url(value) {
         return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
           .replace(/\+/g, '-')
           .replace(/\//g, '_')
-          .replace(/=/g, '')
+          .replace(/=/g, '');
       }
 
       /// Utils
@@ -212,19 +214,19 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(params),
-        })
+        });
         if (!response.ok) {
-          throw Error(`Server returned status code ${response.status}`)
+          throw Error(`Server returned status code ${response.status}`);
         }
         try {
-          const json = await response.json()
-          return json
+          const json = await response.json();
+          return json;
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       }
 
-      ensureWebauthn()
+      ensureWebauthn();
     </script>
   </head>
 

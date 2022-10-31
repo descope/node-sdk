@@ -40,7 +40,7 @@ Replace any instance of `<ProjectID>` in the code below with your company's Proj
 In your sign-up route using magic link (for example, `myapp.com/signup`) generate a sign-up request and send the magic link via the selected delivery method. In the example below an email is sent to "mytestmail@test.com" containing the magic link and the link will automatically return back to the provided URL ("https://mydomain.com/verify"). In additon, optional user data (for exmaple, a custom username in the code sample below) can be gathered during the sign-up process.
 
 ```javascript
-await descopeClient.magiclink.signUp.email('mytestmail@test.com', { name: 'custom name' })
+await descopeClient.magiclink.signUp.email('mytestmail@test.com', { name: 'custom name' });
 ```
 
 ### 2. Customer Sign-in
@@ -48,7 +48,7 @@ await descopeClient.magiclink.signUp.email('mytestmail@test.com', { name: 'custo
 In your sign-in route using magic link (for exmaple, `myapp.com/login`) generate a sign-in request send the magic link via the selected delivery method. In the example below an email is sent to "mytestmail@test.com" containing the magic link and the link will automatically return back to the provided URL ("https://mydomain.com/verify").
 
 ```javascript
-await descopeClient.magiclink.signIn.email('mytestmail@test.com')
+await descopeClient.magiclink.signIn.email('mytestmail@test.com');
 ```
 
 ### 3. Customer Verification
@@ -56,9 +56,9 @@ await descopeClient.magiclink.signIn.email('mytestmail@test.com')
 In your verify customer route for magic link (for example, `mydomain.com/verify`) verify the token from either a customer sign-up or sign-in.
 
 ```javascript
-const out = await descopeClient.magiclink.verify(token)
+const out = await descopeClient.magiclink.verify(token);
 if (out.data.cookies) {
-  res.set('Set-Cookie', out.data.cookies)
+  res.set('Set-Cookie', out.data.cookies);
 }
 ```
 
@@ -67,8 +67,8 @@ if (out.data.cookies) {
 Session validation checks to see that the visitor to your website or application is who they say they are, by comparing the value in the validation variables against the session data that is already stored.
 
 ```javascript
-const out = await descopeClient.validateSession(session_jwt, refresh_jwt)
+const out = await descopeClient.validateSession(session_jwt, refresh_jwt);
 if (out?.cookies) {
-  res.set('Set-Cookie', out.cookies)
+  res.set('Set-Cookie', out.cookies);
 }
 ```

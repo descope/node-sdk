@@ -40,7 +40,7 @@ Replace any instance of `<ProjectID>` in the code below with your company's Proj
 In your sign-up route for OTP (for example, `myapp.com/signup`) generate a sign-up request and send the OTP verification code via the selected delivery method. In the example below an email is sent to "mytestmail@test.com". In additon, optional user data (for exmaple, a custom username in the code sample below) can be gathered during the sign-up process.
 
 ```javascript
-await descopeClient.otp.signUp.email('mytestmail@test.com')
+await descopeClient.otp.signUp.email('mytestmail@test.com');
 ```
 
 ### 2. Customer Sign-in
@@ -48,7 +48,7 @@ await descopeClient.otp.signUp.email('mytestmail@test.com')
 In your sign-in route for OTP (for exmaple, `myapp.com/login`) generate a sign-in request send the OTP verification code via the selected delivery method. In the example below an email is sent to "mytestmail@test.com".
 
 ```javascript
-await descopeClient.otp.signIn.email('mytestmail@test.com')
+await descopeClient.otp.signIn.email('mytestmail@test.com');
 ```
 
 ### 3. Customer Verification
@@ -56,9 +56,9 @@ await descopeClient.otp.signIn.email('mytestmail@test.com')
 In your verify customer route for OTP (for example, `myapp.com/verify`) verify the OTP from either a customer sign-up or sign-in. The VerifyCode function call will write the necessary tokens and cookies to the response writer (`w`), which will be used by the NodeJS client to validate each session interaction.
 
 ```javascript
-const out = await descopeClient.otp.verify.email(identifier, code)
+const out = await descopeClient.otp.verify.email(identifier, code);
 if (out.data.cookies) {
-  res.set('Set-Cookie', out.data.cookies)
+  res.set('Set-Cookie', out.data.cookies);
 }
 ```
 
@@ -67,8 +67,8 @@ if (out.data.cookies) {
 Session validation checks to see that the visitor to your website or application is who they say they are, by comparing the value in the validation variables against the session data that is already stored.
 
 ```javascript
-const out = await descopeClient.validateSession(session_jwt, refresh_jwt)
+const out = await descopeClient.validateSession(session_jwt, refresh_jwt);
 if (out?.cookies) {
-  res.set('Set-Cookie', out.cookies)
+  res.set('Set-Cookie', out.cookies);
 }
 ```

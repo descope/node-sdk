@@ -35,9 +35,9 @@ In your OAuth start flow (for example, `myapp.com/login-with-facebook`) generate
 We also use the optional redirect URL to `https://localhost:3000/exchange` to call the exchange route. You may also define this in the [Descope console](https://app.descope.com).
 
 ```javascript
-const out = await descopeClient.oauth.start.facebook('https://localhost:3000/exchange')
+const out = await descopeClient.oauth.start.facebook('https://localhost:3000/exchange');
 // res.redirect(out.data.url);
-return out.data.url
+return out.data.url;
 ```
 
 ### 1.1 Error handling
@@ -58,10 +58,10 @@ if (!out.ok) {
 In your exchange for any of the OAuth provider (for example, `mydomain.com/exchange`) verify the code from the provider by using the exchange method.
 
 ```javascript
-const code = req.query.code
-const out = await descopeClient.oauth.exchange(code)
+const code = req.query.code;
+const out = await descopeClient.oauth.exchange(code);
 if (out.data.cookies) {
-  res.set('Set-Cookie', out.data.cookies)
+  res.set('Set-Cookie', out.data.cookies);
 }
 ```
 
@@ -70,8 +70,8 @@ if (out.data.cookies) {
 Session validation checks to see that the visitor to your website or application is who they say they are, by comparing the value in the validation variables against the session data that is already stored.
 
 ```javascript
-const out = await descopeClient.validateSession(session_jwt, refresh_jwt)
+const out = await descopeClient.validateSession(session_jwt, refresh_jwt);
 if (out.cookies) {
-  res.set('Set-Cookie', out.cookies)
+  res.set('Set-Cookie', out.cookies);
 }
 ```

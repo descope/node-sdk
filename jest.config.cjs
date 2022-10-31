@@ -19,4 +19,4 @@ module.exports = {
   testTimeout: 2000,
 
   roots: ['lib'],
-}
+};

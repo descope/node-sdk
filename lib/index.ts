@@ -2,46 +2,46 @@ import createSdk, {
   SdkResponse,
   ExchangeAccessKeyResponse,
   RequestConfig,
-} from '@descope/core-js-sdk'
-import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose'
-import fetch, { Headers, Response, Request } from 'node-fetch'
-import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers'
-import { AuthenticationInfo } from './types'
+} from '@descope/core-js-sdk';
+import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose';
+import fetch, { Headers, Response, Request } from 'node-fetch';
+import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers';
+import { AuthenticationInfo } from './types';
 import {
   refreshTokenCookieName,
   sessionTokenCookieName,
   permissionsClaimName,
   rolesClaimName,
-} from './constants'
+} from './constants';
 
-declare const BUILD_VERSION: string
+declare const BUILD_VERSION: string;
 
 /* istanbul ignore next */
 if (!globalThis.fetch) {
   // @ts-ignore
-  globalThis.fetch = fetch
+  globalThis.fetch = fetch;
   // @ts-ignore
-  globalThis.Headers = Headers
+  globalThis.Headers = Headers;
   // @ts-ignore
-  globalThis.Request = Request
+  globalThis.Request = Request;
   // @ts-ignore
-  globalThis.Response = Response
+  globalThis.Response = Response;
 }
 
 const nodeSdk = (...args: Parameters<typeof createSdk>) => {
-  const funcArgs: typeof args = [...args]
-  funcArgs[0].hooks = funcArgs[0].hooks || {}
-  const origBeforeRequest = funcArgs[0].hooks.beforeRequest
+  const funcArgs: typeof args = [...args];
+  funcArgs[0].hooks = funcArgs[0].hooks || {};
+  const origBeforeRequest = funcArgs[0].hooks.beforeRequest;
   funcArgs[0].hooks.beforeRequest = (config: RequestConfig) => {
-    const conf = config
+    const conf = config;
     conf.headers = {
       'x-descope-sdk-name': 'nodejs',
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
-    }
-    return origBeforeRequest?.(conf) || conf
-  }
-  const coreSdk = createSdk(...funcArgs)
+    };
+    return origBeforeRequest?.(conf) || conf;
+  };
+  const coreSdk = createSdk(...funcArgs);
 
   bulkWrapWith(
     coreSdk,
@@ -58,43 +58,43 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       'refresh',
     ],
     withCookie,
-  )
+  );
 
-  const { projectId, logger } = args[0]
+  const { projectId, logger } = args[0];
 
-  const keys: Record<string, KeyLike | Uint8Array> = {}
+  const keys: Record<string, KeyLike | Uint8Array> = {};
 
   /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
     const publicKeys: JWK[] = await coreSdk.httpClient
       .get(`v1/keys/${projectId}`)
-      .then((resp) => resp.json())
-    if (!Array.isArray(publicKeys)) return {}
+      .then((resp) => resp.json());
+    if (!Array.isArray(publicKeys)) return {};
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
-    )
+    );
 
     return kidJwksPairs.reduce(
       (acc, [kid, jwk]) => (kid ? { ...acc, [kid.toString()]: jwk } : acc),
       {},
-    )
-  }
+    );
+  };
 
   const sdk = {
     ...coreSdk,
 
     /** Get the key that can validate the given JWT KID in the header. Can retrieve the public key from local cache or from Descope. */
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
-      if (!header?.kid) throw Error('header.kid must not be empty')
+      if (!header?.kid) throw Error('header.kid must not be empty');
 
-      if (keys[header.kid]) return keys[header.kid]
+      if (keys[header.kid]) return keys[header.kid];
 
       // do we need to fetch once or every time?
-      Object.assign(keys, await fetchKeys())
+      Object.assign(keys, await fetchKeys());
 
-      if (!keys[header.kid]) throw Error('failed to fetch matching key')
+      if (!keys[header.kid]) throw Error('failed to fetch matching key');
 
-      return keys[header.kid]
+      return keys[header.kid];
     },
 
     /**
@@ -104,9 +104,9 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      */
     async validateJwt(jwt: string): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(jwt, sdk.getKey, { issuer: projectId, clockTolerance: 5 })
+      const res = await jwtVerify(jwt, sdk.getKey, { issuer: projectId, clockTolerance: 5 });
 
-      return { jwt, token: res.payload }
+      return { jwt, token: res.payload };
     },
 
     /**
@@ -121,35 +121,35 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       refreshToken?: string,
     ): Promise<AuthenticationInfo> {
       if (!sessionToken && !refreshToken)
-        throw Error('both refresh token and session token are empty')
+        throw Error('both refresh token and session token are empty');
 
       if (sessionToken) {
         try {
-          const token = await sdk.validateJwt(sessionToken)
-          return token
+          const token = await sdk.validateJwt(sessionToken);
+          return token;
         } catch (error) {
           if (!refreshToken) {
-            logger?.error('failed to validate session token and no refresh token provided', error)
-            throw Error('could not validate tokens')
+            logger?.error('failed to validate session token and no refresh token provided', error);
+            throw Error('could not validate tokens');
           }
         }
       }
       if (refreshToken) {
         try {
-          await sdk.validateJwt(refreshToken)
-          const jwtResp = await sdk.refresh(refreshToken)
+          await sdk.validateJwt(refreshToken);
+          const jwtResp = await sdk.refresh(refreshToken);
           if (jwtResp.ok) {
-            const token = await sdk.validateJwt(jwtResp.data?.sessionJwt)
-            return token
+            const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
+            return token;
           }
-          throw Error(jwtResp.error?.message)
+          throw Error(jwtResp.error?.message);
         } catch (refreshTokenErr) {
-          logger?.error('failed to validate refresh token', refreshTokenErr)
-          throw Error('could not validate tokens')
+          logger?.error('failed to validate refresh token', refreshTokenErr);
+          throw Error('could not validate tokens');
         }
       }
       /* istanbul ignore next */
-      throw Error('could not validate token')
+      throw Error('could not validate token');
     },
 
     /**
@@ -158,28 +158,28 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      * @returns AuthneticationInfo with session JWT data
      */
     async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
-      if (!accessKey) throw Error('access key must not be empty')
+      if (!accessKey) throw Error('access key must not be empty');
 
-      let resp: SdkResponse<ExchangeAccessKeyResponse>
+      let resp: SdkResponse<ExchangeAccessKeyResponse>;
       try {
-        resp = await sdk.accessKey.exchange(accessKey)
+        resp = await sdk.accessKey.exchange(accessKey);
       } catch (error) {
-        logger?.error('failed to exchange access key', error)
-        throw Error('could not exchange access key')
+        logger?.error('failed to exchange access key', error);
+        throw Error('could not exchange access key');
       }
 
-      const { sessionJwt } = resp.data
+      const { sessionJwt } = resp.data;
       if (!sessionJwt) {
-        logger?.error('failed to parse exchange access key response')
-        throw Error('could not exchange access key')
+        logger?.error('failed to parse exchange access key response');
+        throw Error('could not exchange access key');
       }
 
       try {
-        const token = await sdk.validateJwt(sessionJwt)
-        return token
+        const token = await sdk.validateJwt(sessionJwt);
+        return token;
       } catch (error) {
-        logger?.error('failed to parse jwt from access key', error)
-        throw Error('could not exchange access key')
+        logger?.error('failed to parse jwt from access key', error);
+        throw Error('could not exchange access key');
       }
     },
 
@@ -190,7 +190,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      * @returns true if all permissions exist, false otherwise
      */
     validatePermissions(authInfo: AuthenticationInfo, permissions: string[]): boolean {
-      return sdk.validateTenantPermissions(authInfo, null, permissions)
+      return sdk.validateTenantPermissions(authInfo, null, permissions);
     },
 
     /**
@@ -204,8 +204,8 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
       tenant: string,
       permissions: string[],
     ): boolean {
-      const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant)
-      return permissions.every((perm) => granted.includes(perm))
+      const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant);
+      return permissions.every((perm) => granted.includes(perm));
     },
 
     /**
@@ -215,7 +215,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      * @returns true if all roles exist, false otherwise
      */
     validateRoles(authInfo: AuthenticationInfo, roles: string[]): boolean {
-      return sdk.validateTenantRoles(authInfo, null, roles)
+      return sdk.validateTenantRoles(authInfo, null, roles);
     },
 
     /**
@@ -225,13 +225,13 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      * @returns true if all roles exist, false otherwise
      */
     validateTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): boolean {
-      const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant)
-      return roles.every((role) => membership.includes(role))
+      const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant);
+      return roles.every((role) => membership.includes(role));
     },
-  }
+  };
 
-  return sdk
-}
+  return sdk;
+};
 
 /** Descope SDK client with delivery methods enum.
  *
@@ -250,15 +250,15 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
  * ```
  */
 const sdkWithAttributes = nodeSdk as typeof nodeSdk & {
-  DeliveryMethods: typeof createSdk.DeliveryMethods
-  RefreshTokenCookieName: typeof refreshTokenCookieName
-  SessionTokenCookieName: typeof sessionTokenCookieName
-}
+  DeliveryMethods: typeof createSdk.DeliveryMethods;
+  RefreshTokenCookieName: typeof refreshTokenCookieName;
+  SessionTokenCookieName: typeof sessionTokenCookieName;
+};
 
-sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods
-sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName
-sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName
+sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods;
+sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName;
+sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName;
 
-export default sdkWithAttributes
+export default sdkWithAttributes;
 
-export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk'
+export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
