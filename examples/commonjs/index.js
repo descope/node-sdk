@@ -16,7 +16,10 @@ var options = {
 const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
-    const out = await clientAuth.validateSession(cookies[DescopeClient.SessionTokenCookieName], cookies[DescopeClient.RefreshTokenCookieName]);
+    const out = await clientAuth.validateSession(
+      cookies[DescopeClient.SessionTokenCookieName],
+      cookies[DescopeClient.RefreshTokenCookieName],
+    );
     if (out && out.cookies) {
       res.set('Set-Cookie', out.cookies);
     }
@@ -31,170 +34,187 @@ const authMiddleware = async (req, res, next) => {
 const returnOK = (res, out) => {
   res.setHeader('Content-Type', 'application/json');
   if (!out.ok) {
-    res.status(400).send(out.error)
+    res.status(400).send(out.error);
   } else if (out.data) {
-    res.status(200).send(out.data)
+    res.status(200).send(out.data);
   } else {
-    res.sendStatus(200)
+    res.sendStatus(200);
   }
-}
+};
 
 const setCookies = (res, out) => {
   if (out && out.ok && out.data && out.data.cookies) {
-    res.set('Set-Cookie', out.data.cookies)
+    res.set('Set-Cookie', out.data.cookies);
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(out.data)
+    res.status(200).send(out.data);
   } else {
-    res.sendStatus(401)
+    res.sendStatus(401);
   }
-}
+};
 
 app.post('/otp/signup', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
+  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
-    const out = await clientAuth.otp.signUp[deliveryMethod](identifier)
-    returnOK(res, out)
+    const out = await clientAuth.otp.signUp[deliveryMethod](identifier);
+    returnOK(res, out);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/otp/signin', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
+  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
   try {
-    const out = await clientAuth.otp.signIn[deliveryMethod](identifier)
-    returnOK(res, out)
+    const out = await clientAuth.otp.signIn[deliveryMethod](identifier);
+    returnOK(res, out);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/otp/verify', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req)
-  const code = req.body.code
+  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const code = req.body.code;
   try {
-    const out = await clientAuth.otp.verify[deliveryMethod](identifier, code)
-    setCookies(res, out)
+    const out = await clientAuth.otp.verify[deliveryMethod](identifier, code);
+    setCookies(res, out);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/totp/signup', async (req, res) => {
-  const { identifier } = getMethodAndIdentifier(req)
+  const { identifier } = getMethodAndIdentifier(req);
   try {
-    const out = await clientAuth.totp.signUp(identifier)
+    const out = await clientAuth.totp.signUp(identifier);
     var img = Buffer.from(out.data.image, 'base64');
     res.writeHead(200, {
       'Content-Type': 'image/png',
-      'Content-Length': img.length
+      'Content-Length': img.length,
     });
     res.end(img);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/totp/verify', async (req, res) => {
-  const { identifier } = getMethodAndIdentifier(req)
-  const code = req.body.code
+  const { identifier } = getMethodAndIdentifier(req);
+  const code = req.body.code;
   try {
-    const out = await clientAuth.totp.verify(identifier, code)
-    setCookies(res, out)
+    const out = await clientAuth.totp.verify(identifier, code);
+    setCookies(res, out);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
-app.use('/webauthn', express.static('../demo.html'))
+app.use('/webauthn', express.static('../demo.html'));
 
 app.post('/webauthn/signup/start', async (req, res) => {
   try {
-    const credentials = await clientAuth.webauthn.signUp.start(req.body.externalID, req.query.origin, req.body.displayName);
-    returnOK(res, credentials)
+    const credentials = await clientAuth.webauthn.signUp.start(
+      req.body.externalID,
+      req.query.origin,
+      req.body.displayName,
+    );
+    returnOK(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/webauthn/signup/finish', async (req, res) => {
   try {
-    const credentials = await clientAuth.webauthn.signUp.finish(req.body.transactionId, req.body.response);
-    setCookies(res, credentials)
+    const credentials = await clientAuth.webauthn.signUp.finish(
+      req.body.transactionId,
+      req.body.response,
+    );
+    setCookies(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/webauthn/signin/start', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signIn.start(req.query.id, req.query.origin);
-    returnOK(res, credentials)
+    returnOK(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/webauthn/signin/finish', async (req, res) => {
   try {
-    const credentials = await clientAuth.webauthn.signIn.finish(req.body.transactionId, req.body.response);
-    setCookies(res, credentials)
+    const credentials = await clientAuth.webauthn.signIn.finish(
+      req.body.transactionId,
+      req.body.response,
+    );
+    setCookies(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/webauthn/add/start', authMiddleware, async (req, res) => {
   try {
-    const cookies = parseCookies(req)
-    const credentials = await clientAuth.webauthn.add.start(req.query.id, req.query.origin, cookies[DescopeClient.RefreshTokenCookieName]);
-    returnOK(res, credentials)
+    const cookies = parseCookies(req);
+    const credentials = await clientAuth.webauthn.update.start(
+      req.query.id,
+      req.query.origin,
+      cookies[DescopeClient.RefreshTokenCookieName],
+    );
+    returnOK(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/webauthn/add/finish', authMiddleware, async (req, res) => {
   try {
-    const credentials = await clientAuth.webauthn.add.finish(req.body.transactionId, req.body.response);
-    setCookies(res, credentials)
+    const credentials = await clientAuth.webauthn.update.finish(
+      req.body.transactionId,
+      req.body.response,
+    );
+    setCookies(res, credentials);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(401)
+    console.log(error);
+    res.sendStatus(401);
   }
-})
+});
 
 app.post('/oauth', async (req, res) => {
-  const provider = req.body.provider
+  const provider = req.body.provider;
   try {
-    const out = await clientAuth.oauth.start[provider](`https://localhost:${port}/oauth/finish`)
-    res.status(200).send(out.data.url)
+    const out = await clientAuth.oauth.start[provider](`https://localhost:${port}/oauth/finish`);
+    res.status(200).send(out.data.url);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
-})
+});
 
 app.get('/oauth/finish', async (req, res) => {
-  const code = req.query.code
+  const code = req.query.code;
   try {
-    const out = await clientAuth.oauth.exchange(code)
-    setCookies(res, out)
+    const out = await clientAuth.oauth.exchange(code);
+    setCookies(res, out);
   } catch (error) {
-    console.log(error)
-    res.sendStatus(500)
+    console.log(error);
+    res.sendStatus(500);
   }
-})
+});
 app.post('/api/private', authMiddleware, (_unused, res) => {
   res.sendStatus(200);
 });
@@ -203,7 +223,7 @@ app.post('/logout', authMiddleware, async (_unused, res) => {
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.logout(cookies['DS'], cookies['DSR']);
-    setCookies(res, out)
+    setCookies(res, out);
   } catch (error) {
     console.log(error);
     res.sendStatus(401);
@@ -222,7 +242,10 @@ const getMethodAndIdentifier = (req) => {
     return { identifier: req.body.sms, deliveryMethod: DescopeClient.DeliveryMethods.SMS };
   }
   if (req.body.whatsapp) {
-    return { identifier: req.body.whatsapp, deliveryMethod: DescopeClient.DeliveryMethods.whatsapp };
+    return {
+      identifier: req.body.whatsapp,
+      deliveryMethod: DescopeClient.DeliveryMethods.whatsapp,
+    };
   }
   return { identifier: '', deliveryMethod: DescopeClient.DeliveryMethods.email };
 };

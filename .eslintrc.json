@@ -1,9 +1,13 @@
-const fs = require('fs');
-
-module.exports = {
-  root: true,
-  extends: ['airbnb-base', 'prettier', 'plugin:jest/recommended', 'plugin:import/typescript', 'airbnb-typescript/base'],
-  plugins: [
+{
+  "root": true,
+  "extends": [
+    "airbnb-base",
+    "prettier",
+    "plugin:jest/recommended",
+    "plugin:import/typescript",
+    "airbnb-typescript/base"
+  ],
+  "plugins": [
     "@typescript-eslint",
     "prettier",
     "import",
@@ -11,16 +15,17 @@ module.exports = {
     "jest-dom",
     "jest",
     "jest-formatting",
-    "no-only-tests"],
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    project: './tsconfig.json',
+    "no-only-tests"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
   },
-  env: {
-    jest: true,
-    node: true,
+  "env": {
+    "jest": true,
+    "node": true
   },
-  settings: {
+  "settings": {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx", ".js"]
     },
@@ -30,24 +35,20 @@ module.exports = {
       }
     }
   },
-  rules: {
+  "rules": {
+    "semi": ["error", "always"],
     "no-tabs": ["error", { "allowIndentationTabs": true }],
     "@typescript-eslint/indent": ["off"],
-    "quotes": [
-      "error",
-      "single",
-      { "avoidEscape": true, "allowTemplateLiterals": true }
-    ],
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "@typescript-eslint/quotes": [
       "error",
       "single",
       { "avoidEscape": true, "allowTemplateLiterals": true }
     ],
-    "semi": ["error", "never"],
     "space-before-blocks": 2,
     "space-before-function-paren": 2,
     "no-multi-spaces": 2,
-    "@typescript-eslint/semi": "off",
+    "@typescript-eslint/semi": "error",
     "no-unexpected-multiline": "error",
     "@typescript-eslint/comma-dangle": ["off"],
     "comma-dangle": ["off"],
@@ -71,21 +72,19 @@ module.exports = {
     "import/no-extraneous-dependencies": [
       2,
       {
-        "devDependencies": [
-          "!./src/**/*"
-        ]
+        "devDependencies": ["!./src/**/*"]
       }
     ],
-    'import/extensions': [
-      'error',
-      'ignorePackages',
+    "import/extensions": [
+      "error",
+      "ignorePackages",
       {
-        js: 'never',
-        jsx: 'never',
-        ts: 'never',
-        tsx: 'never',
-      },
-    ],
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   },
-  ignorePatterns: ['.eslintrc.cjs', 'build/*', 'dist/*', 'coverage/*', '**/testutils/*'],
-};
+  "ignorePatterns": [".eslintrc.cjs", "build/*", "dist/*", "coverage/*", "**/testutils/*"]
+}
