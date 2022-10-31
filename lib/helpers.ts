@@ -1,10 +1,10 @@
-import type { ResponseData, SdkResponse } from '@descope/core-js-sdk'
-import { AuthenticationInfo } from './types'
+import type { ResponseData, SdkResponse } from '@descope/core-js-sdk';
+import { AuthenticationInfo } from './types';
 import {
   refreshTokenCookieName,
   sessionTokenCookieName,
   authorizedTenantsClaimName,
-} from './constants'
+} from './constants';
 
 /**
  * Generate a cookie string from given parameters
@@ -14,9 +14,8 @@ import {
  * @returns Cookie string with all options on the string
  */
 const generateCookie = (name: string, value: string, options?: Record<string, string | number>) =>
-  `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
-    options?.cookieMaxAge || ''
-  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`
+  `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${options?.cookieMaxAge || ''
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`;
 
 /**
  * Parse the cookie string and return the value of the cookie
@@ -25,9 +24,9 @@ const generateCookie = (name: string, value: string, options?: Record<string, st
  * @returns the value of the given cookie
  */
 const getCookieValue = (cookie: string | null | undefined, name: string) => {
-  const match = cookie?.match(RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
-  return match ? match[1] : null
-}
+  const match = cookie?.match(RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? match[1] : null;
+};
 
 // eslint-disable-next-line import/prefer-default-export
 /**
@@ -37,32 +36,32 @@ const getCookieValue = (cookie: string | null | undefined, name: string) => {
  */
 export const withCookie =
   <T extends Array<any>, U extends Promise<SdkResponse<ResponseData>>>(fn: (...args: T) => U) =>
-  async (...args: T): Promise<SdkResponse<ResponseData>> => {
-    const resp = await fn(...args)
+    async (...args: T): Promise<SdkResponse<ResponseData>> => {
+      const resp = await fn(...args);
 
-    // istanbul ignore next
-    if (!resp.data) {
-      return resp
-    }
-
-    // eslint-disable-next-line prefer-const
-    let { sessionJwt, refreshJwt, ...rest } = resp.data
-    const cookies = [generateCookie(sessionTokenCookieName, sessionJwt, rest)]
-
-    if (!refreshJwt) {
-      if (resp.response?.headers.get('set-cookie')) {
-        refreshJwt = getCookieValue(
-          resp.response?.headers.get('set-cookie'),
-          refreshTokenCookieName,
-        )
-        cookies.push(resp.response?.headers.get('set-cookie')!)
+      // istanbul ignore next
+      if (!resp.data) {
+        return resp;
       }
-    } else {
-      cookies.push(generateCookie(refreshTokenCookieName, refreshJwt, rest))
-    }
 
-    return { ...resp, data: { ...resp.data, refreshJwt, cookies } }
-  }
+      // eslint-disable-next-line prefer-const
+      let { sessionJwt, refreshJwt, ...rest } = resp.data;
+      const cookies = [generateCookie(sessionTokenCookieName, sessionJwt, rest)];
+
+      if (!refreshJwt) {
+        if (resp.response?.headers.get('set-cookie')) {
+          refreshJwt = getCookieValue(
+            resp.response?.headers.get('set-cookie'),
+            refreshTokenCookieName,
+          );
+          cookies.push(resp.response?.headers.get('set-cookie')!);
+        }
+      } else {
+        cookies.push(generateCookie(refreshTokenCookieName, refreshJwt, rest));
+      }
+
+      return { ...resp, data: { ...resp.data, refreshJwt, cookies } };
+    };
 
 /**
  * Wrap given object internal functions (can be deep inside the object) with the given wrapping function
@@ -77,30 +76,30 @@ export const wrapWith = <T extends Record<string, any>>(
   wrappingFn: Function,
   // eslint-disable-next-line consistent-return
 ): void => {
-  if (!obj) return
+  if (!obj) return;
 
-  const pathSections = typeof path === 'string' ? path.split('.') : path
-  const section = pathSections.shift() || ('' as keyof T)
+  const pathSections = typeof path === 'string' ? path.split('.') : path;
+  const section = pathSections.shift() || ('' as keyof T);
 
   if (pathSections.length === 0 || section === '*') {
     const wrap = (key: keyof T) => {
       if (key && typeof obj[key] === 'function') {
         // eslint-disable-next-line no-param-reassign
-        obj[key] = wrappingFn(obj[key])
+        obj[key] = wrappingFn(obj[key]);
       } else {
         // istanbul ignore next
-        throw Error(`cannot wrap value at key "${key.toString()}"`)
+        throw Error(`cannot wrap value at key "${key.toString()}"`);
       }
-    }
+    };
     if (section === '*') {
-      Object.keys(obj).forEach(wrap)
+      Object.keys(obj).forEach(wrap);
     } else {
-      wrap(section)
+      wrap(section);
     }
   } else {
-    wrapWith(obj[section], pathSections, wrappingFn)
+    wrapWith(obj[section], pathSections, wrappingFn);
   }
-}
+};
 
 /**
  * Wrap given object internal functions (can be deep inside the object) with the given wrapping function based on multiple paths.
@@ -113,7 +112,7 @@ export const bulkWrapWith = (
   obj: Parameters<typeof wrapWith>[0],
   paths: string[],
   wrappingFn: Parameters<typeof wrapWith>[2],
-) => paths.forEach((path: string) => wrapWith(obj, path, wrappingFn))
+) => paths.forEach((path: string) => wrapWith(obj, path, wrappingFn));
 
 /**
  * Get the claim (used for permissions or roles) for a given tenant or top level if tenant is empty
@@ -129,6 +128,6 @@ export function getAuthorizationClaimItems(
 ): string[] {
   const value = tenant
     ? authInfo.token[authorizedTenantsClaimName]?.[tenant]?.[claim]
-    : authInfo.token[claim]
-  return Array.isArray(value) ? value : []
+    : authInfo.token[claim];
+  return Array.isArray(value) ? value : [];
 }
