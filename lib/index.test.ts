@@ -11,6 +11,8 @@ import {
 } from './constants';
 
 let validToken: string;
+let validTokenIssuerURL: string;
+let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
 let permAuthInfo: AuthenticationInfo;
@@ -39,6 +41,18 @@ describe('sdk', () => {
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
       .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    validTokenIssuerURL = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://descope.com/bla/project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    invalidTokenIssuer = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://descope.com/bla/bla')
       .setExpirationTime(1981398111)
       .sign(privateKey);
     expiredToken = await new SignJWT({})
@@ -79,6 +93,22 @@ describe('sdk', () => {
           iss: 'project-id',
         },
       });
+    });
+
+    it('should return the token payload when issuer is url and valid', async () => {
+      const resp = await sdk.validateJwt(validTokenIssuerURL);
+      expect(resp).toMatchObject({
+        token: {
+          exp: 1981398111,
+          iss: 'project-id',
+        },
+      });
+    });
+
+    it('should reject with a proper error message when token issuer invalid', async () => {
+      await expect(sdk.validateJwt(invalidTokenIssuer)).rejects.toThrow(
+        'unexpected "iss" claim value',
+      );
     });
 
     it('should reject with a proper error message when token expired', async () => {
