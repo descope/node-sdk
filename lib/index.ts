@@ -3,7 +3,7 @@ import createSdk, {
   ExchangeAccessKeyResponse,
   RequestConfig,
 } from '@descope/core-js-sdk';
-import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK } from 'jose';
+import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK, errors } from 'jose';
 import fetch, { Headers, Response, Request } from 'node-fetch';
 import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers';
 import { AuthenticationInfo } from './types';
@@ -105,9 +105,22 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
      */
     async validateJwt(jwt: string): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(jwt, sdk.getKey, { issuer: projectId, clockTolerance: 5 });
+      const res = await jwtVerify(jwt, sdk.getKey, { clockTolerance: 5 });
+      const token = res.payload;
 
-      return { jwt, token: res.payload };
+      if (token) {
+        token.iss = token.iss?.split('/').pop(); // support both url and project id as issuer
+        if (token.iss !== projectId) {
+          // We must do the verification here, since issuer can be either project ID or URL
+          throw new errors.JWTClaimValidationFailed(
+            'unexpected "iss" claim value',
+            'iss',
+            'check_failed',
+          );
+        }
+      }
+
+      return { jwt, token };
     },
 
     /**
