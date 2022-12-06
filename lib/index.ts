@@ -58,8 +58,8 @@ const nodeSdk = (args: NodeSdkArgs) => {
     [
       'otp.verify.*',
       'magicLink.verify',
-      'magicLink.crossDevice.signUp.*',
-      'magicLink.crossDevice.signIn.*',
+      'enchantedLink.signUp.*',
+      'enchantedLink.signIn.*',
       'oauth.exchange',
       'saml.exchange',
       'totp.verify',

@@ -263,8 +263,8 @@ describe('sdk', () => {
     describe('when no cookie', () => {
       const paths = [
         ...generatePathFromKeys(sdk, 'otp.verify'),
-        ...generatePathFromKeys(sdk, 'magicLink.crossDevice.signUp'),
-        ...generatePathFromKeys(sdk, 'magicLink.crossDevice.signIn'),
+        ...generatePathFromKeys(sdk, 'enchantedLink.signUp'),
+        ...generatePathFromKeys(sdk, 'enchantedLink.signIn'),
         'magicLink.verify',
         'oauth.exchange',
         'saml.exchange',
