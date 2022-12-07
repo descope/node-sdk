@@ -279,10 +279,16 @@ describe('sdk', () => {
         jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
+          clone() {
+            return this;
+          },
         } as Response);
         jest.spyOn(sdk.httpClient, 'get').mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve(data),
+          clone() {
+            return this;
+          },
         } as Response);
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
@@ -305,6 +311,9 @@ describe('sdk', () => {
           ok: true,
           json: () => Promise.resolve(data),
           headers: new Headers({ 'set-cookie': cookie }),
+          clone() {
+            return this;
+          },
         } as Response);
 
         await expect(get(sdk, path)('1', '2', '3')).resolves.toEqual(
