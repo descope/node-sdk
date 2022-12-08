@@ -1,3 +1,5 @@
+import createSdk from '@descope/core-js-sdk';
+
 /** Parsed JWT token */
 interface Token {
   sub?: string;
@@ -12,3 +14,6 @@ export interface AuthenticationInfo {
   token: Token;
   cookies?: string[];
 }
+
+/** Descope core SDK type */
+export type CoreSdk = ReturnType<typeof createSdk>;

@@ -6,6 +6,7 @@ import createSdk, {
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK, errors } from 'jose';
 import fetch, { Headers, Response, Request } from 'node-fetch';
 import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers';
+import withManagement from './management';
 import { AuthenticationInfo } from './types';
 import {
   refreshTokenCookieName,
@@ -28,11 +29,18 @@ if (!globalThis.fetch) {
   globalThis.Response = Response;
 }
 
-const nodeSdk = (...args: Parameters<typeof createSdk>) => {
-  const funcArgs: typeof args = [...args];
-  funcArgs[0].hooks = funcArgs[0].hooks || {};
-  const origBeforeRequest = funcArgs[0].hooks.beforeRequest;
-  funcArgs[0].hooks.beforeRequest = (config: RequestConfig) => {
+/** Configuration arguments which include the Descope core SDK args and an optional management key */
+type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
+  managementKey?: string;
+};
+
+const nodeSdk = (args: NodeSdkArgs) => {
+  // eslint-disable-next-line no-param-reassign
+  args.hooks = args.hooks || {};
+
+  const origBeforeRequest = args.hooks.beforeRequest;
+  // eslint-disable-next-line no-param-reassign
+  args.hooks.beforeRequest = (config: RequestConfig) => {
     const conf = config;
     conf.headers = {
       ...conf.headers,
@@ -42,15 +50,16 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
     };
     return origBeforeRequest?.(conf) || conf;
   };
-  const coreSdk = createSdk(...funcArgs);
+
+  const coreSdk = createSdk(args);
 
   bulkWrapWith(
     coreSdk,
     [
       'otp.verify.*',
       'magicLink.verify',
-      'magicLink.crossDevice.signUp.*',
-      'magicLink.crossDevice.signIn.*',
+      'enchantedLink.signUp.*',
+      'enchantedLink.signIn.*',
       'oauth.exchange',
       'saml.exchange',
       'totp.verify',
@@ -61,7 +70,7 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
     withCookie,
   );
 
-  const { projectId, logger } = args[0];
+  const { projectId, logger } = args;
 
   const keys: Record<string, KeyLike | Uint8Array> = {};
 
@@ -81,8 +90,17 @@ const nodeSdk = (...args: Parameters<typeof createSdk>) => {
     );
   };
 
+  const management = withManagement(coreSdk, args.managementKey);
+
   const sdk = {
     ...coreSdk,
+
+    /**
+     * Provides various APIs for managing a Descope project programmatically. A management key must
+     * be provided as an argument when initializing the SDK to use these APIs. Management keys can be
+     * generated in the Descope console.
+     */
+    management,
 
     /** Get the key that can validate the given JWT KID in the header. Can retrieve the public key from local cache or from Descope. */
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
@@ -274,5 +292,7 @@ sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName;
 sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName;
 
 export default sdkWithAttributes;
+
+export type { NodeSdkArgs };
 
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
