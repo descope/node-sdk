@@ -16,3 +16,9 @@ export type CreateTenantResponse = {
 export type UpdateJWTResponse = {
   jwt: string;
 };
+
+/** Represents a permission for a project. It has a name and a optionally a description. */
+export type Permission = {
+  name: string;
+  description?: string;
+};

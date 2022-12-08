@@ -15,4 +15,10 @@ export default {
   jwt: {
     update: '/v1/mgmt/jwt/update',
   },
+  permission: {
+    create: '/v1/mgmt/permission/create',
+    update: '/v1/mgmt/permission/update',
+    delete: '/v1/mgmt/permission/delete',
+    loadAll: '/v1/mgmt/permission/all',
+  },
 };

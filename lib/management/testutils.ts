@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 const mockHttpClient = {
   get: jest.fn(),
   post: jest.fn(),
