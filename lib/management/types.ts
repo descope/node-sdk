@@ -25,3 +25,12 @@ export type Permission = {
   description?: string;
   systemDefault: boolean;
 };
+
+/** Represents a role in a project. It has a name and optionally a description and
+ * a list of permissions it grants.
+ */
+export type Role = {
+  name: string;
+  description?: string;
+  permissionNames: string[];
+};
