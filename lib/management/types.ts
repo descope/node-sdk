@@ -17,8 +17,11 @@ export type UpdateJWTResponse = {
   jwt: string;
 };
 
-/** Represents a permission for a project. It has a name and a optionally a description. */
+/** Represents a permission in a project. It has a name and a optionally a description.
+ * It also has a flag indicating whether it is system default or not.
+ */
 export type Permission = {
   name: string;
   description?: string;
+  systemDefault: boolean;
 };

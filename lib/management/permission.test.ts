@@ -7,9 +7,9 @@ import { Permission } from './types';
 const management = withManagement(mockCoreSdk, 'key');
 
 const mockPermissions = [
-  { name: 'name', description: 'description' },
-  { name: 'name2', description: 'description2' },
-  { name: 'name3', description: 'description3' },
+  { name: 'name', description: 'description', systemDefault: true },
+  { name: 'name2', description: 'description2', systemDefault: false },
+  { name: 'name3', description: 'description3', systemDefault: false },
 ];
 
 const mockAllPermissionsResponse = {
