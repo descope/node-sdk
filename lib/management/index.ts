@@ -3,6 +3,7 @@ import withUser from './user';
 import withTenant from './tenant';
 import withJWT from './jwt';
 import withPermission from './permission';
+import withRole from './role';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
@@ -10,6 +11,7 @@ const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
   tenant: withTenant(sdk, managementKey),
   jwt: withJWT(sdk, managementKey),
   permission: withPermission(sdk, managementKey),
+  role: withRole(sdk, managementKey),
 });
 
 export default withManagement;

@@ -21,4 +21,10 @@ export default {
     delete: '/v1/mgmt/permission/delete',
     loadAll: '/v1/mgmt/permission/all',
   },
+  role: {
+    create: '/v1/mgmt/role/create',
+    update: '/v1/mgmt/role/update',
+    delete: '/v1/mgmt/role/delete',
+    loadAll: '/v1/mgmt/role/all',
+  },
 };
