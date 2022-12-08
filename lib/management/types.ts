@@ -32,5 +32,5 @@ export type Permission = {
 export type Role = {
   name: string;
   description?: string;
-  permissionNames?: string[];
+  permissionNames: string[];
 };
