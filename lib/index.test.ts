@@ -132,7 +132,7 @@ describe('sdk', () => {
 
       jest
         .spyOn(newSdk.httpClient, 'get')
-        .mockResolvedValue({ json: () => Promise.resolve([publicKeys]) } as Response);
+        .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
 
       await newSdk.getKey({ kid: publicKeys.kid } as JWTHeaderParameters);
       await newSdk.getKey({ kid: publicKeys.kid } as JWTHeaderParameters);
