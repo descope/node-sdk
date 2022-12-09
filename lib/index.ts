@@ -76,9 +76,10 @@ const nodeSdk = (args: NodeSdkArgs) => {
 
   /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
-    const publicKeys: JWK[] = await coreSdk.httpClient
-      .get(`v1/keys/${projectId}`)
+    const keysWrapper = await coreSdk.httpClient
+      .get(`v2/keys/${projectId}`)
       .then((resp) => resp.json());
+    const publicKeys: JWK[] = keysWrapper.keys;
     if (!Array.isArray(publicKeys)) return {};
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
