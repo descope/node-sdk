@@ -79,7 +79,7 @@ describe('sdk', () => {
     publicKeys.use = 'sig';
     jest
       .spyOn(sdk.httpClient, 'get')
-      .mockResolvedValue({ json: () => Promise.resolve([publicKeys]) } as Response);
+      .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
   });
   afterEach(() => {
     jest.clearAllMocks();
