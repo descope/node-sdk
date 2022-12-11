@@ -1,6 +1,6 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.0.4-alpha.8",
+  "version": "1.0.4-alpha.9",
   "description": "Node.js library used to integrate with Descope",
   "typings": "./dist/index.d.ts",
   "main": "dist/cjs/index.cjs.js",
