@@ -1,12 +1,12 @@
-import { SdkResponse } from '@descope/core-js-sdk';
-import express, { Request, Response, NextFunction } from 'express';
-import DescopeClient from '@descope/node-sdk';
+import { ResponseData, SdkResponse } from '@descope/core-js-sdk';
 import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk';
+import DescopeClient from '@descope/node-sdk';
+import bodyParser from 'body-parser';
+import express, { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'fs';
 import { createServer } from 'https';
 import path from 'path';
 import process from 'process';
-import bodyParser from 'body-parser';
 
 const app = express();
 app.use(bodyParser.json());
@@ -43,7 +43,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-const returnOK = (res: Response, out: SdkResponse<never>) => {
+const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
   res.setHeader('Content-Type', 'application/json');
   if (!out.ok) {
     res.status(400).send(out.error);
@@ -54,9 +54,8 @@ const returnOK = (res: Response, out: SdkResponse<never>) => {
   }
 };
 
-const returnCookies = (res: Response, out: SdkResponse<never>) => {
-  if (out.ok && out.data?.cookies) {
-    res.set('Set-Cookie', out.data.cookies);
+const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
+  if (out.ok) {
     res.setHeader('Content-Type', 'application/json');
     res.status(200).send(out.data);
   } else {
