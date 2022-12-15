@@ -17,6 +17,15 @@ export type UpdateJWTResponse = {
   jwt: string;
 };
 
+/** Represents a tenant in a project. It has an id, a name and an array of
+ * self provisioning domains used to associate users with that tenant.
+ */
+export type Tenant = {
+  id: string;
+  name: string;
+  selfProvisioningDomains: string[];
+};
+
 /** Represents a permission in a project. It has a name and optionally a description.
  * It also has a flag indicating whether it is system default or not.
  */

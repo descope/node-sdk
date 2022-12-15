@@ -1,13 +1,23 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { CreateTenantResponse } from './types';
+import { CreateTenantResponse, Tenant } from './types';
 import { mockCoreSdk, mockHttpClient } from './testutils';
 
 const management = withManagement(mockCoreSdk, 'key');
 
 const mockTenantCreateResponse = {
   tenantId: 'foo',
+};
+
+const mockTenants = [
+  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'] },
+  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'] },
+  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'] },
+];
+
+const mockAllTenantsResponse = {
+  tenants: mockTenants,
 };
 
 describe('Management Tenant', () => {
@@ -132,6 +142,33 @@ describe('Management Tenant', () => {
       expect(resp).toEqual({
         code: 200,
         data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('loadAll', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockAllTenantsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockAllTenantsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Tenant[]> = await management.tenant.loadAll();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.loadAll, {
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenants,
         ok: true,
         response: httpResponse,
       });

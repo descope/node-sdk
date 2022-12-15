@@ -11,6 +11,7 @@ export default {
     create: '/v1/mgmt/tenant/create',
     update: '/v1/mgmt/tenant/update',
     delete: '/v1/mgmt/tenant/delete',
+    loadAll: '/v1/mgmt/tenant/all',
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
