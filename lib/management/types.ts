@@ -17,9 +17,8 @@ export type UpdateJWTResponse = {
   jwt: string;
 };
 
-/** Represents a tenant in a project. It has an id, name and an
- * array of self provisioned domains for that tenant used to associate users
- * with that tenant.
+/** Represents a tenant in a project. It has an id, a name and an array of
+ * self provisioning domains used to associate users with that tenant.
  */
 export type Tenant = {
   id: string;
