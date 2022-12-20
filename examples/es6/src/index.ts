@@ -55,8 +55,18 @@ const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) =>
 };
 
 const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
-  if (out.ok && out.data?.cookies) {
-    res.set('Set-Cookie', out.data.cookies);
+  if (out.ok) {
+    // Set cookies with
+    // - Response's cookies
+    // - Response's session-token (if it exists)
+    // Note: Session token may grow, especially in cases of using authorization, or adding custom claims,
+    // This may cause it size to pass browser cookies size limit, use carefully.
+    const { cookies = [], sessionJwt = '' } = out?.data! || {};
+    const setCookies = [...cookies];
+    if (sessionJwt) {
+      setCookies.push(`${DescopeClient.SessionTokenCookieName}=${sessionJwt}`);
+    }
+    res.set('Set-Cookie', setCookies);
     res.setHeader('Content-Type', 'application/json');
     res.status(200).send(out.data);
   } else {
