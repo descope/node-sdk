@@ -54,9 +54,31 @@ const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) =>
   }
 };
 
+/**
+ * Generate a cookie string from given parameters
+ * @param name name of the cookie
+ * @param value value of cookie that must be already encoded
+ * @param options any options to put on the cookie like cookieDomain, cookieMaxAge, cookiePath
+ * @returns Cookie string with all options on the string
+ */
+const generateCookie = (name: string, value: string, options?: Record<string, string | number>) =>
+  `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
+    options?.cookieMaxAge || ''
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`;
+
 const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
-  if (out.ok && out.data?.cookies) {
-    res.set('Set-Cookie', out.data.cookies);
+  if (out.ok) {
+    // Set cookies with
+    // - Response's cookies
+    // - Response's session-token (if it exists)
+    // Note: Session token may grow, especially in cases of using authorization, or adding custom claims,
+    // This may cause it size to pass browser cookies size limit, use carefully.
+    const { cookies = [], sessionJwt = '', ...rest } = out?.data! || {};
+    const setCookies = [...cookies];
+    if (sessionJwt) {
+      generateCookie(DescopeClient.SessionTokenCookieName, sessionJwt, rest);
+    }
+    res.set('Set-Cookie', setCookies);
     res.setHeader('Content-Type', 'application/json');
     res.status(200).send(out.data);
   } else {
