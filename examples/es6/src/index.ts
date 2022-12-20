@@ -55,7 +55,8 @@ const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) =>
 };
 
 const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
-  if (out.ok) {
+  if (out.ok && out.data?.cookies) {
+    res.set('Set-Cookie', out.data.cookies);
     res.setHeader('Content-Type', 'application/json');
     res.status(200).send(out.data);
   } else {
