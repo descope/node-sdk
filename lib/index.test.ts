@@ -4,7 +4,6 @@ import createSdk from '.';
 import { AuthenticationInfo } from './types';
 import {
   refreshTokenCookieName,
-  sessionTokenCookieName,
   authorizedTenantsClaimName,
   permissionsClaimName,
   rolesClaimName,
@@ -296,7 +295,6 @@ describe('sdk', () => {
             data: {
               ...data,
               cookies: [
-                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
                 `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
               ],
             },
@@ -321,10 +319,7 @@ describe('sdk', () => {
             data: {
               refreshJwt: 'refreshJwt',
               sessionJwt: 'sessionJwt',
-              cookies: [
-                `${sessionTokenCookieName}=${data.sessionJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
-                cookie,
-              ],
+              cookies: [cookie],
             },
           }),
         );

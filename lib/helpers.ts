@@ -1,10 +1,6 @@
 import type { ResponseData, SdkResponse } from '@descope/core-js-sdk';
 import { AuthenticationInfo } from './types';
-import {
-  refreshTokenCookieName,
-  sessionTokenCookieName,
-  authorizedTenantsClaimName,
-} from './constants';
+import { refreshTokenCookieName, authorizedTenantsClaimName } from './constants';
 
 /**
  * Generate a cookie string from given parameters
@@ -46,8 +42,8 @@ export const withCookie =
     }
 
     // eslint-disable-next-line prefer-const
-    let { sessionJwt, refreshJwt, ...rest } = resp.data;
-    const cookies = [generateCookie(sessionTokenCookieName, sessionJwt, rest)];
+    let { refreshJwt, ...rest } = resp.data;
+    const cookies = [];
 
     if (!refreshJwt) {
       if (resp.response?.headers.get('set-cookie')) {
