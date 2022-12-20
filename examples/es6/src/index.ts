@@ -76,7 +76,7 @@ const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T
     const { cookies = [], sessionJwt = '', ...rest } = out?.data! || {};
     const setCookies = [...cookies];
     if (sessionJwt) {
-      generateCookie(DescopeClient.SessionTokenCookieName, sessionJwt, rest);
+      setCookies.push(generateCookie(DescopeClient.SessionTokenCookieName, sessionJwt, rest));
     }
     res.set('Set-Cookie', setCookies);
     res.setHeader('Content-Type', 'application/json');
