@@ -138,7 +138,7 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 ### OAuth
 
-Users can authenticate using their social logins, using the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social). To start a flow call:
+Users can authenticate using their social logins, via the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social). To start an OAuth flow call:
 
 ```typescript
 // Choose an oauth provider out of the supported providers
