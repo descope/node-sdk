@@ -244,7 +244,7 @@ for more information.
 #### Session Validation Using Middleware
 
 Alternatively, you can create a simple middleware function that internally uses the `validateSession` function.
-This middleware will automatically detect the cookies from the request and save the current user ID in the context for further usage.
+This middleware will automatically parse the cookies from the request.
 On failure, it will respond with `401 Unauthorized`.
 
 ```typescript
