@@ -129,7 +129,7 @@ To verify an enchanted link, your redirect page must call the validation functio
 try {
    await descopeClient.enchantedLink.verify('token');
     // token is invalid
-} else {
+} catch (error) {
     // token is valid
 }
 ```
