@@ -127,10 +127,10 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 ```typescript
 try {
-   await descopeClient.enchantedLink.verify('token');
-    // token is invalid
+  await descopeClient.enchantedLink.verify('token');
+  // token is invalid
 } catch (error) {
-    // token is valid
+  // token is valid
 }
 ```
 
