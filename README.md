@@ -401,6 +401,39 @@ usersRes.data.forEach((user) => {
 });
 ```
 
+### Manage SSO Setting
+
+You can manage SSO settings and map SSO group roles and user attributes.
+
+```typescript
+// You can configure SSO settings manually by setting the required fields directly
+const tenantId = 'tenant-id' // Which tenant this configuration is for
+const idpURL = 'https://idp.com'
+const entityID = 'my-idp-entity-id'
+const idpCert = '<your-cert-here>'
+const redirectURL = 'https://my-app.com/handle-saml' // Global redirect URL for SSO/SAML
+await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL)
+
+// Alternatively, configure using an SSO metadata URL
+await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
+
+// Map IDP groups to Descope roles, or map user attributes.
+// This function overrides any previous mapping (even when empty). Use carefully.
+await descopeClient.management.sso.configureMapping(
+   tenantId,
+   { groups: ['IDP_ADMIN'], role: 'Tenant Admin'}
+   { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
+)
+```
+
+Note: Certificates should have a similar structure to:
+
+```
+-----BEGIN CERTIFICATE-----
+Certifcate contents
+-----END CERTIFICATE-----
+```
+
 ### Manage Permissions
 
 You can create, update, delete or load permissions:

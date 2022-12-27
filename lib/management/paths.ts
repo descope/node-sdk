@@ -13,6 +13,11 @@ export default {
     delete: '/v1/mgmt/tenant/delete',
     loadAll: '/v1/mgmt/tenant/all',
   },
+  sso: {
+    configure: 'mgmt/sso/settings',
+    metadata: 'mgmt/sso/metadata',
+    mapping: 'mgmt/sso/mapping',
+  },
   jwt: {
     update: '/v1/mgmt/jwt/update',
   },

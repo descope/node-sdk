@@ -12,6 +12,20 @@ export type CreateTenantResponse = {
   tenantId: string;
 };
 
+/** Represents a mapping between a set of groups of users and a role that will be assigned to them */
+export type RoleMapping = {
+  groups: string[];
+  role: string;
+};
+
+/** Represents a mapping between Descope and IDP user attributes */
+export type AttributeMapping = {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  group?: string;
+};
+
 /** UpdateJWT response with a new JWT value with the added custom claims */
 export type UpdateJWTResponse = {
   jwt: string;
