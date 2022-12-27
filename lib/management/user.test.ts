@@ -150,6 +150,34 @@ describe('Management User', () => {
     });
   });
 
+  describe('loadByJwtSubject', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.loadByJwtSubject('jwtSubject');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.load, {
+        queryParams: { jwtSubject: 'jwtSubject' },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('searchAll', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
