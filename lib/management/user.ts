@@ -56,6 +56,20 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       }),
       (data) => data.user,
     ),
+  /**
+   * Load an existing user by JWT subject. The JWT subject can be found
+   * on the user's JWT.
+   * @param jwtSubject load a user by this JWT subject field
+   * @returns The UserResponse if found, throws otherwise.
+   */
+  loadByJwtSubject: (jwtSubject: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.get(apiPaths.user.load, {
+        queryParams: { jwtSubject },
+        token: managementKey,
+      }),
+      (data) => data.user,
+    ),
   searchAll: (
     tenantIds?: string[],
     roleNames?: string[],
