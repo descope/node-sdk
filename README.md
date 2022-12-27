@@ -394,6 +394,9 @@ await descopeClient.management.user.delete('desmond@descope.com');
 // Load specific user
 const userRes = await descopeClient.management.user.load('desmond@descope.com');
 
+// If needed, users can be loaded using the JWT subject as well
+const userRes = await descopeClient.management.user.loadByJwtSubject('<jwt-subject>');
+
 // Search all users, optionally according to tenant and/or role filter
 const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
