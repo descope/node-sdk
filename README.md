@@ -388,7 +388,7 @@ await descopeClient.management.user.update(
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1', 'role-name2'] }],
 );
 
-// Tenant deletion cannot be undone. Use carefully.
+// User deletion cannot be undone. Use carefully.
 await descopeClient.management.user.delete('desmond@descope.com');
 
 // Load specific user
@@ -402,6 +402,43 @@ const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
   // do something
 });
+```
+
+### Manage Access Keys
+
+You can create, update, delete or load access keys, as well as search according to filters:
+
+```typescript
+// An access key must have a name and expiration, other fields are optional.
+// Roles should be set directly if no tenants exist, otherwise set
+// on a per-tenant basis.
+await descopeClient.management.accessKey.create(
+  'key-name',
+  123456789, // expiration time
+  null,
+  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
+// Load specific user
+const accessKeyRes = await descopeClient.management.accessKey.load('key-id');
+
+// Search all users, optionally according to tenant and/or role filter
+const accessKeysRes = await descopeClient.management.accessKey.searchAll(['tenant-ID']);
+accessKeysRes.data.forEach((accessKey) => {
+  // do something
+});
+
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.accessKey.update('key-id', 'new-key-name');
+
+// Access keys can be deactivated to prevent usage. This can be undone using "activate".
+await descopeClient.management.accessKey.deactivate('key-id');
+
+// Disabled access keys can be activated once again.
+await descopeClient.management.accessKey.activate('key-id');
+
+// Access key deletion cannot be undone. Use carefully.
+await descopeClient.management.accessKey.delete('key-id');
 ```
 
 ### Manage SSO Setting
