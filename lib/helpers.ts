@@ -61,44 +61,6 @@ export const withCookie: SdkFnWrapper<{ refreshJwt?: string; cookies?: string[] 
   };
 
 /**
- * Wrap given object internal functions (can be deep inside the object) with the given wrapping function
- * @param obj we will deep wrap functions inside this object based on the given path
- * @param path the path of internal objects to walk before wrapping the final result. Path is collection of parts separated by '.' that support '*' to say all of the keys for the part.
- * @param wrappingFn function to wrap with
- * @returns void, we update the functions in place
- */
-export const wrapWith = <T extends Record<string, any>>(
-  obj: T,
-  path: string | string[],
-  wrappingFn: Function,
-  // eslint-disable-next-line consistent-return
-): void => {
-  if (!obj) return;
-
-  const pathSections = typeof path === 'string' ? path.split('.') : path;
-  const section = pathSections.shift() || ('' as keyof T);
-
-  if (pathSections.length === 0 || section === '*') {
-    const wrap = (key: keyof T) => {
-      if (key && typeof obj[key] === 'function') {
-        // eslint-disable-next-line no-param-reassign
-        obj[key] = wrappingFn(obj[key]);
-      } else {
-        // istanbul ignore next
-        throw Error(`cannot wrap value at key "${key.toString()}"`);
-      }
-    };
-    if (section === '*') {
-      Object.keys(obj).forEach(wrap);
-    } else {
-      wrap(section);
-    }
-  } else {
-    wrapWith(obj[section], pathSections, wrappingFn);
-  }
-};
-
-/**
  * Get the claim (used for permissions or roles) for a given tenant or top level if tenant is empty
  * @param authInfo The parsed authentication info from the JWT
  * @param claim name of the claim
