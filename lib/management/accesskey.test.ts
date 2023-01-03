@@ -28,7 +28,7 @@ describe('Management Access Keys', () => {
   describe('create', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockMgmtCreatedAccessKeyResponse = {
-        hash: 'abc',
+        cleartext: 'abc',
         key: mockAccessKeyResponse,
       };
       const httpResponse = {

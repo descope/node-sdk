@@ -25,10 +25,10 @@ export type AccessKey = {
   createdBy: string;
 };
 
-/** Access Key extended details including created key hash */
+/** Access Key extended details including created key cleartext */
 export type CreatedAccessKeyResponse = {
   key: AccessKey;
-  hash: string;
+  cleartext: string;
 };
 
 /** Represents a mapping between a set of groups of users and a role that will be assigned to them */

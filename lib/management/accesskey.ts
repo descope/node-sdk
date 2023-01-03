@@ -18,7 +18,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param expireTime When the access key expires. Keep at 0 to make it indefinite.
    * @param roles Optional roles in the project. Does not apply for multi-tenants
    * @param keyTenants Optional associated tenants for this key and its roles for each.
-   * @returns A newly created key and its hash. Make sure to save the hash securely.
+   * @returns A newly created key and its cleartext. Make sure to save the cleartext securely.
    */
   create: (
     name: string,
