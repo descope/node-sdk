@@ -1,5 +1,7 @@
 import createSdk from '@descope/core-js-sdk';
 
+type Head<T extends ReadonlyArray<any>> = T extends readonly [] ? never : T[0];
+
 /** Parsed JWT token */
 interface Token {
   sub?: string;
@@ -16,4 +18,6 @@ export interface AuthenticationInfo {
 }
 
 /** Descope core SDK type */
-export type CoreSdk = ReturnType<typeof createSdk>;
+export type CreateCoreSdk = typeof createSdk;
+export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
+export type CoreSdk = ReturnType<CreateCoreSdk>;

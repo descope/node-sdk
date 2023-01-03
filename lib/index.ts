@@ -2,10 +2,11 @@ import createSdk, {
   SdkResponse,
   ExchangeAccessKeyResponse,
   RequestConfig,
+  wrapWith,
 } from '@descope/core-js-sdk';
 import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK, errors } from 'jose';
 import fetch, { Headers, Response, Request } from 'node-fetch';
-import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers';
+import { withCookie, getAuthorizationClaimItems, addHooks } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
 import {
@@ -34,43 +35,22 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
 };
 
-const nodeSdk = (args: NodeSdkArgs) => {
+const nodeSdk = (config: NodeSdkArgs) => {
   // eslint-disable-next-line no-param-reassign
-  args.hooks = args.hooks || {};
-
-  const origBeforeRequest = args.hooks.beforeRequest;
-  // eslint-disable-next-line no-param-reassign
-  args.hooks.beforeRequest = (config: RequestConfig) => {
-    const conf = config;
+  const beforeRequest = (conf: RequestConfig) => {
+    // eslint-disable-next-line no-param-reassign
     conf.headers = {
       ...conf.headers,
       'x-descope-sdk-name': 'nodejs',
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
     };
-    return origBeforeRequest?.(conf) || conf;
+    return conf;
   };
 
-  const coreSdk = createSdk(args);
+  const coreSdk = createSdk(addHooks(config, { beforeRequest }));
 
-  bulkWrapWith(
-    coreSdk,
-    [
-      'otp.verify.*',
-      'magicLink.verify',
-      'enchantedLink.signUp.*',
-      'enchantedLink.signIn.*',
-      'oauth.exchange',
-      'saml.exchange',
-      'totp.verify',
-      'webauthn.signIn.finish',
-      'webauthn.signUp.finish',
-      'refresh',
-    ],
-    withCookie,
-  );
-
-  const { projectId, logger } = args;
+  const { projectId, logger } = config;
 
   const keys: Record<string, KeyLike | Uint8Array> = {};
 
@@ -91,7 +71,7 @@ const nodeSdk = (args: NodeSdkArgs) => {
     );
   };
 
-  const management = withManagement(coreSdk, args.managementKey);
+  const management = withManagement(coreSdk, config.managementKey);
 
   const sdk = {
     ...coreSdk,
@@ -263,7 +243,24 @@ const nodeSdk = (args: NodeSdkArgs) => {
     },
   };
 
-  return sdk;
+  return wrapWith(
+    sdk,
+    [
+      'otp.verify.email',
+      'otp.verify.sms',
+      'otp.verify.whatsapp',
+      'magicLink.verify',
+      'enchantedLink.signUp',
+      'enchantedLink.signIn',
+      'oauth.exchange',
+      'saml.exchange',
+      'totp.verify',
+      'webauthn.signIn.finish',
+      'webauthn.signUp.finish',
+      'refresh',
+    ] as const,
+    withCookie,
+  );
 };
 
 /** Descope SDK client with delivery methods enum.

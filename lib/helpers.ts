@@ -1,5 +1,5 @@
-import type { ResponseData, SdkResponse } from '@descope/core-js-sdk';
-import { AuthenticationInfo } from './types';
+import type { SdkFnWrapper } from '@descope/core-js-sdk';
+import { AuthenticationInfo, CoreSdkConfig } from './types';
 import { refreshTokenCookieName, authorizedTenantsClaimName } from './constants';
 
 /**
@@ -31,9 +31,9 @@ const getCookieValue = (cookie: string | null | undefined, name: string) => {
  * @param fn the function we are wrapping
  * @returns Wrapped function with cookie generation
  */
-export const withCookie =
-  <T extends Array<any>, U extends Promise<SdkResponse<ResponseData>>>(fn: (...args: T) => U) =>
-  async (...args: T): Promise<SdkResponse<ResponseData>> => {
+export const withCookie: SdkFnWrapper<{ refreshJwt?: string; cookies?: string[] }> =
+  (fn) =>
+  async (...args) => {
     const resp = await fn(...args);
 
     // istanbul ignore next
@@ -43,7 +43,7 @@ export const withCookie =
 
     // eslint-disable-next-line prefer-const
     let { refreshJwt, ...rest } = resp.data;
-    const cookies = [];
+    const cookies: string[] = [];
 
     if (!refreshJwt) {
       if (resp.response?.headers.get('set-cookie')) {
@@ -99,19 +99,6 @@ export const wrapWith = <T extends Record<string, any>>(
 };
 
 /**
- * Wrap given object internal functions (can be deep inside the object) with the given wrapping function based on multiple paths.
- * @param obj we will deep wrap functions inside this object based on the given paths
- * @param paths multiple paths of internal objects to walk before wrapping the final result. Path is collection of parts separated by '.' that support '*' to say all of the keys for the part.
- * @param wrappingFn function to wrap with
- * @returns void, we update the functions in place
- */
-export const bulkWrapWith = (
-  obj: Parameters<typeof wrapWith>[0],
-  paths: string[],
-  wrappingFn: Parameters<typeof wrapWith>[2],
-) => paths.forEach((path: string) => wrapWith(obj, path, wrappingFn));
-
-/**
  * Get the claim (used for permissions or roles) for a given tenant or top level if tenant is empty
  * @param authInfo The parsed authentication info from the JWT
  * @param claim name of the claim
@@ -128,3 +115,20 @@ export function getAuthorizationClaimItems(
     : authInfo.token[claim];
   return Array.isArray(value) ? value : [];
 }
+
+/**
+ * Add hooks to an existing core-sdk config
+ */
+export const addHooks = <Config extends CoreSdkConfig>(
+  config: Config,
+  hooks: Config['hooks'],
+): Config => {
+  ['beforeRequest', 'afterRequest'].reduce((acc, key) => {
+    acc[key] = [].concat(config.hooks?.[key] || []).concat(hooks?.[key] || []);
+
+    return acc;
+    // eslint-disable-next-line no-param-reassign
+  }, (config.hooks ??= {}));
+
+  return config;
+};
