@@ -330,8 +330,17 @@ describe('sdk', () => {
   describe('hooks', () => {
     it('should add descope headers to request', async () => {
       jest.resetModules();
-      const coreSdk = jest.fn();
-      jest.doMock('@descope/core-js-sdk', () => coreSdk);
+      const createCoreJs = jest.fn();
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
       const createNodeSdk = require('.').default; // eslint-disable-line
 
       createNodeSdk({
@@ -339,7 +348,7 @@ describe('sdk', () => {
         logger,
       });
 
-      const returnedConf = coreSdk.mock.calls[0][0].hooks.beforeRequest({
+      const returnedConf = createCoreJs.mock.calls[0][0].hooks.beforeRequest({
         headers: { test: '123' },
       });
 

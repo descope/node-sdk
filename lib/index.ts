@@ -1,19 +1,21 @@
 import createSdk, {
-  SdkResponse,
   ExchangeAccessKeyResponse,
   RequestConfig,
+  SdkResponse,
+  addHooksToConfig,
+  wrapWith,
 } from '@descope/core-js-sdk';
-import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK, errors } from 'jose';
-import fetch, { Headers, Response, Request } from 'node-fetch';
-import { bulkWrapWith, withCookie, getAuthorizationClaimItems } from './helpers';
+import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
+import fetch, { Headers, Request, Response } from 'node-fetch';
+import {
+  permissionsClaimName,
+  refreshTokenCookieName,
+  rolesClaimName,
+  sessionTokenCookieName,
+} from './constants';
+import { getAuthorizationClaimItems, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
-import {
-  refreshTokenCookieName,
-  sessionTokenCookieName,
-  permissionsClaimName,
-  rolesClaimName,
-} from './constants';
 
 declare const BUILD_VERSION: string;
 
@@ -34,43 +36,21 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
 };
 
-const nodeSdk = (args: NodeSdkArgs) => {
-  // eslint-disable-next-line no-param-reassign
-  args.hooks = args.hooks || {};
-
-  const origBeforeRequest = args.hooks.beforeRequest;
-  // eslint-disable-next-line no-param-reassign
-  args.hooks.beforeRequest = (config: RequestConfig) => {
-    const conf = config;
+const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
+  const beforeRequest = (conf: RequestConfig) => {
+    // eslint-disable-next-line no-param-reassign
     conf.headers = {
       ...conf.headers,
       'x-descope-sdk-name': 'nodejs',
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
     };
-    return origBeforeRequest?.(conf) || conf;
+    return conf;
   };
 
-  const coreSdk = createSdk(args);
+  const coreSdk = createSdk(addHooksToConfig(config, { beforeRequest }));
 
-  bulkWrapWith(
-    coreSdk,
-    [
-      'otp.verify.*',
-      'magicLink.verify',
-      'enchantedLink.signUp.*',
-      'enchantedLink.signIn.*',
-      'oauth.exchange',
-      'saml.exchange',
-      'totp.verify',
-      'webauthn.signIn.finish',
-      'webauthn.signUp.finish',
-      'refresh',
-    ],
-    withCookie,
-  );
-
-  const { projectId, logger } = args;
+  const { projectId, logger } = config;
 
   const keys: Record<string, KeyLike | Uint8Array> = {};
 
@@ -91,7 +71,7 @@ const nodeSdk = (args: NodeSdkArgs) => {
     );
   };
 
-  const management = withManagement(coreSdk, args.managementKey);
+  const management = withManagement(coreSdk, managementKey);
 
   const sdk = {
     ...coreSdk,
@@ -263,7 +243,24 @@ const nodeSdk = (args: NodeSdkArgs) => {
     },
   };
 
-  return sdk;
+  return wrapWith(
+    sdk,
+    [
+      'otp.verify.email',
+      'otp.verify.sms',
+      'otp.verify.whatsapp',
+      'magicLink.verify',
+      'enchantedLink.signUp',
+      'enchantedLink.signIn',
+      'oauth.exchange',
+      'saml.exchange',
+      'totp.verify',
+      'webauthn.signIn.finish',
+      'webauthn.signUp.finish',
+      'refresh',
+    ] as const,
+    withCookie,
+  );
 };
 
 /** Descope SDK client with delivery methods enum.
@@ -294,6 +291,5 @@ sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName;
 
 export default sdkWithAttributes;
 
-export type { NodeSdkArgs };
-
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
+export type { NodeSdkArgs };
