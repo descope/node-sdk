@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse, UserResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { UserTenant } from './types';
+import { AssociatedTenant } from './types';
 
 type SingleUserResponse = {
   user: UserResponse;
@@ -17,13 +17,13 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    roleNames?: string[],
-    userTenants?: UserTenant[],
+    roles?: string[],
+    userTenants?: AssociatedTenant[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.create,
-        { identifier, email, phone, displayName, roleNames, userTenants },
+        { identifier, email, phone, displayName, roleNames: roles, userTenants },
         { token: managementKey },
       ),
       (data) => data.user,
@@ -33,13 +33,13 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    roleNames?: string[],
-    userTenants?: UserTenant[],
+    roles?: string[],
+    userTenants?: AssociatedTenant[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.update,
-        { identifier, email, phone, displayName, roleNames, userTenants },
+        { identifier, email, phone, displayName, roleNames: roles, userTenants },
         { token: managementKey },
       ),
       (data) => data.user,
@@ -72,13 +72,13 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     ),
   searchAll: (
     tenantIds?: string[],
-    roleNames?: string[],
+    roles?: string[],
     limit?: number,
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames, limit },
+        { tenantIds, roleNames: roles, limit },
         { token: managementKey },
       ),
       (data) => data.users,

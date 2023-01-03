@@ -4,8 +4,17 @@ export default {
     create: '/v1/mgmt/user/create',
     update: '/v1/mgmt/user/update',
     delete: '/v1/mgmt/user/delete',
-    load: '/v1/mgmt/user/load',
+    load: '/v1/mgmt/user',
     search: '/v1/mgmt/user/search',
+  },
+  accessKey: {
+    create: '/v1/mgmt/accesskey/create',
+    load: '/v1/mgmt/accesskey',
+    search: '/v1/mgmt/accesskey/search',
+    update: '/v1/mgmt/accesskey/update',
+    deactivate: '/v1/mgmt/accesskey/deactivate',
+    activate: '/v1/mgmt/accesskey/activate',
+    delete: '/v1/mgmt/accesskey/delete',
   },
   tenant: {
     create: '/v1/mgmt/tenant/create',
