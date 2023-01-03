@@ -335,6 +335,11 @@ describe('sdk', () => {
         __esModule: true,
         default: createCoreJs,
         wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
       }));
       const createNodeSdk = require('.').default; // eslint-disable-line
 
@@ -343,7 +348,7 @@ describe('sdk', () => {
         logger,
       });
 
-      const returnedConf = createCoreJs.mock.calls[0][0].hooks.beforeRequest[0]({
+      const returnedConf = createCoreJs.mock.calls[0][0].hooks.beforeRequest({
         headers: { test: '123' },
       });
 
