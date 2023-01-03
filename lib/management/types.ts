@@ -57,3 +57,17 @@ export type Role = {
   description?: string;
   permissionNames: string[];
 };
+
+/** Represents a group in a project. It has an id and display name and a list of group members. */
+export type Group = {
+  id: string;
+  display: string;
+  members?: GroupMember[];
+};
+
+/** Represents a group member. It has identifier, jwtSubject and display. */
+export type GroupMember = {
+  identifier: string;
+  jwtSubject: string;
+  display: string;
+};

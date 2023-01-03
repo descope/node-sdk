@@ -33,4 +33,9 @@ export default {
     delete: '/v1/mgmt/role/delete',
     loadAll: '/v1/mgmt/role/all',
   },
+  group: {
+    loadAllGroups: '/v1/mgmt/group/all',
+    loadAllGroupsForMember: '/v1/mgmt/group/member/all',
+    loadAllGroupMembers: '/v1/mgmt/group/members',
+  },
 };
