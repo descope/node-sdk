@@ -1,8 +1,8 @@
-/** Represents a tenant association for a User. The tenantId is required to denote
- * which tenant the user belongs to. The roleNames array is an optional list of
- * roles for the user in this specific tenant.
+/** Represents a tenant association for a User or Access Key. The tenantId is required to denote
+ * which tenant the user or access key belongs to. The roleNames array is an optional list of
+ * roles for the user or access key in this specific tenant.
  */
-export type UserTenant = {
+export type AssociatedTenant = {
   tenantId: string;
   roleNames: string[];
 };
@@ -10,6 +10,25 @@ export type UserTenant = {
 /** The tenantId of a newly created tenant */
 export type CreateTenantResponse = {
   tenantId: string;
+};
+
+/** An access key that can be used to access descope */
+export type AccessKey = {
+  id: string;
+  name: string;
+  expiredTime: number;
+  roleNames: string[];
+  keyTenants?: AssociatedTenant[];
+  status: string;
+  createdTime: number;
+  expiresTime: number;
+  createdBy: string;
+};
+
+/** Access Key extended details including created key hash */
+export type CreatedAccessKeyResponse = {
+  key: AccessKey;
+  hash: string;
 };
 
 /** Represents a mapping between a set of groups of users and a role that will be assigned to them */
