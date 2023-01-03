@@ -1,20 +1,21 @@
 import createSdk, {
-  SdkResponse,
   ExchangeAccessKeyResponse,
   RequestConfig,
+  SdkResponse,
+  addHooksToConfig,
   wrapWith,
 } from '@descope/core-js-sdk';
-import { KeyLike, jwtVerify, JWK, JWTHeaderParameters, importJWK, errors } from 'jose';
-import fetch, { Headers, Response, Request } from 'node-fetch';
-import { withCookie, getAuthorizationClaimItems, addHooks } from './helpers';
+import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
+import fetch, { Headers, Request, Response } from 'node-fetch';
+import {
+  permissionsClaimName,
+  refreshTokenCookieName,
+  rolesClaimName,
+  sessionTokenCookieName,
+} from './constants';
+import { getAuthorizationClaimItems, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
-import {
-  refreshTokenCookieName,
-  sessionTokenCookieName,
-  permissionsClaimName,
-  rolesClaimName,
-} from './constants';
 
 declare const BUILD_VERSION: string;
 
@@ -35,8 +36,7 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
 };
 
-const nodeSdk = (config: NodeSdkArgs) => {
-  // eslint-disable-next-line no-param-reassign
+const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
   const beforeRequest = (conf: RequestConfig) => {
     // eslint-disable-next-line no-param-reassign
     conf.headers = {
@@ -48,7 +48,7 @@ const nodeSdk = (config: NodeSdkArgs) => {
     return conf;
   };
 
-  const coreSdk = createSdk(addHooks(config, { beforeRequest }));
+  const coreSdk = createSdk(addHooksToConfig(config, { beforeRequest }));
 
   const { projectId, logger } = config;
 
@@ -71,7 +71,7 @@ const nodeSdk = (config: NodeSdkArgs) => {
     );
   };
 
-  const management = withManagement(coreSdk, config.managementKey);
+  const management = withManagement(coreSdk, managementKey);
 
   const sdk = {
     ...coreSdk,
@@ -291,6 +291,5 @@ sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName;
 
 export default sdkWithAttributes;
 
-export type { NodeSdkArgs };
-
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
+export type { NodeSdkArgs };

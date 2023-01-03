@@ -1,6 +1,6 @@
 import type { SdkFnWrapper } from '@descope/core-js-sdk';
-import { AuthenticationInfo, CoreSdkConfig } from './types';
-import { refreshTokenCookieName, authorizedTenantsClaimName } from './constants';
+import { authorizedTenantsClaimName, refreshTokenCookieName } from './constants';
+import { AuthenticationInfo } from './types';
 
 /**
  * Generate a cookie string from given parameters
@@ -77,20 +77,3 @@ export function getAuthorizationClaimItems(
     : authInfo.token[claim];
   return Array.isArray(value) ? value : [];
 }
-
-/**
- * Add hooks to an existing core-sdk config
- */
-export const addHooks = <Config extends CoreSdkConfig>(
-  config: Config,
-  hooks: Config['hooks'],
-): Config => {
-  ['beforeRequest', 'afterRequest'].reduce((acc, key) => {
-    acc[key] = [].concat(config.hooks?.[key] || []).concat(hooks?.[key] || []);
-
-    return acc;
-    // eslint-disable-next-line no-param-reassign
-  }, (config.hooks ??= {}));
-
-  return config;
-};
