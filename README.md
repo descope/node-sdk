@@ -489,6 +489,35 @@ rolesRes.data.forEach((role) => {
 });
 ```
 
+### ### Query SSO Groups
+
+You can query SSO groups:
+
+```typescript
+// Load all groups for a given tenant id
+const groupsRes = descopeClient.management.group.loadAllGroups('tenant-id');
+
+// Load all groups for the given user's jwt subjects (can be found in the user's JWT)
+const groupsRes = descopeClient.management.group.loadAllGroupsForMember('tenant-id', [
+  'jwt-subject-1',
+  'jwt-subject-2',
+]);
+
+// Load all groups for the given user's identifiers (used for sign-in)
+const groupsRes = descopeClient.management.group.loadAllGroupsForMember(
+  'tenant-id',
+  [],
+  ['identifier-1', 'identifier-2'],
+);
+
+// Load all group's members by the given group id
+const groupsRes = descopeClient.management.group.loadAllGroupMembers('tenant-id', 'group-id');
+
+groupsRes.data.forEach((group) => {
+  // do something
+});
+```
+
 ### Manage JWTs
 
 You can add custom claims to a valid JWT.
