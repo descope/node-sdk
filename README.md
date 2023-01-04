@@ -394,8 +394,8 @@ await descopeClient.management.user.delete('desmond@descope.com');
 // Load specific user
 const userRes = await descopeClient.management.user.load('desmond@descope.com');
 
-// If needed, users can be loaded using the JWT subject as well
-const userRes = await descopeClient.management.user.loadByJwtSubject('<jwt-subject>');
+// If needed, users can be loaded using the user ID as well
+const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
 
 // Search all users, optionally according to tenant and/or role filter
 const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
@@ -534,10 +534,10 @@ You can query SSO groups:
 // Load all groups for a given tenant id
 const groupsRes = descopeClient.management.group.loadAllGroups('tenant-id');
 
-// Load all groups for the given user's jwt subjects (can be found in the user's JWT)
+// Load all groups for the given user IDs (can be found in the user's JWT)
 const groupsRes = descopeClient.management.group.loadAllGroupsForMember('tenant-id', [
-  'jwt-subject-1',
-  'jwt-subject-2',
+  'user-id-1',
+  'user-id-2',
 ]);
 
 // Load all groups for the given user's identifiers (used for sign-in)

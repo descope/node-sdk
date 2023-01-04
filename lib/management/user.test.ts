@@ -150,7 +150,7 @@ describe('Management User', () => {
     });
   });
 
-  describe('loadByJwtSubject', () => {
+  describe('loadByUserId', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -162,10 +162,10 @@ describe('Management User', () => {
       };
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<UserResponse> = await management.user.loadByJwtSubject('jwtSubject');
+      const resp: SdkResponse<UserResponse> = await management.user.loadByUserId('userId');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.load, {
-        queryParams: { jwtSubject: 'jwtSubject' },
+        queryParams: { userId: 'userId' },
         token: 'key',
       });
 
