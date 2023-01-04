@@ -15,21 +15,21 @@ const withGroup = (sdk: CoreSdk, managementKey?: string) => ({
     ),
 
   /**
-   * Load all groups for the provided user JWT subjects or identifiers.
+   * Load all groups for the provided user IDs or identifiers.
    * @param tenantId Tenant ID to load groups from.
-   * @param jwtSubjects Optional List of JWT subjects, with the format of "U2J5ES9S8TkvCgOvcrkpzUgVTEBM" (example), which can be found on the user's JWT.
+   * @param userIds Optional List of user IDs, with the format of "U2J5ES9S8TkvCgOvcrkpzUgVTEBM" (example), which can be found on the user's JWT.
    * @param identifiers Optional List of identifiers, identifier is the actual user identifier used for sign in.
    * @returns Group[] list of groups
    */
   loadAllGroupsForMember: (
     tenantId: string,
-    jwtSubjects: string[],
+    userIds: string[],
     identifiers: string[],
   ): Promise<SdkResponse<Group[]>> =>
     transformResponse<Group[]>(
       sdk.httpClient.post(
         apiPaths.group.loadAllGroupsForMember,
-        { tenantId, identifiers, jwtSubjects },
+        { tenantId, identifiers, userIds },
         { token: managementKey },
       ),
     ),

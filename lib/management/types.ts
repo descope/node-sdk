@@ -84,9 +84,9 @@ export type Group = {
   members?: GroupMember[];
 };
 
-/** Represents a group member. It has identifier, jwtSubject and display. */
+/** Represents a group member. It has identifier, userId and display. */
 export type GroupMember = {
   identifier: string;
-  jwtSubject: string;
+  userId: string;
   display: string;
 };
