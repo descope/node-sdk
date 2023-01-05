@@ -13,7 +13,7 @@ type MultipleUsersResponse = {
 
 const withUser = (sdk: CoreSdk, managementKey?: string) => ({
   create: (
-    identifier: string,
+    loginId: string,
     email?: string,
     phone?: string,
     displayName?: string,
@@ -23,13 +23,13 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.create,
-        { identifier, email, phone, displayName, roleNames: roles, userTenants },
+        { loginId, email, phone, displayName, roleNames: roles, userTenants },
         { token: managementKey },
       ),
       (data) => data.user,
     ),
   update: (
-    identifier: string,
+    loginId: string,
     email?: string,
     phone?: string,
     displayName?: string,
@@ -39,19 +39,19 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.update,
-        { identifier, email, phone, displayName, roleNames: roles, userTenants },
+        { loginId, email, phone, displayName, roleNames: roles, userTenants },
         { token: managementKey },
       ),
       (data) => data.user,
     ),
-  delete: (identifier: string): Promise<SdkResponse<never>> =>
+  delete: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.user.delete, { identifier }, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.user.delete, { loginId }, { token: managementKey }),
     ),
-  load: (identifier: string): Promise<SdkResponse<UserResponse>> =>
+  load: (loginId: string): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.get(apiPaths.user.load, {
-        queryParams: { identifier },
+        queryParams: { loginId },
         token: managementKey,
       }),
       (data) => data.user,

@@ -84,9 +84,9 @@ export type Group = {
   members?: GroupMember[];
 };
 
-/** Represents a group member. It has identifier, userId and display. */
+/** Represents a group member. It has loginId, userId and display. */
 export type GroupMember = {
-  identifier: string;
+  loginId: string;
   userId: string;
   display: string;
 };

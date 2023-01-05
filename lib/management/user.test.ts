@@ -36,7 +36,7 @@ describe('Management User', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<UserResponse> = await management.user.create(
-        'identifier',
+        'loginId',
         'a@b.c',
         null,
         null,
@@ -46,7 +46,7 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.create,
         {
-          identifier: 'identifier',
+          loginId: 'loginId',
           email: 'a@b.c',
           phone: null,
           displayName: null,
@@ -76,11 +76,11 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<UserResponse> = await management.user.update('identifier', 'a@b.c');
+      const resp: SdkResponse<UserResponse> = await management.user.update('loginId', 'a@b.c');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.update,
-        { identifier: 'identifier', email: 'a@b.c' },
+        { loginId: 'loginId', email: 'a@b.c' },
         { token: 'key' },
       );
 
@@ -105,11 +105,11 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<UserResponse> = await management.user.delete('identifier');
+      const resp: SdkResponse<UserResponse> = await management.user.delete('loginId');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.delete,
-        { identifier: 'identifier' },
+        { loginId: 'loginId' },
         { token: 'key' },
       );
 
@@ -134,10 +134,10 @@ describe('Management User', () => {
       };
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<UserResponse> = await management.user.load('identifier');
+      const resp: SdkResponse<UserResponse> = await management.user.load('loginId');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.load, {
-        queryParams: { identifier: 'identifier' },
+        queryParams: { loginId: 'loginId' },
         token: 'key',
       });
 

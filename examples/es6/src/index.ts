@@ -87,9 +87,9 @@ const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T
 };
 
 app.post('/otp/signup', async (req: Request, res: Response) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.auth.otp.signUp[deliveryMethod](identifier);
+    const out = await clientAuth.auth.otp.signUp[deliveryMethod](loginId);
     returnOK(res, out);
   } catch (error) {
     console.log(error);
@@ -98,9 +98,9 @@ app.post('/otp/signup', async (req: Request, res: Response) => {
 });
 
 app.post('/otp/signin', async (req: Request, res: Response) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.auth.otp.signIn[deliveryMethod](identifier);
+    const out = await clientAuth.auth.otp.signIn[deliveryMethod](loginId);
     returnOK(res, out);
   } catch (error) {
     console.log(error);
@@ -109,10 +109,10 @@ app.post('/otp/signin', async (req: Request, res: Response) => {
 });
 
 app.post('/otp/verify', async (req: Request, res: Response) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   const code = req.body.code as string;
   try {
-    const out = await clientAuth.auth.otp.verify[deliveryMethod](identifier, code);
+    const out = await clientAuth.auth.otp.verify[deliveryMethod](loginId, code);
     returnCookies(res, out);
   } catch (error) {
     console.log(error);
@@ -121,9 +121,9 @@ app.post('/otp/verify', async (req: Request, res: Response) => {
 });
 
 app.post('/totp/signup', async (req: Request, res: Response) => {
-  const { identifier } = getMethodAndIdentifier(req);
+  const { loginId } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.auth.totp.signUp(identifier);
+    const out = await clientAuth.auth.totp.signUp(loginId);
     const img = Buffer.from(out?.data?.image!, 'base64');
     res.writeHead(200, {
       'Content-Type': 'image/png',
@@ -137,10 +137,10 @@ app.post('/totp/signup', async (req: Request, res: Response) => {
 });
 
 app.post('/totp/verify', async (req: Request, res: Response) => {
-  const { identifier } = getMethodAndIdentifier(req);
+  const { loginId } = getMethodAndLoginId(req);
   const code = req.body.code as string;
   try {
-    const out = await clientAuth.auth.totp.verify(identifier, code);
+    const out = await clientAuth.auth.totp.verify(loginId, code);
     returnCookies(res, out);
   } catch (error) {
     console.log(error);
@@ -275,19 +275,17 @@ createServer(options, app).listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const getMethodAndIdentifier = (
-  req: Request,
-): { identifier: string; deliveryMethod: DeliveryMethod } => {
+const getMethodAndLoginId = (req: Request): { loginId: string; deliveryMethod: DeliveryMethod } => {
   if (req.body.email) {
-    return { identifier: req.body.email as string, deliveryMethod: 'email' };
+    return { loginId: req.body.email as string, deliveryMethod: 'email' };
   }
   if (req.body.sms) {
-    return { identifier: req.body.sms as string, deliveryMethod: 'sms' };
+    return { loginId: req.body.sms as string, deliveryMethod: 'sms' };
   }
   if (req.body.whatsapp) {
-    return { identifier: req.body.whatsapp as string, deliveryMethod: 'whatsapp' };
+    return { loginId: req.body.whatsapp as string, deliveryMethod: 'whatsapp' };
   }
-  return { identifier: '', deliveryMethod: 'email' };
+  return { loginId: '', deliveryMethod: 'email' };
 };
 
 const parseCookies = (request: Request) => {

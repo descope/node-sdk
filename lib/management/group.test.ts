@@ -61,17 +61,17 @@ describe('Management group', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const tenantId = 'tenant-id';
-      const identifiers = ['one'];
+      const loginIds = ['one'];
       const userIds = ['two'];
       const resp: SdkResponse<Group[]> = await management.group.loadAllGroupsForMember(
         tenantId,
         userIds,
-        identifiers,
+        loginIds,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.group.loadAllGroupsForMember,
-        { tenantId, userIds, identifiers },
+        { tenantId, userIds, loginIds },
         { token: 'key' },
       );
 

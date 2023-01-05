@@ -274,9 +274,9 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
  * const myProjectId = 'xxx';
  * const sdk = descopeSdk({ projectId: myProjectId });
  *
- * const userIdentifier = 'identifier';
- * sdk.otp.signIn.email(userIdentifier);
- * const jwtResponse = sdk.otp.verify.email(userIdentifier, codeFromEmail);
+ * const userLoginId = 'loginId';
+ * sdk.otp.signIn.email(userLoginId);
+ * const jwtResponse = sdk.otp.verify.email(userLoginId, codeFromEmail);
  * ```
  */
 const sdkWithAttributes = nodeSdk as typeof nodeSdk & {

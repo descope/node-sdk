@@ -53,9 +53,9 @@ const setCookies = (res, out) => {
 };
 
 app.post('/otp/signup', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.otp.signUp[deliveryMethod](identifier);
+    const out = await clientAuth.otp.signUp[deliveryMethod](loginId);
     returnOK(res, out);
   } catch (error) {
     console.log(error);
@@ -64,9 +64,9 @@ app.post('/otp/signup', async (req, res) => {
 });
 
 app.post('/otp/signin', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.otp.signIn[deliveryMethod](identifier);
+    const out = await clientAuth.otp.signIn[deliveryMethod](loginId);
     returnOK(res, out);
   } catch (error) {
     console.log(error);
@@ -75,10 +75,10 @@ app.post('/otp/signin', async (req, res) => {
 });
 
 app.post('/otp/verify', async (req, res) => {
-  const { identifier, deliveryMethod } = getMethodAndIdentifier(req);
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   const code = req.body.code;
   try {
-    const out = await clientAuth.otp.verify[deliveryMethod](identifier, code);
+    const out = await clientAuth.otp.verify[deliveryMethod](loginId, code);
     setCookies(res, out);
   } catch (error) {
     console.log(error);
@@ -87,9 +87,9 @@ app.post('/otp/verify', async (req, res) => {
 });
 
 app.post('/totp/signup', async (req, res) => {
-  const { identifier } = getMethodAndIdentifier(req);
+  const { loginId } = getMethodAndLoginId(req);
   try {
-    const out = await clientAuth.totp.signUp(identifier);
+    const out = await clientAuth.totp.signUp(loginId);
     var img = Buffer.from(out.data.image, 'base64');
     res.writeHead(200, {
       'Content-Type': 'image/png',
@@ -103,10 +103,10 @@ app.post('/totp/signup', async (req, res) => {
 });
 
 app.post('/totp/verify', async (req, res) => {
-  const { identifier } = getMethodAndIdentifier(req);
+  const { loginId } = getMethodAndLoginId(req);
   const code = req.body.code;
   try {
-    const out = await clientAuth.totp.verify(identifier, code);
+    const out = await clientAuth.totp.verify(loginId, code);
     setCookies(res, out);
   } catch (error) {
     console.log(error);
@@ -119,7 +119,7 @@ app.use('/webauthn', express.static('../demo.html'));
 app.post('/webauthn/signup/start', async (req, res) => {
   try {
     const credentials = await clientAuth.webauthn.signUp.start(
-      req.body.externalID,
+      req.body.loginId,
       req.query.origin,
       req.body.displayName,
     );
@@ -234,20 +234,20 @@ https.createServer(options, app).listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const getMethodAndIdentifier = (req) => {
+const getMethodAndLoginId = (req) => {
   if (req.body.email) {
-    return { identifier: req.body.email, deliveryMethod: DescopeClient.DeliveryMethods.email };
+    return { loginId: req.body.email, deliveryMethod: DescopeClient.DeliveryMethods.email };
   }
   if (req.body.sms) {
-    return { identifier: req.body.sms, deliveryMethod: DescopeClient.DeliveryMethods.SMS };
+    return { loginId: req.body.sms, deliveryMethod: DescopeClient.DeliveryMethods.SMS };
   }
   if (req.body.whatsapp) {
     return {
-      identifier: req.body.whatsapp,
+      loginId: req.body.whatsapp,
       deliveryMethod: DescopeClient.DeliveryMethods.whatsapp,
     };
   }
-  return { identifier: '', deliveryMethod: DescopeClient.DeliveryMethods.email };
+  return { loginId: '', deliveryMethod: DescopeClient.DeliveryMethods.email };
 };
 
 const parseCookies = (request) => {
