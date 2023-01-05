@@ -37,20 +37,20 @@ Send a user a one-time password (OTP) using your preferred delivery method (_ema
 The user can either `sign up`, `sign in` or `sign up or in`
 
 ```typescript
-// Every user must have an identifier. All other user information is optional
-const identifier = 'desmond@descope.com';
+// Every user must have a login ID. All other user information is optional
+const loginId = 'desmond@descope.com';
 const user = {
   name: 'Desmond Copland',
   phone: '212-555-1234',
-  email: identifier,
+  email: loginId,
 };
-await descopeClient.otp.signUp['email'](identifier, user);
+await descopeClient.otp.signUp['email'](loginId, user);
 ```
 
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```typescript
-const jwtResponse = await descopeClient.otp.verify['email'](identifier, 'code');
+const jwtResponse = await descopeClient.otp.verify['email'](loginId, 'code');
 // jwtResponse.data.sessionJwt
 // jwtResponse.data.refreshJwt
 ```
@@ -192,14 +192,14 @@ on the link provided by the `provisioningURL`.
 Existing users can add TOTP using the `update` function.
 
 ```typescript
-// Every user must have an identifier. All other user information is optional
-const identifier = 'desmond@descope.com';
+// Every user must have a login ID. All other user information is optional
+const loginId = 'desmond@descope.com';
 const user = {
   name: 'Desmond Copland',
   phone: '212-555-1234',
-  email: identifier,
+  email: loginId,
 };
-const totpRes = await descopeClient.totp.signUp(identifier, user);
+const totpRes = await descopeClient.totp.signUp(loginId, user);
 // Use one of the provided options to have the user add their credentials to the authenticator
 totpRes.data.provisioningURL;
 totpRes.data.image;
@@ -212,7 +212,7 @@ image or inserting the key manually. After that, signing in is done using the co
 the app produces.
 
 ```typescript
-const jwtResponse = await descopeClient.totp.verify(identifier, 'code');
+const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -366,7 +366,7 @@ tenantsRes.data.forEach((tenant) => {
 You can create, update, delete or load users, as well as search according to filters:
 
 ```typescript
-// A user must have an identifier, other fields are optional.
+// A user must have a login ID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
 await descopeClient.management.user.create(
@@ -540,11 +540,11 @@ const groupsRes = descopeClient.management.group.loadAllGroupsForMember('tenant-
   'user-id-2',
 ]);
 
-// Load all groups for the given user's identifiers (used for sign-in)
+// Load all groups for the given user login IDs (used for sign-in)
 const groupsRes = descopeClient.management.group.loadAllGroupsForMember(
   'tenant-id',
   [],
-  ['identifier-1', 'identifier-2'],
+  ['login-id-1', 'login-id-2'],
 );
 
 // Load all group's members by the given group id

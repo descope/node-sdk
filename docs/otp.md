@@ -56,7 +56,7 @@ await descopeClient.otp.signIn.email('mytestmail@test.com');
 In your verify customer route for OTP (for example, `myapp.com/verify`) verify the OTP from either a customer sign-up or sign-in. The VerifyCode function call will write the necessary tokens and cookies to the response writer (`w`), which will be used by the NodeJS client to validate each session interaction.
 
 ```javascript
-const out = await descopeClient.otp.verify.email(identifier, code);
+const out = await descopeClient.otp.verify.email(loginId, code);
 if (out.data.cookies) {
   res.set('Set-Cookie', out.data.cookies);
 }
