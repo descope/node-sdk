@@ -279,17 +279,9 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
  * const jwtResponse = sdk.otp.verify.email(userLoginId, codeFromEmail);
  * ```
  */
-const sdkWithAttributes = nodeSdk as typeof nodeSdk & {
-  DeliveryMethods: typeof createSdk.DeliveryMethods;
-  RefreshTokenCookieName: typeof refreshTokenCookieName;
-  SessionTokenCookieName: typeof sessionTokenCookieName;
-};
 
-sdkWithAttributes.DeliveryMethods = createSdk.DeliveryMethods;
-sdkWithAttributes.RefreshTokenCookieName = refreshTokenCookieName;
-sdkWithAttributes.SessionTokenCookieName = sessionTokenCookieName;
+nodeSdk.RefreshTokenCookieName = refreshTokenCookieName;
+nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
 
-export default sdkWithAttributes;
-
+export default nodeSdk;
 export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
-export type { NodeSdkArgs };
