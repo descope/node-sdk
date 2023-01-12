@@ -50,17 +50,6 @@ export default [
     external,
   },
   {
-    input,
-    output: {
-      file: 'dist/index.umd.js',
-      format: 'umd',
-      sourcemap: true,
-      name: 'descopeSdk',
-    },
-    plugins,
-  },
-
-  {
     input: './dist/lib/index.d.ts',
     output: [{ file: packageJson.types, format: 'esm' }],
     plugins: [

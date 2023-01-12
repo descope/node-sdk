@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
-    "@descope/node-sdk": "file:../..",
+    "@descope/node-sdk": "../..",
     "express": "^4.18.1"
   },
   "devDependencies": {
