@@ -210,4 +210,341 @@ describe('Management User', () => {
       });
     });
   });
+
+  describe('activate', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.activate('lid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateStatus,
+        { loginId: 'lid', status: 'enabled' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deactivate', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.deactivate('lid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateStatus,
+        { loginId: 'lid', status: 'disabled' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateEmail', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateEmail(
+        'lid',
+        'a@b.c',
+        true,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateEmail,
+        { loginId: 'lid', email: 'a@b.c', verified: true },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updatePhone', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updatePhone(
+        'lid',
+        '1234',
+        true,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updatePhone,
+        { loginId: 'lid', phone: '1234', verified: true },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateDisplayName', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateDisplayName('lid', 'foo');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateDisplayName,
+        { loginId: 'lid', displayName: 'foo' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('addRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.addRoles('lid', ['foo', 'bar']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.addRole,
+        { loginId: 'lid', roleNames: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.removeRoles('lid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeRole,
+        { loginId: 'lid', roleNames: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('addTenant', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.addTenant('lid', 'tid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.addTenant,
+        { loginId: 'lid', tenantId: 'tid' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeTenant', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.removeTenant('lid', 'tid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeTenant,
+        { loginId: 'lid', tenantId: 'tid' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('addTenantRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.addTenantRoles('lid', 'tid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.addRole,
+        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeTenantRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.removeTenantRoles(
+        'lid',
+        'tid',
+        ['foo', 'bar'],
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeRole,
+        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

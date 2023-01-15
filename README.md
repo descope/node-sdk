@@ -388,6 +388,14 @@ await descopeClient.management.user.update(
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1', 'role-name2'] }],
 );
 
+// Update explicit data for a user rather than overriding all fields
+await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
+await descopeClient.management.user.removeTenantRoles(
+  'desmond@descope.com',
+  'tenant-ID1',
+  'role-name2',
+);
+
 // User deletion cannot be undone. Use carefully.
 await descopeClient.management.user.delete('desmond@descope.com');
 

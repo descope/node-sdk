@@ -83,6 +83,117 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.users,
     ),
+  activate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateStatus,
+        { loginId, status: 'enabled' },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  deactivate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateStatus,
+        { loginId, status: 'disabled' },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updateEmail: (
+    loginId: string,
+    email: string,
+    isVerified: boolean,
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateEmail,
+        { loginId, email, verified: isVerified },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updatePhone: (
+    loginId: string,
+    phone: string,
+    isVerified: boolean,
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updatePhone,
+        { loginId, phone, verified: isVerified },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updateDisplayName: (loginId: string, displayName: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateDisplayName,
+        { loginId, displayName },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  addRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.addRole,
+        { loginId, roleNames: roles },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  removeRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.removeRole,
+        { loginId, roleNames: roles },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  addTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(apiPaths.user.addTenant, { loginId, tenantId }, { token: managementKey }),
+      (data) => data.user,
+    ),
+  removeTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.removeTenant,
+        { loginId, tenantId },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  addTenantRoles: (
+    loginId: string,
+    tenantId: string,
+    roles: string[],
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.addRole,
+        { loginId, tenantId, roleNames: roles },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  removeTenantRoles: (
+    loginId: string,
+    tenantId: string,
+    roles: string[],
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.removeRole,
+        { loginId, tenantId, roleNames: roles },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
 });
 
 export default withUser;
