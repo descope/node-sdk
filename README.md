@@ -534,7 +534,7 @@ rolesRes.data.forEach((role) => {
 });
 ```
 
-### ### Query SSO Groups
+### Query SSO Groups
 
 You can query SSO groups:
 
