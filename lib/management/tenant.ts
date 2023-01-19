@@ -20,32 +20,32 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
       ),
     ),
   createWithId: (
-    tenantId: string,
+    id: string,
     name: string,
     selfProvisioningDomains?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.tenant.create,
-        { tenantId, name, selfProvisioningDomains },
+        { id, name, selfProvisioningDomains },
         { token: managementKey },
       ),
     ),
   update: (
-    tenantId: string,
+    id: string,
     name: string,
     selfProvisioningDomains?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.tenant.update,
-        { tenantId, name, selfProvisioningDomains },
+        { id, name, selfProvisioningDomains },
         { token: managementKey },
       ),
     ),
-  delete: (tenantId: string): Promise<SdkResponse<never>> =>
+  delete: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.tenant.delete, { tenantId }, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.tenant.delete, { id }, { token: managementKey }),
     ),
   loadAll: (): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
