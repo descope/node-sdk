@@ -313,6 +313,22 @@ if (!validRoles) {
 }
 ```
 
+### Logging Out
+
+You can log out a user from an active session by providing their `refreshToken` for that session.
+After calling this function, you must invalidate or remove any cookies you have created.
+
+```typescript
+await descopeClient.logout(refreshToken);
+```
+
+It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
+invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
+
+```typescript
+await descopeClient.logoutAll(refreshToken);
+```
+
 ## Management API
 
 It is very common for some form of management or automation to be required. These can be performed
