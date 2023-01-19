@@ -31,9 +31,9 @@ export default {
     loadAll: '/v1/mgmt/tenant/all',
   },
   sso: {
-    configure: 'mgmt/sso/settings',
-    metadata: 'mgmt/sso/metadata',
-    mapping: 'mgmt/sso/mapping',
+    configure: '/v1/mgmt/sso/settings',
+    metadata: '/v1/mgmt/sso/metadata',
+    mapping: '/v1/mgmt/sso/mapping',
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
