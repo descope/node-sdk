@@ -1,10 +1,4 @@
-import createSdk, {
-  ExchangeAccessKeyResponse,
-  RequestConfig,
-  SdkResponse,
-  addHooksToConfig,
-  wrapWith,
-} from '@descope/core-js-sdk';
+import createSdk, { ExchangeAccessKeyResponse, SdkResponse, wrapWith } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import fetch, { Headers, Request, Response } from 'node-fetch';
 import {
@@ -37,18 +31,15 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
 };
 
 const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
-  const beforeRequest = (conf: RequestConfig) => {
-    // eslint-disable-next-line no-param-reassign
-    conf.headers = {
-      ...conf.headers,
+  const coreSdk = createSdk({
+    ...config,
+    baseHeaders: {
+      ...config.baseHeaders,
       'x-descope-sdk-name': 'nodejs',
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
-    };
-    return conf;
-  };
-
-  const coreSdk = createSdk(addHooksToConfig(config, { beforeRequest }));
+    },
+  });
 
   const { projectId, logger } = config;
 
