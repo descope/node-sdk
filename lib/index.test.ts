@@ -346,20 +346,19 @@ describe('sdk', () => {
       createNodeSdk({
         projectId: 'project-id',
         logger,
+        baseHeaders: { test: '123' },
       });
 
-      const returnedConf = createCoreJs.mock.calls[0][0].hooks.beforeRequest({
-        headers: { test: '123' },
-      });
-
-      expect(returnedConf).toEqual({
-        headers: {
-          test: '123',
-          'x-descope-sdk-name': 'nodejs',
-          'x-descope-sdk-node-version': process?.versions?.node || '',
-          'x-descope-sdk-version': 'one.two.three',
-        },
-      });
+      expect(createCoreJs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseHeaders: {
+            test: '123',
+            'x-descope-sdk-name': 'nodejs',
+            'x-descope-sdk-node-version': process?.versions?.node || '',
+            'x-descope-sdk-version': 'one.two.three',
+          },
+        }),
+      );
     });
   });
 });
