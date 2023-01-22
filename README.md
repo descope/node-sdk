@@ -222,18 +222,24 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 ### Session Validation
 
 Every secure request performed between your client and server needs to be validated. The client sends
-the session and refresh tokens with every request, and they are validated using:
+the session and refresh tokens with every request, and they are validated using one of the following:
 
 ```typescript
-// The response will contain all token information including the raw JWT, parsed JWT and cookies
-const authInfo = await descopeClient.validateSession('sessionToken', 'refreshToken');
+// Validate the session. Will throw if expired
+const authInfo = await descopeClient.validateSession('sessionToken');
+
+// If validateSession throws an exception, you will need to refresh the session using
+const authInfo = await descopeClient.refreshSession('refreshToken');
+
+// Alternatively, you could combine the two and
+// have the session validated and automatically refreshed when expired
+const authInfo = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
 ```
 
-These function will validate the session and also refresh it in the event it has expired.
-It returns the given session token if it's still valid, or a new one if it was refreshed.
+Choose the right session validation and refresh combination that suits your needs.
+Refreshed sessions return the same response as is returned when users first sign up / log in,
+containing the session and refresh tokens, as well as all of the JWT claims.
 Make sure to return the session token from the response to the client if tokens are validated directly.
-
-The `refreshToken` is optional here to validate a session, but is required to refresh the session in the event it has expired.
 
 Usually, the tokens can be passed in and out via HTTP headers or via a cookie.
 The implementation can defer according to your implementation. See our [examples](#code-examples) for a few examples.

@@ -146,25 +146,84 @@ describe('sdk', () => {
     });
   });
 
-  describe('ValidateSession', () => {
-    it('should throw an error when both session and refresh tokens are empty', async () => {
-      await expect(sdk.validateSession('', '')).rejects.toThrow(
-        'both refresh token and session token are empty',
+  describe('validateSession', () => {
+    it('should throw an error when session token is empty', async () => {
+      await expect(sdk.validateSession('')).rejects.toThrow(
+        'session token is required for validation',
       );
     });
     it('should return the token when session token is valid', async () => {
-      await expect(sdk.validateSession(validToken, '')).resolves.toMatchObject({
+      await expect(sdk.validateSession(validToken)).resolves.toMatchObject({
         token: { exp: 1981398111, iss: 'project-id' },
       });
     });
-    it('should throw an error when session token expired and no refresh token', async () => {
-      await expect(sdk.validateSession(expiredToken, '')).rejects.toThrow(
-        'could not validate tokens',
+    it('should throw an error when session token expired', async () => {
+      await expect(sdk.validateSession(expiredToken)).rejects.toThrow('session validation failed');
+    });
+  });
+
+  describe('refreshSession', () => {
+    it('should throw an error when refresh token is empty', async () => {
+      await expect(sdk.refreshSession('')).rejects.toThrow(
+        'refresh token is required to refresh a session',
+      );
+    });
+    it('should throw an error when refresh token expired', async () => {
+      await expect(sdk.refreshSession(expiredToken)).rejects.toThrow(
+        'refresh token validation failed',
+      );
+    });
+    it('should refresh session token when refresh token is valid', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(sdk.refreshSession(validToken)).resolves.toHaveProperty('jwt', validToken);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should fail when refresh returns an error', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: false,
+        error: { message: 'something went wrong' },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(sdk.refreshSession(validToken)).rejects.toThrow(
+        'refresh token validation failed',
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should fail when receiving unexpected empty response', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+      } as SdkResponse<JWTResponse>);
+
+      await expect(sdk.refreshSession(validToken)).rejects.toThrow(
+        'refresh token validation failed',
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+  });
+
+  describe('validateAndRefreshSession', () => {
+    it('should throw an error when either session or refresh tokens are empty', async () => {
+      await expect(sdk.validateAndRefreshSession('', '')).rejects.toThrow(
+        'both refresh token and session token are required for validation and refresh',
+      );
+    });
+    it('should throw an error when refresh token is missing', async () => {
+      await expect(sdk.validateAndRefreshSession(validToken, '')).rejects.toThrow(
+        'both refresh token and session token are required for validation and refresh',
+      );
+    });
+    it('should throw an error when session token is missing', async () => {
+      await expect(sdk.validateAndRefreshSession('', validToken)).rejects.toThrow(
+        'both refresh token and session token are required for validation and refresh',
       );
     });
     it('should throw an error when both refresh & session tokens expired', async () => {
-      await expect(sdk.validateSession(expiredToken, expiredToken)).rejects.toThrow(
-        'could not validate tokens',
+      await expect(sdk.validateAndRefreshSession(expiredToken, expiredToken)).rejects.toThrow(
+        'refresh token validation failed',
       );
     });
     it('should refresh session token when it expired and refresh token is valid', async () => {
@@ -173,20 +232,20 @@ describe('sdk', () => {
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
 
-      await expect(sdk.validateSession(expiredToken, validToken)).resolves.toHaveProperty(
+      await expect(sdk.validateAndRefreshSession(expiredToken, validToken)).resolves.toHaveProperty(
         'jwt',
         validToken,
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
-    it('should return the token when refresh token is valid', async () => {
-      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
-        ok: true,
-        data: { sessionJwt: validToken },
-      } as SdkResponse<JWTResponse>);
+    it('should return the session token when it is valid', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh');
 
-      await expect(sdk.validateSession('', validToken)).resolves.toHaveProperty('jwt', validToken);
-      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+      await expect(sdk.validateAndRefreshSession(validToken, validToken)).resolves.toHaveProperty(
+        'jwt',
+        validToken,
+      );
+      expect(spyRefresh).not.toHaveBeenCalled();
     });
   });
 

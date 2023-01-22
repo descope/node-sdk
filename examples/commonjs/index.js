@@ -16,7 +16,7 @@ var options = {
 const authMiddleware = async (req, res, next) => {
   try {
     const cookies = parseCookies(req);
-    const out = await clientAuth.validateSession(
+    const out = await clientAuth.validateAndRefreshSession(
       cookies[DescopeClient.SessionTokenCookieName],
       cookies[DescopeClient.RefreshTokenCookieName],
     );
