@@ -114,46 +114,69 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
     },
 
     /**
-     * Validate session based on at least one of session and refresh JWTs. You must provide at least one of them.
-     *
+     * Validate an active session
+     * @param sessionToken session JWT to validate
+     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     */
+    async validateSession(sessionToken: string): Promise<AuthenticationInfo> {
+      if (!sessionToken) throw Error('session token is required for validation');
+
+      try {
+        const token = await sdk.validateJwt(sessionToken);
+        return token;
+      } catch (error) {
+        /* istanbul ignore next */
+        logger?.error('session validation failed', error);
+        throw Error('session validation failed');
+      }
+    },
+
+    /**
+     * Refresh the session using a refresh token
+     * @param refreshToken refresh JWT to refresh the session with
+     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     */
+    async refreshSession(refreshToken: string): Promise<AuthenticationInfo> {
+      if (!refreshToken) throw Error('refresh token is required to refresh a session');
+
+      try {
+        await sdk.validateJwt(refreshToken);
+        const jwtResp = await sdk.refresh(refreshToken);
+        if (jwtResp.ok) {
+          const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
+          return token;
+        }
+        /* istanbul ignore next */
+        throw Error(jwtResp.error?.message);
+      } catch (refreshTokenErr) {
+        /* istanbul ignore next */
+        logger?.error('refresh token validation failed', refreshTokenErr);
+        throw Error('refresh token validation failed');
+      }
+    },
+
+    /**
+     * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async validateSession(
-      sessionToken?: string,
-      refreshToken?: string,
+    async validateAndRefreshSession(
+      sessionToken: string,
+      refreshToken: string,
     ): Promise<AuthenticationInfo> {
-      if (!sessionToken && !refreshToken)
-        throw Error('both refresh token and session token are empty');
+      if (!sessionToken || !refreshToken)
+        throw Error('both refresh token and session token are required for validation and refresh');
 
-      if (sessionToken) {
-        try {
-          const token = await sdk.validateJwt(sessionToken);
-          return token;
-        } catch (error) {
-          if (!refreshToken) {
-            logger?.error('failed to validate session token and no refresh token provided', error);
-            throw Error('could not validate tokens');
-          }
-        }
+      try {
+        const token = await sdk.validateSession(sessionToken);
+        return token;
+      } catch (error) {
+        /* istanbul ignore next */
+        logger?.log('session validation failed - trying to refresh it');
       }
-      if (refreshToken) {
-        try {
-          await sdk.validateJwt(refreshToken);
-          const jwtResp = await sdk.refresh(refreshToken);
-          if (jwtResp.ok) {
-            const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
-            return token;
-          }
-          throw Error(jwtResp.error?.message);
-        } catch (refreshTokenErr) {
-          logger?.error('failed to validate refresh token', refreshTokenErr);
-          throw Error('could not validate tokens');
-        }
-      }
-      /* istanbul ignore next */
-      throw Error('could not validate token');
+
+      return sdk.refreshSession(refreshToken);
     },
 
     /**
