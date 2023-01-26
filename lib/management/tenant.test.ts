@@ -77,7 +77,7 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.create,
-        { tenantId: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
         { token: 'key' },
       );
 
@@ -106,7 +106,7 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.update,
-        { tenantId: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
         { token: 'key' },
       );
 
@@ -135,7 +135,7 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.delete,
-        { tenantId: 't1' },
+        { id: 't1' },
         { token: 'key' },
       );
 
