@@ -1,6 +1,5 @@
 import createSdk, { ExchangeAccessKeyResponse, SdkResponse, wrapWith } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
-import fetch, { Headers, Request, Response } from 'node-fetch';
 import {
   permissionsClaimName,
   refreshTokenCookieName,
@@ -10,20 +9,9 @@ import {
 import { getAuthorizationClaimItems, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
+import './fetch-polyfill';
 
 declare const BUILD_VERSION: string;
-
-/* istanbul ignore next */
-if (!globalThis.fetch) {
-  // @ts-ignore
-  globalThis.fetch = fetch;
-  // @ts-ignore
-  globalThis.Headers = Headers;
-  // @ts-ignore
-  globalThis.Request = Request;
-  // @ts-ignore
-  globalThis.Response = Response;
-}
 
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
