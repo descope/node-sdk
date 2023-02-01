@@ -206,19 +206,9 @@ describe('sdk', () => {
   });
 
   describe('validateAndRefreshSession', () => {
-    it('should throw an error when either session or refresh tokens are empty', async () => {
+    it('should throw an error when both session or refresh tokens are empty', async () => {
       await expect(sdk.validateAndRefreshSession('', '')).rejects.toThrow(
-        'both refresh token and session token are required for validation and refresh',
-      );
-    });
-    it('should throw an error when refresh token is missing', async () => {
-      await expect(sdk.validateAndRefreshSession(validToken, '')).rejects.toThrow(
-        'both refresh token and session token are required for validation and refresh',
-      );
-    });
-    it('should throw an error when session token is missing', async () => {
-      await expect(sdk.validateAndRefreshSession('', validToken)).rejects.toThrow(
-        'both refresh token and session token are required for validation and refresh',
+        'both session and refresh tokens are empty',
       );
     });
     it('should throw an error when both refresh & session tokens expired', async () => {
@@ -238,10 +228,28 @@ describe('sdk', () => {
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
+    it('should refresh session token when it not given and refresh token is valid', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken },
+      } as SdkResponse<JWTResponse>);
+      await expect(sdk.validateAndRefreshSession('', validToken)).resolves.toHaveProperty(
+        'jwt',
+        validToken,
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
     it('should return the session token when it is valid', async () => {
       const spyRefresh = jest.spyOn(sdk, 'refresh');
 
       await expect(sdk.validateAndRefreshSession(validToken, validToken)).resolves.toHaveProperty(
+        'jwt',
+        validToken,
+      );
+      expect(spyRefresh).not.toHaveBeenCalled();
+
+      // Even without a refresh token
+      await expect(sdk.validateAndRefreshSession(validToken, '')).resolves.toHaveProperty(
         'jwt',
         validToken,
       );
