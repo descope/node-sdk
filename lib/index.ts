@@ -150,11 +150,10 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
-      sessionToken: string,
-      refreshToken: string,
+      sessionToken?: string,
+      refreshToken?: string,
     ): Promise<AuthenticationInfo> {
-      if (!sessionToken || !refreshToken)
-        throw Error('both refresh token and session token are required for validation and refresh');
+      if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {
         const token = await sdk.validateSession(sessionToken);
