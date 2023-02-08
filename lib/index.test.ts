@@ -20,6 +20,7 @@ let permTenantAuthInfo: AuthenticationInfo;
 const logger = {
   log: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
   debug: jest.fn(),
 };
 
@@ -185,7 +186,7 @@ describe('sdk', () => {
     it('should fail when refresh returns an error', async () => {
       const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
         ok: false,
-        error: { message: 'something went wrong' },
+        error: { errorMessage: 'something went wrong' },
       } as SdkResponse<JWTResponse>);
 
       await expect(sdk.refreshSession(validToken)).rejects.toThrow(

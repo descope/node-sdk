@@ -135,7 +135,7 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
           return token;
         }
         /* istanbul ignore next */
-        throw Error(jwtResp.error?.message);
+        throw Error(jwtResp.error?.errorMessage);
       } catch (refreshTokenErr) {
         /* istanbul ignore next */
         logger?.error('refresh token validation failed', refreshTokenErr);

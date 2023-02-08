@@ -9,7 +9,7 @@ export type AssociatedTenant = {
 
 /** The tenantId of a newly created tenant */
 export type CreateTenantResponse = {
-  tenantId: string;
+  id: string;
 };
 
 /** An access key that can be used to access descope */
