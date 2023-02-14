@@ -10,11 +10,12 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     idpCert: string,
     entityId: string,
     redirectURL?: string,
+    domain?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.configure,
-        { tenantId, idpURL, entityId, idpCert, redirectURL },
+        { tenantId, idpURL, entityId, idpCert, redirectURL, domain },
         { token: managementKey },
       ),
     ),
