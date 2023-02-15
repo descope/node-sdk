@@ -26,17 +26,19 @@ describe('Management SSO', () => {
       const idpCert = 'cert';
       const entityId = 'e1';
       const redirectURL = 'https://redirect.com';
+      const domain = 'domain.com';
       const resp = await management.sso.configureSettings(
         tenantId,
         idpURL,
         idpCert,
         entityId,
         redirectURL,
+        domain,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.sso.configure,
-        { tenantId, idpURL, idpCert, entityId, redirectURL },
+        { tenantId, idpURL, idpCert, entityId, redirectURL, domain },
         { token: 'key' },
       );
 

@@ -482,7 +482,8 @@ const idpURL = 'https://idp.com'
 const entityID = 'my-idp-entity-id'
 const idpCert = '<your-cert-here>'
 const redirectURL = 'https://my-app.com/handle-saml' // Global redirect URL for SSO/SAML
-await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL)
+const domain = 'tenant-users.com' // Users authentication with this domain will be logged in to this tenant
+await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
 
 // Alternatively, configure using an SSO metadata URL
 await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
