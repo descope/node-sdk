@@ -9,7 +9,7 @@ import {
 import { getAuthorizationClaimItems, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
-import './fetch-polyfill';
+import fetch from './fetch-polyfill';
 
 declare const BUILD_VERSION: string;
 
@@ -21,6 +21,7 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
 const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
   const coreSdk = createSdk({
     ...config,
+    fetch,
     baseHeaders: {
       ...config.baseHeaders,
       'x-descope-sdk-name': 'nodejs',
