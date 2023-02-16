@@ -70,15 +70,25 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       }),
       (data) => data.user,
     ),
+  /**
+   * Search all users. Results can be filtered according to tenants and/or
+   * roles, and also paginated used the limit and page parameters.
+   * @param tenantIds optional list of tenant IDs to filter by
+   * @param roles optional list of roles to filter by
+   * @param limit optionally limit the response, leave out for default limit
+   * @param page optionally paginate over the response
+   * @returns An array of UserResponse found by the query
+   */
   searchAll: (
     tenantIds?: string[],
     roles?: string[],
     limit?: number,
+    page?: number,
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames: roles, limit },
+        { tenantIds, roleNames: roles, limit, page },
         { token: managementKey },
       ),
       (data) => data.users,
