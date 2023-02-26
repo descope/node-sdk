@@ -28,6 +28,22 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  invite: (
+    loginId: string,
+    email?: string,
+    phone?: string,
+    displayName?: string,
+    roles?: string[],
+    userTenants?: AssociatedTenant[],
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.create,
+        { loginId, email, phone, displayName, roleNames: roles, userTenants, invite: true },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
   update: (
     loginId: string,
     email?: string,
