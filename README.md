@@ -400,6 +400,18 @@ await descopeClient.management.user.create(
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
 );
 
+// Alternatively, a user can be created and invited via an email message.
+// Make sure to configure the invite URL in the Descope console prior to using this function,
+// and that an email address is provided in the information.
+await descopeClient.management.user.invite(
+  'desmond@descope.com',
+  'desmond@descope.com',
+  null,
+  'Desmond Copeland',
+  null,
+  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.user.update(
   'desmond@descope.com',

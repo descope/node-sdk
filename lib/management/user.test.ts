@@ -64,6 +64,48 @@ describe('Management User', () => {
     });
   });
 
+  describe('invite', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.invite(
+        'loginId',
+        'a@b.c',
+        null,
+        null,
+        ['r1', 'r2'],
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          phone: null,
+          displayName: null,
+          roleNames: ['r1', 'r2'],
+          invite: true,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('update', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
