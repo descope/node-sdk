@@ -219,6 +219,70 @@ const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+### Passwords
+
+The user can also authenticate with a password, though it's recommended to
+prefer passwordless authentication methods if possible. Sign up requires the
+caller to provide a valid password that meets all the requirements configured
+for the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console.
+
+```js
+// Every user must have a loginId. All other user information is optional
+const loginId = 'desmond@descope.com';
+const password = 'qYlvi65KaX';
+const user = {
+  name: 'Desmond Copeland',
+  email: loginId,
+};
+const jwtResponse = await descopeClient.password.signUp(loginID, password, user);
+// jwtResponse.data.sessionJwt;
+// jwtResponse.data.refreshJwt;
+```
+
+The user can later sign in using the same loginId and password.
+
+```js
+const jwtResponse = await descopeClient.password.signIn(loginID, password);
+// jwtResponse.data.sessionJwt;
+// jwtResponse.data.refreshJwt;
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+In case the user needs to update their password, one of two methods are available: Resetting their password or replacing their password
+
+**Changing Passwords**
+
+_NOTE: sendReset will only work if the user has a validated email address. Otherwise password reset prompts cannot be sent._
+
+In the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console, it is possible to define which alternative authentication method can be used in order to authenticate the user, in order to reset and update their password.
+
+```js
+// Start the reset process by sending a password reset prompt. In this example we'll assume
+// that magic link is configured as the reset method. The optional redirect URL is used in the
+// same way as in regular magic link authentication.
+const loginId = 'desmond@descope.com';
+const redirectURL = 'https://myapp.com/password-reset';
+const passwordResetResponse = await descopeClient.password.sendReset(loginID, redirectURL);
+```
+
+The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
+to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible via:
+
+```js
+// The refresh token is required to make sure the user is authenticated.
+await descopeClient.password.update(loginId, newPassword, token);
+```
+
+`update()` can always be called when the user is authenticated and has a valid session.
+
+Alternatively, it is also possible to replace an existing active password with a new one.
+
+```js
+// Replaces the user's current password with a new one
+await descopeClient.password.replace(loginId, oldPassword, newPassword);
+```
+
 ### Session Validation
 
 Every secure request performed between your client and server needs to be validated. The client sends
