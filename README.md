@@ -234,7 +234,7 @@ const user = {
   name: 'Desmond Copeland',
   email: loginId,
 };
-const jwtResponse = await descopeClient.password.signUp(loginID, password, user);
+const jwtResponse = await descopeClient.password.signUp(loginId, password, user);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -242,7 +242,7 @@ const jwtResponse = await descopeClient.password.signUp(loginID, password, user)
 The user can later sign in using the same loginId and password.
 
 ```js
-const jwtResponse = await descopeClient.password.signIn(loginID, password);
+const jwtResponse = await descopeClient.password.signIn(loginId, password);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -263,7 +263,7 @@ In the [password authentication method](https://app.descope.com/settings/authent
 // same way as in regular magic link authentication.
 const loginId = 'desmond@descope.com';
 const redirectURL = 'https://myapp.com/password-reset';
-const passwordResetResponse = await descopeClient.password.sendReset(loginID, redirectURL);
+const passwordResetResponse = await descopeClient.password.sendReset(loginId, redirectURL);
 ```
 
 The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
