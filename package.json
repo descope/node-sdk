@@ -95,7 +95,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@descope/core-js-sdk": "1.0.7",
+    "@descope/core-js-sdk": "1.0.8",
     "jose": "4.13.1",
     "node-fetch-commonjs": "3.2.4"
   },
