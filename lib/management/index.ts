@@ -7,6 +7,8 @@ import withRole from './role';
 import withGroup from './group';
 import withSSOSettings from './sso';
 import withAccessKey from './accesskey';
+import WithFlow from './flow';
+import WithTheme from './theme';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
@@ -18,6 +20,8 @@ const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
   permission: withPermission(sdk, managementKey),
   role: withRole(sdk, managementKey),
   group: withGroup(sdk, managementKey),
+  flow: WithFlow(sdk, managementKey),
+  theme: WithTheme(sdk, managementKey),
 });
 
 export default withManagement;
