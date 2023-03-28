@@ -187,7 +187,7 @@ describe('sdk', () => {
       const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
         ok: false,
         error: { errorMessage: 'something went wrong' },
-      } as SdkResponse<JWTResponse>);
+      } as unknown as SdkResponse<JWTResponse>);
 
       await expect(sdk.refreshSession(validToken)).rejects.toThrow(
         'refresh token validation failed',

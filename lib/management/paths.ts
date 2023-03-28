@@ -50,6 +50,14 @@ export default {
     delete: '/v1/mgmt/role/delete',
     loadAll: '/v1/mgmt/role/all',
   },
+  flow: {
+    export: '/v1/mgmt/flow/export',
+    import: '/v1/mgmt/flow/import',
+  },
+  theme: {
+    export: '/v1/mgmt/theme/export',
+    import: '/v1/mgmt/theme/import',
+  },
   group: {
     loadAllGroups: '/v1/mgmt/group/all',
     loadAllGroupsForMember: '/v1/mgmt/group/member/all',

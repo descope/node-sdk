@@ -90,3 +90,34 @@ export type GroupMember = {
   userId: string;
   display: string;
 };
+
+export type Flow = {
+  id: string;
+  name: string;
+  description?: string;
+  dsl: any;
+  disabled: boolean;
+  etag?: string;
+};
+
+export type Screen = {
+  id: string;
+  flowId: string;
+  inputs?: any;
+  interactions?: any;
+  htmlTemplate: any;
+};
+
+export type FlowResponse = {
+  flow: Flow;
+  screens: Screen[];
+};
+
+export type Theme = {
+  id: string;
+  cssTemplate?: any;
+};
+
+export type ThemeResponse = {
+  theme: Theme;
+};
