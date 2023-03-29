@@ -1,5 +1,4 @@
-import { ResponseData, SdkResponse } from '@descope/core-js-sdk';
-import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk';
+import type { DeliveryMethod, OAuthProvider, ResponseData, SdkResponse } from '@descope/node-sdk';
 import DescopeClient from '@descope/node-sdk';
 import bodyParser from 'body-parser';
 import express, { NextFunction, Request, Response } from 'express';
