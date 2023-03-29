@@ -43,7 +43,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
+const returnOK = (res: Response, out: SdkResponse<ResponseData>) => {
   res.setHeader('Content-Type', 'application/json');
   if (!out.ok) {
     res.status(400).send(out.error);
