@@ -682,7 +682,7 @@ that way, you don't need to use 3rd party messaging services in order to receive
 ```typescript
 // User for test can be created, this user will be able to generate code/link without
 // the need of 3rd party messaging services.
-// Test user must have a loginID, other fields are optional.
+// Test user must have a loginId, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
 await descopeClient.management.user.createTestUser(
