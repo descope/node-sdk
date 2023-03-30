@@ -674,6 +674,55 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
+### Utils for your end to end (e2e) tests and integration tests
+
+To ease your e2e tests, we exposed dedicated management methods,
+that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
+
+```typescript
+// User for test can be created, this user will be able to generate code/link without
+// the need of 3rd party messaging services.
+// Test user must have a loginID, other fields are optional.
+// Roles should be set directly if no tenants exist, otherwise set
+// on a per-tenant basis.
+await descopeClient.management.user.createTestUser(
+  'desmond@descope.com',
+  'desmond@descope.com',
+  null,
+  'Desmond Copeland',
+  null,
+  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
+// Now test user got created, and this user will be available until you delete it,
+// you can use any management operation for test user CRUD.
+// You can also delete all test users.
+await descopeClient.management.user.deleteAllTestUsers();
+
+// OTP code can be generated for test user, for example:
+const { code } = await descopeClient.management.user.generateOTPForTestUser(
+  'sms',
+  'desmond@descope.com',
+);
+// Now you can verify the code is valid (using descopeClient.auth.*.verify for example)
+
+// Same as OTP, magic link can be generated for test user, for example:
+const { link } = await descopeClient.management.user.generateMagicLinkForTestUser(
+  'email',
+  'desmond@descope.com',
+  '',
+);
+
+// Enchanted link can be generated for test user, for example:
+const { link, pendingRef } = await descopeClient.management.user.generateEnchantedLinkForTestUser(
+  'desmond@descope.com',
+  '',
+);
+
+// Note 1: The generate code/link functions, work only for test users, will not work for regular users.
+// Note 2: In case of testing sign-in / sign-up operations with test users, need to make sure to generate the code prior calling the sign-in / sign-up operations.
+```
+
 ## Code Examples
 
 You can find various usage examples in the [examples folder](https://github.com/descope/node-sdk/blob/main/examples).

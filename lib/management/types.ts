@@ -121,3 +121,19 @@ export type Theme = {
 export type ThemeResponse = {
   theme: Theme;
 };
+
+export type GenerateOTPForTestResponse = {
+  loginId: string;
+  code: string;
+};
+
+export type GenerateMagicLinkForTestResponse = {
+  loginId: string;
+  link: string;
+};
+
+export type GenerateEnchantedLinkForTestResponse = {
+  loginId: string;
+  link: string;
+  pendingRef: string;
+};

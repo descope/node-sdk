@@ -4,6 +4,7 @@ export default {
     create: '/v1/mgmt/user/create',
     update: '/v1/mgmt/user/update',
     delete: '/v1/mgmt/user/delete',
+    deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     search: '/v1/mgmt/user/search',
     updateStatus: '/v1/mgmt/user/update/status',
@@ -14,6 +15,9 @@ export default {
     removeRole: '/v1/mgmt/user/update/role/remove',
     addTenant: '/v1/mgmt/user/update/tenant/add',
     removeTenant: '/v1/mgmt/user/update/tenant/remove',
+    generateOTPForTest: '/v1/mgmt/tests/generate/otp',
+    generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
+    generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
