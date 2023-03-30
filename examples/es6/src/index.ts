@@ -1,5 +1,4 @@
-import { ResponseData, SdkResponse } from '@descope/core-js-sdk';
-import type { DeliveryMethod, OAuthProvider } from '@descope/node-sdk';
+import type { DeliveryMethod, OAuthProvider, ResponseData, SdkResponse } from '@descope/node-sdk';
 import DescopeClient from '@descope/node-sdk';
 import bodyParser from 'body-parser';
 import express, { NextFunction, Request, Response } from 'express';
@@ -43,7 +42,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-const returnOK = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
+const returnOK = (res: Response, out: SdkResponse<ResponseData>) => {
   res.setHeader('Content-Type', 'application/json');
   if (!out.ok) {
     res.status(400).send(out.error);

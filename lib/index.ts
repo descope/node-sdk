@@ -286,4 +286,9 @@ nodeSdk.RefreshTokenCookieName = refreshTokenCookieName;
 nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
 
 export default nodeSdk;
-export type { DeliveryMethod, OAuthProvider } from '@descope/core-js-sdk';
+export type {
+  DeliveryMethod,
+  OAuthProvider,
+  ResponseData,
+  SdkResponse,
+} from '@descope/core-js-sdk';
