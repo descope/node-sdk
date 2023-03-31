@@ -295,7 +295,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * @param deliveryMethod optional DeliveryMethod
    * @param loginId login ID of a test user
    * @param uri optional redirect uri which will be used instead of any global configuration.
-   * @returns GenerateOTPForTestResponse which includes the loginId and the OTP code
+   * @returns GenerateMagicLinkForTestResponse which includes the loginId and the magic link
    */
   generateMagicLinkForTestUser: (
     deliveryMethod: DeliveryMethod,
@@ -319,7 +319,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    *
    * @param loginId login ID of a test user
    * @param uri optional redirect uri which will be used instead of any global configuration.
-   * @returns GenerateOTPForTestResponse which includes the loginId and the OTP code
+   * @returns GenerateEnchantedLinkForTestResponse which includes the loginId, the enchanted link and the pendingRef
    */
   generateEnchantedLinkForTestUser: (
     loginId: string,
