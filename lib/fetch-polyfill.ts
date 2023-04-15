@@ -2,7 +2,7 @@ import nodeFetch, { Headers } from 'node-fetch-commonjs';
 
 globalThis.Headers ??= Headers;
 
-const highWaterMarkMb = 1024 * 1024 * 1024 * 30; // 30MB
+const highWaterMarkMb = 1024 * 1024 * 30; // 30MB
 
 // we are increasing the response buffer size due to an issue where node-fetch hangs when response is too big
 const patchedFetch = (...args: Parameters<typeof nodeFetch>) => {
