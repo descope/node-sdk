@@ -670,25 +670,26 @@ You can import and export flows and screens, or the project theme:
 ```typescript
 // Export the flow and it's matching screens based on the given id
 const res = await descopeClient.management.flow.export('sign-up');
-console.log('found flow', res.flow);
-res.screens.forEach((screen) => {
+console.log('found flow', res.data.flow);
+res.data.screens.forEach((screen) => {
   // do something
 });
 
 // Import the given flow and screens as the given id
+const { flow, screens } = res.data;
 const updatedRes = descopeClient.management.flow.import('sign-up', flow, screens);
-console.log('updated flow', updatedRes.flow);
-updatedRes.screens.forEach((screen) => {
+console.log('updated flow', updatedRes.data.flow);
+updatedRes.data.screens.forEach((screen) => {
   // do something
 });
 
 // Export the current theme of the project
 const res = descopeClient.management.theme.export();
-console.log(res.theme);
+console.log(res.data.theme);
 
 // Import the given theme to the project
 const updatedRes = descopeClient.management.theme.import(theme);
-console.log(updatedRes.theme);
+console.log(updatedRes.data.theme);
 ```
 
 ### Manage JWTs
