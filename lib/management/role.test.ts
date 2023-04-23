@@ -7,9 +7,24 @@ import { Role } from './types';
 const management = withManagement(mockCoreSdk, 'key');
 
 const mockRoles = [
-  { name: 'name', description: 'description', permissionNames: ['p1', 'p2'] },
-  { name: 'name2', description: 'description2', permissionNames: ['p1'] },
-  { name: 'name3', description: 'description3', permissionNames: [] },
+  {
+    name: 'name',
+    description: 'description',
+    permissionNames: ['p1', 'p2'],
+    createdTime: new Date().getTime(),
+  },
+  {
+    name: 'name2',
+    description: 'description2',
+    permissionNames: ['p1'],
+    createdTime: new Date().getTime(),
+  },
+  {
+    name: 'name3',
+    description: 'description3',
+    permissionNames: [],
+    createdTime: new Date().getTime(),
+  },
 ];
 
 const mockAllRolesResponse = {

@@ -75,6 +75,7 @@ export type Role = {
   name: string;
   description?: string;
   permissionNames: string[];
+  createdTime: number;
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
@@ -137,3 +138,5 @@ export type GenerateEnchantedLinkForTestResponse = {
   link: string;
   pendingRef: string;
 };
+
+export type AttributesTypes = string | boolean | number;
