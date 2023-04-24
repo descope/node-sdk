@@ -46,6 +46,8 @@ describe('Management User', () => {
         null,
         null,
         ['r1', 'r2'],
+        null,
+        { a: 'a', b: 1, c: true },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -56,6 +58,8 @@ describe('Management User', () => {
           phone: null,
           displayName: null,
           roleNames: ['r1', 'r2'],
+          userTenants: null,
+          customAttributes: { a: 'a', b: 1, c: true },
         },
         { token: 'key' },
       );
@@ -87,6 +91,8 @@ describe('Management User', () => {
         null,
         null,
         ['r1', 'r2'],
+        null,
+        { a: 'a', b: 1, c: true },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -98,6 +104,8 @@ describe('Management User', () => {
           displayName: null,
           roleNames: ['r1', 'r2'],
           test: true,
+          userTenants: null,
+          customAttributes: { a: 'a', b: 1, c: true },
         },
         { token: 'key' },
       );
@@ -129,6 +137,8 @@ describe('Management User', () => {
         null,
         null,
         ['r1', 'r2'],
+        null,
+        { a: 'a', b: 1, c: true },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -140,6 +150,8 @@ describe('Management User', () => {
           displayName: null,
           roleNames: ['r1', 'r2'],
           invite: true,
+          userTenants: null,
+          customAttributes: { a: 'a', b: 1, c: true },
         },
         { token: 'key' },
       );
