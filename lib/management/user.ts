@@ -189,11 +189,12 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     page?: number,
     testUsersOnly?: boolean,
     withTestUser?: boolean,
+    customAttributes?: Record<string, AttributesTypes>,
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser },
+        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser, customAttributes },
         { token: managementKey },
       ),
       (data) => data.users,
