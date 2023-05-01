@@ -92,7 +92,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "^29.0.0",
     "ts-node": "^10.8.2",
-    "typescript": "^4.6.4"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "@descope/core-js-sdk": "1.0.10",
