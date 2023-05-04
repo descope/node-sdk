@@ -264,7 +264,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
   updateCustomAttribute: (
     loginId: string,
     attributeKey: string,
-    attributeValue: string,
+    attributeValue: AttributesTypes,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
