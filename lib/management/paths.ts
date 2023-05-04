@@ -11,6 +11,8 @@ export default {
     updateEmail: '/v1/mgmt/user/update/email',
     updatePhone: '/v1/mgmt/user/update/phone',
     updateDisplayName: '/v1/mgmt/user/update/name',
+    updatePicture: '/v1/mgmt/user/update/picture',
+    updateCustomAttribute: '/v1/mgmt/user/update/customAttribute',
     addRole: '/v1/mgmt/user/update/role/add',
     removeRole: '/v1/mgmt/user/update/role/remove',
     addTenant: '/v1/mgmt/user/update/tenant/add',

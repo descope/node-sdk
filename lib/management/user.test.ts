@@ -494,6 +494,68 @@ describe('Management User', () => {
     });
   });
 
+  describe('updatePicture', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updatePicture('lid', 'foo');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updatePicture,
+        { loginId: 'lid', picture: 'foo' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateCustomAttribute', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateCustomAttribute(
+        'lid',
+        'foo',
+        'bar',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateCustomAttribute,
+        { loginId: 'lid', attributeKey: 'foo', attributeValue: 'bar' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('addRoles', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

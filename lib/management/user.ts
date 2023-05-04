@@ -26,11 +26,21 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
+    picture?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.create,
-        { loginId, email, phone, displayName, roleNames: roles, userTenants, customAttributes },
+        {
+          loginId,
+          email,
+          phone,
+          displayName,
+          roleNames: roles,
+          userTenants,
+          customAttributes,
+          picture,
+        },
         { token: managementKey },
       ),
       (data) => data.user,
@@ -53,6 +63,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
+    picture?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -66,6 +77,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           userTenants,
           test: true,
           customAttributes,
+          picture,
         },
         { token: managementKey },
       ),
@@ -79,6 +91,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
+    picture?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -92,6 +105,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           userTenants,
           invite: true,
           customAttributes,
+          picture,
         },
         { token: managementKey },
       ),
@@ -105,11 +119,21 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
+    picture?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.update,
-        { loginId, email, phone, displayName, roleNames: roles, userTenants, customAttributes },
+        {
+          loginId,
+          email,
+          phone,
+          displayName,
+          roleNames: roles,
+          userTenants,
+          customAttributes,
+          picture,
+        },
         { token: managementKey },
       ),
       (data) => data.user,
@@ -165,11 +189,12 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     page?: number,
     testUsersOnly?: boolean,
     withTestUser?: boolean,
+    customAttributes?: Record<string, AttributesTypes>,
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser },
+        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser, customAttributes },
         { token: managementKey },
       ),
       (data) => data.users,
@@ -223,6 +248,28 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.user.updateDisplayName,
         { loginId, displayName },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updatePicture: (loginId: string, picture: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updatePicture,
+        { loginId, picture },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updateCustomAttribute: (
+    loginId: string,
+    attributeKey: string,
+    attributeValue: AttributesTypes,
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateCustomAttribute,
+        { loginId, attributeKey, attributeValue },
         { token: managementKey },
       ),
       (data) => data.user,
