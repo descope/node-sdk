@@ -252,6 +252,28 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  updatePicture: (loginId: string, picture: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updatePicture,
+        { loginId, picture },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updateCustomAttribute: (
+    loginId: string,
+    attributeKey: string,
+    attributeValue: string,
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateCustomAttribute,
+        { loginId, attributeKey, attributeValue },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
   addRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
