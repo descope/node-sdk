@@ -10,6 +10,40 @@ describe('Management SSO', () => {
     mockHttpClient.reset();
   });
 
+  describe('getSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        tenantId: 'tenant-id',
+        idpEntityId: 'idpEntityId',
+        domain: 'some-domain.com',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const tenantId = 't1';
+      const resp = await management.sso.getSettings(tenantId);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockResponse,
+      });
+    });
+  });
+
   describe('configureSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -37,7 +71,7 @@ describe('Management SSO', () => {
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.configure,
+        apiPaths.sso.settings,
         { tenantId, idpURL, idpCert, entityId, redirectURL, domain },
         { token: 'key' },
       );
