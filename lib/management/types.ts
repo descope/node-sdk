@@ -140,3 +140,36 @@ export type GenerateEnchantedLinkForTestResponse = {
 };
 
 export type AttributesTypes = string | boolean | number;
+
+export type UserMapping = {
+  name: string;
+  email: string;
+  username: string;
+  phoneNumber: string;
+  group: string;
+};
+
+export type RoleItem = {
+  id: string;
+  name: string;
+};
+
+export type GroupsMapping = {
+  role: RoleItem;
+  groups: string[];
+};
+
+export type SSOSettingsResponse = {
+  tenantId: string;
+  idpEntityId: string;
+  idpSSOUrl: string;
+  idpCertificate: string;
+  idpMetadataUrl: string;
+  spEntityId: string;
+  spACSUrl: string;
+  spCertificate: string;
+  userMapping: UserMapping;
+  groupsMapping: GroupsMapping[];
+  redirectUrl: string;
+  domain: string;
+};

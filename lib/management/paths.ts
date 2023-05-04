@@ -37,7 +37,7 @@ export default {
     loadAll: '/v1/mgmt/tenant/all',
   },
   sso: {
-    configure: '/v1/mgmt/sso/settings',
+    settings: '/v1/mgmt/sso/settings',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
   },

@@ -553,6 +553,9 @@ await descopeClient.management.accessKey.delete('key-id');
 You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
+// You can get SSO settings for a specific tenant ID
+const ssoSettings = await descopeClient.management.sso.getSettings("tenant-id")
+
 // You can configure SSO settings manually by setting the required fields directly
 const tenantId = 'tenant-id' // Which tenant this configuration is for
 const idpURL = 'https://idp.com'
