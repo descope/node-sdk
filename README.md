@@ -26,9 +26,40 @@ import DescopeClient from '@descope/node-sdk';
 const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
-## Usage
+## Authentication Functions
 
-Here are some examples how to manage and authenticate users:
+These sections show how to use the SDK to perform various authentication/authorization functions:
+
+1. [OTP Authentication](#otp-authentication)
+2. [Magic Link](#magic-link)
+3. [Enchanted Link](#enchanted-link)
+4. [OAuth](#oauth)
+5. [SSO/SAML](#ssosaml)
+6. [TOTP Authentication](#totp-authentication)
+7. [Passwords](#passwords)
+8. [Session Validation](#session-validation)
+9. [Roles & Permission Validation](#roles--permission-validation)
+10. [Logging Out](#logging-out)
+
+## API Management Function
+
+These sections show how to use the SDK to perform API management functions:
+
+1. [Setup](#setup-1)
+2. [Manage Tenants](#manage-tenants)
+3. [Manage Users](#manage-users)
+4. [Manage Access Keys](#manage-access-keys)
+5. [Manage SSO Setting](#manage-sso-setting)
+6. [Manage Permissions](#manage-permissions)
+7. [Manage Roles](#manage-roles)
+8. [Query SSO Groups](#query-sso-groups)
+9. [Manage Flows](#manage-flows)
+10. [Manage JWTs](#manage-jwts)
+11. [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests)
+
+If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
+
+---
 
 ### OTP Authentication
 
