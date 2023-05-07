@@ -15,9 +15,13 @@ Install the package with:
 npm i --save @descope/node-sdk
 ```
 
-## Setup
+## Authentication Functions
 
-A Descope `Project ID` is required to initialize the SDK. Find it on the
+### Setup
+
+Before you can use authentication functions listed below, you must initialize a `DescopeClient`.
+
+A Descope `Project ID` is required to initialize the SDK for authentication functions. Find it on the
 [project page in the Descope Console](https://app.descope.com/settings/project).
 
 ```typescript
@@ -26,9 +30,7 @@ import DescopeClient from '@descope/node-sdk';
 const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
-## Authentication Functions
-
-These sections show how to use the SDK to perform various authentication/authorization functions:
+Once you've created a `DescopeClient`, you can use that to work with the following functions:
 
 1. [OTP Authentication](#otp-authentication)
 2. [Magic Link](#magic-link)
@@ -43,7 +45,22 @@ These sections show how to use the SDK to perform various authentication/authori
 
 ## Management Functions
 
-These sections show how to use the SDK to perform permission and user management functions. Follow the [Setup](#setup-1) guide, to first create the necessary management key:
+### Setup
+
+Before you can use management functions listed below, you must initialize a `DescopeClient`.
+
+If you wish to also use management functions, you will need to initialize a new version of your `DescopeClient`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const descopeClient = DescopeClient({
+  projectId: 'my-project-ID',
+  managementKey: 'management-key',
+});
+```
+
+Then, you can use that to work with the following functions:
 
 1. [Manage Tenants](#manage-tenants)
 2. [Manage Users](#manage-users)
@@ -57,7 +74,7 @@ These sections show how to use the SDK to perform permission and user management
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
-If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` object created under [Setup](#setup-1) guide.
+If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` object you created under the setup of [Management Functions](#management-functions).
 
 ---
 
