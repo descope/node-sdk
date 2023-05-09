@@ -836,4 +836,65 @@ describe('Management User', () => {
       });
     });
   });
+
+  describe('setPassword', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const newPassword = 'some-password';
+      const resp = await management.user.setPassword(loginId, newPassword);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.setPassword,
+        { loginId, newPassword },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('expirePassword', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const resp = await management.user.expirePassword(loginId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.expirePassword,
+        { loginId },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

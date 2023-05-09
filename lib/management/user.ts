@@ -403,6 +403,32 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data,
     ),
+
+  /**
+   * Set password for the given login ID of user.
+   * @param loginId login ID of a test user
+   * @param newPassword optional redirect uri which will be used instead of any global configuration.
+   */
+  setPassword: (loginId: string, newPassword: string): Promise<SdkResponse<never>> =>
+    transformResponse<never>(
+      sdk.httpClient.post(
+        apiPaths.user.setPassword,
+        { loginId, newPassword },
+        { token: managementKey },
+      ),
+      (data) => data,
+    ),
+
+  /**
+   * Expire password for the given login ID.
+   * @param loginId login ID of a test user
+   * @param newPassword optional redirect uri which will be used instead of any global configuration.
+   */
+  expirePassword: (loginId: string): Promise<SdkResponse<never>> =>
+    transformResponse<never>(
+      sdk.httpClient.post(apiPaths.user.expirePassword, { loginId }, { token: managementKey }),
+      (data) => data,
+    ),
 });
 
 export default withUser;
