@@ -449,7 +449,7 @@ tenantsRes.data.forEach((tenant) => {
 
 ### Manage Users
 
-You can create, update, delete or load users, as well as search according to filters:
+You can create, update, delete or load users, as well as setting new password, expire password and search according to filters:
 
 ```typescript
 // A user must have a login ID, other fields are optional.
@@ -509,6 +509,13 @@ const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
   // do something
 });
+
+// Set a new password for a user
+// Note that the new password will be initially set as expired, and the user will need to replace it before logging in.
+await descopeClient.management.user.setPassword('<login-ID>', 'new-password');
+
+// Expire user password
+await descopeClient.management.user.expirePassword('<login-ID>');
 ```
 
 ### Manage Access Keys
