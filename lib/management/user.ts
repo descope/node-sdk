@@ -406,7 +406,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
 
   /**
    * Set password for the given login ID of user.
-   * Note: The password will automatically be set as expired
+   * Note: The password will automatically be set as expired.
    * The user will not be able to log-in with this password, and will be required to replace it on next login.
    * See also: expirePassword
    * @param loginId login ID of a test user
