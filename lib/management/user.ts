@@ -424,7 +424,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
 
   /**
    * Expire password for the given login ID.
-   * Note: user sign-in with an expired password, the user will get an error with code .
+   * Note: user sign-in with an expired password, the user will get an error with code.
    * Use the `ResetPassword` or `ReplacePassword` methods to reset/replace the password.
    * @param loginId login ID of a test user
    */
