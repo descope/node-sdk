@@ -406,14 +406,17 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
 
   /**
    * Set password for the given login ID of user.
+   * Note: The password will be initially set as expired
+   * The user could not log-in with this password, and must replace it.
+   * See also: expirePassword
    * @param loginId login ID of a test user
-   * @param newPassword optional redirect uri which will be used instead of any global configuration.
+   * @param password The password to set for the user
    */
-  setPassword: (loginId: string, newPassword: string): Promise<SdkResponse<never>> =>
+  setPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
     transformResponse<never>(
       sdk.httpClient.post(
         apiPaths.user.setPassword,
-        { loginId, newPassword },
+        { loginId, password },
         { token: managementKey },
       ),
       (data) => data,
@@ -421,8 +424,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
 
   /**
    * Expire password for the given login ID.
+   * Note: user sign-in with an expired password, the user will get an error with code .
+   * Use the `ResetPassword` or `ReplacePassword` methods to reset/replace the password.
    * @param loginId login ID of a test user
-   * @param newPassword optional redirect uri which will be used instead of any global configuration.
    */
   expirePassword: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse<never>(

@@ -254,6 +254,65 @@ app.get('/oauth/finish', async (req: Request, res: Response) => {
   }
 });
 
+app.post('/password/sign-up', async (req: Request, res: Response) => {
+  try {
+    const { loginId, password } = req.body;
+    const out = await clientAuth.auth.password.signUp(loginId as string, password as string);
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/password/sign-in', async (req: Request, res: Response) => {
+  try {
+    const { loginId, password } = req.body;
+    const out = await clientAuth.auth.password.signIn(loginId as string, password as string);
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/password/send-reset', async (req: Request, res: Response) => {
+  try {
+    const { loginId } = req.body;
+    const out = await clientAuth.auth.password.sendReset(loginId as string);
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/password/replace', async (req: Request, res: Response) => {
+  try {
+    const { loginId, oldPassword, newPassword } = req.body;
+    const out = await clientAuth.auth.password.replace(
+      loginId as string,
+      oldPassword as string,
+      newPassword as string,
+    );
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/password/update', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { loginId, newPassword } = req.body;
+    const out = await clientAuth.auth.password.update(loginId as string, newPassword as string);
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
 app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {
   console.log('Private API');
   res.sendStatus(200);

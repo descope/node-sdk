@@ -850,12 +850,12 @@ describe('Management User', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const loginId = 'some-id';
-      const newPassword = 'some-password';
-      const resp = await management.user.setPassword(loginId, newPassword);
+      const password = 'some-password';
+      const resp = await management.user.setPassword(loginId, password);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.setPassword,
-        { loginId, newPassword },
+        { loginId, password },
         { token: 'key' },
       );
 
