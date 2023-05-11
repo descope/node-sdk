@@ -519,7 +519,7 @@ The user could not log-in with this password, and must replace it.
 
 ```typescript
 // Set a user's password
-await descopeClient.management.user.setPassword('<login-ID>', '<new-password>');
+await descopeClient.management.user.setPassword('<login-ID>', '<some-password>');
 
 // Or alternatively, expire a user password
 await descopeClient.management.user.expirePassword('<login-ID>');
