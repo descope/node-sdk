@@ -511,6 +511,20 @@ usersRes.data.forEach((user) => {
 });
 ```
 
+#### Set or Expire User Password
+
+You can set or expire a user's password.
+Note: When setting a password, it will automatically be set as expired.
+The user will not be able log-in using an expired password, and will be required replace it on next login.
+
+```typescript
+// Set a user's password
+await descopeClient.management.user.setPassword('<login-ID>', '<some-password>');
+
+// Or alternatively, expire a user password
+await descopeClient.management.user.expirePassword('<login-ID>');
+```
+
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:
