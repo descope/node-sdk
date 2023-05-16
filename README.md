@@ -24,9 +24,9 @@ Before you can use authentication functions listed below, you must initialize a 
 You'll need your Descope `Project ID` to create this, and you can find it on the [project page](https://app.descope.com/settings/project) in the Descope Console.
 
 ```typescript
-import descopeSdk from '@descope/node-sdk';
+import DescopeClient from '@descope/node-sdk';
 
-const descopeSdk = descopeSdk({ projectId: 'my-project-ID' });
+const descopeSdk = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
 Once you've created a `descopeSdk`, you can use that to work with the following functions:
@@ -51,9 +51,9 @@ Before you can use management functions listed below, you must initialize a leak
 If you wish to also use management functions, you will need to initialize a new version of your `descopeSdk`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
 ```typescript
-import descopeSdk from '@descope/node-sdk';
+import DescopeClient from '@descope/node-sdk';
 
-const descopeSdk = descopeSdk({
+const descopeSdk = DescopeClient({
   projectId: 'my-project-ID',
   managementKey: 'management-key',
 });
@@ -454,9 +454,9 @@ To use the management API you'll need a `Management Key` along with your `Projec
 Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
 ```typescript
-import descopeSdk from '@descope/node-sdk';
+import DescopeClient from '@descope/node-sdk';
 
-const descopeSdk = descopeSdk({
+const descopeSdk = DescopeClient({
   projectId: 'my-project-ID',
   managementKey: 'management-key',
 });
