@@ -19,18 +19,17 @@ npm i --save @descope/node-sdk
 
 ### Setup
 
-Before you can use authentication functions listed below, you must initialize a `DescopeClient`.
+Before you can use authentication functions listed below, you must initialize a leaky abstraction `descopeSdk` to use all of the built-in SDK functions.
 
-A Descope `Project ID` is required to initialize the SDK for authentication functions. Find it on the
-[project page in the Descope Console](https://app.descope.com/settings/project).
+You'll need your Descope `Project ID` to create this, and you can find it on the [project page](https://app.descope.com/settings/project) in the Descope Console.
 
 ```typescript
-import DescopeClient from '@descope/node-sdk';
+import descopeSdk from '@descope/node-sdk';
 
-const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
+const descopeSdk = descopeSdk({ projectId: 'my-project-ID' });
 ```
 
-Once you've created a `DescopeClient`, you can use that to work with the following functions:
+Once you've created a `descopeSdk`, you can use that to work with the following functions:
 
 1. [OTP Authentication](#otp-authentication)
 2. [Magic Link](#magic-link)
@@ -47,14 +46,14 @@ Once you've created a `DescopeClient`, you can use that to work with the followi
 
 ### Setup
 
-Before you can use management functions listed below, you must initialize a `DescopeClient`.
+Before you can use management functions listed below, you must initialize a leaky abstraction `descopeSdk`.
 
-If you wish to also use management functions, you will need to initialize a new version of your `DescopeClient`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
+If you wish to also use management functions, you will need to initialize a new version of your `descopeSdk`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
 ```typescript
-import DescopeClient from '@descope/node-sdk';
+import descopeSdk from '@descope/node-sdk';
 
-const descopeClient = DescopeClient({
+const descopeSdk = descopeSdk({
   projectId: 'my-project-ID',
   managementKey: 'management-key',
 });
@@ -74,7 +73,7 @@ Then, you can use that to work with the following functions:
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
-If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` object you created under the setup of [Management Functions](#management-functions).
+If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeSdk` object you created under the setup of [Management Functions](#management-functions).
 
 ---
 
@@ -92,13 +91,13 @@ const user = {
   phone: '212-555-1234',
   email: loginId,
 };
-await descopeClient.otp.signUp['email'](loginId, user);
+await descopeSdk.otp.signUp['email'](loginId, user);
 ```
 
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```typescript
-const jwtResponse = await descopeClient.otp.verify['email'](loginId, 'code');
+const jwtResponse = await descopeSdk.otp.verify['email'](loginId, 'code');
 // jwtResponse.data.sessionJwt
 // jwtResponse.data.refreshJwt
 ```
@@ -117,13 +116,13 @@ The user can either `sign up`, `sign in` or `sign up or in`
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration
 const URI = 'http://myapp.com/verify-magic-link';
-await descopeClient.magicLink.signUpOrIn['email']('desmond@descope.com', URI);
+await descopeSdk.magicLink.signUpOrIn['email']('desmond@descope.com', URI);
 ```
 
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```typescript
-const jwtResponse = await descopeClient.magicLink.verify('token');
+const jwtResponse = await descopeSdk.magicLink.verify('token');
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -153,7 +152,7 @@ The user can either `sign up`, `sign in` or `sign up or in`
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration.
 const URI = 'http://myapp.com/verify-enchanted-link';
-const enchantedLinkRes = await descopeClient.enchantedLink.signIn('desmond@descope.com', URI);
+const enchantedLinkRes = await descopeSdk.enchantedLink.signIn('desmond@descope.com', URI);
 enchantedLinkRes.data.linkId; // Should be displayed to the user so they can click the corresponding link in the email
 enchantedLinkRes.data.pendingRef; // Used to poll for a valid session
 ```
@@ -164,9 +163,7 @@ the previous step. A valid session will be returned only after the user clicks t
 ```typescript
 // Poll for a certain number of tries / time frame. You can control the polling interval and time frame
 // with the optional WaitForSessionConfig
-const jwtResponse = await descopeClient.enchantedLink.waitForSession(
-  enchantedLinkRes.data.pendingRef,
-);
+const jwtResponse = await descopeSdk.enchantedLink.waitForSession(enchantedLinkRes.data.pendingRef);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -175,7 +172,7 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 ```typescript
 try {
-  await descopeClient.enchantedLink.verify('token');
+  await descopeSdk.enchantedLink.verify('token');
   // token is invalid
 } catch (error) {
   // token is valid
@@ -193,14 +190,14 @@ Users can authenticate using their social logins, via the OAuth protocol. Config
 // If configured globally, the return URL is optional. If provided however, it will be used
 // instead of any global configuration.
 
-const urlRes = await descopeClient.oauth.start['google'](redirectUrl);
+const urlRes = await descopeSdk.oauth.start['google'](redirectUrl);
 urlRes.data.url; // Redirect the user to the returned URL to start the OAuth redirect chain
 ```
 
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```typescript
-const jwtResponse = await descopeClient.oauth.exchange('token');
+const jwtResponse = await descopeSdk.oauth.exchange('token');
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -215,14 +212,14 @@ Users can authenticate to a specific tenant using SAML or Single Sign On. Config
 // If configured globally, the return URL is optional. If provided however, it will be used
 // instead of any global configuration.
 const redirectUrl = 'https://my-app.com/handle-saml';
-const urlRes = await descopeClient.saml.start('tenant'); // Choose which tenant to log into. An email can also be provided here and the domain will be extracted from it
+const urlRes = await descopeSdk.saml.start('tenant'); // Choose which tenant to log into. An email can also be provided here and the domain will be extracted from it
 urlRes.data.url; // Redirect the user to the given returned URL to start the SSO/SAML redirect chain
 ```
 
 The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```typescript
-const jwtResponse = await descopeClient.saml.exchange('token');
+const jwtResponse = await descopeSdk.saml.exchange('token');
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -247,7 +244,7 @@ const user = {
   phone: '212-555-1234',
   email: loginId,
 };
-const totpRes = await descopeClient.totp.signUp(loginId, user);
+const totpRes = await descopeSdk.totp.signUp(loginId, user);
 // Use one of the provided options to have the user add their credentials to the authenticator
 totpRes.data.provisioningURL;
 totpRes.data.image;
@@ -260,7 +257,7 @@ image or inserting the key manually. After that, signing in is done using the co
 the app produces.
 
 ```typescript
-const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
+const jwtResponse = await descopeSdk.totp.verify(loginId, 'code');
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -282,7 +279,7 @@ const user = {
   name: 'Desmond Copeland',
   email: loginId,
 };
-const jwtResponse = await descopeClient.password.signUp(loginId, password, user);
+const jwtResponse = await descopeSdk.password.signUp(loginId, password, user);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -290,7 +287,7 @@ const jwtResponse = await descopeClient.password.signUp(loginId, password, user)
 The user can later sign in using the same loginId and password.
 
 ```js
-const jwtResponse = await descopeClient.password.signIn(loginId, password);
+const jwtResponse = await descopeSdk.password.signIn(loginId, password);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
 ```
@@ -311,7 +308,7 @@ In the [password authentication method](https://app.descope.com/settings/authent
 // same way as in regular magic link authentication.
 const loginId = 'desmond@descope.com';
 const redirectURL = 'https://myapp.com/password-reset';
-const passwordResetResponse = await descopeClient.password.sendReset(loginId, redirectURL);
+const passwordResetResponse = await descopeSdk.password.sendReset(loginId, redirectURL);
 ```
 
 The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
@@ -319,7 +316,7 @@ to allow them to provide a new password instead of the old one. Since the user i
 
 ```js
 // The refresh token is required to make sure the user is authenticated.
-await descopeClient.password.update(loginId, newPassword, token);
+await descopeSdk.password.update(loginId, newPassword, token);
 ```
 
 `update()` can always be called when the user is authenticated and has a valid session.
@@ -328,7 +325,7 @@ Alternatively, it is also possible to replace an existing active password with a
 
 ```js
 // Replaces the user's current password with a new one
-await descopeClient.password.replace(loginId, oldPassword, newPassword);
+await descopeSdk.password.replace(loginId, oldPassword, newPassword);
 ```
 
 ### Session Validation
@@ -338,14 +335,14 @@ the session and refresh tokens with every request, and they are validated using 
 
 ```typescript
 // Validate the session. Will throw if expired
-const authInfo = await descopeClient.validateSession('sessionToken');
+const authInfo = await descopeSdk.validateSession('sessionToken');
 
 // If validateSession throws an exception, you will need to refresh the session using
-const authInfo = await descopeClient.refreshSession('refreshToken');
+const authInfo = await descopeSdk.refreshSession('refreshToken');
 
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
-const authInfo = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
+const authInfo = await descopeSdk.validateAndRefreshSession('sessionToken', 'refreshToken');
 ```
 
 Choose the right session validation and refresh combination that suits your needs.
@@ -370,8 +367,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.auth.validateSession(
-      cookies[DescopeClient.SessionTokenCookieName],
-      cookies[DescopeClient.RefreshTokenCookieName],
+      cookies[descopeSdk.SessionTokenCookieName],
+      cookies[descopeSdk.RefreshTokenCookieName],
     );
     if (out?.cookies) {
       res.set('Set-Cookie', out.cookies);
@@ -395,7 +392,7 @@ For multi-tenant uses:
 
 ```typescript
 // You can validate specific permissions
-const validTenantPermissions = await descopeClient.validateTenantPermissions(
+const validTenantPermissions = await descopeSdk.validateTenantPermissions(
   authInfo,
   'my-tenant-ID',
   ['Permission to validate'],
@@ -405,7 +402,7 @@ if (!validTenantPermissions) {
 }
 
 // Or validate roles directly
-const validTenantRoles = await descopeClient.validateTenantRoles(authInfo, 'my-tenant-ID', [
+const validTenantRoles = await descopeSdk.validateTenantRoles(authInfo, 'my-tenant-ID', [
   'Role to validate',
 ]);
 if (!validTenantRoles) {
@@ -417,15 +414,13 @@ When not using tenants use:
 
 ```typescript
 // You can validate specific permissions
-const validPermissions = await descopeClient.validatePermissions(authInfo, [
-  'Permission to validate',
-]);
+const validPermissions = await descopeSdk.validatePermissions(authInfo, ['Permission to validate']);
 if (!validPermissions) {
   // Deny access
 }
 
 // Or validate roles directly
-const validRoles = await descopeClient.validateRoles(authInfo, ['Role to validate']);
+const validRoles = await descopeSdk.validateRoles(authInfo, ['Role to validate']);
 if (!validRoles) {
   // Deny access
 }
@@ -437,14 +432,14 @@ You can log out a user from an active session by providing their `refreshToken` 
 After calling this function, you must invalidate or remove any cookies you have created.
 
 ```typescript
-await descopeClient.logout(refreshToken);
+await descopeSdk.logout(refreshToken);
 ```
 
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
 ```typescript
-await descopeClient.logoutAll(refreshToken);
+await descopeSdk.logoutAll(refreshToken);
 ```
 
 ## Management Functions
@@ -459,9 +454,9 @@ To use the management API you'll need a `Management Key` along with your `Projec
 Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
 ```typescript
-import DescopeClient from '@descope/node-sdk';
+import descopeSdk from '@descope/node-sdk';
 
-const descopeClient = DescopeClient({
+const descopeSdk = descopeSdk({
   projectId: 'my-project-ID',
   managementKey: 'management-key',
 });
@@ -474,22 +469,22 @@ You can create, update, delete or load tenants:
 ```typescript
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
-await descopeClient.management.tenant.create('My Tenant', ['domain.com']);
+await descopeSdk.management.tenant.create('My Tenant', ['domain.com']);
 
 // You can optionally set your own ID when creating a tenant
-await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com']);
+await descopeSdk.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com']);
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.tenant.update('my-custom-id', 'My Tenant', [
+await descopeSdk.management.tenant.update('my-custom-id', 'My Tenant', [
   'domain.com',
   'another-domain.com',
 ]);
 
 // Tenant deletion cannot be undone. Use carefully.
-await descopeClient.management.tenant.delete('my-custom-id');
+await descopeSdk.management.tenant.delete('my-custom-id');
 
 // Load all tenants
-const tenantsRes = await descopeClient.management.tenant.loadAll();
+const tenantsRes = await descopeSdk.management.tenant.loadAll();
 tenantsRes.data.forEach((tenant) => {
   // do something
 });
@@ -503,7 +498,7 @@ You can create, update, delete or load users, as well as search according to fil
 // A user must have a login ID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.create(
+await descopeSdk.management.user.create(
   'desmond@descope.com',
   'desmond@descope.com',
   null,
@@ -515,7 +510,7 @@ await descopeClient.management.user.create(
 // Alternatively, a user can be created and invited via an email message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address is provided in the information.
-await descopeClient.management.user.invite(
+await descopeSdk.management.user.invite(
   'desmond@descope.com',
   'desmond@descope.com',
   null,
@@ -525,7 +520,7 @@ await descopeClient.management.user.invite(
 );
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.user.update(
+await descopeSdk.management.user.update(
   'desmond@descope.com',
   'desmond@descope.com',
   null,
@@ -535,25 +530,25 @@ await descopeClient.management.user.update(
 );
 
 // Update explicit data for a user rather than overriding all fields
-await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
-await descopeClient.management.user.removeTenantRoles(
+await descopeSdk.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
+await descopeSdk.management.user.removeTenantRoles(
   'desmond@descope.com',
   'tenant-ID1',
   'role-name2',
 );
 
 // User deletion cannot be undone. Use carefully.
-await descopeClient.management.user.delete('desmond@descope.com');
+await descopeSdk.management.user.delete('desmond@descope.com');
 
 // Load specific user
-const userRes = await descopeClient.management.user.load('desmond@descope.com');
+const userRes = await descopeSdk.management.user.load('desmond@descope.com');
 
 // If needed, users can be loaded using the user ID as well
-const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
+const userRes = await descopeSdk.management.user.loadByUserId('<user-ID>');
 
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
-const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
+const usersRes = await descopeSdk.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
   // do something
 });
@@ -567,7 +562,7 @@ You can create, update, delete or load access keys, as well as search according 
 // An access key must have a name and expiration, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.accessKey.create(
+await descopeSdk.management.accessKey.create(
   'key-name',
   123456789, // expiration time
   null,
@@ -575,25 +570,25 @@ await descopeClient.management.accessKey.create(
 );
 
 // Load specific user
-const accessKeyRes = await descopeClient.management.accessKey.load('key-id');
+const accessKeyRes = await descopeSdk.management.accessKey.load('key-id');
 
 // Search all users, optionally according to tenant and/or role filter
-const accessKeysRes = await descopeClient.management.accessKey.searchAll(['tenant-ID']);
+const accessKeysRes = await descopeSdk.management.accessKey.searchAll(['tenant-ID']);
 accessKeysRes.data.forEach((accessKey) => {
   // do something
 });
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.accessKey.update('key-id', 'new-key-name');
+await descopeSdk.management.accessKey.update('key-id', 'new-key-name');
 
 // Access keys can be deactivated to prevent usage. This can be undone using "activate".
-await descopeClient.management.accessKey.deactivate('key-id');
+await descopeSdk.management.accessKey.deactivate('key-id');
 
 // Disabled access keys can be activated once again.
-await descopeClient.management.accessKey.activate('key-id');
+await descopeSdk.management.accessKey.activate('key-id');
 
 // Access key deletion cannot be undone. Use carefully.
-await descopeClient.management.accessKey.delete('key-id');
+await descopeSdk.management.accessKey.delete('key-id');
 ```
 
 ### Manage SSO Setting
@@ -602,7 +597,7 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
 // You can get SSO settings for a specific tenant ID
-const ssoSettings = await descopeClient.management.sso.getSettings("tenant-id")
+const ssoSettings = await descopeSdk.management.sso.getSettings("tenant-id")
 
 // You can configure SSO settings manually by setting the required fields directly
 const tenantId = 'tenant-id' // Which tenant this configuration is for
@@ -611,14 +606,14 @@ const entityID = 'my-idp-entity-id'
 const idpCert = '<your-cert-here>'
 const redirectURL = 'https://my-app.com/handle-saml' // Global redirect URL for SSO/SAML
 const domain = 'tenant-users.com' // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
+await descopeSdk.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
+await descopeSdk.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.
-await descopeClient.management.sso.configureMapping(
+await descopeSdk.management.sso.configureMapping(
    tenantId,
    { groups: ['IDP_ADMIN'], role: 'Tenant Admin'}
    { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
@@ -641,18 +636,18 @@ You can create, update, delete or load permissions:
 // You can optionally set a description for a permission.
 const name = 'My Permission';
 let description = 'Optional description to briefly explain what this permission allows.';
-await descopeClient.management.permission.create(name, description);
+await descopeSdk.management.permission.create(name, description);
 
 // Update will override all fields as is. Use carefully.
 const newName = 'My Updated Permission';
 description = 'A revised description';
-await descopeClient.management.permission.update(name, newName, description);
+await descopeSdk.management.permission.update(name, newName, description);
 
 // Permission deletion cannot be undone. Use carefully.
-await descopeClient.management.permission.delete(newName);
+await descopeSdk.management.permission.delete(newName);
 
 // Load all permissions
-const permissionsRes = await descopeClient.management.permission.loadAll();
+const permissionsRes = await descopeSdk.management.permission.loadAll();
 permissionsRes.data.forEach((permission) => {
   // do something
 });
@@ -667,19 +662,19 @@ You can create, update, delete or load roles:
 const name = 'My Role';
 let description = 'Optional description to briefly explain what this role allows.';
 const permissionNames = ['My Updated Permission'];
-descopeClient.management.role.create(name, description, permissionNames);
+descopeSdk.management.role.create(name, description, permissionNames);
 
 // Update will override all fields as is. Use carefully.
 const newName = 'My Updated Role';
 description = 'A revised description';
 permissionNames.push('Another Permission');
-descopeClient.management.role.update(name, newName, description, permissionNames);
+descopeSdk.management.role.update(name, newName, description, permissionNames);
 
 // Role deletion cannot be undone. Use carefully.
-descopeClient.management.role.delete(newName);
+descopeSdk.management.role.delete(newName);
 
 // Load all roles
-const rolesRes = await descopeClient.management.role.loadAll();
+const rolesRes = await descopeSdk.management.role.loadAll();
 rolesRes.data.forEach((role) => {
   // do something
 });
@@ -691,23 +686,23 @@ You can query SSO groups:
 
 ```typescript
 // Load all groups for a given tenant id
-const groupsRes = descopeClient.management.group.loadAllGroups('tenant-id');
+const groupsRes = descopeSdk.management.group.loadAllGroups('tenant-id');
 
 // Load all groups for the given user IDs (can be found in the user's JWT)
-const groupsRes = descopeClient.management.group.loadAllGroupsForMember('tenant-id', [
+const groupsRes = descopeSdk.management.group.loadAllGroupsForMember('tenant-id', [
   'user-id-1',
   'user-id-2',
 ]);
 
 // Load all groups for the given user login IDs (used for sign-in)
-const groupsRes = descopeClient.management.group.loadAllGroupsForMember(
+const groupsRes = descopeSdk.management.group.loadAllGroupsForMember(
   'tenant-id',
   [],
   ['login-id-1', 'login-id-2'],
 );
 
 // Load all group's members by the given group id
-const groupsRes = descopeClient.management.group.loadAllGroupMembers('tenant-id', 'group-id');
+const groupsRes = descopeSdk.management.group.loadAllGroupMembers('tenant-id', 'group-id');
 
 groupsRes.data.forEach((group) => {
   // do something
@@ -720,7 +715,7 @@ You can import and export flows and screens, or the project theme:
 
 ```typescript
 // Export the flow and it's matching screens based on the given id
-const res = await descopeClient.management.flow.export('sign-up');
+const res = await descopeSdk.management.flow.export('sign-up');
 console.log('found flow', res.data.flow);
 res.data.screens.forEach((screen) => {
   // do something
@@ -728,18 +723,18 @@ res.data.screens.forEach((screen) => {
 
 // Import the given flow and screens as the given id
 const { flow, screens } = res.data;
-const updatedRes = descopeClient.management.flow.import('sign-up', flow, screens);
+const updatedRes = descopeSdk.management.flow.import('sign-up', flow, screens);
 console.log('updated flow', updatedRes.data.flow);
 updatedRes.data.screens.forEach((screen) => {
   // do something
 });
 
 // Export the current theme of the project
-const res = descopeClient.management.theme.export();
+const res = descopeSdk.management.theme.export();
 console.log(res.data.theme);
 
 // Import the given theme to the project
-const updatedRes = descopeClient.management.theme.import(theme);
+const updatedRes = descopeSdk.management.theme.import(theme);
 console.log(updatedRes.data.theme);
 ```
 
@@ -748,7 +743,7 @@ console.log(updatedRes.data.theme);
 You can add custom claims to a valid JWT.
 
 ```typescript
-const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', {
+const updatedJWTRes = await descopeSdk.management.jwt.update('original-jwt', {
   customKey1: 'custom-value1',
   customKey2: 'custom-value2',
 });
@@ -765,7 +760,7 @@ that way, you don't need to use 3rd party messaging services in order to receive
 // Test user must have a loginId, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.createTestUser(
+await descopeSdk.management.user.createTestUser(
   'desmond@descope.com',
   'desmond@descope.com',
   null,
@@ -777,24 +772,24 @@ await descopeClient.management.user.createTestUser(
 // Now test user got created, and this user will be available until you delete it,
 // you can use any management operation for test user CRUD.
 // You can also delete all test users.
-await descopeClient.management.user.deleteAllTestUsers();
+await descopeSdk.management.user.deleteAllTestUsers();
 
 // OTP code can be generated for test user, for example:
-const { code } = await descopeClient.management.user.generateOTPForTestUser(
+const { code } = await descopeSdk.management.user.generateOTPForTestUser(
   'sms',
   'desmond@descope.com',
 );
-// Now you can verify the code is valid (using descopeClient.auth.*.verify for example)
+// Now you can verify the code is valid (using descopeSdk.auth.*.verify for example)
 
 // Same as OTP, magic link can be generated for test user, for example:
-const { link } = await descopeClient.management.user.generateMagicLinkForTestUser(
+const { link } = await descopeSdk.management.user.generateMagicLinkForTestUser(
   'email',
   'desmond@descope.com',
   '',
 );
 
 // Enchanted link can be generated for test user, for example:
-const { link, pendingRef } = await descopeClient.management.user.generateEnchantedLinkForTestUser(
+const { link, pendingRef } = await descopeSdk.management.user.generateEnchantedLinkForTestUser(
   'desmond@descope.com',
   '',
 );
