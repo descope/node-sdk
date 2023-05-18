@@ -15,10 +15,13 @@ Install the package with:
 npm i --save @descope/node-sdk
 ```
 
-## Setup
+## Authentication Functions
 
-A Descope `Project ID` is required to initialize the SDK. Find it on the
-[project page in the Descope Console](https://app.descope.com/settings/project).
+### Setup
+
+Before you can use authentication functions listed below, you must initialize `descopeClient` to use all of the built-in SDK functions.
+
+You'll need your Descope `Project ID` to create this, and you can find it on the [project page](https://app.descope.com/settings/project) in the Descope Console.
 
 ```typescript
 import DescopeClient from '@descope/node-sdk';
@@ -26,9 +29,53 @@ import DescopeClient from '@descope/node-sdk';
 const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
-## Usage
+Once you've created a `descopeClient`, you can use that to work with the following functions:
 
-Here are some examples how to manage and authenticate users:
+1. [OTP Authentication](#otp-authentication)
+2. [Magic Link](#magic-link)
+3. [Enchanted Link](#enchanted-link)
+4. [OAuth](#oauth)
+5. [SSO/SAML](#ssosaml)
+6. [TOTP Authentication](#totp-authentication)
+7. [Passwords](#passwords)
+8. [Session Validation](#session-validation)
+9. [Roles & Permission Validation](#roles--permission-validation)
+10. [Logging Out](#logging-out)
+
+## Management Functions
+
+### Setup
+
+Before you can use management functions listed below, you must initialize `descopeClient`.
+
+If you wish to also use management functions, you will need to initialize a new version of your `descopeClient`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const descopeClient = DescopeClient({
+  projectId: 'my-project-ID',
+  managementKey: 'management-key',
+});
+```
+
+Then, you can use that to work with the following functions:
+
+1. [Manage Tenants](#manage-tenants)
+2. [Manage Users](#manage-users)
+3. [Manage Access Keys](#manage-access-keys)
+4. [Manage SSO Setting](#manage-sso-setting)
+5. [Manage Permissions](#manage-permissions)
+6. [Manage Roles](#manage-roles)
+7. [Query SSO Groups](#query-sso-groups)
+8. [Manage Flows](#manage-flows)
+9. [Manage JWTs](#manage-jwts)
+
+If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
+
+If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` you created under the setup of [Management Functions](#management-functions).
+
+---
 
 ### OTP Authentication
 
@@ -399,10 +446,10 @@ invalidate all user's refresh tokens. After calling this function, you must inva
 await descopeClient.logoutAll(refreshToken);
 ```
 
-## Management API
+## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
-using the management API. Please note that these actions are more sensitive as they are administrative
+using the management functions. Please note that these actions are more sensitive as they are administrative
 in nature. Please use responsibly.
 
 ### Setup
