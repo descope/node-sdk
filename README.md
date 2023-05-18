@@ -369,8 +369,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   try {
     const cookies = parseCookies(req);
     const out = await clientAuth.auth.validateSession(
-      cookies[descopeClient.SessionTokenCookieName],
-      cookies[descopeClient.RefreshTokenCookieName],
+      cookies[DescopeClient.SessionTokenCookieName],
+      cookies[DescopeClient.RefreshTokenCookieName],
     );
     if (out?.cookies) {
       res.set('Set-Cookie', out.cookies);
