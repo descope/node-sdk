@@ -646,6 +646,9 @@ Certifcate contents
 -----END CERTIFICATE-----
 ```
 
+// You can delete SSO settings for a specific tenant ID
+await descopeClient.management.sso.deleteSettings("tenant-id")
+
 ### Manage Permissions
 
 You can create, update, delete or load permissions:

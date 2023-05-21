@@ -44,6 +44,35 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('deleteSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const tenantId = 't1';
+      const resp = await management.sso.deleteSettings(tenantId);
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
+
   describe('configureSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
