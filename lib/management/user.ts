@@ -147,7 +147,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    */
   deleteAllTestUsers: (): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.delete(apiPaths.user.deleteAllTestUsers, {}, { token: managementKey }),
+      sdk.httpClient.delete(apiPaths.user.deleteAllTestUsers, { token: managementKey }),
     ),
   load: (loginId: string): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(

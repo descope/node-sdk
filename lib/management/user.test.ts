@@ -237,11 +237,9 @@ describe('Management User', () => {
 
       const resp: SdkResponse<never> = await management.user.deleteAllTestUsers();
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(
-        apiPaths.user.deleteAllTestUsers,
-        {},
-        { token: 'key' },
-      );
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.user.deleteAllTestUsers, {
+        token: 'key',
+      });
 
       expect(resp).toEqual({
         code: 200,
