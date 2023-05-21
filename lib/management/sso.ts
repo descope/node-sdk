@@ -12,6 +12,13 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
       }),
       (data) => data,
     ),
+  deleteSettings: (tenantId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.delete(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: managementKey,
+      }),
+    ),
   configureSettings: (
     tenantId: string,
     idpURL: string,
