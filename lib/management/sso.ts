@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { RoleMapping, AttributeMapping, SSOSettingsResponse } from './types';
+import { RoleMappings, AttributeMapping, SSOSettingsResponse } from './types';
 
 const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
   getSettings: (tenantId: string): Promise<SdkResponse<SSOSettingsResponse>> =>
@@ -44,13 +44,13 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     ),
   configureMapping: (
     tenantId: string,
-    roleMapping?: RoleMapping,
+    roleMappings?: RoleMappings,
     attributeMapping?: AttributeMapping,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.mapping,
-        { tenantId, roleMapping, attributeMapping },
+        { tenantId, roleMappings, attributeMapping },
         { token: managementKey },
       ),
     ),

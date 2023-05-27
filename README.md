@@ -633,7 +633,7 @@ await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/
 // This function overrides any previous mapping (even when empty). Use carefully.
 await descopeClient.management.sso.configureMapping(
    tenantId,
-   { groups: ['IDP_ADMIN'], role: 'Tenant Admin'}
+   [{ groups: ['IDP_ADMIN'], roleName: 'Tenant Admin'}]
    { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
 )
 ```

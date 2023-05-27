@@ -158,7 +158,7 @@ describe('Management SSO', () => {
 
       const resp = await management.sso.configureMapping(
         't1',
-        { groups: ['g1', 'g2'], role: 'role1' },
+        [{ groups: ['g1', 'g2'], roleName: 'role1' }],
         { name: 'IDP_NAME', email: 'IDP_MAIL' },
       );
 
@@ -166,7 +166,7 @@ describe('Management SSO', () => {
         apiPaths.sso.mapping,
         {
           tenantId: 't1',
-          roleMapping: { groups: ['g1', 'g2'], role: 'role1' },
+          roleMappings: [{ groups: ['g1', 'g2'], roleName: 'role1' }],
           attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
         },
         { token: 'key' },
