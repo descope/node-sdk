@@ -202,10 +202,10 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     ),
   /**
    * Get the provider token for the given login ID.
-   * Only users that sign-in using social providers will have token.
+   * Only users that logged-in using social providers will have token.
    * Note: The 'Manage tokens from provider' setting must be enabled.
    * @param loginId the login ID of the user
-   * @param provider the provider name (google, facebook, etc').
+   * @param provider the provider name (google, facebook, etc.).
    * @returns The ProviderTokenResponse of the given user and provider
    */
   getProviderToken: (
