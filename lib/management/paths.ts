@@ -7,6 +7,7 @@ export default {
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     search: '/v1/mgmt/user/search',
+    getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
     updateEmail: '/v1/mgmt/user/update/email',
     updatePhone: '/v1/mgmt/user/update/phone',

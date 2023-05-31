@@ -175,3 +175,11 @@ export type SSOSettingsResponse = {
   redirectUrl: string;
   domain: string;
 };
+
+export type ProviderTokenResponse = {
+  provider: string;
+  providerUserId: string;
+  accessToken: string;
+  expiration: number;
+  scopes: string[];
+};

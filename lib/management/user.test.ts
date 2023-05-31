@@ -6,6 +6,7 @@ import {
   GenerateOTPForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateEnchantedLinkForTestResponse,
+  ProviderTokenResponse,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -333,6 +334,38 @@ describe('Management User', () => {
       expect(resp).toEqual({
         code: 200,
         data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getProviderToken', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockProviderTokenResponse = { provider: 'p1' };
+      const httpResponse = {
+        ok: true,
+        json: () => mockProviderTokenResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockProviderTokenResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<ProviderTokenResponse> = await management.user.getProviderToken(
+        'loginId',
+        'p1',
+      );
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.getProviderToken, {
+        queryParams: { loginId: 'loginId', provider: 'p1' },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockProviderTokenResponse,
         ok: true,
         response: httpResponse,
       });
