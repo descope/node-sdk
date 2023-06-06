@@ -10,6 +10,69 @@ describe('Management SSO', () => {
     mockHttpClient.reset();
   });
 
+  describe('getSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        tenantId: 'tenant-id',
+        idpEntityId: 'idpEntityId',
+        domain: 'some-domain.com',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const tenantId = 't1';
+      const resp = await management.sso.getSettings(tenantId);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockResponse,
+      });
+    });
+  });
+
+  describe('deleteSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const tenantId = 't1';
+      const resp = await management.sso.deleteSettings(tenantId);
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
+
   describe('configureSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -37,7 +100,7 @@ describe('Management SSO', () => {
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.configure,
+        apiPaths.sso.settings,
         { tenantId, idpURL, idpCert, entityId, redirectURL, domain },
         { token: 'key' },
       );
@@ -95,7 +158,7 @@ describe('Management SSO', () => {
 
       const resp = await management.sso.configureMapping(
         't1',
-        { groups: ['g1', 'g2'], role: 'role1' },
+        [{ groups: ['g1', 'g2'], roleName: 'role1' }],
         { name: 'IDP_NAME', email: 'IDP_MAIL' },
       );
 
@@ -103,7 +166,7 @@ describe('Management SSO', () => {
         apiPaths.sso.mapping,
         {
           tenantId: 't1',
-          roleMapping: { groups: ['g1', 'g2'], role: 'role1' },
+          roleMappings: [{ groups: ['g1', 'g2'], roleName: 'role1' }],
           attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
         },
         { token: 'key' },

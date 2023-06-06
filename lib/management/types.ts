@@ -34,8 +34,10 @@ export type CreatedAccessKeyResponse = {
 /** Represents a mapping between a set of groups of users and a role that will be assigned to them */
 export type RoleMapping = {
   groups: string[];
-  role: string;
+  roleName: string;
 };
+
+export type RoleMappings = RoleMapping[];
 
 /** Represents a mapping between Descope and IDP user attributes */
 export type AttributeMapping = {
@@ -75,6 +77,7 @@ export type Role = {
   name: string;
   description?: string;
   permissionNames: string[];
+  createdTime: number;
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
@@ -120,4 +123,63 @@ export type Theme = {
 
 export type ThemeResponse = {
   theme: Theme;
+};
+
+export type GenerateOTPForTestResponse = {
+  loginId: string;
+  code: string;
+};
+
+export type GenerateMagicLinkForTestResponse = {
+  loginId: string;
+  link: string;
+};
+
+export type GenerateEnchantedLinkForTestResponse = {
+  loginId: string;
+  link: string;
+  pendingRef: string;
+};
+
+export type AttributesTypes = string | boolean | number;
+
+export type UserMapping = {
+  name: string;
+  email: string;
+  username: string;
+  phoneNumber: string;
+  group: string;
+};
+
+export type RoleItem = {
+  id: string;
+  name: string;
+};
+
+export type GroupsMapping = {
+  role: RoleItem;
+  groups: string[];
+};
+
+export type SSOSettingsResponse = {
+  tenantId: string;
+  idpEntityId: string;
+  idpSSOUrl: string;
+  idpCertificate: string;
+  idpMetadataUrl: string;
+  spEntityId: string;
+  spACSUrl: string;
+  spCertificate: string;
+  userMapping: UserMapping;
+  groupsMapping: GroupsMapping[];
+  redirectUrl: string;
+  domain: string;
+};
+
+export type ProviderTokenResponse = {
+  provider: string;
+  providerUserId: string;
+  accessToken: string;
+  expiration: number;
+  scopes: string[];
 };

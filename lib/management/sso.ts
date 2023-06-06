@@ -1,9 +1,24 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { RoleMapping, AttributeMapping } from './types';
+import { RoleMappings, AttributeMapping, SSOSettingsResponse } from './types';
 
 const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
+  getSettings: (tenantId: string): Promise<SdkResponse<SSOSettingsResponse>> =>
+    transformResponse<SSOSettingsResponse>(
+      sdk.httpClient.get(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: managementKey,
+      }),
+      (data) => data,
+    ),
+  deleteSettings: (tenantId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.delete(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: managementKey,
+      }),
+    ),
   configureSettings: (
     tenantId: string,
     idpURL: string,
@@ -14,7 +29,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
-        apiPaths.sso.configure,
+        apiPaths.sso.settings,
         { tenantId, idpURL, entityId, idpCert, redirectURL, domain },
         { token: managementKey },
       ),
@@ -29,13 +44,13 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     ),
   configureMapping: (
     tenantId: string,
-    roleMapping?: RoleMapping,
+    roleMappings?: RoleMappings,
     attributeMapping?: AttributeMapping,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.mapping,
-        { tenantId, roleMapping, attributeMapping },
+        { tenantId, roleMappings, attributeMapping },
         { token: managementKey },
       ),
     ),

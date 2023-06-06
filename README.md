@@ -15,10 +15,13 @@ Install the package with:
 npm i --save @descope/node-sdk
 ```
 
-## Setup
+## Authentication Functions
 
-A Descope `Project ID` is required to initialize the SDK. Find it on the
-[project page in the Descope Console](https://app.descope.com/settings/project).
+### Setup
+
+Before you can use authentication functions listed below, you must initialize `descopeClient` to use all of the built-in SDK functions.
+
+You'll need your Descope `Project ID` to create this, and you can find it on the [project page](https://app.descope.com/settings/project) in the Descope Console.
 
 ```typescript
 import DescopeClient from '@descope/node-sdk';
@@ -26,9 +29,53 @@ import DescopeClient from '@descope/node-sdk';
 const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
-## Usage
+Once you've created a `descopeClient`, you can use that to work with the following functions:
 
-Here are some examples how to manage and authenticate users:
+1. [OTP Authentication](#otp-authentication)
+2. [Magic Link](#magic-link)
+3. [Enchanted Link](#enchanted-link)
+4. [OAuth](#oauth)
+5. [SSO/SAML](#ssosaml)
+6. [TOTP Authentication](#totp-authentication)
+7. [Passwords](#passwords)
+8. [Session Validation](#session-validation)
+9. [Roles & Permission Validation](#roles--permission-validation)
+10. [Logging Out](#logging-out)
+
+## Management Functions
+
+### Setup
+
+Before you can use management functions listed below, you must initialize `descopeClient`.
+
+If you wish to also use management functions, you will need to initialize a new version of your `descopeClient`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const descopeClient = DescopeClient({
+  projectId: 'my-project-ID',
+  managementKey: 'management-key',
+});
+```
+
+Then, you can use that to work with the following functions:
+
+1. [Manage Tenants](#manage-tenants)
+2. [Manage Users](#manage-users)
+3. [Manage Access Keys](#manage-access-keys)
+4. [Manage SSO Setting](#manage-sso-setting)
+5. [Manage Permissions](#manage-permissions)
+6. [Manage Roles](#manage-roles)
+7. [Query SSO Groups](#query-sso-groups)
+8. [Manage Flows](#manage-flows)
+9. [Manage JWTs](#manage-jwts)
+
+If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
+
+If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` you created under the setup of [Management Functions](#management-functions).
+
+---
 
 ### OTP Authentication
 
@@ -399,10 +446,10 @@ invalidate all user's refresh tokens. After calling this function, you must inva
 await descopeClient.logoutAll(refreshToken);
 ```
 
-## Management API
+## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
-using the management API. Please note that these actions are more sensitive as they are administrative
+using the management functions. Please note that these actions are more sensitive as they are administrative
 in nature. Please use responsibly.
 
 ### Setup
@@ -511,6 +558,20 @@ usersRes.data.forEach((user) => {
 });
 ```
 
+#### Set or Expire User Password
+
+You can set or expire a user's password.
+Note: When setting a password, it will automatically be set as expired.
+The user will not be able log-in using an expired password, and will be required replace it on next login.
+
+```typescript
+// Set a user's password
+await descopeClient.management.user.setPassword('<login-ID>', '<some-password>');
+
+// Or alternatively, expire a user password
+await descopeClient.management.user.expirePassword('<login-ID>');
+```
+
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:
@@ -553,6 +614,9 @@ await descopeClient.management.accessKey.delete('key-id');
 You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
+// You can get SSO settings for a specific tenant ID
+const ssoSettings = await descopeClient.management.sso.getSettings("tenant-id")
+
 // You can configure SSO settings manually by setting the required fields directly
 const tenantId = 'tenant-id' // Which tenant this configuration is for
 const idpURL = 'https://idp.com'
@@ -569,7 +633,7 @@ await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/
 // This function overrides any previous mapping (even when empty). Use carefully.
 await descopeClient.management.sso.configureMapping(
    tenantId,
-   { groups: ['IDP_ADMIN'], role: 'Tenant Admin'}
+   [{ groups: ['IDP_ADMIN'], roleName: 'Tenant Admin'}]
    { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
 )
 ```
@@ -581,6 +645,9 @@ Note: Certificates should have a similar structure to:
 Certifcate contents
 -----END CERTIFICATE-----
 ```
+
+// You can delete SSO settings for a specific tenant ID
+await descopeClient.management.sso.deleteSettings("tenant-id")
 
 ### Manage Permissions
 
@@ -663,6 +730,35 @@ groupsRes.data.forEach((group) => {
 });
 ```
 
+### Manage Flows
+
+You can import and export flows and screens, or the project theme:
+
+```typescript
+// Export the flow and it's matching screens based on the given id
+const res = await descopeClient.management.flow.export('sign-up');
+console.log('found flow', res.data.flow);
+res.data.screens.forEach((screen) => {
+  // do something
+});
+
+// Import the given flow and screens as the given id
+const { flow, screens } = res.data;
+const updatedRes = descopeClient.management.flow.import('sign-up', flow, screens);
+console.log('updated flow', updatedRes.data.flow);
+updatedRes.data.screens.forEach((screen) => {
+  // do something
+});
+
+// Export the current theme of the project
+const res = descopeClient.management.theme.export();
+console.log(res.data.theme);
+
+// Import the given theme to the project
+const updatedRes = descopeClient.management.theme.import(theme);
+console.log(updatedRes.data.theme);
+```
+
 ### Manage JWTs
 
 You can add custom claims to a valid JWT.
@@ -672,6 +768,55 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
   customKey1: 'custom-value1',
   customKey2: 'custom-value2',
 });
+```
+
+### Utils for your end to end (e2e) tests and integration tests
+
+To ease your e2e tests, we exposed dedicated management methods,
+that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
+
+```typescript
+// User for test can be created, this user will be able to generate code/link without
+// the need of 3rd party messaging services.
+// Test user must have a loginId, other fields are optional.
+// Roles should be set directly if no tenants exist, otherwise set
+// on a per-tenant basis.
+await descopeClient.management.user.createTestUser(
+  'desmond@descope.com',
+  'desmond@descope.com',
+  null,
+  'Desmond Copeland',
+  null,
+  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
+// Now test user got created, and this user will be available until you delete it,
+// you can use any management operation for test user CRUD.
+// You can also delete all test users.
+await descopeClient.management.user.deleteAllTestUsers();
+
+// OTP code can be generated for test user, for example:
+const { code } = await descopeClient.management.user.generateOTPForTestUser(
+  'sms',
+  'desmond@descope.com',
+);
+// Now you can verify the code is valid (using descopeClient.auth.*.verify for example)
+
+// Same as OTP, magic link can be generated for test user, for example:
+const { link } = await descopeClient.management.user.generateMagicLinkForTestUser(
+  'email',
+  'desmond@descope.com',
+  '',
+);
+
+// Enchanted link can be generated for test user, for example:
+const { link, pendingRef } = await descopeClient.management.user.generateEnchantedLinkForTestUser(
+  'desmond@descope.com',
+  '',
+);
+
+// Note 1: The generate code/link functions, work only for test users, will not work for regular users.
+// Note 2: In case of testing sign-in / sign-up operations with test users, need to make sure to generate the code prior calling the sign-in / sign-up operations.
 ```
 
 ## Code Examples
