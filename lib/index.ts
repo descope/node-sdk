@@ -291,4 +291,6 @@ export type {
   OAuthProvider,
   ResponseData,
   SdkResponse,
+  JWTResponse,
 } from '@descope/core-js-sdk';
+export type { AuthenticationInfo };
