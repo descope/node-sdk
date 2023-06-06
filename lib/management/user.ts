@@ -1,13 +1,14 @@
 import { DeliveryMethod, SdkResponse, transformResponse, UserResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
-import apiPaths from './paths';
 import {
+  ProviderTokenResponse,
   AssociatedTenant,
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
   AttributesTypes,
 } from './types';
+import { CoreSdk } from '../types';
+import apiPaths from './paths';
 
 type SingleUserResponse = {
   user: UserResponse;
@@ -198,6 +199,25 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
       (data) => data.users,
+    ),
+  /**
+   * Get the provider token for the given login ID.
+   * Only users that logged-in using social providers will have token.
+   * Note: The 'Manage tokens from provider' setting must be enabled.
+   * @param loginId the login ID of the user
+   * @param provider the provider name (google, facebook, etc.).
+   * @returns The ProviderTokenResponse of the given user and provider
+   */
+  getProviderToken: (
+    loginId: string,
+    provider: string,
+  ): Promise<SdkResponse<ProviderTokenResponse>> =>
+    transformResponse<ProviderTokenResponse>(
+      sdk.httpClient.get(apiPaths.user.getProviderToken, {
+        queryParams: { loginId, provider },
+        token: managementKey,
+      }),
+      (data) => data,
     ),
   activate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(

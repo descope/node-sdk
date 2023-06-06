@@ -34,8 +34,10 @@ export type CreatedAccessKeyResponse = {
 /** Represents a mapping between a set of groups of users and a role that will be assigned to them */
 export type RoleMapping = {
   groups: string[];
-  role: string;
+  roleName: string;
 };
+
+export type RoleMappings = RoleMapping[];
 
 /** Represents a mapping between Descope and IDP user attributes */
 export type AttributeMapping = {
@@ -172,4 +174,12 @@ export type SSOSettingsResponse = {
   groupsMapping: GroupsMapping[];
   redirectUrl: string;
   domain: string;
+};
+
+export type ProviderTokenResponse = {
+  provider: string;
+  providerUserId: string;
+  accessToken: string;
+  expiration: number;
+  scopes: string[];
 };
