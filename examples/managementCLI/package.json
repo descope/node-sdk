@@ -9,6 +9,7 @@
     "url": "git://github.com/descope/node-sdk.git"
   },
   "scripts": {
+    "build": "rollup -c",
     "start": "ts-node --esm src/index.ts"
   },
   "author": "descope",
@@ -22,7 +23,12 @@
     "commander": "^10.0.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.0",
     "dotenv": "^16.1.4",
+    "rollup-plugin-delete": "^2.0.0",
     "ts-node": "^10.8.2"
   }
 }
