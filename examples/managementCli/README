@@ -87,6 +87,18 @@ $ npm run start -- tenant-delete <tenant-id>
 # Load all tenants
 $ npm run start -- tenant-all
 
+## Groups
+
+# Load all groups for a tenant
+$ npm run start -- group-all-for-tenant <tenant-id>
+
+# Load all groups for user ids
+$ npm run start -- group-all-for-member [--user-ids <user-id-1> <user-id-2> <user-id-3>] [--login-ids <login-id-1> <login-id-2> <login-id-3>]
+
+# Load all group's members by the given group id
+$ npm run start -- group-members <tenant-id> <group-id>
+
+
 ## Permissions
 
 # Create a permission

@@ -282,40 +282,21 @@ program
     handleSdkRes(await sdk.management.group.loadAllGroups(tenantId));
   });
 
-// group-all-for-members-user-ids
+// group-all-for-member
 program
-  .command('group-all-for-members-user-ids')
-  .description('Load for all groups for a list of user IDs')
+  .command('group-all-for-member')
+  .description('Load for all groups for a list of user IDs or login IDs')
   .argument('<tenant-id>', 'Tenant ID')
-  .argument(
-    '<user-ids>',
-    'User IDs',
-    (val: string, memo: string[]) => {
-      memo.push(val);
-      return memo;
-    },
-    [],
-  )
-  .action(async (tenantId: string, userIds: string[]) => {
-    handleSdkRes(await sdk.management.group.loadAllGroupsForMember(tenantId, userIds, []));
-  });
-
-// group-all-for-members-login-ids
-program
-  .command('group-all-for-members-login-ids')
-  .description('Load for all groups for a list of login IDs')
-  .argument('<tenant-id>', 'Tenant ID')
-  .argument(
-    '<login-ids>',
-    'Login IDs',
-    (val: string, memo: string[]) => {
-      memo.push(val);
-      return memo;
-    },
-    [],
-  )
-  .action(async (tenantId: string, loginIds: string[]) => {
-    handleSdkRes(await sdk.management.group.loadAllGroupsForMember(tenantId, [], loginIds));
+  .option('--user-ids <items>', 'User IDs', (val) => val?.split(','))
+  .option('--login-ids', 'Login IDs', (val) => val?.split(','))
+  .action(async (tenantId: string, options) => {
+    handleSdkRes(
+      await sdk.management.group.loadAllGroupsForMember(
+        tenantId,
+        options.userIds,
+        options.loginIds,
+      ),
+    );
   });
 
 // group-members
