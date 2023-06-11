@@ -43,6 +43,12 @@ $ npm run start -- user-update <login-id> --email <new@domain.com> --name=<new-n
 # Delete a user
 $ npm run start -- user-delete <login-id>
 
+# Load a user
+$ npm run start -- user-load <login-id>
+
+# Search users
+$ npm run start -- user-search-all <limit> [<page>]
+
 ## Access Keys ##
 
 # Create an access key

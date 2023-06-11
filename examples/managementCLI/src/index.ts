@@ -2,6 +2,7 @@ import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { Command } from 'commander';
+import { parse } from 'path';
 
 dotenv.config();
 
@@ -93,6 +94,51 @@ program
   .argument('<login-id>', 'Login ID')
   .action(async (loginId) => {
     handleSdkRes(await sdk.management.user.delete(loginId));
+  });
+
+// user-load
+program
+  .command('user-load')
+  .description('Load a user')
+  .argument('<login-id>', 'Login ID')
+  .action(async (loginId) => {
+    handleSdkRes(await sdk.management.user.load(loginId));
+  });
+
+// user-search-all
+program
+  .command('user-search-all')
+  .description('Search for all users')
+  .option('-l, --limit <limit>', 'Limit', '100')
+  .option('-p, --page <page>', 'Page', '0')
+  .action(async (options) => {
+    handleSdkRes(
+      await sdk.management.user.searchAll(
+        [],
+        [],
+        parseInt(options.limit, 10),
+        parseInt(options.page, 10),
+      ),
+    );
+  });
+
+// user-set-password
+program
+  .command('user-set-password')
+  .description('Set a user password')
+  .argument('<login-id>', 'Login ID')
+  .argument('<password>', 'Password')
+  .action(async (loginId, password) => {
+    handleSdkRes(await sdk.management.user.setPassword(loginId, password));
+  });
+
+// user-expire-password
+program
+  .command('user-expire-password')
+  .description('Expire a user password')
+  .argument('<login-id>', 'Login ID')
+  .action(async (loginId) => {
+    handleSdkRes(await sdk.management.user.expirePassword(loginId));
   });
 
 // *** Access key commands ***
