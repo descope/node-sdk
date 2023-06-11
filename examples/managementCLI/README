@@ -112,7 +112,7 @@ $ npm run start -- role-all
 ## Flows
 
 # Export a flow
-$ npm run start -- flow-export <flow-id>
+$ npm run start -- flow-export <flow-id> --output <output-file-path>
 
 # Import a flow
 $ npm run start -- flow-import <flow-file-path>
@@ -120,7 +120,7 @@ $ npm run start -- flow-import <flow-file-path>
 ## Theme
 
 # Export a theme
-$ npm run start -- theme-export <theme-id>
+$ npm run start -- theme-export --output <output-file-path>
 
 # Import a theme
 $ npm run start -- theme-import <theme-file-path>

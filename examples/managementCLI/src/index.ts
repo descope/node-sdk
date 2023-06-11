@@ -372,8 +372,9 @@ program
   .command('flow-export')
   .description('Export a flow')
   .argument('<id>', 'Flow ID')
-  .action(async (id) => {
-    handleSdkRes(await sdk.management.flow.export(id));
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (id, options) => {
+    handleSdkRes(await sdk.management.flow.export(id), options.output);
   });
 
 // flow-import
@@ -398,15 +399,16 @@ program
 
 // export-theme
 program
-  .command('export-theme')
+  .command('theme-export')
   .description('Export a theme')
-  .action(async () => {
-    handleSdkRes(await sdk.management.theme.export());
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(await sdk.management.theme.export(), option.output);
   });
 
 // import-theme
 program
-  .command('import-theme')
+  .command('theme-import')
   .description('Import a theme')
   .argument('<filename>', 'Theme filename')
   .action(async (filename) => {
@@ -422,9 +424,14 @@ program
 
 // *** Helper functions ***
 
-function handleSdkRes(res: SdkResponse<any>) {
+function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
   if (res.ok) {
-    console.log('Success. Response: ', res.data);
+    if (responseFile) {
+      console.log('Success. Response saved to:', responseFile);
+      fs.writeFileSync(responseFile, JSON.stringify(res.data, null, 2));
+    } else {
+      console.log('Success. Response: ', res.data);
+    }
   } else {
     console.error('Failure. Got error:', res.error);
   }
