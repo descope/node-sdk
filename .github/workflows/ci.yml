@@ -31,7 +31,7 @@ jobs:
       - name: Examples - common
         run: cd examples/commonjs && npm i
       - name: Examples - Management CLI
-        run: cd examples/managementCLI && npm i && npm run build
+        run: cd examples/managementCli && npm i && npm run build
 
   eslint:
     name: 🪥 ESLint
