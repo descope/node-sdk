@@ -141,6 +141,16 @@ program
     handleSdkRes(await sdk.management.user.expirePassword(loginId));
   });
 
+// user-provider-token
+program
+  .command('user-provider-token')
+  .description('Get a user provider token')
+  .argument('<login-id>', 'Login ID')
+  .argument('<provider>', 'Provider name')
+  .action(async (loginId, provider) => {
+    handleSdkRes(await sdk.management.user.getProviderToken(loginId, provider));
+  });
+
 // *** Access key commands ***
 
 // access-key-create
