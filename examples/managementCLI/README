@@ -1,0 +1,128 @@
+# Management CLI Example
+
+This example shows how to use the management API using the CLI.
+
+Read the [management functions readme](https://github.com/descope/node-sdk/#management-functions) for more information.
+
+## Setup
+
+1. Go to the example directory: `cd examples/managementCLI`
+2. Install dependencies: `npm install`
+3. Set env variables. this can be done with `.env` file or by setting the variables in the terminal.
+   a. Using `.env` file. Create `.env` file and fill in the value:
+   ```bash
+    # Required
+    DESCOPE_PROJECT_ID=YOUR_PROJECT_ID
+    DESCOPE_MANAGEMENT_KEY=YOUR_MANAGEMENT_KEY
+    # Optional
+    DESCOPE_BASE_URL=YOUR_BASE_URL
+   ```
+   b. Setting the variables in the terminal:
+   ```bash
+   export DESCOPE_PROJECT_ID=YOUR_PROJECT_ID
+   export DESCOPE_MANAGEMENT_KEY=YOUR_MANAGEMENT_KEY
+   export DESCOPE_BASE_URL=YOUR_BASE_URL # Optional
+   ```
+
+## Run the example
+
+To run the example, `npm run start` from the example directory with the desired command/arguments.
+
+```bash
+# Help
+$ npm run start help
+
+## Users ##
+
+# Create a user
+$ npm run start -- user-create <login-id> --email <my@domain.com> --name=<some-name>
+
+# Update a user
+$ npm run start -- user-update <login-id> --email <new@domain.com> --name=<new-name>
+
+# Delete a user
+$ npm run start -- user-delete <login-id>
+
+## Access Keys ##
+
+# Create an access key
+# The expiration time is a unix timestamp in seconds, you can use `date -v+3m +%s` to get a timestamp for 3 months from now
+$ npm run start -- access-key-create <access-key-name> <access-key-expiration-time>
+
+# Update an access key
+$ npm run start -- access-key-update <access-key-id> <access-key-name>
+
+# Delete an access key
+$ npm run start -- access-key-delete <access-key-id>
+
+# Load an access key
+$ npm run start -- access-key-load <access-key-id>
+
+# List access keys
+$ npm run start -- access-key-search-all
+
+# Deactivate an access key
+$ npm run start -- access-key-deactivate <access-key-id>
+
+# Activate an access key
+$ npm run start -- access-key-activate <access-key-id>
+
+## Tenant
+
+# Create a tenant
+$ npm run start -- tenant-create <tenant-name>
+
+# Update a tenant
+$ npm run start -- tenant-update <tenant-id> <tenant-name>
+
+# Delete a tenant
+$ npm run start -- tenant-delete <tenant-id>
+
+# Load all tenants
+$ npm run start -- tenant-all
+
+## Permissions
+
+# Create a permission
+$ npm run start -- permission-create <permission-name>
+
+# Update a permission
+$ npm run start -- permission-update <permission-id> <permission-name>
+
+# Delete a permission
+$ npm run start -- permission-delete <permission-id>
+
+# Load all permissions
+$ npm run start -- permission-all
+
+## Roles
+
+# Create a role
+$ npm run start -- role-create <role-name>
+
+# Update a role
+$ npm run start -- role-update <role-id> <role-name>
+
+# Delete a role
+$ npm run start -- role-delete <role-id>
+
+# Load all roles
+$ npm run start -- role-all
+
+## Flows
+
+# Export a flow
+$ npm run start -- flow-export <flow-id>
+
+# Import a flow
+$ npm run start -- flow-import <flow-file-path>
+
+## Theme
+
+# Export a theme
+$ npm run start -- theme-export <theme-id>
+
+# Import a theme
+$ npm run start -- theme-import <theme-file-path>
+
+```
