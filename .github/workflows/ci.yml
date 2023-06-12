@@ -30,6 +30,8 @@ jobs:
         run: cd examples/es6 && npm i && npm run build
       - name: Examples - common
         run: cd examples/commonjs && npm i
+      - name: Examples - Management CLI
+        run: cd examples/managementCli && npm i && npm run build
 
   eslint:
     name: 🪥 ESLint
