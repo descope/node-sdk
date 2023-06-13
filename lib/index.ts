@@ -16,9 +16,10 @@ declare const BUILD_VERSION: string;
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
+  publicKey?: string;
 };
 
-const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
+const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
   const coreSdk = createSdk({
     ...config,
     fetch,
@@ -36,6 +37,19 @@ const nodeSdk = ({ managementKey, ...config }: NodeSdkArgs) => {
 
   /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
+    if (publicKey) {
+      try {
+        const parsedKey = JSON.parse(publicKey);
+        const key = await importJWK(parsedKey);
+        return {
+          [parsedKey.kid]: key,
+        };
+      } catch (e) {
+        logger?.error('Failed to parse the provided public key', e);
+        throw new Error('Failed to parse public key');
+      }
+    }
+
     const keysWrapper = await coreSdk.httpClient
       .get(`v2/keys/${projectId}`)
       .then((resp) => resp.json());
