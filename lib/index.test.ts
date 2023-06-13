@@ -454,8 +454,8 @@ describe('sdk', () => {
       jest
         .spyOn(newSdk.httpClient, 'get')
         .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
-      // ensure that /keys is not called
 
+      // ensure that /keys is not called
       expect(newSdk.httpClient.get).not.toHaveBeenCalled();
     });
   });
