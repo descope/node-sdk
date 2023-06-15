@@ -72,4 +72,7 @@ export default {
     loadAllGroupsForMember: '/v1/mgmt/group/member/all',
     loadAllGroupMembers: '/v1/mgmt/group/members',
   },
+  audit: {
+    search: '/v1/mgmt/audit/search',
+  },
 };

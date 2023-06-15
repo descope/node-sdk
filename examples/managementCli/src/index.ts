@@ -459,6 +459,18 @@ program
     handleSdkRes(await sdk.management.theme.import(theme));
   });
 
+// *** Audit commands ***
+
+// search
+program
+  .command('audit-search')
+  .description('Search audit trail up to the last 30 days')
+  .argument('<text>', 'Search for the text in all relevant fields')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (text, option) => {
+    handleSdkRes(await sdk.management.audit.search({ text }), option.output);
+  });
+
 // *** Helper functions ***
 
 function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {

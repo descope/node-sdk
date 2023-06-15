@@ -183,3 +183,38 @@ export type ProviderTokenResponse = {
   expiration: number;
   scopes: string[];
 };
+
+/**
+ * Search options to filter which audit records we should retrieve.
+ * All parameters are optional. `From` is currently limited to 30 days.
+ */
+export type AuditSearchOptions = {
+  userIds?: string[]; // List of users to filter by
+  actions?: string[]; // List of actions to filter by
+  excludedActions?: string[]; // List of actions to exclude
+  devices?: string[]; // List of devices to filter by. Current devices supported are "Bot"/"Mobile"/"Desktop"/"Tablet"/"Unknown"
+  methods?: string[]; // List of methods to filter by. Current auth methods are "otp"/"totp"/"magiclink"/"oauth"/"saml"/"password"
+  geos?: string[]; // List of geos to filter by. Geo is currently country code like "US", "IL", etc.
+  remoteAddresses?: string[]; // List of remote addresses to filter by
+  loginIds?: string[]; // List of login IDs to filter by
+  tenants?: string[]; // List of tenants to filter by
+  noTenants?: boolean; // Should audits without any tenants always be included
+  text?: string; // Free text search across all fields
+  from?: number; // Retrieve records newer than given time. Limited to no older than 30 days. Time is from epoch in milliseconds.
+  to?: number; // Retrieve records older than given time. Time is from epoch in milliseconds.
+};
+
+/** Audit record response from the audit trail. Occurred is in milliseconds. */
+export type AuditRecord = {
+  projectId: string;
+  userId: string;
+  action: string;
+  occurred: number;
+  device: string;
+  method: string;
+  geo: string;
+  remoteAddress: string;
+  loginIds: string[];
+  tenants: string[];
+  data: Record<string, any>;
+};
