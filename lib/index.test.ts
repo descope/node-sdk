@@ -429,4 +429,34 @@ describe('sdk', () => {
       );
     });
   });
+
+  describe('public key', () => {
+    it('should headers to request', async () => {
+      const { publicKey, privateKey } = await generateKeyPair('ES384');
+      validToken = await new SignJWT({})
+        .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+        .setIssuedAt()
+        .setIssuer('project-id')
+        .setExpirationTime(1981398111)
+        .sign(privateKey);
+
+      publicKeys = await exportJWK(publicKey);
+      publicKeys.alg = 'ES384';
+      publicKeys.kid = '0ad99869f2d4e57f3f71c68300ba84fa';
+      publicKeys.use = 'sig';
+
+      const newSdk = createSdk({
+        projectId: 'project-id',
+        publicKey: JSON.stringify(publicKeys),
+      });
+
+      await newSdk.validateJwt(validToken);
+      jest
+        .spyOn(newSdk.httpClient, 'get')
+        .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
+
+      // ensure that /keys is not called
+      expect(newSdk.httpClient.get).not.toHaveBeenCalled();
+    });
+  });
 });

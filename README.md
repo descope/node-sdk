@@ -878,6 +878,27 @@ of the SDK.
    npm start
    ```
 
+## Providing Custom Public Key
+
+By default, the SDK will download the public key from Descope's servers. You can also provide your own public key. This is useful when the server you are running the SDK on does not have access to the internet.
+
+You can find your public key in the `https://api.descope.com/v2/keys/<project-id>` endpoint. For further information, please see the [Descope Documentation and API reference page](https://docs.descope.com/api/openapi/sessiongetkeys/operation/GetKeysV2).
+
+To provide your own public key, you can do so by providing the `publicKey` option when initializing the SDK:
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const descopeClient = DescopeClient({
+  projectId: 'my-project-ID',
+  publicKey: '{"alg":"RS256", ... }',
+});
+
+// The public key will be used when validating jwt
+const sessionJWt = '<session-jwt>';
+await descopeClient.validateJwt(sessionJWt);
+```
+
 ## Learn More
 
 To learn more please see the [Descope Documentation and API reference page](https://docs.descope.com/).
