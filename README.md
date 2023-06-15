@@ -70,6 +70,7 @@ Then, you can use that to work with the following functions:
 7. [Query SSO Groups](#query-sso-groups)
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
+10. [Search Audit](#search-audit)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -768,6 +769,23 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
   customKey1: 'custom-value1',
   customKey2: 'custom-value2',
 });
+```
+
+### Search Audit
+
+You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
+
+```typescript
+// Full text search on the last 10 days
+const audits = await descopeClient.management.audit.search({
+  from: Date.now() - 10 * 24 * 60 * 60 * 1000,
+  text: 'some-text',
+});
+console.log(audits);
+
+// Search successful logins in the last 30 days
+const audits = await descopeClient.management.audit.search({ actions: ['LoginSucceed'] });
+console.log(audits);
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
