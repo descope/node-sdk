@@ -9,7 +9,7 @@ import {
   Screen,
   Theme,
   ThemeResponse,
-  FlowMetaData,
+  FlowMetadata,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -21,7 +21,7 @@ const mockFlow: Flow = {
   disabled: false,
 };
 
-const mockFlowMetaData: FlowMetaData = {
+const mockFlowMetadata: FlowMetadata = {
   id: 'test',
   name: 'mockFlow',
   disabled: false,
@@ -34,7 +34,7 @@ const mockScreen: Screen = {
 };
 
 const mockFlowsResponse: FlowsResponse = {
-  flows: [mockFlowMetaData],
+  flows: [mockFlowMetadata],
   total: 1,
 };
 

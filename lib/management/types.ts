@@ -103,7 +103,7 @@ export type Flow = {
   etag?: string;
 };
 
-export type FlowMetaData = {
+export type FlowMetadata = {
   id: string;
   name: string;
   description?: string;
@@ -119,7 +119,7 @@ export type Screen = {
 };
 
 export type FlowsResponse = {
-  flows: FlowMetaData[];
+  flows: FlowMetadata[];
   total: number;
 };
 
