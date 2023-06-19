@@ -736,6 +736,12 @@ groupsRes.data.forEach((group) => {
 You can import and export flows and screens, or the project theme:
 
 ```typescript
+// List all project flows
+const res = await descopeClient.management.flow.list();
+console.log('found total flows', res.total);
+res.flows.forEach((flowMetaData) => {
+  // do something
+});
 // Export the flow and it's matching screens based on the given id
 const res = await descopeClient.management.flow.export('sign-up');
 console.log('found flow', res.data.flow);

@@ -60,6 +60,7 @@ export default {
     loadAll: '/v1/mgmt/role/all',
   },
   flow: {
+    list: '/v1/mgmt/flow/list',
     export: '/v1/mgmt/flow/export',
     import: '/v1/mgmt/flow/import',
   },
