@@ -404,6 +404,13 @@ program
   });
 
 // *** Flows commands ***
+// flows-list
+program
+  .command('flows-list')
+  .description('List all project flows')
+  .action(async () => {
+    handleSdkRes(await sdk.management.flow.list());
+  });
 // flow-export
 program
   .command('flow-export')

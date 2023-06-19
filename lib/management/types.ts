@@ -103,12 +103,24 @@ export type Flow = {
   etag?: string;
 };
 
+export type FlowMetadata = {
+  id: string;
+  name: string;
+  description?: string;
+  disabled: boolean;
+};
+
 export type Screen = {
   id: string;
   flowId: string;
   inputs?: any;
   interactions?: any;
   htmlTemplate: any;
+};
+
+export type FlowsResponse = {
+  flows: FlowMetadata[];
+  total: number;
 };
 
 export type FlowResponse = {
