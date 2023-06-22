@@ -9,6 +9,7 @@ export default {
     search: '/v1/mgmt/user/search',
     getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
+    updateLoginId: '/v1/mgmt/user/update/loginid',
     updateEmail: '/v1/mgmt/user/update/email',
     updatePhone: '/v1/mgmt/user/update/phone',
     updateDisplayName: '/v1/mgmt/user/update/name',

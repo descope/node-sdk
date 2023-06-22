@@ -96,6 +96,16 @@ program
     handleSdkRes(await sdk.management.user.delete(loginId));
   });
 
+// user-update-login-id
+program
+  .command('user-update-login-id')
+  .description('Update user login ID')
+  .argument('<login-id>', 'Login ID')
+  .argument('<new-login-id>', 'New Login ID')
+  .action(async (loginId, newLoginId) => {
+    handleSdkRes(await sdk.management.user.updateLoginId(loginId, newLoginId));
+  });
+
 // user-load
 program
   .command('user-load')
