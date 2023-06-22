@@ -536,6 +536,7 @@ await descopeClient.management.user.update(
 
 // Update explicit data for a user rather than overriding all fields
 await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
+await descopeClient.management.user.updateLoginId('desmond@descope.com', 'bane@descope.com');
 await descopeClient.management.user.removeTenantRoles(
   'desmond@descope.com',
   'tenant-ID1',

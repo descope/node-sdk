@@ -237,6 +237,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  updateLoginId: (loginId: string, newLoginId?: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateLoginId,
+        { loginId, newLoginId },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
   updateEmail: (
     loginId: string,
     email: string,
