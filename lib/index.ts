@@ -6,7 +6,7 @@ import {
   rolesClaimName,
   sessionTokenCookieName,
 } from './constants';
-import { getAuthorizationClaimItems, withCookie } from './helpers';
+import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
 import fetch from './fetch-polyfill';
@@ -233,6 +233,9 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
       tenant: string,
       permissions: string[],
     ): boolean {
+      // check if user is associated to the tenant
+      if (tenant && !isUserAssociatedWithTenant(authInfo, tenant)) return false;
+
       const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant);
       return permissions.every((perm) => granted.includes(perm));
     },
@@ -254,6 +257,9 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * @returns true if all roles exist, false otherwise
      */
     validateTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): boolean {
+      // check if user is associated to the tenant
+      if (tenant && !isUserAssociatedWithTenant(authInfo, tenant)) return false;
+
       const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant);
       return roles.every((role) => membership.includes(role));
     },

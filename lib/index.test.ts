@@ -70,6 +70,7 @@ describe('sdk', () => {
       token: {
         [authorizedTenantsClaimName]: {
           kuku: { [permissionsClaimName]: ['foo', 'bar'], [rolesClaimName]: ['abc', 'xyz'] },
+          t1: {},
         },
       },
     };
@@ -307,6 +308,8 @@ describe('sdk', () => {
       expect(sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz'])).toStrictEqual(
         true,
       );
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 't1', [])).toStrictEqual(true);
+      expect(sdk.validateTenantPermissions(permTenantAuthInfo, 't1', [])).toStrictEqual(true);
     });
     it('should fail when wrong function is used', () => {
       expect(sdk.validatePermissions(permTenantAuthInfo, ['foo'])).toStrictEqual(false);
@@ -323,6 +326,8 @@ describe('sdk', () => {
       expect(
         sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz', 'tuv']),
       ).toStrictEqual(false);
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
+      expect(sdk.validateTenantPermissions(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
     });
   });
 
