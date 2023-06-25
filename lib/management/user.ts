@@ -121,6 +121,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
+    verifiedEmail?: boolean,
+    verifiedPhone?: boolean,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -134,6 +136,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           userTenants,
           customAttributes,
           picture,
+          verifiedEmail,
+          verifiedPhone,
         },
         { token: managementKey },
       ),
