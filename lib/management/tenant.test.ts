@@ -148,6 +148,34 @@ describe('Management Tenant', () => {
     });
   });
 
+  describe('load', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockTenants[0],
+        clone: () => ({
+          json: () => Promise.resolve(mockTenants[0]),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Tenant> = await management.tenant.load(mockTenants[0].id);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.load, {
+        queryParams: { id: mockTenants[0].id },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenants[0],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('loadAll', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
