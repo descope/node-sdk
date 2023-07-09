@@ -273,6 +273,15 @@ program
     handleSdkRes(await sdk.management.tenant.delete(id));
   });
 
+// tenant-load
+program
+  .command('tenant-load')
+  .description('Load tenant by id')
+  .argument('<id>', 'Tenant ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.tenant.load(id));
+  });
+
 // tenant-all
 program
   .command('tenant-all')

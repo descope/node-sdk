@@ -38,6 +38,7 @@ export default {
     create: '/v1/mgmt/tenant/create',
     update: '/v1/mgmt/tenant/update',
     delete: '/v1/mgmt/tenant/delete',
+    load: '/v1/mgmt/tenant',
     loadAll: '/v1/mgmt/tenant/all',
   },
   sso: {

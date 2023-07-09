@@ -488,6 +488,9 @@ await descopeClient.management.tenant.update('my-custom-id', 'My Tenant', [
 // Tenant deletion cannot be undone. Use carefully.
 await descopeClient.management.tenant.delete('my-custom-id');
 
+// Load tenant by id
+const tenant = await descopeClient.management.tenant.load('my-custom-id');
+
 // Load all tenants
 const tenantsRes = await descopeClient.management.tenant.loadAll();
 tenantsRes.data.forEach((tenant) => {

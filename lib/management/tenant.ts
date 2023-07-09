@@ -47,6 +47,14 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(apiPaths.tenant.delete, { id }, { token: managementKey }),
     ),
+  load: (id: string): Promise<SdkResponse<Tenant>> =>
+    transformResponse<Tenant, Tenant>(
+      sdk.httpClient.get(apiPaths.tenant.load, {
+        queryParams: { id },
+        token: managementKey,
+      }),
+      (data) => data,
+    ),
   loadAll: (): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
       sdk.httpClient.get(apiPaths.tenant.loadAll, {
