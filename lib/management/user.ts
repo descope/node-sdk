@@ -123,26 +123,30 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
-  ): Promise<SdkResponse<UserResponse>> =>
-    transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(
-        apiPaths.user.update,
-        {
-          loginId,
-          email,
-          phone,
-          displayName,
-          roleNames: roles,
-          userTenants,
-          customAttributes,
-          picture,
-          verifiedEmail,
-          verifiedPhone,
-        },
-        { token: managementKey },
-      ),
+  ): Promise<SdkResponse<UserResponse>> => {
+    const args = {
+      loginId,
+      email,
+      phone,
+      displayName,
+      roleNames: roles,
+      userTenants,
+      customAttributes,
+      picture,
+      verifiedEmail,
+      verifiedPhone,
+    };
+    const filtered = Object.entries(args).reduce((acc, [key, value]) => {
+      if (typeof value !== 'undefined') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+    return transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(apiPaths.user.update, filtered, { token: managementKey }),
       (data) => data.user,
-    ),
+    );
+  },
   delete: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(apiPaths.user.delete, { loginId }, { token: managementKey }),
