@@ -632,7 +632,7 @@ const domain = 'tenant-users.com' // Users authentication with this domain will 
 await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
+await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata', redirectURL, domain)
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.

@@ -126,13 +126,22 @@ describe('Management SSO', () => {
 
       const tenantId = 't1';
       const idpMetadataURL = 'https://idp.com';
-      const resp = await management.sso.configureMetadata(tenantId, idpMetadataURL);
+      const redirectURL = 'https://redirect.com';
+      const domain = 'domain.com';
+      const resp = await management.sso.configureMetadata(
+        tenantId,
+        idpMetadataURL,
+        redirectURL,
+        domain,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.sso.metadata,
         {
           tenantId,
           idpMetadataURL,
+          domain,
+          redirectURL,
         },
         { token: 'key' },
       );
