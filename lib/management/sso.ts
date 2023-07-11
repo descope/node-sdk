@@ -24,8 +24,8 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     idpURL: string,
     idpCert: string,
     entityId: string,
-    redirectURL?: string,
-    domain?: string,
+    redirectURL: string,
+    domain: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
@@ -34,11 +34,16 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
-  configureMetadata: (tenantId: string, idpMetadataURL: string): Promise<SdkResponse<never>> =>
+  configureMetadata: (
+    tenantId: string,
+    idpMetadataURL: string,
+    redirectURL: string,
+    domain: string,
+  ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.metadata,
-        { tenantId, idpMetadataURL },
+        { tenantId, idpMetadataURL, redirectURL, domain },
         { token: managementKey },
       ),
     ),
