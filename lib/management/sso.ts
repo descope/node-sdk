@@ -24,8 +24,8 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     idpURL: string,
     idpCert: string,
     entityId: string,
-    redirectURL?: string,
-    domain?: string,
+    redirectURL: string,
+    domain: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
