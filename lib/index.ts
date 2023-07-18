@@ -184,7 +184,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     /**
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
-     * @returns AuthneticationInfo with session JWT data
+     * @returns AuthenticationInfo with session JWT data
      */
     async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty');
