@@ -230,3 +230,9 @@ export type AuditRecord = {
   tenants: string[];
   data: Record<string, any>;
 };
+
+export enum UserStatus {
+  enabled = 'enabled',
+  disabled = 'disabled',
+  invited = 'invited',
+}

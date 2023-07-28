@@ -6,6 +6,7 @@ import {
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
   AttributesTypes,
+  UserStatus,
 } from './types';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
@@ -195,11 +196,21 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     testUsersOnly?: boolean,
     withTestUser?: boolean,
     customAttributes?: Record<string, AttributesTypes>,
+    statuses?: UserStatus[],
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser, customAttributes },
+        {
+          tenantIds,
+          roleNames: roles,
+          limit,
+          page,
+          testUsersOnly,
+          withTestUser,
+          customAttributes,
+          statuses,
+        },
         { token: managementKey },
       ),
       (data) => data.users,

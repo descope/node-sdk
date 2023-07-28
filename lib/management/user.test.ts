@@ -7,6 +7,7 @@ import {
   GenerateMagicLinkForTestResponse,
   GenerateEnchantedLinkForTestResponse,
   ProviderTokenResponse,
+  UserStatus,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -323,11 +324,16 @@ describe('Management User', () => {
         ['t1'],
         ['r1'],
         100,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [UserStatus.enabled],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.search,
-        { tenantIds: ['t1'], roleNames: ['r1'], limit: 100 },
+        { tenantIds: ['t1'], roleNames: ['r1'], limit: 100, statuses: [UserStatus.enabled] },
         { token: 'key' },
       );
 
