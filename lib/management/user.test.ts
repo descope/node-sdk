@@ -8,6 +8,7 @@ import {
   GenerateEnchantedLinkForTestResponse,
   ProviderTokenResponse,
   UserStatus,
+  GenerateEmbeddedLinkResponse,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -891,6 +892,39 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateEnchantedLinkForTest,
         { loginId: 'some-id', URI: 'some-uri' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('generateEmbeddedLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        token: 'myToken',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateEmbeddedLinkResponse> =
+        await management.user.generateEmbeddedLink('some-id', { k1: 'v1' });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.generateEmbeddedLink,
+        { loginId: 'some-id', customClaims: { k1: 'v1' } },
         { token: 'key' },
       );
 

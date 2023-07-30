@@ -5,6 +5,7 @@ import {
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
+  GenerateEmbeddedLinkResponse,
   AttributesTypes,
   UserStatus,
 } from './types';
@@ -443,6 +444,19 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.user.generateEnchantedLinkForTest,
         { loginId, URI: uri },
+        { token: managementKey },
+      ),
+      (data) => data,
+    ),
+
+  generateEmbeddedLink: (
+    loginId: string,
+    customClaims?: Record<string, any>,
+  ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
+    transformResponse<GenerateEmbeddedLinkResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.generateEmbeddedLink,
+        { loginId, customClaims },
         { token: managementKey },
       ),
       (data) => data,
