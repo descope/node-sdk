@@ -153,10 +153,6 @@ export type GenerateEnchantedLinkForTestResponse = {
   pendingRef: string;
 };
 
-export type GenerateEmbeddedLinkResponse = {
-  token: string;
-};
-
 export type AttributesTypes = string | boolean | number;
 
 export type UserMapping = {
