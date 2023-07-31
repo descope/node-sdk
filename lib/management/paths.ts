@@ -24,7 +24,6 @@ export default {
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
-    generateEmbeddedLink: '/v1/mgmt/user/signin/embeddedlink',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
