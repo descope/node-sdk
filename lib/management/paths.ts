@@ -25,6 +25,9 @@ export default {
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
   },
+  project: {
+    updateName: '/v1/mgmt/project/update/name',
+  },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
     load: '/v1/mgmt/accesskey',

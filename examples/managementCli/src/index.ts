@@ -2,7 +2,6 @@ import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import { Command } from 'commander';
-import { parse } from 'path';
 
 dotenv.config();
 
@@ -159,6 +158,17 @@ program
   .argument('<provider>', 'Provider name')
   .action(async (loginId, provider) => {
     handleSdkRes(await sdk.management.user.getProviderToken(loginId, provider));
+  });
+
+// *** Project commands ***
+
+// project-update-name
+program
+  .command('project-update-name')
+  .description('Update a project')
+  .argument('<name>', 'Project name')
+  .action(async (name) => {
+    handleSdkRes(await sdk.management.project.updateName(name));
   });
 
 // *** Access key commands ***

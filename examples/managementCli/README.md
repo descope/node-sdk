@@ -49,6 +49,11 @@ $ npm run start -- user-load <login-id>
 # Search users
 $ npm run start -- user-search-all <limit> [<page>]
 
+## Projects	##
+
+# Update project name
+$ npm run start -- project-update-name <project-name>
+
 ## Access Keys ##
 
 # Create an access key
