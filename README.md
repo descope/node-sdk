@@ -577,6 +577,15 @@ await descopeClient.management.user.setPassword('<login-ID>', '<some-password>')
 await descopeClient.management.user.expirePassword('<login-ID>');
 ```
 
+### Manage Projects
+
+You can update project name using the following function:
+
+```typescript
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.project.updateName('new-project-name');
+```
+
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:
