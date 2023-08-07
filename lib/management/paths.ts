@@ -24,6 +24,7 @@ export default {
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
+    generateEmbeddedLink: '/v1/mgmt/user/signin/embeddedlink',
   },
   project: {
     updateName: '/v1/mgmt/project/update/name',
