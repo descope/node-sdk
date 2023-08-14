@@ -34,6 +34,9 @@ program
   .option('-e, --email <email>', `User's email address`)
   .option('-p, --phone <phone>', `User's phone number`)
   .option('-n, --name <name>', `User's display name`)
+  .option('-ca, --custom-attributes <{"k1":"v1"}>', 'Custom attributes', (val) => {
+    return val && JSON.parse(val);
+  })
   .option(
     '-t, --tenants <t1,t2>',
     `User's tenant IDs`,
@@ -52,6 +55,7 @@ program
         options.name,
         undefined,
         options.tenants?.map((tenantId: string) => ({ tenantId })),
+        options.customAttributes,
       ),
     );
   });
@@ -158,6 +162,18 @@ program
   .argument('<provider>', 'Provider name')
   .action(async (loginId, provider) => {
     handleSdkRes(await sdk.management.user.getProviderToken(loginId, provider));
+  });
+
+// user-generate-embedded-link
+program
+  .command('user-generate-embedded-link')
+  .description('Generate an embedded link for a user')
+  .argument('<login-id>', 'Login ID')
+  .option('-cc, --custom-claims <{"k1":"v1"}>', 'Custom claims', (val) => {
+    return val && JSON.parse(val);
+  })
+  .action(async (loginId, options) => {
+    handleSdkRes(await sdk.management.user.generateEmbeddedLink(loginId, options.customClaims));
   });
 
 // *** Project commands ***
