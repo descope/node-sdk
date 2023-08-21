@@ -328,7 +328,9 @@ Alternatively, it is also possible to replace an existing active password with a
 
 ```js
 // Replaces the user's current password with a new one
-await descopeClient.password.replace(loginId, oldPassword, newPassword);
+const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, newPassword);
+// jwtResponse.data.sessionJwt;
+// jwtResponse.data.refreshJwt;
 ```
 
 ### Session Validation
