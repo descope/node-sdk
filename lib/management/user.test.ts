@@ -74,6 +74,54 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should create user with verified attributes', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.create(
+        'loginId',
+        'a@b.c',
+        null,
+        null,
+        ['r1', 'r2'],
+        null,
+        { a: 'a', b: 1, c: true },
+        undefined,
+        true,
+        false,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          phone: null,
+          displayName: null,
+          roleNames: ['r1', 'r2'],
+          userTenants: null,
+          customAttributes: { a: 'a', b: 1, c: true },
+          verifiedEmail: true,
+          verifiedPhone: false,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('createTestUser', () => {
