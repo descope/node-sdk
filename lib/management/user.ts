@@ -105,6 +105,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    inviteUrl?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -121,6 +122,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           picture,
           verifiedEmail,
           verifiedPhone,
+          inviteUrl,
         },
         { token: managementKey },
       ),

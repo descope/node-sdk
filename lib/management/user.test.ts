@@ -190,6 +190,10 @@ describe('Management User', () => {
         ['r1', 'r2'],
         null,
         { a: 'a', b: 1, c: true },
+        undefined,
+        false,
+        false,
+        'https://invite.me',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -203,6 +207,9 @@ describe('Management User', () => {
           invite: true,
           userTenants: null,
           customAttributes: { a: 'a', b: 1, c: true },
+          verifiedEmail: false,
+          verifiedPhone: false,
+          inviteUrl: 'https://invite.me',
         },
         { token: 'key' },
       );
