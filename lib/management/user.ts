@@ -212,6 +212,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     withTestUser?: boolean,
     customAttributes?: Record<string, AttributesTypes>,
     statuses?: UserStatus[],
+    emails?: string[],
+    phones?: string[],
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
@@ -225,6 +227,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           withTestUser,
           customAttributes,
           statuses,
+          emails,
+          phones,
         },
         { token: managementKey },
       ),
