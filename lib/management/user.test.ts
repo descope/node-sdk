@@ -385,11 +385,20 @@ describe('Management User', () => {
         undefined,
         undefined,
         [UserStatus.enabled],
+        ['a@b.com'],
+        ['+11111111'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.search,
-        { tenantIds: ['t1'], roleNames: ['r1'], limit: 100, statuses: [UserStatus.enabled] },
+        {
+          tenantIds: ['t1'],
+          roleNames: ['r1'],
+          limit: 100,
+          statuses: [UserStatus.enabled],
+          emails: ['a@b.com'],
+          phones: ['+11111111'],
+        },
         { token: 'key' },
       );
 
