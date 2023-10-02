@@ -44,6 +44,7 @@ export default {
     delete: '/v1/mgmt/tenant/delete',
     load: '/v1/mgmt/tenant',
     loadAll: '/v1/mgmt/tenant/all',
+    searchAll: '/v1/mgmt/tenant/search',
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',

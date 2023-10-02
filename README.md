@@ -476,16 +476,22 @@ You can create, update, delete or load tenants:
 ```typescript
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
-await descopeClient.management.tenant.create('My Tenant', ['domain.com']);
+await descopeClient.management.tenant.create('My Tenant', ['domain.com'], {
+  customAttributeName: 'val',
+});
 
 // You can optionally set your own ID when creating a tenant
-await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com']);
+await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com'], {
+  customAttributeName: 'val',
+});
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.tenant.update('my-custom-id', 'My Tenant', [
-  'domain.com',
-  'another-domain.com',
-]);
+await descopeClient.management.tenant.update(
+  'my-custom-id',
+  'My Tenant',
+  ['domain.com', 'another-domain.com'],
+  { customAttributeName: 'val' },
+);
 
 // Tenant deletion cannot be undone. Use carefully.
 await descopeClient.management.tenant.delete('my-custom-id');
@@ -496,6 +502,12 @@ const tenant = await descopeClient.management.tenant.load('my-custom-id');
 // Load all tenants
 const tenantsRes = await descopeClient.management.tenant.loadAll();
 tenantsRes.data.forEach((tenant) => {
+  // do something
+});
+
+// Search all tenants according to various parameters
+const searchRes = await descopeClient.management.tenant.searchAll(['id']);
+searchRes.data.forEach((tenant) => {
   // do something
 });
 ```
