@@ -506,8 +506,8 @@ tenantsRes.data.forEach((tenant) => {
 });
 
 // Search all tenants according to various parameters
-const tenantsRes = await descopeClient.management.tenant.searchAll(['id']);
-tenantsRes.data.forEach((tenant) => {
+const searchRes = await descopeClient.management.tenant.searchAll(['id']);
+searchRes.data.forEach((tenant) => {
   // do something
 });
 ```
