@@ -21,8 +21,8 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
 
 const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
   const coreSdk = createSdk({
-    ...config,
     fetch,
+    ...config,
     baseHeaders: {
       ...config.baseHeaders,
       'x-descope-sdk-name': 'nodejs',
