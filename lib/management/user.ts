@@ -193,6 +193,25 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       (data) => data.user,
     ),
   /**
+   * Logout a user from all devices by the login ID
+   * @param loginId logout user by login ID
+   * @returns The UserResponse if found, throws otherwise.
+   */
+  logoutUser: (loginId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.logout, { loginId }, { token: managementKey }),
+    ),
+  /**
+   * Logout a user from all devices by user ID. The ID can be found
+   * on the user's JWT.
+   * @param userId Logout a user from all devices by this user ID field
+   * @returns The UserResponse if found, throws otherwise.
+   */
+  logoutUserByUserId: (userId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.logout, { userId }, { token: managementKey }),
+    ),
+  /**
    * Search all users. Results can be filtered according to tenants and/or
    * roles, and also paginated used the limit and page parameters.
    * @param tenantIds optional list of tenant IDs to filter by

@@ -576,6 +576,10 @@ const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
   // do something
 });
+
+await descopeClient.management.user.logoutUser('my-custom-id');
+
+await descopeClient.management.tenant.logoutUserByUserId('<user-ID>');
 ```
 
 #### Set or Expire User Password
