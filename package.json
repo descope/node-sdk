@@ -102,7 +102,7 @@
   },
   "dependencies": {
     "@descope/core-js-sdk": "1.6.4",
-    "jose": "4.14.6",
+    "jose": "4.15.1",
     "node-fetch-commonjs": "3.3.2",
     "tslib": "^1.14.1"
   }
