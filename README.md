@@ -70,6 +70,8 @@ Then, you can use that to work with the following functions:
 7. [Query SSO Groups](#query-sso-groups)
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
+10. [Embedded Links](#embedded-links)
+11. [Search Audit](#search-audit)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -327,7 +329,9 @@ Alternatively, it is also possible to replace an existing active password with a
 
 ```js
 // Replaces the user's current password with a new one
-await descopeClient.password.replace(loginId, oldPassword, newPassword);
+const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, newPassword);
+// jwtResponse.data.sessionJwt;
+// jwtResponse.data.refreshJwt;
 ```
 
 ### Session Validation
@@ -473,23 +477,38 @@ You can create, update, delete or load tenants:
 ```typescript
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
-await descopeClient.management.tenant.create('My Tenant', ['domain.com']);
+await descopeClient.management.tenant.create('My Tenant', ['domain.com'], {
+  customAttributeName: 'val',
+});
 
 // You can optionally set your own ID when creating a tenant
-await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com']);
+await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com'], {
+  customAttributeName: 'val',
+});
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.tenant.update('my-custom-id', 'My Tenant', [
-  'domain.com',
-  'another-domain.com',
-]);
+await descopeClient.management.tenant.update(
+  'my-custom-id',
+  'My Tenant',
+  ['domain.com', 'another-domain.com'],
+  { customAttributeName: 'val' },
+);
 
 // Tenant deletion cannot be undone. Use carefully.
 await descopeClient.management.tenant.delete('my-custom-id');
 
+// Load tenant by id
+const tenant = await descopeClient.management.tenant.load('my-custom-id');
+
 // Load all tenants
 const tenantsRes = await descopeClient.management.tenant.loadAll();
 tenantsRes.data.forEach((tenant) => {
+  // do something
+});
+
+// Search all tenants according to various parameters
+const searchRes = await descopeClient.management.tenant.searchAll(['id']);
+searchRes.data.forEach((tenant) => {
   // do something
 });
 ```
@@ -535,6 +554,7 @@ await descopeClient.management.user.update(
 
 // Update explicit data for a user rather than overriding all fields
 await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
+await descopeClient.management.user.updateLoginId('desmond@descope.com', 'bane@descope.com');
 await descopeClient.management.user.removeTenantRoles(
   'desmond@descope.com',
   'tenant-ID1',
@@ -556,6 +576,10 @@ const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
 usersRes.data.forEach((user) => {
   // do something
 });
+
+await descopeClient.management.user.logoutUser('my-custom-id');
+
+await descopeClient.management.tenant.logoutUserByUserId('<user-ID>');
 ```
 
 #### Set or Expire User Password
@@ -570,6 +594,15 @@ await descopeClient.management.user.setPassword('<login-ID>', '<some-password>')
 
 // Or alternatively, expire a user password
 await descopeClient.management.user.expirePassword('<login-ID>');
+```
+
+### Manage Projects
+
+You can update project name using the following function:
+
+```typescript
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.project.updateName('new-project-name');
 ```
 
 ### Manage Access Keys
@@ -627,7 +660,7 @@ const domain = 'tenant-users.com' // Users authentication with this domain will 
 await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata')
+await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata', redirectURL, domain)
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.
@@ -732,9 +765,15 @@ groupsRes.data.forEach((group) => {
 
 ### Manage Flows
 
-You can import and export flows and screens, or the project theme:
+You can list your flows and also import and export flows and screens, or the project theme:
 
 ```typescript
+// List all project flows
+const res = await descopeClient.management.flow.list();
+console.log('found total flows', res.total);
+res.flows.forEach((flowMetadata) => {
+  // do something
+});
 // Export the flow and it's matching screens based on the given id
 const res = await descopeClient.management.flow.export('sign-up');
 console.log('found flow', res.data.flow);
@@ -768,6 +807,37 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
   customKey1: 'custom-value1',
   customKey2: 'custom-value2',
 });
+```
+
+Note 1: The generate code/link functions, work only for test users, will not work for regular users.
+Note 2: In case of testing sign-in / sign-up operations with test users, need to make sure to generate the code prior calling the sign-in / sign-up operations.
+
+### Embedded Links
+
+Embedded links can be created to directly receive a verifiable token without sending it.
+This token can then be verified using the magic link 'verify' function, either directly or through a flow.
+
+```typescript
+const { token } = await descopeClient.management.user.generateEmbeddedLink('desmond@descope.com', {
+  key1: 'value1',
+});
+```
+
+### Search Audit
+
+You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
+
+```typescript
+// Full text search on the last 10 days
+const audits = await descopeClient.management.audit.search({
+  from: Date.now() - 10 * 24 * 60 * 60 * 1000,
+  text: 'some-text',
+});
+console.log(audits);
+
+// Search successful logins in the last 30 days
+const audits = await descopeClient.management.audit.search({ actions: ['LoginSucceed'] });
+console.log(audits);
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
@@ -814,9 +884,6 @@ const { link, pendingRef } = await descopeClient.management.user.generateEnchant
   'desmond@descope.com',
   '',
 );
-
-// Note 1: The generate code/link functions, work only for test users, will not work for regular users.
-// Note 2: In case of testing sign-in / sign-up operations with test users, need to make sure to generate the code prior calling the sign-in / sign-up operations.
 ```
 
 ## Code Examples
@@ -859,6 +926,27 @@ of the SDK.
    npm run generateCerts && \
    npm start
    ```
+
+## Providing Custom Public Key
+
+By default, the SDK will download the public key from Descope's servers. You can also provide your own public key. This is useful when the server you are running the SDK on does not have access to the internet.
+
+You can find your public key in the `https://api.descope.com/v2/keys/<project-id>` endpoint. For further information, please see the [Descope Documentation and API reference page](https://docs.descope.com/api/openapi/sessiongetkeys/operation/GetKeysV2).
+
+To provide your own public key, you can do so by providing the `publicKey` option when initializing the SDK:
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const descopeClient = DescopeClient({
+  projectId: 'my-project-ID',
+  publicKey: '{"alg":"RS256", ... }',
+});
+
+// The public key will be used when validating jwt
+const sessionJWt = '<session-jwt>';
+await descopeClient.validateJwt(sessionJWt);
+```
 
 ## Learn More
 

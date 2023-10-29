@@ -65,7 +65,7 @@ export const withCookie: SdkFnWrapper<{ refreshJwt?: string; cookies?: string[] 
  * @param authInfo The parsed authentication info from the JWT
  * @param claim name of the claim
  * @param tenant tenant to retrieve the claim for
- * @returns
+ * @returns the claim for the given tenant or top level if tenant is empty
  */
 export function getAuthorizationClaimItems(
   authInfo: AuthenticationInfo,
@@ -76,4 +76,14 @@ export function getAuthorizationClaimItems(
     ? authInfo.token[authorizedTenantsClaimName]?.[tenant]?.[claim]
     : authInfo.token[claim];
   return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Check if the user is associated with the given tenant
+ * @param authInfo The parsed authentication info from the JWT
+ * @param tenant tenant to check if user is associated with
+ * @returns true if user is associated with the tenant
+ */
+export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant: string): boolean {
+  return !!authInfo.token[authorizedTenantsClaimName]?.[tenant];
 }
