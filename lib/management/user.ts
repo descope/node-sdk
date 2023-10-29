@@ -5,7 +5,9 @@ import {
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
+  GenerateEmbeddedLinkResponse,
   AttributesTypes,
+  UserStatus,
 } from './types';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
@@ -28,6 +30,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
+    verifiedEmail?: boolean,
+    verifiedPhone?: boolean,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -41,6 +45,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           userTenants,
           customAttributes,
           picture,
+          verifiedEmail,
+          verifiedPhone,
         },
         { token: managementKey },
       ),
@@ -65,6 +71,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
+    verifiedEmail?: boolean,
+    verifiedPhone?: boolean,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -79,6 +87,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           test: true,
           customAttributes,
           picture,
+          verifiedEmail,
+          verifiedPhone,
         },
         { token: managementKey },
       ),
@@ -93,6 +103,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
+    verifiedEmail?: boolean,
+    verifiedPhone?: boolean,
+    inviteUrl?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -107,6 +120,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           invite: true,
           customAttributes,
           picture,
+          verifiedEmail,
+          verifiedPhone,
+          inviteUrl,
         },
         { token: managementKey },
       ),
@@ -121,6 +137,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
+    verifiedEmail?: boolean,
+    verifiedPhone?: boolean,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -134,6 +152,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           userTenants,
           customAttributes,
           picture,
+          verifiedEmail,
+          verifiedPhone,
         },
         { token: managementKey },
       ),
@@ -173,6 +193,25 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       (data) => data.user,
     ),
   /**
+   * Logout a user from all devices by the login ID
+   * @param loginId logout user by login ID
+   * @returns The UserResponse if found, throws otherwise.
+   */
+  logoutUser: (loginId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.logout, { loginId }, { token: managementKey }),
+    ),
+  /**
+   * Logout a user from all devices by user ID. The ID can be found
+   * on the user's JWT.
+   * @param userId Logout a user from all devices by this user ID field
+   * @returns The UserResponse if found, throws otherwise.
+   */
+  logoutUserByUserId: (userId: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.logout, { userId }, { token: managementKey }),
+    ),
+  /**
    * Search all users. Results can be filtered according to tenants and/or
    * roles, and also paginated used the limit and page parameters.
    * @param tenantIds optional list of tenant IDs to filter by
@@ -191,11 +230,25 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     testUsersOnly?: boolean,
     withTestUser?: boolean,
     customAttributes?: Record<string, AttributesTypes>,
+    statuses?: UserStatus[],
+    emails?: string[],
+    phones?: string[],
   ): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
-        { tenantIds, roleNames: roles, limit, page, testUsersOnly, withTestUser, customAttributes },
+        {
+          tenantIds,
+          roleNames: roles,
+          limit,
+          page,
+          testUsersOnly,
+          withTestUser,
+          customAttributes,
+          statuses,
+          emails,
+          phones,
+        },
         { token: managementKey },
       ),
       (data) => data.users,
@@ -233,6 +286,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.user.updateStatus,
         { loginId, status: 'disabled' },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  updateLoginId: (loginId: string, newLoginId?: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.updateLoginId,
+        { loginId, newLoginId },
         { token: managementKey },
       ),
       (data) => data.user,
@@ -419,6 +481,19 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.user.generateEnchantedLinkForTest,
         { loginId, URI: uri },
+        { token: managementKey },
+      ),
+      (data) => data,
+    ),
+
+  generateEmbeddedLink: (
+    loginId: string,
+    customClaims?: Record<string, any>,
+  ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
+    transformResponse<GenerateEmbeddedLinkResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.generateEmbeddedLink,
+        { loginId, customClaims },
         { token: managementKey },
       ),
       (data) => data,

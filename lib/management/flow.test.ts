@@ -2,7 +2,15 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
-import { FlowResponse, Flow, Screen, Theme, ThemeResponse } from './types';
+import {
+  FlowResponse,
+  FlowsResponse,
+  Flow,
+  Screen,
+  Theme,
+  ThemeResponse,
+  FlowMetadata,
+} from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
 
@@ -13,10 +21,21 @@ const mockFlow: Flow = {
   disabled: false,
 };
 
+const mockFlowMetadata: FlowMetadata = {
+  id: 'test',
+  name: 'mockFlow',
+  disabled: false,
+};
+
 const mockScreen: Screen = {
   flowId: mockFlow.id,
   htmlTemplate: {},
   id: 'mockScreen',
+};
+
+const mockFlowsResponse: FlowsResponse = {
+  flows: [mockFlowMetadata],
+  total: 1,
 };
 
 const mockFlowResponse: FlowResponse = {
@@ -37,6 +56,31 @@ describe('Management flow', () => {
   afterEach(() => {
     jest.clearAllMocks();
     mockHttpClient.reset();
+  });
+
+  describe('list', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFlowsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockFlowsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<FlowsResponse> = await management.flow.list();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.list, {}, { token: 'key' });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockFlowsResponse,
+      });
+    });
   });
 
   describe('export', () => {

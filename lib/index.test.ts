@@ -70,6 +70,7 @@ describe('sdk', () => {
       token: {
         [authorizedTenantsClaimName]: {
           kuku: { [permissionsClaimName]: ['foo', 'bar'], [rolesClaimName]: ['abc', 'xyz'] },
+          t1: {},
         },
       },
     };
@@ -307,6 +308,8 @@ describe('sdk', () => {
       expect(sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz'])).toStrictEqual(
         true,
       );
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 't1', [])).toStrictEqual(true);
+      expect(sdk.validateTenantPermissions(permTenantAuthInfo, 't1', [])).toStrictEqual(true);
     });
     it('should fail when wrong function is used', () => {
       expect(sdk.validatePermissions(permTenantAuthInfo, ['foo'])).toStrictEqual(false);
@@ -323,6 +326,8 @@ describe('sdk', () => {
       expect(
         sdk.validateTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz', 'tuv']),
       ).toStrictEqual(false);
+      expect(sdk.validateTenantRoles(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
+      expect(sdk.validateTenantPermissions(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
     });
   });
 
@@ -427,6 +432,36 @@ describe('sdk', () => {
           },
         }),
       );
+    });
+  });
+
+  describe('public key', () => {
+    it('should headers to request', async () => {
+      const { publicKey, privateKey } = await generateKeyPair('ES384');
+      validToken = await new SignJWT({})
+        .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+        .setIssuedAt()
+        .setIssuer('project-id')
+        .setExpirationTime(1981398111)
+        .sign(privateKey);
+
+      publicKeys = await exportJWK(publicKey);
+      publicKeys.alg = 'ES384';
+      publicKeys.kid = '0ad99869f2d4e57f3f71c68300ba84fa';
+      publicKeys.use = 'sig';
+
+      const newSdk = createSdk({
+        projectId: 'project-id',
+        publicKey: JSON.stringify(publicKeys),
+      });
+
+      await newSdk.validateJwt(validToken);
+      jest
+        .spyOn(newSdk.httpClient, 'get')
+        .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
+
+      // ensure that /keys is not called
+      expect(newSdk.httpClient.get).not.toHaveBeenCalled();
     });
   });
 });

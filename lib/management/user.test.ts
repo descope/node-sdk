@@ -7,6 +7,8 @@ import {
   GenerateMagicLinkForTestResponse,
   GenerateEnchantedLinkForTestResponse,
   ProviderTokenResponse,
+  UserStatus,
+  GenerateEmbeddedLinkResponse,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -61,6 +63,54 @@ describe('Management User', () => {
           roleNames: ['r1', 'r2'],
           userTenants: null,
           customAttributes: { a: 'a', b: 1, c: true },
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should create user with verified attributes', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.create(
+        'loginId',
+        'a@b.c',
+        null,
+        null,
+        ['r1', 'r2'],
+        null,
+        { a: 'a', b: 1, c: true },
+        undefined,
+        true,
+        false,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          phone: null,
+          displayName: null,
+          roleNames: ['r1', 'r2'],
+          userTenants: null,
+          customAttributes: { a: 'a', b: 1, c: true },
+          verifiedEmail: true,
+          verifiedPhone: false,
         },
         { token: 'key' },
       );
@@ -140,6 +190,10 @@ describe('Management User', () => {
         ['r1', 'r2'],
         null,
         { a: 'a', b: 1, c: true },
+        undefined,
+        false,
+        false,
+        'https://invite.me',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -153,6 +207,9 @@ describe('Management User', () => {
           invite: true,
           userTenants: null,
           customAttributes: { a: 'a', b: 1, c: true },
+          verifiedEmail: false,
+          verifiedPhone: false,
+          inviteUrl: 'https://invite.me',
         },
         { token: 'key' },
       );
@@ -212,6 +269,62 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.delete,
         { loginId: 'loginId' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('logout', () => {
+    it('should send the correct request and receive correct response for logout by login ID', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.logoutUser('loginId');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.logout,
+        { loginId: 'loginId' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response for logout by user ID', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.logoutUserByUserId('userId');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.logout,
+        { userId: 'userId' },
         { token: 'key' },
       );
 
@@ -323,11 +436,25 @@ describe('Management User', () => {
         ['t1'],
         ['r1'],
         100,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [UserStatus.enabled],
+        ['a@b.com'],
+        ['+11111111'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.search,
-        { tenantIds: ['t1'], roleNames: ['r1'], limit: 100 },
+        {
+          tenantIds: ['t1'],
+          roleNames: ['r1'],
+          limit: 100,
+          statuses: [UserStatus.enabled],
+          emails: ['a@b.com'],
+          phones: ['+11111111'],
+        },
         { token: 'key' },
       );
 
@@ -418,6 +545,35 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.updateStatus,
         { loginId: 'lid', status: 'disabled' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateLoginId', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateLoginId('lid', 'a@b.c');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.updateLoginId,
+        { loginId: 'lid', newLoginId: 'a@b.c' },
         { token: 'key' },
       );
 
@@ -856,6 +1012,39 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateEnchantedLinkForTest,
         { loginId: 'some-id', URI: 'some-uri' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('generateEmbeddedLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        token: 'myToken',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateEmbeddedLinkResponse> =
+        await management.user.generateEmbeddedLink('some-id', { k1: 'v1' });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.generateEmbeddedLink,
+        { loginId: 'some-id', customClaims: { k1: 'v1' } },
         { token: 'key' },
       );
 

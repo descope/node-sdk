@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -30,13 +30,15 @@ jobs:
         run: cd examples/es6 && npm i && npm run build
       - name: Examples - common
         run: cd examples/commonjs && npm i
+      - name: Examples - Management CLI
+        run: cd examples/managementCli && npm i && npm run build
 
   eslint:
     name: 🪥 ESLint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -55,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -78,7 +80,7 @@ jobs:
         version: [12, 14, 16, 18]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}

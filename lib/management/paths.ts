@@ -6,9 +6,11 @@ export default {
     delete: '/v1/mgmt/user/delete',
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
+    logout: '/v1/mgmt/user/logout',
     search: '/v1/mgmt/user/search',
     getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
+    updateLoginId: '/v1/mgmt/user/update/loginid',
     updateEmail: '/v1/mgmt/user/update/email',
     updatePhone: '/v1/mgmt/user/update/phone',
     updateDisplayName: '/v1/mgmt/user/update/name',
@@ -23,6 +25,10 @@ export default {
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
+    generateEmbeddedLink: '/v1/mgmt/user/signin/embeddedlink',
+  },
+  project: {
+    updateName: '/v1/mgmt/project/update/name',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
@@ -37,7 +43,9 @@ export default {
     create: '/v1/mgmt/tenant/create',
     update: '/v1/mgmt/tenant/update',
     delete: '/v1/mgmt/tenant/delete',
+    load: '/v1/mgmt/tenant',
     loadAll: '/v1/mgmt/tenant/all',
+    searchAll: '/v1/mgmt/tenant/search',
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',
@@ -60,6 +68,7 @@ export default {
     loadAll: '/v1/mgmt/role/all',
   },
   flow: {
+    list: '/v1/mgmt/flow/list',
     export: '/v1/mgmt/flow/export',
     import: '/v1/mgmt/flow/import',
   },
@@ -71,5 +80,8 @@ export default {
     loadAllGroups: '/v1/mgmt/group/all',
     loadAllGroupsForMember: '/v1/mgmt/group/member/all',
     loadAllGroupMembers: '/v1/mgmt/group/members',
+  },
+  audit: {
+    search: '/v1/mgmt/audit/search',
   },
 };
