@@ -240,3 +240,104 @@ export enum UserStatus {
   disabled = 'disabled',
   invited = 'invited',
 }
+
+export enum AuthzNodeExpressionType {
+  self = 'self', // direct relation expression
+  targetSet = 'targetSet', // expression via another relation definition target
+  relationLeft = 'relationLeft', // expression via parent relation like org within org and membership
+  relationRight = 'relationRight', // expression via child relation like folder within folder and owner
+}
+
+/**
+ * AuthzNodeExpression holds the definition of a child node
+ */
+export type AuthzNodeExpression = {
+  neType: AuthzNodeExpressionType;
+  relationDefinition?: string;
+  relationDefinitionNamespace?: string;
+  targetRelationDefinition?: string;
+  targetRelationDefinitionNamespace?: string;
+};
+
+export enum AuthzNodeType {
+  child = 'child', // regular child node in relation definition
+  // union node of multiple children
+  // Example: editor of document is union between
+  // 1. Direct editor relation - someone that has editor on document
+  // 2. Owner relation - someone who is owner of document
+  // 3. Editor of containing folder relation - someone who is editor of the folder that has parent relation to doc
+  union = 'union',
+  intersect = 'intersect', // intersect between multiple children
+  sub = 'sub', // sub between the first child and the rest
+}
+
+/**
+ * AuthzNode holds the definition of a complex relation definition
+ */
+export type AuthzNode = {
+  nType: AuthzNodeType;
+  children?: AuthzNode[];
+  expression?: AuthzNodeExpression;
+};
+
+/**
+ * AuthzRelationDefinition defines a relation within a namespace
+ */
+export type AuthzRelationDefinition = {
+  name: string;
+  complexDefinition?: AuthzNode;
+};
+
+/**
+ * AuthzNamespace defines an entity in the authorization schema
+ */
+export type AuthzNamespace = {
+  name: string;
+  relationDefinitions: AuthzRelationDefinition[];
+};
+
+/**
+ * AuthzSchema holds the full schema (all namespaces) for a project
+ */
+export type AuthzSchema = {
+  name?: string;
+  namespaces: AuthzNamespace[];
+};
+
+/**
+ * AuthzUserQuery represents a target of a relation for ABAC (query on users)
+ */
+export type AuthzUserQuery = {
+  tenants?: string[];
+  roles?: string[];
+  text?: string;
+  statuses?: UserStatus[];
+  ssoOnly?: boolean;
+  withTestUser?: boolean;
+  customAttributes?: Record<string, any>;
+};
+
+/**
+ * AuthzRelation defines a relation between resource and target
+ */
+export type AuthzRelation = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+  target?: string;
+  targetSetResource?: string;
+  targetSetRelationDefinition?: string;
+  targetSetRelationDefinitionNamespace?: string;
+  query?: AuthzUserQuery;
+};
+
+/**
+ * AuthzRelationQuery queries the service if a given relation exists
+ */
+export type AuthzRelationQuery = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+  target: string;
+  hasRelation?: boolean;
+};
