@@ -507,6 +507,134 @@ program
     handleSdkRes(await sdk.management.audit.search({ text }), option.output);
   });
 
+// authz
+program
+  .command('authz-load-schema')
+  .description('Load and display the current schema')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(await sdk.management.authz.loadSchema(), option.output);
+  });
+
+program
+  .command('authz-save-schema')
+  .description('Save the schema defined in the given file')
+  .option('-i, --input <filename>', 'Schema input filename')
+  .action(async (option) => {
+    const file = fs.readFileSync(option.input, 'utf8');
+    const s = JSON.parse(file);
+    handleSdkRes(await sdk.management.authz.saveSchema(s, true), undefined);
+  });
+
+program
+  .command('authz-has-relation')
+  .description('Check if given target has relation for given resource')
+  .option('-r, --resource <resource>', 'The resource we are checking')
+  .option('-d, --relationDefinition <rd>', 'The relation definition name')
+  .option('-n, --namespace <ns>', 'The relation definition namespace')
+  .option('-t, --target <target>', 'The target we are checking')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.authz.hasRelations([
+        {
+          resource: option.resource,
+          relationDefinition: option.relationDefinition,
+          namespace: option.namespace,
+          target: option.target,
+        },
+      ]),
+      option.output,
+    );
+  });
+
+program
+  .command('authz-create-relation')
+  .description('Create a relation')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-d, --relationDefinition <rd>', 'The relation definition name')
+  .option('-n, --namespace <ns>', 'The relation definition namespace')
+  .option('-t, --target <target>', 'The target for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.authz.createRelations([
+        {
+          resource: option.resource,
+          relationDefinition: option.relationDefinition,
+          namespace: option.namespace,
+          target: option.target,
+        },
+      ]),
+      undefined,
+    );
+  });
+
+program
+  .command('authz-delete-relation')
+  .description('Delete a relation')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-d, --relationDefinition <rd>', 'The relation definition name')
+  .option('-n, --namespace <ns>', 'The relation definition namespace')
+  .option('-t, --target <target>', 'The target for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.authz.deleteRelations([
+        {
+          resource: option.resource,
+          relationDefinition: option.relationDefinition,
+          namespace: option.namespace,
+          target: option.target,
+        },
+      ]),
+      undefined,
+    );
+  });
+
+program
+  .command('authz-who-can-access')
+  .description('Display all relations for the given resource and rd')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-d, --relationDefinition <rd>', 'The relation definition name')
+  .option('-n, --namespace <ns>', 'The relation definition namespace')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.authz.whoCanAccess(
+        option.resource,
+        option.relationDefinition,
+        option.namespace,
+      ),
+      option.output,
+    );
+  });
+
+program
+  .command('authz-resource-relations')
+  .description('Load relations for the given resource')
+  .option('-r, --resource <resource>', 'The resource for the relations')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(await sdk.management.authz.resourceRelations(option.resource), option.output);
+  });
+
+program
+  .command('authz-target-relations')
+  .description('Load relations for the given target')
+  .option('-t, --target <target>', 'The target for the relations')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(await sdk.management.authz.targetsRelations([option.target]), option.output);
+  });
+
+program
+  .command('authz-target-access')
+  .description('Display all relations for the given target')
+  .argument('<target>', 'display all relations for given target')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (target, option) => {
+    handleSdkRes(await sdk.management.authz.whatCanTargetAccess(target), option.output);
+  });
+
 // *** Helper functions ***
 
 function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {

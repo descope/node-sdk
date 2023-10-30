@@ -84,4 +84,21 @@ export default {
   audit: {
     search: '/v1/mgmt/audit/search',
   },
+  authz: {
+    schemaSave: '/v1/mgmt/authz/schema/save',
+    schemaDelete: '/v1/mgmt/authz/schema/delete',
+    schemaLoad: '/v1/mgmt/authz/schema/load',
+    nsSave: '/v1/mgmt/authz/ns/save',
+    nsDelete: '/v1/mgmt/authz/ns/delete',
+    rdSave: '/v1/mgmt/authz/rd/save',
+    rdDelete: '/v1/mgmt/authz/rd/delete',
+    reCreate: '/v1/mgmt/authz/re/create',
+    reDelete: '/v1/mgmt/authz/re/delete',
+    reDeleteResources: '/v1/mgmt/authz/re/deleteresources',
+    hasRelations: '/v1/mgmt/authz/re/has',
+    who: '/v1/mgmt/authz/re/who',
+    resource: '/v1/mgmt/authz/re/resource',
+    targets: '/v1/mgmt/authz/re/targets',
+    targetAll: '/v1/mgmt/authz/re/targetall',
+  },
 };
