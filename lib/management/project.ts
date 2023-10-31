@@ -17,6 +17,13 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
+  /**
+   * Clone a project, including its settings and configurations.
+   * Users, tenants and access keys are not cloned.
+   * @param name The name of the new project
+   * @param tag The tag of the new project
+   * @returns The new project details (name, id, tag, and settings)
+   */
   clone: (name: string, tag?: ProjectTag): Promise<SdkResponse<NewProjectResponse>> =>
     transformResponse(
       sdk.httpClient.post(
