@@ -29,6 +29,7 @@ export default {
   },
   project: {
     updateName: '/v1/mgmt/project/update/name',
+    clone: '/v1/mgmt/project/clone',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',

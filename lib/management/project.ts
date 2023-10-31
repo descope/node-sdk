@@ -1,6 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
+import { NewProjectResponse, ProjectTag } from './types';
 
 const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   /**
@@ -12,6 +13,17 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
         apiPaths.project.updateName,
         {
           name,
+        },
+        { token: managementKey },
+      ),
+    ),
+  clone: (name: string, tag?: ProjectTag): Promise<SdkResponse<NewProjectResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.project.clone,
+        {
+          name,
+          tag,
         },
         { token: managementKey },
       ),
