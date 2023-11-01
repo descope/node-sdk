@@ -194,6 +194,7 @@ describe('Management User', () => {
         false,
         false,
         'https://invite.me',
+        true,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -210,6 +211,7 @@ describe('Management User', () => {
           verifiedEmail: false,
           verifiedPhone: false,
           inviteUrl: 'https://invite.me',
+          sendMail: true,
         },
         { token: 'key' },
       );
