@@ -106,6 +106,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
     inviteUrl?: string,
+    sendMail?: boolean, // send invite via mail, default is according to project settings
+    sendSMS?: boolean, // send invite via text message, default is according to project settings
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -123,6 +125,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           verifiedEmail,
           verifiedPhone,
           inviteUrl,
+          sendMail,
+          sendSMS,
         },
         { token: managementKey },
       ),
