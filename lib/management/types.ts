@@ -1,3 +1,5 @@
+import { UserResponse } from '@descope/core-js-sdk';
+
 /** Represents a tenant association for a User or Access Key. The tenantId is required to denote
  * which tenant the user or access key belongs to. The roleNames array is an optional list of
  * roles for the user or access key in this specific tenant.
@@ -159,6 +161,20 @@ export type GenerateEmbeddedLinkResponse = {
 
 export type AttributesTypes = string | boolean | number;
 
+export type User = {
+  loginId: string;
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  roles?: string[];
+  userTenants?: AssociatedTenant[];
+  customAttributes?: Record<string, AttributesTypes>;
+  picture?: string;
+  verifiedEmail?: boolean;
+  verifiedPhone?: boolean;
+  test?: boolean;
+};
+
 export type UserMapping = {
   name: string;
   email: string;
@@ -198,6 +214,16 @@ export type ProviderTokenResponse = {
   accessToken: string;
   expiration: number;
   scopes: string[];
+};
+
+export type UserFailedResponse = {
+  failure: string;
+  user: UserResponse;
+};
+
+export type InviteBatchResponse = {
+  createdUsers: UserResponse[];
+  failedUsers: UserFailedResponse[];
 };
 
 /**

@@ -2,6 +2,7 @@
 export default {
   user: {
     create: '/v1/mgmt/user/create',
+    createBatch: '/v1/mgmt/user/create/batch',
     update: '/v1/mgmt/user/update',
     delete: '/v1/mgmt/user/delete',
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
