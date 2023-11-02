@@ -531,9 +531,9 @@ await descopeClient.management.user.create(
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
 );
 
-// Alternatively, a user can be created and invited via an email message.
+// Alternatively, a user can be created and invited via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
-// and that an email address is provided in the information.
+// and that an email address / phone number is provided in the information.
 await descopeClient.management.user.invite(
   'desmond@descope.com',
   'desmond@descope.com',
@@ -541,6 +541,23 @@ await descopeClient.management.user.invite(
   'Desmond Copeland',
   null,
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
+// You can invite batch of users via an email / text message.
+// Make sure to configure the invite URL in the Descope console prior to using this function,
+// and that an email address / phone number is provided in the information.
+await descopeClient.management.user.inviteBatch(
+  users: [{
+      loginId: 'desmond@descope.com',
+      email: 'desmond@descope.com',
+      phone: '+123456789123',
+      displayName: 'Desmond Copeland',
+      userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+    }
+  ],
+  sendMail: true,
+  sendSMS: false,
+  inviteUrl: "<invite_url>",
 );
 
 // Update will override all fields as is. Use carefully.

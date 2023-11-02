@@ -9,6 +9,7 @@ import {
   ProviderTokenResponse,
   UserStatus,
   GenerateEmbeddedLinkResponse,
+  InviteBatchResponse,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -23,6 +24,16 @@ const mockMgmtUserResponse = {
 
 const mockMgmtUsersResponse = {
   users: [mockUserResponse],
+};
+
+const mockMgmtInviteBatchResponse = {
+  createdUsers: [{ loginId: 'one', email: 'one@one' }],
+  failedUsers: [
+    {
+      failure: 'some failure',
+      user: { loginId: 'two', email: 'two@two' },
+    },
+  ],
 };
 
 describe('Management User', () => {
@@ -219,6 +230,56 @@ describe('Management User', () => {
       expect(resp).toEqual({
         code: 200,
         data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('invite batch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<InviteBatchResponse> = await management.user.inviteBatch(
+        [
+          { loginId: 'one', email: 'one@one' },
+          { loginId: 'two', email: 'two@two' },
+        ],
+        'https://invite.me',
+        true,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.createBatch,
+        {
+          users: [
+            {
+              loginId: 'one',
+              email: 'one@one',
+            },
+            {
+              loginId: 'two',
+              email: 'two@two',
+            },
+          ],
+          invite: true,
+          inviteUrl: 'https://invite.me',
+          sendMail: true,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockMgmtInviteBatchResponse,
         ok: true,
         response: httpResponse,
       });
