@@ -6,6 +6,7 @@ import { NewProjectResponse, ProjectTag } from './types';
 const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   /**
    * Update the current project name.
+   * @param name The new name of the project
    */
   updateName: (name: string): Promise<SdkResponse<never>> =>
     transformResponse(
