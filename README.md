@@ -547,17 +547,18 @@ await descopeClient.management.user.invite(
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information.
 await descopeClient.management.user.inviteBatch(
-  users: [{
+  [
+    {
       loginId: 'desmond@descope.com',
       email: 'desmond@descope.com',
       phone: '+123456789123',
       displayName: 'Desmond Copeland',
       userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-    }
+    },
   ],
-  sendMail: true,
-  sendSMS: false,
-  inviteUrl: "<invite_url>",
+  '<invite_url>',
+  true,
+  false,
 );
 
 // Update will override all fields as is. Use carefully.
