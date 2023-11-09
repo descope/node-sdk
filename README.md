@@ -73,6 +73,7 @@ Then, you can use that to work with the following functions:
 10. [Embedded Links](#embedded-links)
 11. [Search Audit](#search-audit)
 12. [Manage Authz](#manage-authz)
+13. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -615,13 +616,16 @@ await descopeClient.management.user.setPassword('<login-ID>', '<some-password>')
 await descopeClient.management.user.expirePassword('<login-ID>');
 ```
 
-### Manage Projects
+### Manage Project
 
-You can update project name using the following function:
+You can update project name, as well as to clone the current project to a new one:
 
 ```typescript
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.project.updateName('new-project-name');
+
+// Clone the current project to a new one
+const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 
 ### Manage Access Keys
