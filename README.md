@@ -625,6 +625,7 @@ You can update project name, as well as to clone the current project to a new on
 await descopeClient.management.project.updateName('new-project-name');
 
 // Clone the current project to a new one
+// Note that this action is supported only with a pro license or above.
 const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 

@@ -20,7 +20,8 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
     ),
   /**
    * Clone the current project, including its settings and configurations.
-   * Users, tenants and access keys are not cloned.
+   *  - This action is supported only with a pro license or above.
+   *  - Users, tenants and access keys are not cloned.
    * @param name The name of the new project
    * @param tag The tag of the new project
    * @returns The new project details (name, id, tag, and settings)
