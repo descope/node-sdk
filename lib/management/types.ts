@@ -1,3 +1,5 @@
+import { UserResponse } from '@descope/core-js-sdk';
+
 /** Represents a tenant association for a User or Access Key. The tenantId is required to denote
  * which tenant the user or access key belongs to. The roleNames array is an optional list of
  * roles for the user or access key in this specific tenant.
@@ -160,6 +162,20 @@ export type GenerateEmbeddedLinkResponse = {
 
 export type AttributesTypes = string | boolean | number;
 
+export type User = {
+  loginId: string;
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  roles?: string[];
+  userTenants?: AssociatedTenant[];
+  customAttributes?: Record<string, AttributesTypes>;
+  picture?: string;
+  verifiedEmail?: boolean;
+  verifiedPhone?: boolean;
+  test?: boolean;
+};
+
 export type UserMapping = {
   name: string;
   email: string;
@@ -199,6 +215,16 @@ export type ProviderTokenResponse = {
   accessToken: string;
   expiration: number;
   scopes: string[];
+};
+
+export type UserFailedResponse = {
+  failure: string;
+  user: UserResponse;
+};
+
+export type InviteBatchResponse = {
+  createdUsers: UserResponse[];
+  failedUsers: UserFailedResponse[];
 };
 
 /**
@@ -241,3 +267,125 @@ export enum UserStatus {
   disabled = 'disabled',
   invited = 'invited',
 }
+
+export enum AuthzNodeExpressionType {
+  self = 'self', // direct relation expression
+  targetSet = 'targetSet', // expression via another relation definition target
+  relationLeft = 'relationLeft', // expression via parent relation like org within org and membership
+  relationRight = 'relationRight', // expression via child relation like folder within folder and owner
+}
+
+/**
+ * AuthzNodeExpression holds the definition of a child node
+ */
+export type AuthzNodeExpression = {
+  neType: AuthzNodeExpressionType;
+  relationDefinition?: string;
+  relationDefinitionNamespace?: string;
+  targetRelationDefinition?: string;
+  targetRelationDefinitionNamespace?: string;
+};
+
+export enum AuthzNodeType {
+  child = 'child', // regular child node in relation definition
+  // union node of multiple children
+  // Example: editor of document is union between
+  // 1. Direct editor relation - someone that has editor on document
+  // 2. Owner relation - someone who is owner of document
+  // 3. Editor of containing folder relation - someone who is editor of the folder that has parent relation to doc
+  union = 'union',
+  intersect = 'intersect', // intersect between multiple children
+  sub = 'sub', // sub between the first child and the rest
+}
+
+/**
+ * AuthzNode holds the definition of a complex relation definition
+ */
+export type AuthzNode = {
+  nType: AuthzNodeType;
+  children?: AuthzNode[];
+  expression?: AuthzNodeExpression;
+};
+
+/**
+ * AuthzRelationDefinition defines a relation within a namespace
+ */
+export type AuthzRelationDefinition = {
+  name: string;
+  complexDefinition?: AuthzNode;
+};
+
+/**
+ * AuthzNamespace defines an entity in the authorization schema
+ */
+export type AuthzNamespace = {
+  name: string;
+  relationDefinitions: AuthzRelationDefinition[];
+};
+
+/**
+ * AuthzSchema holds the full schema (all namespaces) for a project
+ */
+export type AuthzSchema = {
+  name?: string;
+  namespaces: AuthzNamespace[];
+};
+
+/**
+ * AuthzUserQuery represents a target of a relation for ABAC (query on users)
+ */
+export type AuthzUserQuery = {
+  tenants?: string[];
+  roles?: string[];
+  text?: string;
+  statuses?: UserStatus[];
+  ssoOnly?: boolean;
+  withTestUser?: boolean;
+  customAttributes?: Record<string, any>;
+};
+
+/**
+ * AuthzRelation defines a relation between resource and target
+ */
+export type AuthzRelation = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+  target?: string;
+  targetSetResource?: string;
+  targetSetRelationDefinition?: string;
+  targetSetRelationDefinitionNamespace?: string;
+  query?: AuthzUserQuery;
+};
+
+/**
+ * AuthzRelationQuery queries the service if a given relation exists
+ */
+export type AuthzRelationQuery = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+  target: string;
+  hasRelation?: boolean;
+};
+
+// Currently only production tag is supported
+export type ProjectTag = 'production';
+
+export type NewProjectResponse = {
+  projectId: string;
+  projectName: string;
+  projectSettingsWeb: Record<string, any>;
+  authMethodsMagicLink: Record<string, any>;
+  authMethodsOTP: Record<string, any>;
+  authMethodsSAML: Record<string, any>;
+  authMethodsOAuth: Record<string, any>;
+  authMethodsWebAuthn: Record<string, any>;
+  authMethodsTOTP: Record<string, any>;
+  messagingProvidersWeb: Record<string, any>;
+  authMethodsEnchantedLink: Record<string, any>;
+  authMethodsPassword: Record<string, any>;
+  authMethodsOIDCIDP: Record<string, any>;
+  authMethodsEmbeddedLink: Record<string, any>;
+  tag?: string;
+};

@@ -8,6 +8,8 @@ import {
   GenerateEmbeddedLinkResponse,
   AttributesTypes,
   UserStatus,
+  User,
+  InviteBatchResponse,
 } from './types';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
@@ -106,6 +108,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
     inviteUrl?: string,
+    sendMail?: boolean, // send invite via mail, default is according to project settings
+    sendSMS?: boolean, // send invite via text message, default is according to project settings
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -123,10 +127,32 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           verifiedEmail,
           verifiedPhone,
           inviteUrl,
+          sendMail,
+          sendSMS,
         },
         { token: managementKey },
       ),
       (data) => data.user,
+    ),
+  inviteBatch: (
+    users: User[],
+    inviteUrl?: string,
+    sendMail?: boolean, // send invite via mail, default is according to project settings
+    sendSMS?: boolean, // send invite via text message, default is according to project settings
+  ): Promise<SdkResponse<InviteBatchResponse>> =>
+    transformResponse<InviteBatchResponse, InviteBatchResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.createBatch,
+        {
+          users,
+          invite: true,
+          inviteUrl,
+          sendMail,
+          sendSMS,
+        },
+        { token: managementKey },
+      ),
+      (data) => data,
     ),
   update: (
     loginId: string,

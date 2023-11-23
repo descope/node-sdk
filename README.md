@@ -72,6 +72,8 @@ Then, you can use that to work with the following functions:
 9. [Manage JWTs](#manage-jwts)
 10. [Embedded Links](#embedded-links)
 11. [Search Audit](#search-audit)
+12. [Manage Authz](#manage-authz)
+13. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -530,9 +532,9 @@ await descopeClient.management.user.create(
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
 );
 
-// Alternatively, a user can be created and invited via an email message.
+// Alternatively, a user can be created and invited via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
-// and that an email address is provided in the information.
+// and that an email address / phone number is provided in the information.
 await descopeClient.management.user.invite(
   'desmond@descope.com',
   'desmond@descope.com',
@@ -540,6 +542,24 @@ await descopeClient.management.user.invite(
   'Desmond Copeland',
   null,
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+);
+
+// You can invite batch of users via an email / text message.
+// Make sure to configure the invite URL in the Descope console prior to using this function,
+// and that an email address / phone number is provided in the information.
+await descopeClient.management.user.inviteBatch(
+  [
+    {
+      loginId: 'desmond@descope.com',
+      email: 'desmond@descope.com',
+      phone: '+123456789123',
+      displayName: 'Desmond Copeland',
+      userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+    },
+  ],
+  '<invite_url>',
+  true,
+  false,
 );
 
 // Update will override all fields as is. Use carefully.
@@ -596,13 +616,17 @@ await descopeClient.management.user.setPassword('<login-ID>', '<some-password>')
 await descopeClient.management.user.expirePassword('<login-ID>');
 ```
 
-### Manage Projects
+### Manage Project
 
-You can update project name using the following function:
+You can update project name, as well as to clone the current project to a new one:
 
 ```typescript
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.project.updateName('new-project-name');
+
+// Clone the current project to a new one
+// Note that this action is supported only with a pro license or above.
+const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 
 ### Manage Access Keys
@@ -838,6 +862,185 @@ console.log(audits);
 // Search successful logins in the last 30 days
 const audits = await descopeClient.management.audit.search({ actions: ['LoginSucceed'] });
 console.log(audits);
+```
+
+### Manage Authz
+
+Descope support full relation based access control (ReBAC) using a zanzibar like schema and operations.
+A schema is comprized of namespaces (entities like documents, folders, orgs, etc.) and each namespace has relation definitions to define relations.
+Each relation definition can be simple (either you have it or not) or complex (union of nodes).
+
+A simple example for a file system like schema would be:
+
+```yaml
+# Example schema for the authz tests
+name: Files
+namespaces:
+  - name: org
+    relationDefinitions:
+      - name: parent
+      - name: member
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationLeft
+                relationDefinition: parent
+                relationDefinitionNamespace: org
+                targetRelationDefinition: member
+                targetRelationDefinitionNamespace: org
+  - name: folder
+    relationDefinitions:
+      - name: parent
+      - name: owner
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: editor
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: viewer
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: viewer
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+  - name: doc
+    relationDefinitions:
+      - name: parent
+      - name: owner
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: editor
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: doc
+      - name: viewer
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: viewer
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: doc
+```
+
+Descope SDK allows you to fully manage the schema and relations as well as perform simple (and not so simple) checks regarding the existence of relations.
+
+```typescript
+// Load the existing schema
+const s = await descopeClient.management.authz.loadSchema();
+console.log(s);
+
+// Save schema and make sure to remove all namespaces not listed
+await descopeClient.management.authz.saveSchema(s, true);
+
+// Create a relation between a resource and user
+await descopeClient.management.authz.createRelations([
+  {
+    resource: 'some-doc',
+    relationDefinition: 'owner',
+    namespace: 'doc',
+    target: 'u1',
+  },
+  {
+    resource: 'some-doc',
+    relationDefinition: 'editor',
+    namespace: 'doc',
+    target: 'u2',
+  },
+]);
+
+// Check if target has the relevant relation
+// The answer should be true because an owner is also a viewer
+const q = await descopeClient.management.authz.hasRelations([
+  {
+    resource: 'some-doc',
+    relationDefinition: 'viewer',
+    namespace: 'doc',
+    target: 'u1',
+  },
+]);
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
