@@ -23,6 +23,7 @@ export type AccessKey = {
   createdTime: number;
   expiresTime: number;
   createdBy: string;
+  clientId: string;
 };
 
 /** Access Key extended details including created key cleartext */
