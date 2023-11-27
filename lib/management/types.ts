@@ -262,18 +262,13 @@ export type AuditRecord = {
   data: Record<string, any>;
 };
 
-export enum UserStatus {
-  enabled = 'enabled',
-  disabled = 'disabled',
-  invited = 'invited',
-}
+export type UserStatus = 'enabled' | 'disabled' | 'invited';
 
-export enum AuthzNodeExpressionType {
-  self = 'self', // direct relation expression
-  targetSet = 'targetSet', // expression via another relation definition target
-  relationLeft = 'relationLeft', // expression via parent relation like org within org and membership
-  relationRight = 'relationRight', // expression via child relation like folder within folder and owner
-}
+export type AuthzNodeExpressionType =
+  | 'self' // direct relation expression
+  | 'targetSet' // expression via another relation definition target
+  | 'relationLeft' // expression via parent relation like org within org and membership
+  | 'relationRight'; // expression via child relation like folder within folder and owner
 
 /**
  * AuthzNodeExpression holds the definition of a child node
@@ -286,17 +281,16 @@ export type AuthzNodeExpression = {
   targetRelationDefinitionNamespace?: string;
 };
 
-export enum AuthzNodeType {
-  child = 'child', // regular child node in relation definition
+export type AuthzNodeType =
+  | 'child' // regular child node in relation definition
   // union node of multiple children
   // Example: editor of document is union between
   // 1. Direct editor relation - someone that has editor on document
   // 2. Owner relation - someone who is owner of document
   // 3. Editor of containing folder relation - someone who is editor of the folder that has parent relation to doc
-  union = 'union',
-  intersect = 'intersect', // intersect between multiple children
-  sub = 'sub', // sub between the first child and the rest
-}
+  | 'union'
+  | 'intersect' // intersect between multiple children
+  | 'sub'; // sub between the first child and the rest
 
 /**
  * AuthzNode holds the definition of a complex relation definition

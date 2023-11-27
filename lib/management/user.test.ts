@@ -7,7 +7,6 @@ import {
   GenerateMagicLinkForTestResponse,
   GenerateEnchantedLinkForTestResponse,
   ProviderTokenResponse,
-  UserStatus,
   GenerateEmbeddedLinkResponse,
   InviteBatchResponse,
 } from './types';
@@ -503,7 +502,7 @@ describe('Management User', () => {
         undefined,
         undefined,
         undefined,
-        [UserStatus.enabled],
+        ['enabled'],
         ['a@b.com'],
         ['+11111111'],
       );
@@ -514,7 +513,7 @@ describe('Management User', () => {
           tenantIds: ['t1'],
           roleNames: ['r1'],
           limit: 100,
-          statuses: [UserStatus.enabled],
+          statuses: ['enabled'],
           emails: ['a@b.com'],
           phones: ['+11111111'],
         },
