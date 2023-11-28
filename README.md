@@ -384,7 +384,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     next();
   } catch (e) {
     res.status(401).json({
-      error: new Error('Unauthorized!'),
+      error: 'Unauthorized!',
     });
   }
 };
