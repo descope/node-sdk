@@ -174,6 +174,7 @@ export type User = {
   verifiedEmail?: boolean;
   verifiedPhone?: boolean;
   test?: boolean;
+  additionalLoginIds?: string[];
 };
 
 export type UserMapping = {
