@@ -28,15 +28,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    givenName?: string,
-    middleName?: string,
-    familyName?: string,
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -75,15 +75,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    givenName?: string,
-    middleName?: string,
-    familyName?: string,
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -113,9 +113,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    givenName?: string,
-    middleName?: string,
-    familyName?: string,
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
@@ -125,6 +122,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     inviteUrl?: string,
     sendMail?: boolean, // send invite via mail, default is according to project settings
     sendSMS?: boolean, // send invite via text message, default is according to project settings
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -177,15 +177,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     email?: string,
     phone?: string,
     displayName?: string,
-    givenName?: string,
-    middleName?: string,
-    familyName?: string,
     roles?: string[],
     userTenants?: AssociatedTenant[],
     customAttributes?: Record<string, AttributesTypes>,
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
