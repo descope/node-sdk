@@ -34,6 +34,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -43,6 +46,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           email,
           phone,
           displayName,
+          givenName,
+          middleName,
+          familyName,
           roleNames: roles,
           userTenants,
           customAttributes,
@@ -75,6 +81,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -84,6 +93,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           email,
           phone,
           displayName,
+          givenName,
+          middleName,
+          familyName,
           roleNames: roles,
           userTenants,
           test: true,
@@ -110,6 +122,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     inviteUrl?: string,
     sendMail?: boolean, // send invite via mail, default is according to project settings
     sendSMS?: boolean, // send invite via text message, default is according to project settings
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -119,6 +134,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           email,
           phone,
           displayName,
+          givenName,
+          middleName,
+          familyName,
           roleNames: roles,
           userTenants,
           invite: true,
@@ -165,6 +183,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     picture?: string,
     verifiedEmail?: boolean,
     verifiedPhone?: boolean,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -174,6 +195,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           email,
           phone,
           displayName,
+          givenName,
+          middleName,
+          familyName,
           roleNames: roles,
           userTenants,
           customAttributes,
@@ -351,11 +375,17 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
-  updateDisplayName: (loginId: string, displayName: string): Promise<SdkResponse<UserResponse>> =>
+  updateDisplayName: (
+    loginId: string,
+    displayName?: string,
+    givenName?: string,
+    middleName?: string,
+    familyName?: string,
+  ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
         apiPaths.user.updateDisplayName,
-        { loginId, displayName },
+        { loginId, displayName, givenName, middleName, familyName },
         { token: managementKey },
       ),
       (data) => data.user,
