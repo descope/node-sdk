@@ -61,6 +61,13 @@ describe('Management User', () => {
         ['r1', 'r2'],
         null,
         { a: 'a', b: 1, c: true },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ['id-1', 'id-2'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -73,6 +80,7 @@ describe('Management User', () => {
           roleNames: ['r1', 'r2'],
           userTenants: null,
           customAttributes: { a: 'a', b: 1, c: true },
+          additionalLoginIds: ['id-1', 'id-2'],
         },
         { token: 'key' },
       );

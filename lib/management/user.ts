@@ -37,6 +37,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     givenName?: string,
     middleName?: string,
     familyName?: string,
+    additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -55,6 +56,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           picture,
           verifiedEmail,
           verifiedPhone,
+          additionalLoginIds,
         },
         { token: managementKey },
       ),
@@ -84,6 +86,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     givenName?: string,
     middleName?: string,
     familyName?: string,
+    additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -103,6 +106,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           picture,
           verifiedEmail,
           verifiedPhone,
+          additionalLoginIds,
         },
         { token: managementKey },
       ),
@@ -125,6 +129,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     givenName?: string,
     middleName?: string,
     familyName?: string,
+    additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -147,6 +152,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           inviteUrl,
           sendMail,
           sendSMS,
+          additionalLoginIds,
         },
         { token: managementKey },
       ),
@@ -186,6 +192,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
     givenName?: string,
     middleName?: string,
     familyName?: string,
+    additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -204,6 +211,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           picture,
           verifiedEmail,
           verifiedPhone,
+          additionalLoginIds,
         },
         { token: managementKey },
       ),
