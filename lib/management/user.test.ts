@@ -64,6 +64,9 @@ describe('Management User', () => {
         undefined,
         undefined,
         undefined,
+        '',
+        '',
+        '',
         ['id-1', 'id-2'],
       );
 

@@ -60,7 +60,7 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^5.0.0",
     "@rollup/plugin-typescript": "^8.3.0",
-    "@size-limit/preset-small-lib": "^10.0.0",
+    "@size-limit/preset-small-lib": "^11.0.0",
     "@types/jest": "^29.0.0",
     "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^20.0.0",
@@ -101,7 +101,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@descope/core-js-sdk": "2.1.0",
+    "@descope/core-js-sdk": "2.2.0",
     "jose": "4.15.4",
     "node-fetch-commonjs": "3.3.2",
     "tslib": "^1.14.1"
