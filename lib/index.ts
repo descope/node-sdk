@@ -226,7 +226,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * Retrieves the permissions from JWT top level claims that match the specified permissions list
      * @param authInfo JWT parsed info containing the permissions
      * @param permissions List of permissions to match against the JWT claims
-     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found.
+     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
      */
     getMatchedPermissions(authInfo: AuthenticationInfo, permissions: string[]): string[] {
       return sdk.getMatchedTenantPermissions(authInfo, '', permissions);
@@ -256,7 +256,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * @param authInfo JWT parsed info containing the permissions
      * @param tenant tenant to match the permissions for
      * @param permissions List of permissions to match against the JWT claims
-     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found.
+     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
      * */
     getMatchedTenantPermissions(
       authInfo: AuthenticationInfo,
@@ -280,10 +280,10 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     },
 
     /**
-     * Retrieves the roles from JWT top level claims that match the specified roles list.
+     * Retrieves the roles from JWT top level claims that match the specified roles list
      * @param authInfo JWT parsed info containing the roles
      * @param roles List of roles to match against the JWT claims
-     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found.
+     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
      */
     getMatchedRoles(authInfo: AuthenticationInfo, roles: string[]): string[] {
       return sdk.getMatchedTenantRoles(authInfo, '', roles);
@@ -305,11 +305,11 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     },
 
     /**
-     * Retrieves the roles from JWT tenant claims that match the specified roles list.
+     * Retrieves the roles from JWT tenant claims that match the specified roles list
      * @param authInfo JWT parsed info containing the roles
      * @param tenant tenant to match the roles for
      * @param roles List of roles to match against the JWT claims
-     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found.
+     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
      */
     getMatchedTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): string[] {
       if (tenant && !isUserAssociatedWithTenant(authInfo, tenant)) return [];
