@@ -219,12 +219,23 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * @returns true if all permissions exist, false otherwise
      */
     validatePermissions(authInfo: AuthenticationInfo, permissions: string[]): boolean {
-      return sdk.validateTenantPermissions(authInfo, null, permissions);
+      return sdk.validateTenantPermissions(authInfo, '', permissions);
+    },
+
+    /**
+     * Retrieves the permissions from JWT top level claims that match the specified permissions list
+     * @param authInfo JWT parsed info containing the permissions
+     * @param permissions List of permissions to match against the JWT claims
+     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
+     */
+    getMatchedPermissions(authInfo: AuthenticationInfo, permissions: string[]): string[] {
+      return sdk.getMatchedTenantPermissions(authInfo, '', permissions);
     },
 
     /**
      * Make sure that all given permissions exist on the parsed JWT tenant claims
      * @param authInfo JWT parsed info
+     * @param tenant tenant to validate the permissions for
      * @param permissions list of permissions to make sure they exist on te JWT claims
      * @returns true if all permissions exist, false otherwise
      */
@@ -241,18 +252,47 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     },
 
     /**
+     * Retrieves the permissions from JWT tenant claims that match the specified permissions list
+     * @param authInfo JWT parsed info containing the permissions
+     * @param tenant tenant to match the permissions for
+     * @param permissions List of permissions to match against the JWT claims
+     * @returns An array of permissions that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
+     * */
+    getMatchedTenantPermissions(
+      authInfo: AuthenticationInfo,
+      tenant: string,
+      permissions: string[],
+    ): string[] {
+      if (tenant && !isUserAssociatedWithTenant(authInfo, tenant)) return [];
+
+      const granted = getAuthorizationClaimItems(authInfo, permissionsClaimName, tenant);
+      return permissions.filter((perm) => granted.includes(perm));
+    },
+
+    /**
      * Make sure that all given roles exist on the parsed JWT top level claims
      * @param authInfo JWT parsed info
      * @param roles list of roles to make sure they exist on te JWT claims
      * @returns true if all roles exist, false otherwise
      */
     validateRoles(authInfo: AuthenticationInfo, roles: string[]): boolean {
-      return sdk.validateTenantRoles(authInfo, null, roles);
+      return sdk.validateTenantRoles(authInfo, '', roles);
+    },
+
+    /**
+     * Retrieves the roles from JWT top level claims that match the specified roles list
+     * @param authInfo JWT parsed info containing the roles
+     * @param roles List of roles to match against the JWT claims
+     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
+     */
+    getMatchedRoles(authInfo: AuthenticationInfo, roles: string[]): string[] {
+      return sdk.getMatchedTenantRoles(authInfo, '', roles);
     },
 
     /**
      * Make sure that all given roles exist on the parsed JWT tenant claims
      * @param authInfo JWT parsed info
+     * @param tenant tenant to validate the roles for
      * @param roles list of roles to make sure they exist on te JWT claims
      * @returns true if all roles exist, false otherwise
      */
@@ -262,6 +302,20 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
 
       const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant);
       return roles.every((role) => membership.includes(role));
+    },
+
+    /**
+     * Retrieves the roles from JWT tenant claims that match the specified roles list
+     * @param authInfo JWT parsed info containing the roles
+     * @param tenant tenant to match the roles for
+     * @param roles List of roles to match against the JWT claims
+     * @returns An array of roles that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
+     */
+    getMatchedTenantRoles(authInfo: AuthenticationInfo, tenant: string, roles: string[]): string[] {
+      if (tenant && !isUserAssociatedWithTenant(authInfo, tenant)) return [];
+
+      const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant);
+      return roles.filter((role) => membership.includes(role));
     },
   };
 

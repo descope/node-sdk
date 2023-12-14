@@ -400,7 +400,7 @@ For multi-tenant uses:
 
 ```typescript
 // You can validate specific permissions
-const validTenantPermissions = await descopeClient.validateTenantPermissions(
+const validTenantPermissions = descopeClient.validateTenantPermissions(
   authInfo,
   'my-tenant-ID',
   ['Permission to validate'],
@@ -410,30 +410,51 @@ if (!validTenantPermissions) {
 }
 
 // Or validate roles directly
-const validTenantRoles = await descopeClient.validateTenantRoles(authInfo, 'my-tenant-ID', [
+const validTenantRoles = descopeClient.validateTenantRoles(authInfo, 'my-tenant-ID', [
   'Role to validate',
 ]);
 if (!validTenantRoles) {
   // Deny access
 }
+
+// Or get the matched roles/permissions
+const matchedTenantRoles = descopeClient.getMatchedTenantRoles(authInfo, 'my-tenant-ID', [
+	'Role to validate',
+	'Another role to validate'
+]);
+
+const matchedTenantPermissions = descopeClient.getMatchedTenantPermissions(
+	authInfo,
+	'my-tenant-ID',
+	['Permission to validate', 'Another permission to validate']],
+);
 ```
 
 When not using tenants use:
 
 ```typescript
 // You can validate specific permissions
-const validPermissions = await descopeClient.validatePermissions(authInfo, [
-  'Permission to validate',
-]);
+const validPermissions = descopeClient.validatePermissions(authInfo, ['Permission to validate']);
 if (!validPermissions) {
   // Deny access
 }
 
 // Or validate roles directly
-const validRoles = await descopeClient.validateRoles(authInfo, ['Role to validate']);
+const validRoles = descopeClient.validateRoles(authInfo, ['Role to validate']);
 if (!validRoles) {
   // Deny access
 }
+
+// Or get the matched roles/permissions
+const matchedRoles = descopeClient.getMatchedRoles(authInfo, [
+  'Role to validate',
+  'Another role to validate',
+]);
+
+const matchedPermissions = descopeClient.getMatchedPermissions(authInfo, [
+  'Permission to validate',
+  'Another permission to validate',
+]);
 ```
 
 ### Logging Out
