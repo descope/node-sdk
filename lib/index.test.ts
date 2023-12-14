@@ -331,6 +331,43 @@ describe('sdk', () => {
     });
   });
 
+  describe('getMatchedPermissionsRoles', () => {
+    it('should always succeed with empty requirements', () => {
+      expect(sdk.getMatchedPermissions(permAuthInfo, [])).toStrictEqual([]);
+      expect(sdk.getMatchedTenantPermissions(permTenantAuthInfo, 'kuku', [])).toStrictEqual([]);
+      expect(sdk.getMatchedRoles(permAuthInfo, [])).toStrictEqual([]);
+      expect(sdk.getMatchedTenantPermissions(permTenantAuthInfo, 'kuku', [])).toStrictEqual([]);
+    });
+    it('should return the matched permissions or roles', () => {
+      // all permissions matched
+      expect(sdk.getMatchedPermissions(permAuthInfo, ['foo'])).toStrictEqual(['foo']);
+      // some permissions are matched
+      expect(
+        sdk.getMatchedTenantPermissions(permTenantAuthInfo, 'kuku', ['foo', 'bar', 'qux']),
+      ).toStrictEqual(['foo', 'bar']);
+      // all roles matched
+      expect(sdk.getMatchedRoles(permAuthInfo, ['abc'])).toStrictEqual(['abc']);
+      // some roles are matched
+      expect(
+        sdk.getMatchedTenantRoles(permTenantAuthInfo, 'kuku', ['abc', 'xyz', 'tuv']),
+      ).toStrictEqual(['abc', 'xyz']);
+    });
+
+    it('should return empty list when there are no matched permissions or roles', () => {
+      // no permissions matched
+      expect(sdk.getMatchedPermissions(permAuthInfo, ['qux'])).toStrictEqual([]);
+      expect(
+        sdk.getMatchedTenantPermissions(permTenantAuthInfo, 'kuku', ['qux', 'zuk']),
+      ).toStrictEqual([]);
+      // no roles matched
+      expect(sdk.getMatchedRoles(permAuthInfo, ['tuv'])).toStrictEqual([]);
+      // some roles are matched
+      expect(sdk.getMatchedTenantRoles(permTenantAuthInfo, 'kuku', ['tuv', 'rum'])).toStrictEqual(
+        [],
+      );
+    });
+  });
+
   describe('withCookies', () => {
     describe('when no cookie', () => {
       const paths = [
