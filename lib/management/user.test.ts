@@ -813,6 +813,35 @@ describe('Management User', () => {
     });
   });
 
+  describe('setRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.setRoles('lid', ['foo', 'bar']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.setRole,
+        { loginId: 'lid', roleNames: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('addRoles', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -920,6 +949,38 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.removeTenant,
         { loginId: 'lid', tenantId: 'tid' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('setTenantRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.setTenantRoles('lid', 'tid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.setRole,
+        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
         { token: 'key' },
       );
 

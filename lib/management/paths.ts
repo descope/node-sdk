@@ -17,6 +17,7 @@ export default {
     updateDisplayName: '/v1/mgmt/user/update/name',
     updatePicture: '/v1/mgmt/user/update/picture',
     updateCustomAttribute: '/v1/mgmt/user/update/customAttribute',
+    setRole: '/v1/mgmt/user/update/role/set',
     addRole: '/v1/mgmt/user/update/role/add',
     removeRole: '/v1/mgmt/user/update/role/remove',
     addTenant: '/v1/mgmt/user/update/tenant/add',

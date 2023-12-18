@@ -420,6 +420,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  setRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.setRole,
+        { loginId, roleNames: roles },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
   addRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
     transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.post(
@@ -448,6 +457,19 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.user.removeTenant,
         { loginId, tenantId },
+        { token: managementKey },
+      ),
+      (data) => data.user,
+    ),
+  setTenantRoles: (
+    loginId: string,
+    tenantId: string,
+    roles: string[],
+  ): Promise<SdkResponse<UserResponse>> =>
+    transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(
+        apiPaths.user.setRole,
+        { loginId, tenantId, roleNames: roles },
         { token: managementKey },
       ),
       (data) => data.user,
