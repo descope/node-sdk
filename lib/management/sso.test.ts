@@ -16,6 +16,7 @@ describe('Management SSO', () => {
         tenantId: 'tenant-id',
         idpEntityId: 'idpEntityId',
         domain: 'some-domain.com',
+        domains: ['some-domain.com', 'some-domain2.com'],
       };
       const httpResponse = {
         ok: true,
@@ -89,19 +90,19 @@ describe('Management SSO', () => {
       const idpCert = 'cert';
       const entityId = 'e1';
       const redirectURL = 'https://redirect.com';
-      const domain = 'domain.com';
+      const domains = ['domain.com', 'app.domain.com'];
       const resp = await management.sso.configureSettings(
         tenantId,
         idpURL,
         idpCert,
         entityId,
         redirectURL,
-        domain,
+        domains,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.sso.settings,
-        { tenantId, idpURL, idpCert, entityId, redirectURL, domain },
+        { tenantId, idpURL, idpCert, entityId, redirectURL, domains },
         { token: 'key' },
       );
 
@@ -127,12 +128,12 @@ describe('Management SSO', () => {
       const tenantId = 't1';
       const idpMetadataURL = 'https://idp.com';
       const redirectURL = 'https://redirect.com';
-      const domain = 'domain.com';
+      const domains = ['domain.com', 'app.domain.com'];
       const resp = await management.sso.configureMetadata(
         tenantId,
         idpMetadataURL,
         redirectURL,
-        domain,
+        domains,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -140,7 +141,7 @@ describe('Management SSO', () => {
         {
           tenantId,
           idpMetadataURL,
-          domain,
+          domains,
           redirectURL,
         },
         { token: 'key' },
