@@ -368,3 +368,4 @@ export type {
   JWTResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
+export { descopeErrors } from './errors';
