@@ -81,6 +81,36 @@ If you're performing end-to-end testing, check out the [Utils for your end to en
 
 ---
 
+## Error Handling
+
+Every `async` operation may fail. In case it does, there will be information regarding what happened on the response object.
+A typical case of error handling might look something like:
+
+```ts
+import { SdkResponse, errors } from '@descope/node-sdk';
+
+// ...
+
+try {
+  const resp = await sdk.otp.signIn.email(loginId);
+  if (resp.error) {
+    switch (resp.error.errorCode) {
+      case errors.userNotFound:
+        // Handle specifically
+        break;
+      default:
+      // Handle generally
+      // `resp.error` will contain `errorCode`, `errorDescription` and sometimes `errorMessage` to
+      // help understand what went wrong. See SdkResponse for more information.
+    }
+  }
+} catch (e) {
+  // Handle technical error
+}
+```
+
+---
+
 ### OTP Authentication
 
 Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS_). An email address or phone number must be provided accordingly.
