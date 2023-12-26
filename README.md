@@ -701,11 +701,11 @@ const idpURL = 'https://idp.com'
 const entityID = 'my-idp-entity-id'
 const idpCert = '<your-cert-here>'
 const redirectURL = 'https://my-app.com/handle-saml' // Global redirect URL for SSO/SAML
-const domain = 'tenant-users.com' // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
+const domains = ['tenant-users.com'] // Users authentication with this domain will be logged in to this tenant
+await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domains)
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata', redirectURL, domain)
+await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata', redirectURL, domains)
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.

@@ -207,6 +207,8 @@ export type SSOSettingsResponse = {
   userMapping: UserMapping;
   groupsMapping: GroupsMapping[];
   redirectUrl: string;
+  domains: string[];
+  // Deprecated - use domains instead
   domain: string;
 };
 
