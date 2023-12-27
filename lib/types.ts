@@ -1,4 +1,4 @@
-import createSdk from '@descope/core-js-sdk';
+import createSdk, { DeliveryMethod } from '@descope/core-js-sdk';
 
 type Head<T extends ReadonlyArray<any>> = T extends readonly [] ? never : T[0];
 
@@ -21,3 +21,4 @@ export interface AuthenticationInfo {
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
 export type CoreSdk = ReturnType<CreateCoreSdk>;
+export type DeliveryMethodForTestUser = DeliveryMethod | 'Embedded';
