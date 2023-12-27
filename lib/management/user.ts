@@ -1,10 +1,4 @@
-import {
-  DeliveryMethod,
-  SdkResponse,
-  transformResponse,
-  UserResponse,
-  LoginOptions,
-} from '@descope/core-js-sdk';
+import { SdkResponse, transformResponse, UserResponse, LoginOptions } from '@descope/core-js-sdk';
 import {
   ProviderTokenResponse,
   AssociatedTenant,
@@ -17,7 +11,7 @@ import {
   User,
   InviteBatchResponse,
 } from './types';
-import { CoreSdk } from '../types';
+import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
 
 type SingleUserResponse = {
@@ -519,7 +513,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns GenerateOTPForTestResponse which includes the loginId and the OTP code
    */
   generateOTPForTestUser: (
-    deliveryMethod: DeliveryMethod,
+    deliveryMethod: DeliveryMethodForTestUser,
     loginId: string,
     loginOptions?: LoginOptions,
   ): Promise<SdkResponse<GenerateOTPForTestResponse>> =>
@@ -545,7 +539,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns GenerateMagicLinkForTestResponse which includes the loginId and the magic link
    */
   generateMagicLinkForTestUser: (
-    deliveryMethod: DeliveryMethod,
+    deliveryMethod: DeliveryMethodForTestUser,
     loginId: string,
     uri: string,
     loginOptions?: LoginOptions,
