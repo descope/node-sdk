@@ -1,4 +1,10 @@
-import { DeliveryMethod, SdkResponse, transformResponse, UserResponse } from '@descope/core-js-sdk';
+import {
+  DeliveryMethod,
+  SdkResponse,
+  transformResponse,
+  UserResponse,
+  LoginOptions,
+} from '@descope/core-js-sdk';
 import {
   ProviderTokenResponse,
   AssociatedTenant,
@@ -509,16 +515,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    *
    * @param deliveryMethod optional DeliveryMethod
    * @param loginId login ID of a test user
+   * @param loginOptions optional LoginOptions - can be provided to set custom claims to the generated jwt.
    * @returns GenerateOTPForTestResponse which includes the loginId and the OTP code
    */
   generateOTPForTestUser: (
     deliveryMethod: DeliveryMethod,
     loginId: string,
+    loginOptions?: LoginOptions,
   ): Promise<SdkResponse<GenerateOTPForTestResponse>> =>
     transformResponse<GenerateOTPForTestResponse>(
       sdk.httpClient.post(
         apiPaths.user.generateOTPForTest,
-        { deliveryMethod, loginId },
+        { deliveryMethod, loginId, loginOptions },
         { token: managementKey },
       ),
       (data) => data,
@@ -533,17 +541,19 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * @param deliveryMethod optional DeliveryMethod
    * @param loginId login ID of a test user
    * @param uri optional redirect uri which will be used instead of any global configuration.
+   * @param loginOptions optional LoginOptions - can be provided to set custom claims to the generated jwt.
    * @returns GenerateMagicLinkForTestResponse which includes the loginId and the magic link
    */
   generateMagicLinkForTestUser: (
     deliveryMethod: DeliveryMethod,
     loginId: string,
     uri: string,
+    loginOptions?: LoginOptions,
   ): Promise<SdkResponse<GenerateMagicLinkForTestResponse>> =>
     transformResponse<GenerateMagicLinkForTestResponse>(
       sdk.httpClient.post(
         apiPaths.user.generateMagicLinkForTest,
-        { deliveryMethod, loginId, URI: uri },
+        { deliveryMethod, loginId, URI: uri, loginOptions },
         { token: managementKey },
       ),
       (data) => data,
@@ -557,16 +567,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    *
    * @param loginId login ID of a test user
    * @param uri optional redirect uri which will be used instead of any global configuration.
+   * @param loginOptions optional LoginOptions - can be provided to set custom claims to the generated jwt.
    * @returns GenerateEnchantedLinkForTestResponse which includes the loginId, the enchanted link and the pendingRef
    */
   generateEnchantedLinkForTestUser: (
     loginId: string,
     uri: string,
+    loginOptions?: LoginOptions,
   ): Promise<SdkResponse<GenerateEnchantedLinkForTestResponse>> =>
     transformResponse<GenerateEnchantedLinkForTestResponse>(
       sdk.httpClient.post(
         apiPaths.user.generateEnchantedLinkForTest,
-        { loginId, URI: uri },
+        { loginId, URI: uri, loginOptions },
         { token: managementKey },
       ),
       (data) => data,

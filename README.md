@@ -1125,6 +1125,7 @@ const { code } = await descopeClient.management.user.generateOTPForTestUser(
   'desmond@descope.com',
 );
 // Now you can verify the code is valid (using descopeClient.auth.*.verify for example)
+// LoginOptions can be provided to set custom claims to the generated jwt.
 
 // Same as OTP, magic link can be generated for test user, for example:
 const { link } = await descopeClient.management.user.generateMagicLinkForTestUser(

@@ -1,4 +1,4 @@
-import { SdkResponse, UserResponse } from '@descope/core-js-sdk';
+import { LoginOptions, SdkResponse, UserResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
@@ -1071,12 +1071,15 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
+      const loginOptions: LoginOptions = {
+        stepup: true,
+      };
       const resp: SdkResponse<GenerateOTPForTestResponse> =
-        await management.user.generateOTPForTestUser('sms', 'some-id');
+        await management.user.generateOTPForTestUser('sms', 'some-id', loginOptions);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateOTPForTest,
-        { loginId: 'some-id', deliveryMethod: 'sms' },
+        { loginId: 'some-id', deliveryMethod: 'sms', loginOptions },
         { token: 'key' },
       );
 
@@ -1102,12 +1105,20 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
+      const loginOptions: LoginOptions = {
+        stepup: true,
+      };
       const resp: SdkResponse<GenerateMagicLinkForTestResponse> =
-        await management.user.generateMagicLinkForTestUser('email', 'some-id', 'some-uri');
+        await management.user.generateMagicLinkForTestUser(
+          'email',
+          'some-id',
+          'some-uri',
+          loginOptions,
+        );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateMagicLinkForTest,
-        { loginId: 'some-id', deliveryMethod: 'email', URI: 'some-uri' },
+        { loginId: 'some-id', deliveryMethod: 'email', URI: 'some-uri', loginOptions },
         { token: 'key' },
       );
 
@@ -1137,12 +1148,15 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
+      const loginOptions: LoginOptions = {
+        stepup: true,
+      };
       const resp: SdkResponse<GenerateEnchantedLinkForTestResponse> =
-        await management.user.generateEnchantedLinkForTestUser('some-id', 'some-uri');
+        await management.user.generateEnchantedLinkForTestUser('some-id', 'some-uri', loginOptions);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateEnchantedLinkForTest,
-        { loginId: 'some-id', URI: 'some-uri' },
+        { loginId: 'some-id', URI: 'some-uri', loginOptions },
         { token: 'key' },
       );
 
