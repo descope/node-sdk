@@ -217,9 +217,22 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  /**
+   * Delete an existing user.
+   * @param loginId The login ID of the user
+   */
   delete: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(apiPaths.user.delete, { loginId }, { token: managementKey }),
+    ),
+  /**
+   * Delete an existing user by User ID.
+   * @param userId The user ID can be found in the Subject (`sub`) claim
+   * in the user's JWT.
+   */
+  deleteByUserId: (userId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.delete, { userId }, { token: managementKey }),
     ),
   /**
    * Delete all test users in the project.
