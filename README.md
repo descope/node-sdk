@@ -643,7 +643,7 @@ const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
 
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
-const usersRes = await descopeClient.management.user.searchAll(['tenant-ID']);
+const usersRes = await descopeClient.management.user.search({ tenantIds: ['tenant-ID'] });
 usersRes.data.forEach((user) => {
   // do something
 });

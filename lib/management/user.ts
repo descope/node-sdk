@@ -1,4 +1,5 @@
 import { SdkResponse, transformResponse, UserResponse, LoginOptions } from '@descope/core-js-sdk';
+import { deprecate } from 'util';
 import {
   ProviderTokenResponse,
   AssociatedTenant,
@@ -13,6 +14,19 @@ import {
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
+
+type SearchRequest = {
+  tenantIds?: string[];
+  roles?: string[];
+  limit?: number;
+  page?: number;
+  testUsersOnly?: boolean;
+  withTestUser?: boolean;
+  customAttributes?: Record<string, AttributesTypes>;
+  statuses?: UserStatus[];
+  emails?: string[];
+  phones?: string[];
+};
 
 type SingleUserResponse = {
   user: UserResponse;
@@ -293,32 +307,55 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * @param withTestUser optionally include test users in search
    * @returns An array of UserResponse found by the query
    */
-  searchAll: (
-    tenantIds?: string[],
-    roles?: string[],
-    limit?: number,
-    page?: number,
-    testUsersOnly?: boolean,
-    withTestUser?: boolean,
-    customAttributes?: Record<string, AttributesTypes>,
-    statuses?: UserStatus[],
-    emails?: string[],
-    phones?: string[],
-  ): Promise<SdkResponse<UserResponse[]>> =>
+
+  searchAll: deprecate(
+    (
+      tenantIds?: string[],
+      roles?: string[],
+      limit?: number,
+      page?: number,
+      testUsersOnly?: boolean,
+      withTestUser?: boolean,
+      customAttributes?: Record<string, AttributesTypes>,
+      statuses?: UserStatus[],
+      emails?: string[],
+      phones?: string[],
+    ): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        sdk.httpClient.post(
+          apiPaths.user.search,
+          {
+            tenantIds,
+            roleNames: roles,
+            limit,
+            page,
+            testUsersOnly,
+            withTestUser,
+            customAttributes,
+            statuses,
+            emails,
+            phones,
+          },
+          { token: managementKey },
+        ),
+        (data) => data.users,
+      ),
+    'searchAll is deprecated please use search() instead',
+  ),
+  /**
+   * Search all users. Results can be filtered according to tenants roles and more,
+   * Pagination is also available using the limit and page parameters.
+   * @param searchReq an object with all the constraints for this search
+   * @returns An array of UserResponse found by the query
+   */
+  search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
     transformResponse<MultipleUsersResponse, UserResponse[]>(
       sdk.httpClient.post(
         apiPaths.user.search,
         {
-          tenantIds,
-          roleNames: roles,
-          limit,
-          page,
-          testUsersOnly,
-          withTestUser,
-          customAttributes,
-          statuses,
-          emails,
-          phones,
+          ...searchReq,
+          roleNames: searchReq.roles,
+          roles: undefined,
         },
         { token: managementKey },
       ),
