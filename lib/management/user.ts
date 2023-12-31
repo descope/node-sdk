@@ -217,9 +217,22 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.user,
     ),
+  /**
+   * Delete an existing user.
+   * @param loginId The login ID of the user
+   */
   delete: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(apiPaths.user.delete, { loginId }, { token: managementKey }),
+    ),
+  /**
+   * Delete an existing user by User ID.
+   * @param userId The user ID can be found in the Subject (`sub`) claim
+   * in the user's JWT.
+   */
+  deleteByUserId: (userId: string): Promise<SdkResponse<UserResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.user.delete, { userId }, { token: managementKey }),
     ),
   /**
    * Delete all test users in the project.
@@ -596,7 +609,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * Note: The password will automatically be set as expired.
    * The user will not be able to log-in with this password, and will be required to replace it on next login.
    * See also: expirePassword
-   * @param loginId login ID of a test user
+   * @param loginId The login ID of the user
    * @param password The password to set for the user
    */
   setPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
@@ -613,11 +626,23 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
    * Expire password for the given login ID.
    * Note: user sign-in with an expired password, the user will get an error with code.
    * Use the `ResetPassword` or `ReplacePassword` methods to reset/replace the password.
-   * @param loginId login ID of a test user
+   * @param loginId The login ID of the user
    */
   expirePassword: (loginId: string): Promise<SdkResponse<never>> =>
     transformResponse<never>(
       sdk.httpClient.post(apiPaths.user.expirePassword, { loginId }, { token: managementKey }),
+      (data) => data,
+    ),
+
+  /**
+   * Removes all registered passkeys (WebAuthn devices) for the user with the given login ID.
+   * Note: The user might not be able to login anymore if they have no other authentication
+   * methods or a verified email/phone.
+   * @param loginId The login ID of the user
+   */
+  removeAllPasskeys: (loginId: string): Promise<SdkResponse<never>> =>
+    transformResponse<never>(
+      sdk.httpClient.post(apiPaths.user.removeAllPasskeys, { loginId }, { token: managementKey }),
       (data) => data,
     ),
 });

@@ -351,6 +351,35 @@ describe('Management User', () => {
     });
   });
 
+  describe('deleteByUserId', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.deleteByUserId('userId');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.delete,
+        { userId: 'userId' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('logout', () => {
     it('should send the correct request and receive correct response for logout by login ID', async () => {
       const httpResponse = {
@@ -1282,6 +1311,36 @@ describe('Management User', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.expirePassword,
+        { loginId },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeAllPasskeys', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const resp = await management.user.removeAllPasskeys(loginId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeAllPasskeys,
         { loginId },
         { token: 'key' },
       );
