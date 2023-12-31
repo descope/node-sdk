@@ -566,6 +566,49 @@ describe('Management User', () => {
     });
   });
 
+  describe('search', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse[]> = await management.user.search({
+        tenantIds: ['t1'],
+        roles: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.search,
+        {
+          tenantIds: ['t1'],
+          roleNames: ['r1'],
+          limit: 100,
+          statuses: ['enabled'],
+          emails: ['a@b.com'],
+          phones: ['+11111111'],
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('getProviderToken', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockProviderTokenResponse = { provider: 'p1' };

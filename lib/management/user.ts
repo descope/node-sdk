@@ -14,6 +14,19 @@ import {
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
 
+type SearchRequest = {
+  tenantIds?: string[];
+  roles?: string[];
+  limit?: number;
+  page?: number;
+  testUsersOnly?: boolean;
+  withTestUser?: boolean;
+  customAttributes?: Record<string, AttributesTypes>;
+  statuses?: UserStatus[];
+  emails?: string[];
+  phones?: string[];
+};
+
 type SingleUserResponse = {
   user: UserResponse;
 };
@@ -319,6 +332,30 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => ({
           statuses,
           emails,
           phones,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.users,
+    ),
+  /**
+   * Search all users. Results can be filtered according to tenants and/or
+   * roles, and also paginated used the limit and page parameters.
+   * @param tenantIds optional list of tenant IDs to filter by
+   * @param roles optional list of roles to filter by
+   * @param limit optionally limit the response, leave out for default limit
+   * @param page optionally paginate over the response
+   * @param testUsersOnly optionally filter only test users
+   * @param withTestUser optionally include test users in search
+   * @returns An array of UserResponse found by the query
+   */
+  search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
+    transformResponse<MultipleUsersResponse, UserResponse[]>(
+      sdk.httpClient.post(
+        apiPaths.user.search,
+        {
+          ...searchReq,
+          roleNames: searchReq.roles,
+          roles: undefined,
         },
         { token: managementKey },
       ),
