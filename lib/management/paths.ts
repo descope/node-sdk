@@ -24,6 +24,7 @@ export default {
     removeTenant: '/v1/mgmt/user/update/tenant/remove',
     setPassword: '/v1/mgmt/user/password/set',
     expirePassword: '/v1/mgmt/user/password/expire',
+    removeAllPasskeys: '/v1/mgmt/user/passkeys/delete',
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',

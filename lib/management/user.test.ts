@@ -1294,4 +1294,34 @@ describe('Management User', () => {
       });
     });
   });
+
+  describe('removeAllPasskeys', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const resp = await management.user.removeAllPasskeys(loginId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeAllPasskeys,
+        { loginId },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });
