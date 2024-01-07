@@ -42,16 +42,16 @@ describe('Management Project', () => {
 
   describe('clone', () => {
     it('should send the correct request and receive correct response', async () => {
-      const mockCreateProjectResponse = {
+      const mockCloneProjectResponse = {
         projectId: 'id1',
         projectName: 'name1',
       };
 
       const httpResponse = {
         ok: true,
-        json: () => mockCreateProjectResponse,
+        json: () => mockCloneProjectResponse,
         clone: () => ({
-          json: () => Promise.resolve(mockCreateProjectResponse),
+          json: () => Promise.resolve(mockCloneProjectResponse),
         }),
         status: 200,
       };
@@ -69,7 +69,7 @@ describe('Management Project', () => {
 
       expect(resp).toEqual({
         code: 200,
-        data: mockCreateProjectResponse,
+        data: mockCloneProjectResponse,
         ok: true,
         response: httpResponse,
       });
