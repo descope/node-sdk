@@ -369,20 +369,8 @@ export type AuthzRelationQuery = {
 // Currently only production tag is supported
 export type ProjectTag = 'production';
 
-export type NewProjectResponse = {
+export type CloneProjectResponse = {
   projectId: string;
   projectName: string;
-  projectSettingsWeb: Record<string, any>;
-  authMethodsMagicLink: Record<string, any>;
-  authMethodsOTP: Record<string, any>;
-  authMethodsSAML: Record<string, any>;
-  authMethodsOAuth: Record<string, any>;
-  authMethodsWebAuthn: Record<string, any>;
-  authMethodsTOTP: Record<string, any>;
-  messagingProvidersWeb: Record<string, any>;
-  authMethodsEnchantedLink: Record<string, any>;
-  authMethodsPassword: Record<string, any>;
-  authMethodsOIDCIDP: Record<string, any>;
-  authMethodsEmbeddedLink: Record<string, any>;
   tag?: string;
 };

@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { NewProjectResponse, ProjectTag } from './types';
+import { CloneProjectResponse, ProjectTag } from './types';
 
 const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   /**
@@ -24,9 +24,9 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    *  - Users, tenants and access keys are not cloned.
    * @param name The name of the new project
    * @param tag The tag of the new project
-   * @returns The new project details (name, id, tag, and settings)
+   * @returns The new project details (name, id, and tag)
    */
-  clone: (name: string, tag?: ProjectTag): Promise<SdkResponse<NewProjectResponse>> =>
+  clone: (name: string, tag?: ProjectTag): Promise<SdkResponse<CloneProjectResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.project.clone,
