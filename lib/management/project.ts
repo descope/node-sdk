@@ -24,7 +24,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    *  - Users, tenants and access keys are not cloned.
    * @param name The name of the new project
    * @param tag The tag of the new project
-   * @returns The new project details (name, id, tag, and settings)
+   * @returns The new project details (name, id, and tag)
    */
   clone: (name: string, tag?: ProjectTag): Promise<SdkResponse<NewProjectResponse>> =>
     transformResponse(
