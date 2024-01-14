@@ -62,6 +62,7 @@ export type Tenant = {
   id: string;
   name: string;
   selfProvisioningDomains: string[];
+  customAttributes?: Record<string, string | number | boolean>;
 };
 
 /** Represents a permission in a project. It has a name and optionally a description.
