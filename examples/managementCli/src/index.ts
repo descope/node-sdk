@@ -45,14 +45,12 @@ program
   )
   .action(async (loginId, options) => {
     handleSdkRes(
-      await sdk.management.user.create(
-        loginId,
-        options.email,
-        options.phone,
-        options.name,
-        undefined,
-        options.tenants?.map((tenantId: string) => ({ tenantId })),
-      ),
+      await sdk.management.user.create(loginId, {
+        email: options.email,
+        phone: options.phone,
+        displayName: options.name,
+        userTenants: options.tenants?.map((tenantId: string) => ({ tenantId })),
+      }),
     );
   });
 
@@ -75,14 +73,12 @@ program
   )
   .action(async (loginId, options) => {
     handleSdkRes(
-      await sdk.management.user.update(
-        loginId,
-        options.email,
-        options.phone,
-        options.name,
-        undefined,
-        options.tenants?.map((tenantId: string) => ({ tenantId })),
-      ),
+      await sdk.management.user.update(loginId, {
+        email: options.email,
+        phone: options.phone,
+        displayName: options.name,
+        userTenants: options.tenants?.map((tenantId: string) => ({ tenantId })),
+      }),
     );
   });
 
