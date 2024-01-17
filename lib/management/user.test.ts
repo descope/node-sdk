@@ -42,7 +42,7 @@ describe('Management User', () => {
   });
 
   describe('create', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -140,10 +140,48 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.create('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+        additionalLoginIds: ['id-1', 'id-2'],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          customAttributes: { a: 'a', b: 1, c: true },
+          additionalLoginIds: ['id-1', 'id-2'],
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('createTestUser', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -186,10 +224,47 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.createTestUser('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          test: true,
+          customAttributes: { a: 'a', b: 1, c: true },
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('invite', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -228,6 +303,47 @@ describe('Management User', () => {
           customAttributes: { a: 'a', b: 1, c: true },
           verifiedEmail: false,
           verifiedPhone: false,
+          inviteUrl: 'https://invite.me',
+          sendMail: true,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.invite('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+        inviteUrl: 'https://invite.me',
+        sendMail: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          invite: true,
+          customAttributes: { a: 'a', b: 1, c: true },
           inviteUrl: 'https://invite.me',
           sendMail: true,
         },
@@ -294,7 +410,7 @@ describe('Management User', () => {
   });
 
   describe('update', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -306,6 +422,35 @@ describe('Management User', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<UserResponse> = await management.user.update('loginId', 'a@b.c');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.update,
+        { loginId: 'loginId', email: 'a@b.c' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response with option argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.update('loginId', {
+        email: 'a@b.c',
+      });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.update,

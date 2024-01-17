@@ -574,26 +574,20 @@ You can create, update, delete or load users, as well as search according to fil
 // A user must have a login ID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.create(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.create('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Alternatively, a user can be created and invited via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information.
-await descopeClient.management.user.invite(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.invite('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // You can invite batch of users via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
@@ -614,14 +608,11 @@ await descopeClient.management.user.inviteBatch(
 );
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.user.update(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1', 'role-name2'] }],
-);
+await descopeClient.management.user.update('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Update explicit data for a user rather than overriding all fields
 await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
@@ -1105,14 +1096,11 @@ that way, you don't need to use 3rd party messaging services in order to receive
 // Test user must have a loginId, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.createTestUser(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.createTestUser('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Now test user got created, and this user will be available until you delete it,
 // you can use any management operation for test user CRUD.
