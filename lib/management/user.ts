@@ -72,6 +72,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     familyName?: string,
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
+    // We support both the old and new parameters forms of create user
+    // 1. The new form - create(loginId, { email, phone, ... }})
+    // 2. The old form - create(loginId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
@@ -141,6 +144,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     familyName?: string,
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
+    // We support both the old and new parameters forms of create test user
+    // 1. The new form - createTestUser(loginId, { email, phone, ... }})
+    // 2. The old form - createTestUser(loginId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
@@ -222,6 +228,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     familyName?: string,
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
+    // We support both the old and new parameters forms of invite user
+    // 1. The new form - invite(loginId, { email, phone, ... }})
+    // 2. The old form - invite(loginId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
@@ -293,6 +302,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     familyName?: string,
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
+    // We support both the old and new parameters forms of update user
+    // 1. The new form - update(loginId, { email, phone, ... }})
+    // 2. The old form - update(loginId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
