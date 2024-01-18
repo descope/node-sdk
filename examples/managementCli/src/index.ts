@@ -1,4 +1,3 @@
-import { SSOApplication } from './../../../lib/management/types';
 import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
