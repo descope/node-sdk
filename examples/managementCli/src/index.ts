@@ -354,7 +354,7 @@ program
 .description('Delete an sso application')
 .argument('<id>', 'sso application ID')
 .action(async (id) => {
-  handleSdkRes(await sdk.management.SSOApplication.delete(id));
+  handleSdkRes(await sdk.management.ssoApplication.delete(id));
 });
 
 // sso-application-load
