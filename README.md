@@ -576,7 +576,7 @@ You can create, update, delete or load SSO applications:
 await descopeClient.management.ssoApplication.createOidcApplication('My OIDC app name', 'http://dummy.com/login');
 
 // Create SAML sso application
-await descopeClient.management.ssoApplication.createSamlApplication('My SAML app name', 'http://dummy.com/login', null, null, null, true, true, 'http://dummy.com/metadata');
+await descopeClient.management.ssoApplication.createSamlApplication('My SAML app name', 'http://dummy.com/login', undefined, undefined, undefined, true, true, 'http://dummy.com/metadata');
 
 // Update OIDC sso application.
 // Update will override all fields as is. Use carefully.
@@ -584,7 +584,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication('my-app-id',
 
 // Update SAML sso application.
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.ssoApplication.updateSamlApplication('my-app-id', 'My SAML app name', 'http://dummy.com/login', null, null, null, true, false, null, 'entity1234', 'http://dummy.com/acs', 'certificate');
+await descopeClient.management.ssoApplication.updateSamlApplication('my-app-id', 'My SAML app name', 'http://dummy.com/login', undefined, undefined, undefined, true, false, undefined, 'entity1234', 'http://dummy.com/acs', 'certificate');
 
 // Tenant deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');

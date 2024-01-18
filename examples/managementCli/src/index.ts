@@ -320,7 +320,7 @@ program
 .argument('<loginPageUrl>', 'The URL where login page is hosted')
 .argument('<metadataUrl>', 'SP metadata url which include all the SP SAML info')
 .action(async (name, loginPageUrl, metadataUrl) => {
-  handleSdkRes(await sdk.management.ssoApplication.createSamlApplication(name, loginPageUrl, null, null, null, true, true, metadataUrl));
+  handleSdkRes(await sdk.management.ssoApplication.createSamlApplication(name, loginPageUrl, undefined, undefined, undefined, true, true, metadataUrl));
 });
 
 // sso-application-update-oidc
@@ -345,7 +345,7 @@ program
 .argument('<acsUrl>', 'SP ACS (saml callback) url')
 .argument('<certificate>', 'SP certificate')
 .action(async (id, name, loginPageUrl, entityId, acsUrl, certificate) => {
-  handleSdkRes(await sdk.management.ssoApplication.updateSamlApplication(id, name, loginPageUrl, null, null, null, true, false, null, entityId, acsUrl, certificate));
+  handleSdkRes(await sdk.management.ssoApplication.updateSamlApplication(id, name, loginPageUrl, undefined, undefined, undefined, true, false, undefined, entityId, acsUrl, certificate));
 });
 
 // sso-application-delete

@@ -67,7 +67,7 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateSSOApplicationResponse> = await management.ssoApplication.createSamlApplication('name', 'http://dummy.com', null, '', null, true, true, "http://dummy.com/metadata");
+      const resp: SdkResponse<CreateSSOApplicationResponse> = await management.ssoApplication.createSamlApplication('name', 'http://dummy.com', undefined, undefined, undefined, true, true, "http://dummy.com/metadata");
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.samlCreate,
@@ -125,7 +125,7 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.ssoApplication.updateSamlApplication('app1', 'name', 'http://dummy.com', null, null, true, false, null, 'ent1234');
+      const resp = await management.ssoApplication.updateSamlApplication('app1', 'name', 'http://dummy.com', undefined, undefined, true, false, undefined, 'ent1234');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.samlUpdate,
