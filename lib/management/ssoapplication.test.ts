@@ -11,8 +11,54 @@ const mockSSOApplicationCreateResponse = {
 };
 
 const mockSSOApplications = [
-  { id:'app1', name:'App1', description: '', enabled: true, logo: null, appType: 'saml', samlSettings: {loginPageUrl: 'http://dummy.com/login', idpCert: 'cert', useMetadataInfo: true, metadataUrl: 'http://dummy.com/metadata', entityId: null, acsUrl: null, certificate: null, attributeMapping:[{name: 'email', type: '', value: 'attrVal1'}], groupsMapping: [{name: 'grp1', type: '', filterType: 'roles', value:'', roles: [{id: 'myRoleId', name: 'myRole'}]}], idpMetadataUrl: '', idpEntityId: '', idpSsoUrl: '', acsAllowedCallbacks:[], subjectNameIdType: '', subjectNameIdFormat: ''}, oidcSettings: null},
-  { id:'app2', name:'App2', description: '', enabled: true, logo: null, appType: 'oidc', samlSettings: null, oidcSettings: {loginPageUrl: 'http://dummy.com/login', issuer: 'http://dummy.com/issuer', discoveryUrl: 'http://dummy/discovery'}}
+  {
+    id: 'app1',
+    name: 'App1',
+    description: '',
+    enabled: true,
+    logo: null,
+    appType: 'saml',
+    samlSettings: {
+      loginPageUrl: 'http://dummy.com/login',
+      idpCert: 'cert',
+      useMetadataInfo: true,
+      metadataUrl: 'http://dummy.com/metadata',
+      entityId: null,
+      acsUrl: null,
+      certificate: null,
+      attributeMapping: [{ name: 'email', type: '', value: 'attrVal1' }],
+      groupsMapping: [
+        {
+          name: 'grp1',
+          type: '',
+          filterType: 'roles',
+          value: '',
+          roles: [{ id: 'myRoleId', name: 'myRole' }],
+        },
+      ],
+      idpMetadataUrl: '',
+      idpEntityId: '',
+      idpSsoUrl: '',
+      acsAllowedCallbacks: [],
+      subjectNameIdType: '',
+      subjectNameIdFormat: '',
+    },
+    oidcSettings: null,
+  },
+  {
+    id: 'app2',
+    name: 'App2',
+    description: '',
+    enabled: true,
+    logo: null,
+    appType: 'oidc',
+    samlSettings: null,
+    oidcSettings: {
+      loginPageUrl: 'http://dummy.com/login',
+      issuer: 'http://dummy.com/issuer',
+      discoveryUrl: 'http://dummy/discovery',
+    },
+  },
 ];
 
 const mockAllSSOApplicationsResponse = {
@@ -37,11 +83,19 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateSSOApplicationResponse> = await management.ssoApplication.createOidcApplication('name', 'http://dummy.com');
+      const resp: SdkResponse<CreateSSOApplicationResponse> =
+        await management.ssoApplication.createOidcApplication('name', 'http://dummy.com');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.oidcCreate,
-        { name: 'name', loginPageUrl: ['http://dummy.com'] },
+        {
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          id: undefined,
+          description: undefined,
+          enabled: true,
+          logo: undefined,
+        },
         { token: 'key' },
       );
 
@@ -53,7 +107,6 @@ describe('Management SSOApplication', () => {
       });
     });
   });
-
 
   describe('createSamlApplication', () => {
     it('should send the correct request and receive correct response', async () => {
@@ -67,11 +120,38 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateSSOApplicationResponse> = await management.ssoApplication.createSamlApplication('name', 'http://dummy.com', undefined, undefined, undefined, true, true, "http://dummy.com/metadata");
+      const resp: SdkResponse<CreateSSOApplicationResponse> =
+        await management.ssoApplication.createSamlApplication(
+          'name',
+          'http://dummy.com',
+          undefined,
+          undefined,
+          undefined,
+          true,
+          true,
+          'http://dummy.com/metadata',
+        );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.samlCreate,
-        { name: 'name', loginPageUrl: 'http://dummy.com', enabled: true, useMetadataInfo: true, metadataUrl: 'http://dummy.com/metadata' },
+        {
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          id: undefined,
+          description: undefined,
+          logo: undefined,
+          enabled: true,
+          useMetadataInfo: true,
+          metadataUrl: 'http://dummy.com/metadata',
+          entityId: undefined,
+          acsUrl: undefined,
+          certificate: undefined,
+          attributeMapping: undefined,
+          groupsMapping: undefined,
+          acsAllowedCallbacks: undefined,
+          subjectNameIdType: undefined,
+          subjectNameIdFormat: undefined,
+        },
         { token: 'key' },
       );
 
@@ -96,11 +176,22 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.ssoApplication.updateOidcApplication('app1', 'name', 'http://dummy.com');
+      const resp = await management.ssoApplication.updateOidcApplication(
+        'app1',
+        'name',
+        'http://dummy.com',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.oidcUpdate,
-        { id: 'app1', name: 'name', loginPageUrl: 'http://dummy.com' },
+        {
+          id: 'app1',
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          description: undefined,
+          enabled: true,
+          logo: undefined,
+        },
         { token: 'key' },
       );
 
@@ -125,11 +216,38 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.ssoApplication.updateSamlApplication('app1', 'name', 'http://dummy.com', undefined, undefined, true, false, undefined, 'ent1234');
+      const resp = await management.ssoApplication.updateSamlApplication(
+        'app1',
+        'name',
+        'http://dummy.com',
+        undefined,
+        undefined,
+        true,
+        false,
+        undefined,
+        'ent1234',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.samlUpdate,
-        { name: 'name', loginPageUrl: 'http://dummy.com', enabled: true, useMetadataInfo: false, entityId: 'ent1234' },
+        {
+          id: 'app1',
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          description: undefined,
+          logo: undefined,
+          enabled: true,
+          useMetadataInfo: false,
+          metadataUrl: undefined,
+          entityId: 'ent1234',
+          acsUrl: undefined,
+          certificate: undefined,
+          attributeMapping: undefined,
+          groupsMapping: undefined,
+          acsAllowedCallbacks: undefined,
+          subjectNameIdType: undefined,
+          subjectNameIdFormat: undefined,
+        },
         { token: 'key' },
       );
 
@@ -183,7 +301,9 @@ describe('Management SSOApplication', () => {
       };
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<SSOApplication> = await management.ssoApplication.load(mockSSOApplications[0].id);
+      const resp: SdkResponse<SSOApplication> = await management.ssoApplication.load(
+        mockSSOApplications[0].id,
+      );
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.ssoApplication.load, {
         queryParams: { id: mockSSOApplications[0].id },
