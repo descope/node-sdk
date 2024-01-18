@@ -180,6 +180,9 @@ describe('Management SSOApplication', () => {
         'app1',
         'name',
         'http://dummy.com',
+        undefined,
+        undefined,
+        false,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -189,7 +192,7 @@ describe('Management SSOApplication', () => {
           name: 'name',
           loginPageUrl: 'http://dummy.com',
           description: undefined,
-          enabled: true,
+          enabled: false,
           logo: undefined,
         },
         { token: 'key' },
