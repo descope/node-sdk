@@ -4,7 +4,7 @@ import apiPaths from './paths';
 import { CreateSSOApplicationResponse, SSOApplication, AttributesTypes, SAMLIDPAttributeMappingInfo, SAMLIDPGroupsMappingInfo } from './types';
 
 type MultipleSSOApplicationResponse = {
-  tenants: SSOApplication[];
+  apps: SSOApplication[];
 };
 
 const withSSOApplication = (sdk: CoreSdk, managementKey?: string) => ({
