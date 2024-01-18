@@ -584,7 +584,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication('my-app-id',
 
 // Update SAML sso application.
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.ssoApplication.updateSamlApplication('my-app-id', 'My SAML app name', 'http://dummy.com/login', undefined, undefined, undefined, true, false, undefined, 'entity1234', 'http://dummy.com/acs', 'certificate');
+await descopeClient.management.ssoApplication.updateSamlApplication('my-app-id', 'My SAML app name', 'http://dummy.com/login', undefined, undefined, true, false, undefined, 'entity1234', 'http://dummy.com/acs', 'certificate');
 
 // Tenant deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');

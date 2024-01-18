@@ -345,7 +345,7 @@ program
 .argument('<acsUrl>', 'SP ACS (saml callback) url')
 .argument('<certificate>', 'SP certificate')
 .action(async (id, name, loginPageUrl, entityId, acsUrl, certificate) => {
-  handleSdkRes(await sdk.management.ssoApplication.updateSamlApplication(id, name, loginPageUrl, undefined, undefined, undefined, true, false, undefined, entityId, acsUrl, certificate));
+  handleSdkRes(await sdk.management.ssoApplication.updateSamlApplication(id, name, loginPageUrl, undefined, undefined, true, false, undefined, entityId, acsUrl, certificate));
 });
 
 // sso-application-delete
