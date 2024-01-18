@@ -52,10 +52,10 @@ export default {
     searchAll: '/v1/mgmt/tenant/search',
   },
   ssoApplication: {
-	oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',
-	samlCreate: '/v1/mgmt/sso/idp/app/saml/create',
+    oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',
+    samlCreate: '/v1/mgmt/sso/idp/app/saml/create',
     oidcUpdate: '/v1/mgmt/sso/idp/app/oidc/update',
-	samlUpdate: '/v1/mgmt/sso/idp/app/saml/update',
+    samlUpdate: '/v1/mgmt/sso/idp/app/saml/update',
     delete: '/v1/mgmt/sso/idp/app/delete',
     load: '/v1/mgmt/sso/idp/app/load',
     loadAll: '/v1/mgmt/sso/idp/apps/load',
