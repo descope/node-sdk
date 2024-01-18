@@ -1,3 +1,4 @@
+import { SSOApplication } from './../../../lib/management/types';
 import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -299,6 +300,80 @@ program
   .action(async () => {
     handleSdkRes(await sdk.management.tenant.loadAll());
   });
+
+  // *** SSO application commands ***
+
+// sso-application-create-oidc
+program
+.command('sso-application-create-oidc')
+.description('Create a new OIDC sso application')
+.argument('<name>', 'sso application name')
+.argument('<loginPageUrl>', 'The URL where login page is hosted')
+.action(async (name, loginPageUrl) => {
+  handleSdkRes(await sdk.management.ssoApplication.createOidcApplication(name, loginPageUrl));
+});
+
+// sso-application-create-saml
+program
+.command('sso-application-create-saml')
+.description('Create a new SAML sso application')
+.argument('<name>', 'sso application name')
+.argument('<loginPageUrl>', 'The URL where login page is hosted')
+.argument('<metadataUrl>', 'SP metadata url which include all the SP SAML info')
+.action(async (name, loginPageUrl, metadataUrl) => {
+  handleSdkRes(await sdk.management.ssoApplication.createSamlApplication(name, loginPageUrl, null, null, null, true, true, metadataUrl));
+});
+
+// sso-application-update-oidc
+program
+.command('sso-application-update-oidc')
+.description('Update a tenant')
+.argument('<id>', 'sso application ID')
+.argument('<name>', 'sso application name')
+.argument('<loginPageUrl>', 'The URL where login page is hosted')
+.action(async (id, name, loginPageUrl) => {
+  handleSdkRes(await sdk.management.ssoApplication.updateOidcApplication(id, name, loginPageUrl));
+});
+
+// sso-application-update-saml
+program
+.command('sso-application-update-saml')
+.description('Update a tenant')
+.argument('<id>', 'sso application ID')
+.argument('<name>', 'sso application name')
+.argument('<loginPageUrl>', 'The URL where login page is hosted')
+.argument('<entityId>', 'SP entity id')
+.argument('<acsUrl>', 'SP ACS (saml callback) url')
+.argument('<certificate>', 'SP certificate')
+.action(async (id, name, loginPageUrl, entityId, acsUrl, certificate) => {
+  handleSdkRes(await sdk.management.ssoApplication.updateSamlApplication(id, name, loginPageUrl, null, null, null, true, false, null, entityId, acsUrl, certificate));
+});
+
+// sso-application-delete
+program
+.command('sso-application-delete')
+.description('Delete an sso application')
+.argument('<id>', 'sso application ID')
+.action(async (id) => {
+  handleSdkRes(await sdk.management.SSOApplication.delete(id));
+});
+
+// sso-application-load
+program
+.command('sso-application-load')
+.description('Load sso application by id')
+.argument('<id>', 'sso application ID')
+.action(async (id) => {
+  handleSdkRes(await sdk.management.ssoApplication.load(id));
+});
+
+// sso-application-all
+program
+.command('sso-application-all')
+.description('Load for all sso applications')
+.action(async () => {
+  handleSdkRes(await sdk.management.ssoApplication.loadAll());
+});
 
 // *** Group commands ***
 

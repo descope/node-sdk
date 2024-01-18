@@ -14,6 +14,38 @@ export type CreateTenantResponse = {
   id: string;
 };
 
+/** Represents a SAML IDP attribute mapping object. use this class for mapping Descope attribute
+ *   to the relevant SAML Assertion attributes matching your expected SP attributes names.
+ */
+export type SAMLIDPAttributeMappingInfo = {
+	name: string;
+	type: string;
+	value: string;
+  };
+
+/** Represents a SAML IDP Role Group mapping object.
+ */
+export type SAMLIDPRoleGroupMappingInfo = {
+	id: string;
+	name: string;
+  };
+
+/** Represents a SAML IDP attribute mapping object. use this class for mapping Descope attribute
+ *   to the relevant SAML Assertion attributes matching your expected SP attributes names.
+ */
+export type SAMLIDPGroupsMappingInfo = {
+	name: string;
+	type: string;
+	filterType: string;
+	value: string;
+	roles: SAMLIDPRoleGroupMappingInfo[];
+  };
+
+/** The id of a newly created sso application */
+export type CreateSSOApplicationResponse = {
+	id: string;
+  };
+
 /** An access key that can be used to access descope */
 export type AccessKey = {
   id: string;
@@ -64,6 +96,48 @@ export type Tenant = {
   selfProvisioningDomains: string[];
   customAttributes?: Record<string, string | number | boolean>;
 };
+
+/** Represents OIDC settings of an sso application in a project.
+ */
+export type SSOApplicationOIDCSettings = {
+	loginPageUrl: string;
+	issuer: string;
+	discoveryUrl: string;
+  };
+
+/** Represents SAML settings of an sso application in a project.
+ */
+export type SSOApplicationSAMLSettings = {
+	loginPageUrl: string;
+	idpCert: string;
+	useMetadataInfo: boolean;
+	metadataUrl: string;
+	entityId: string;
+	acsUrl: string;
+	certificate: string;
+	attributeMapping: SAMLIDPAttributeMappingInfo[];
+	groupsMapping: SAMLIDPGroupsMappingInfo[];
+	idpMetadataUrl: string;
+	idpEntityId: string;
+	idpSsoUrl: string;
+	acsAllowedCallbacks: string[];
+	subjectNameIdType: string;
+	subjectNameIdFormat: string;
+  };
+
+
+/** Represents an sso application in a project.
+ */
+export type SSOApplication = {
+	id: string;
+	name: string;
+	description: string;
+	enabled: boolean;
+	logo: string;
+	appType: string;
+	samlSettings: SSOApplicationSAMLSettings;
+	oidcSettings: SSOApplicationOIDCSettings;
+  };
 
 /** Represents a permission in a project. It has a name and optionally a description.
  * It also has a flag indicating whether it is system default or not.
