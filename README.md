@@ -840,6 +840,10 @@ console.log('found total flows', res.total);
 res.flows.forEach((flowMetadata) => {
   // do something
 });
+
+// Delete flows by ids
+await descopeClient.management.flow.delete(['flow-1', 'flow-2']);
+
 // Export the flow and it's matching screens based on the given id
 const res = await descopeClient.management.flow.export('sign-up');
 console.log('found flow', res.data.flow);

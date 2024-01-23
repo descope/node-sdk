@@ -73,6 +73,7 @@ export default {
   },
   flow: {
     list: '/v1/mgmt/flow/list',
+    delete: '/v1/mgmt/flow/delete',
     export: '/v1/mgmt/flow/export',
     import: '/v1/mgmt/flow/import',
   },
