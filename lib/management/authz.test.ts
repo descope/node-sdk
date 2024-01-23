@@ -2,7 +2,7 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
-import { AuthzSchema, AuthzRelation, AuthzRelationQuery } from './types';
+import { AuthzSchema, AuthzRelation, AuthzRelationQuery, AuthzModified } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
 
@@ -36,6 +36,12 @@ const mockRelationQuery = {
 
 const mockRelationsQueryResponse = {
   relationQueries: [mockRelationQuery],
+};
+
+const mockModified = {
+  resources: ['roadmap.ppt'],
+  targets: ['u'],
+  schemaChanged: true,
 };
 
 describe('Management Authz', () => {
@@ -474,6 +480,34 @@ describe('Management Authz', () => {
       expect(resp).toEqual({
         code: 200,
         data: [mockRelation],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getModified', () => {
+    it('should load the resources and targets changes', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockModified,
+        clone: () => ({
+          json: () => Promise.resolve(mockModified),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AuthzModified> = await management.authz.getModified(undefined);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.authz.getModified,
+        { since: 0 },
+        { token: 'key' },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: mockModified,
         ok: true,
         response: httpResponse,
       });

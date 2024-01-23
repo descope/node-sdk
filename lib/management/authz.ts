@@ -7,6 +7,7 @@ import {
   AuthzRelationDefinition,
   AuthzRelation,
   AuthzRelationQuery,
+  AuthzModified,
 } from './types';
 
 const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
@@ -222,6 +223,21 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(apiPaths.authz.targetAll, { target }, { token: managementKey }),
       (data) => data.relations,
+    ),
+  /**
+   * Return the list of all relations for the given target including derived relations from the schema tree.
+   *
+   * @param target The target to check relations for
+   * @returns array of relations that exist for the given targets
+   */
+  getModified: (since: Date): Promise<SdkResponse<AuthzModified>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.getModified,
+        { since: since ? since.getTime() : 0 },
+        { token: managementKey },
+      ),
+      (data) => data as AuthzModified,
     ),
 });
 

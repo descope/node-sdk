@@ -367,6 +367,15 @@ export type AuthzRelationQuery = {
   hasRelation?: boolean;
 };
 
+/**
+ * AuthzModified has the list of resources and targets that were modified since given time returned from GetModified
+ */
+export type AuthzModified = {
+  resources: string[];
+  targets: string[];
+  schemaChanged: boolean;
+};
+
 // Currently only production tag is supported
 export type ProjectTag = 'production';
 
