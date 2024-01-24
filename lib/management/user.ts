@@ -15,17 +15,24 @@ import {
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
 
+type SearchSort = {
+  field: string;
+  desc?: boolean;
+};
+
 type SearchRequest = {
-  tenantIds?: string[];
-  roles?: string[];
-  limit?: number;
   page?: number;
-  testUsersOnly?: boolean;
-  withTestUser?: boolean;
-  customAttributes?: Record<string, AttributesTypes>;
-  statuses?: UserStatus[];
+  limit?: number;
+  sort?: SearchSort[];
+  text?: string;
   emails?: string[];
   phones?: string[];
+  statuses?: UserStatus[];
+  roles?: string[];
+  tenantIds?: string[];
+  customAttributes?: Record<string, AttributesTypes>;
+  withTestUser?: boolean;
+  testUsersOnly?: boolean;
 };
 
 type SingleUserResponse = {
