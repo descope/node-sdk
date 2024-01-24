@@ -730,6 +730,8 @@ describe('Management User', () => {
         statuses: ['enabled'],
         emails: ['a@b.com'],
         phones: ['+11111111'],
+        text: 'some text',
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -741,6 +743,8 @@ describe('Management User', () => {
           statuses: ['enabled'],
           emails: ['a@b.com'],
           phones: ['+11111111'],
+          text: 'some text',
+          sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         },
         { token: 'key' },
       );
