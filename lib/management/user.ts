@@ -1,4 +1,10 @@
-import { SdkResponse, transformResponse, UserResponse, LoginOptions } from '@descope/core-js-sdk';
+import {
+  SdkResponse,
+  transformResponse,
+  UserHistoryResponse,
+  UserResponse,
+  LoginOptions,
+} from '@descope/core-js-sdk';
 import { deprecate } from 'util';
 import {
   ProviderTokenResponse,
@@ -11,7 +17,6 @@ import {
   UserStatus,
   User,
   InviteBatchResponse,
-  UserHistoryResponse,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';

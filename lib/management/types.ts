@@ -161,14 +161,6 @@ export type GenerateEmbeddedLinkResponse = {
   token: string;
 };
 
-export type UserHistoryResponse = {
-  userId: string;
-  loginTime: number;
-  city: string;
-  country: string;
-  ip: string;
-};
-
 export type AttributesTypes = string | boolean | number;
 
 export type User = {
