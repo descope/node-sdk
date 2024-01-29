@@ -430,11 +430,9 @@ For multi-tenant uses:
 
 ```typescript
 // You can validate specific permissions
-const validTenantPermissions = descopeClient.validateTenantPermissions(
-  authInfo,
-  'my-tenant-ID',
-  ['Permission to validate'],
-);
+const validTenantPermissions = descopeClient.validateTenantPermissions(authInfo, 'my-tenant-ID', [
+  'Permission to validate',
+]);
 if (!validTenantPermissions) {
   // Deny access
 }
@@ -449,14 +447,14 @@ if (!validTenantRoles) {
 
 // Or get the matched roles/permissions
 const matchedTenantRoles = descopeClient.getMatchedTenantRoles(authInfo, 'my-tenant-ID', [
-	'Role to validate',
-	'Another role to validate'
+  'Role to validate',
+  'Another role to validate',
 ]);
 
 const matchedTenantPermissions = descopeClient.getMatchedTenantPermissions(
-	authInfo,
-	'my-tenant-ID',
-	['Permission to validate', 'Another permission to validate']],
+  authInfo,
+  'my-tenant-ID',
+  ['Permission to validate', 'Another permission to validate'],
 );
 ```
 
@@ -641,7 +639,14 @@ usersRes.data.forEach((user) => {
 
 await descopeClient.management.user.logoutUser('my-custom-id');
 
-await descopeClient.management.tenant.logoutUserByUserId('<user-ID>');
+await descopeClient.management.user.logoutUserByUserId('<user-ID>');
+
+// Get users' authentication history
+const userIds = ['user-id-1', 'user-id-2'];
+const usersHistoryRes = await descopeClient.management.user.history(userIds);
+usersHistoryRes.forEach((userHistory) => {
+  // do something
+});
 ```
 
 #### Set or Expire User Password

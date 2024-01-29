@@ -1545,4 +1545,48 @@ describe('Management User', () => {
       });
     });
   });
+
+  describe('history', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const usersHistoryRes = [
+        {
+          userId: 'some-id-1',
+          loginTime: 12,
+          city: 'aa-1',
+          country: 'bb-1',
+          ip: 'cc-1',
+        },
+        {
+          userId: 'some-id-2',
+          loginTime: 21,
+          city: 'aa-2',
+          country: 'bb-2',
+          ip: 'cc-2',
+        },
+      ];
+      const httpResponse = {
+        ok: true,
+        json: () => usersHistoryRes,
+        clone: () => ({
+          json: () => Promise.resolve(usersHistoryRes),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const userIds = ['some-id-1', 'some-id-2'];
+      const resp = await management.user.history(userIds);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.history, userIds, {
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: usersHistoryRes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

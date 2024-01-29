@@ -1,4 +1,10 @@
-import { SdkResponse, transformResponse, UserResponse, LoginOptions } from '@descope/core-js-sdk';
+import {
+  SdkResponse,
+  transformResponse,
+  UserHistoryResponse,
+  UserResponse,
+  LoginOptions,
+} from '@descope/core-js-sdk';
 import { deprecate } from 'util';
 import {
   ProviderTokenResponse,
@@ -831,6 +837,16 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     removeAllPasskeys: (loginId: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
         sdk.httpClient.post(apiPaths.user.removeAllPasskeys, { loginId }, { token: managementKey }),
+        (data) => data,
+      ),
+
+    /**
+     * Retrieve users' authentication history, by the given user's ids.
+     * @param userIds The user IDs
+     */
+    history: (userIds: string[]): Promise<SdkResponse<UserHistoryResponse[]>> =>
+      transformResponse<UserHistoryResponse[]>(
+        sdk.httpClient.post(apiPaths.user.history, userIds, { token: managementKey }),
         (data) => data,
       ),
   };

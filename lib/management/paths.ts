@@ -29,6 +29,7 @@ export default {
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
     generateEmbeddedLink: '/v1/mgmt/user/signin/embeddedlink',
+    history: '/v1/mgmt/user/history',
   },
   project: {
     updateName: '/v1/mgmt/project/update/name',
