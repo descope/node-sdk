@@ -26,6 +26,7 @@ export type AccessKey = {
   expiresTime: number;
   createdBy: string;
   clientId: string;
+  boundUserId?: string;
 };
 
 /** Access Key extended details including created key cleartext */
