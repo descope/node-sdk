@@ -9,6 +9,7 @@ import {
   ProviderTokenResponse,
   GenerateEmbeddedLinkResponse,
   InviteBatchResponse,
+  UserPasswordHashed,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -371,10 +372,21 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
+      const hashed: UserPasswordHashed = {
+        firebase: {
+          hash: 'h',
+          salt: 's',
+          saltSeparator: 'ss',
+          signerKey: 'sk',
+          memory: 14,
+          rounds: 8,
+        },
+      };
+
       const resp: SdkResponse<InviteBatchResponse> = await management.user.inviteBatch(
         [
-          { loginId: 'one', email: 'one@one' },
-          { loginId: 'two', email: 'two@two' },
+          { loginId: 'one', email: 'one@one', password: 'clear' },
+          { loginId: 'two', email: 'two@two', hashedPassword: hashed },
         ],
         'https://invite.me',
         true,
@@ -387,10 +399,21 @@ describe('Management User', () => {
             {
               loginId: 'one',
               email: 'one@one',
+              password: 'clear',
             },
             {
               loginId: 'two',
               email: 'two@two',
+              hashedPassword: {
+                firebase: {
+                  hash: 'h',
+                  salt: 's',
+                  saltSeparator: 'ss',
+                  signerKey: 'sk',
+                  memory: 14,
+                  rounds: 8,
+                },
+              },
             },
           ],
           invite: true,

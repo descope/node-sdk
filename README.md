@@ -589,7 +589,8 @@ await descopeClient.management.user.invite('desmond@descope.com', {
 
 // You can invite batch of users via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
-// and that an email address / phone number is provided in the information.
+// and that an email address / phone number is provided in the information. You can also set
+// a cleartext password or import a prehashed one from another service.
 await descopeClient.management.user.inviteBatch(
   [
     {
@@ -598,6 +599,11 @@ await descopeClient.management.user.inviteBatch(
       phone: '+123456789123',
       displayName: 'Desmond Copeland',
       userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+      hashedPassword: {
+        bcrypt: {
+          hash: '$2a$...',
+        },
+      },
     },
   ],
   '<invite_url>',
