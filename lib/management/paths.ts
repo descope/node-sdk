@@ -34,6 +34,8 @@ export default {
   project: {
     updateName: '/v1/mgmt/project/update/name',
     clone: '/v1/mgmt/project/clone',
+    export: '/v1/mgmt/project/export',
+    import: '/v1/mgmt/project/import',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
