@@ -25,11 +25,12 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     expireTime: number,
     roles?: string[],
     keyTenants?: AssociatedTenant[],
+    userId?: string,
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.accessKey.create,
-        { name, expireTime, roleNames: roles, keyTenants },
+        { name, expireTime, roleNames: roles, keyTenants, userId },
         { token: managementKey },
       ),
     ),
