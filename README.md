@@ -676,6 +676,18 @@ await descopeClient.management.project.updateName('new-project-name');
 const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 
+You can manage your project's settings and configurations by exporting your
+project's environment. You can also import previously exported data into
+the same project or a different one.
+
+```typescript
+// Exports the current state of the project
+const files = await descopeClient.management.project.export();
+
+// Import the previously exported data into the current project
+await descopeClient.management.project.import(files);
+```
+
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:

@@ -75,4 +75,78 @@ describe('Management Project', () => {
       });
     });
   });
+
+  describe('export', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockExportProjectResponse = {
+        files: {
+          'foo/bar.json': {
+            foo: 'bar',
+          },
+        },
+      };
+
+      const httpResponse = {
+        ok: true,
+        json: () => mockExportProjectResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockExportProjectResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.project.export();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.export,
+        {},
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockExportProjectResponse.files,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+});
+
+describe('import', () => {
+  it('should send the correct request and receive correct response', async () => {
+    const mockImportProjectResponse = {};
+
+    const httpResponse = {
+      ok: true,
+      json: () => mockImportProjectResponse,
+      clone: () => ({
+        json: () => Promise.resolve(mockImportProjectResponse),
+      }),
+      status: 200,
+    };
+    mockHttpClient.post.mockResolvedValue(httpResponse);
+
+    const resp = await management.project.import({ 'foo/bar.json': { foo: 'bar' } });
+
+    expect(mockHttpClient.post).toHaveBeenCalledWith(
+      apiPaths.project.export,
+      {
+        files: {
+          'foo/bar.json': {
+            foo: 'bar',
+          },
+        },
+      },
+      { token: 'key' },
+    );
+
+    expect(resp).toEqual({
+      code: 200,
+      data: mockImportProjectResponse,
+      ok: true,
+      response: httpResponse,
+    });
+  });
 });
