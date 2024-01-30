@@ -37,6 +37,41 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
+
+  /**
+   * Exports all settings and configurations for a project and returns the
+   * raw JSON files response as an object.
+   *  - This action is supported only with a pro license or above.
+   *  - Users, tenants and access keys are not cloned.
+   *  - Secrets, keys and tokens are not stripped from the exported data.
+   *
+   * @returns An object containing the exported JSON files payload.
+   */
+  export: (): Promise<SdkResponse<Record<string, any>>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.project.export, {}, { token: managementKey }),
+      (data) => data.files,
+    ),
+
+  /**
+   * Imports all settings and configurations for a project overriding any
+   * current configuration.
+   *  - This action is supported only with a pro license or above.
+   *  - Secrets, keys and tokens are not overwritten unless overwritten in the input.
+   *
+   * @param files The raw JSON dictionary of files, in the same format as
+   *        the one returned by calls to export.
+   */
+  import: (files: Record<string, any>): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.project.export,
+        {
+          files,
+        },
+        { token: managementKey },
+      ),
+    ),
 });
 
 export default withProject;
