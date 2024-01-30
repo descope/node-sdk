@@ -46,6 +46,7 @@ describe('Management Access Keys', () => {
         123456789,
         ['r1', 'r2'],
         null,
+        'uid',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -55,6 +56,7 @@ describe('Management Access Keys', () => {
           expireTime: 123456789,
           roleNames: ['r1', 'r2'],
           keyTenants: null,
+          userId: 'uid',
         },
         { token: 'key' },
       );
