@@ -54,7 +54,7 @@ export type SamlApplicationOptions = {
 };
 
 /**
- * Represents a SAML IDP attribute mapping object. use this class for mapping Descope attribute
+ * Represents a SAML IDP attribute mapping object. Use this class for mapping Descope attribute
  * to the relevant SAML Assertion attributes matching your expected SP attributes names.
  */
 export type SamlIdpAttributeMappingInfo = {
@@ -70,8 +70,8 @@ export type SAMLIDPRoleGroupMappingInfo = {
 };
 
 /**
- * Represents a SAML IDP attribute mapping object. use this class for mapping Descope attribute
- * to the relevant SAML Assertion attributes matching your expected SP attributes names.
+ * Represents a SAML IDP groups mapping object. Use this class for mapping Descope roles
+ * to the relevant SAML Assertion groups attributes that matching your expected SP groups attributes names.
  */
 export type SamlIdpGroupsMappingInfo = {
   name: string;
@@ -81,7 +81,7 @@ export type SamlIdpGroupsMappingInfo = {
   roles: SAMLIDPRoleGroupMappingInfo[];
 };
 
-/** The id of a newly created sso application */
+/** The ID of a newly created sso application */
 export type CreateSSOApplicationResponse = {
   id: string;
 };
@@ -137,16 +137,14 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean>;
 };
 
-/** Represents OIDC settings of an sso application in a project.
- */
+/** Represents OIDC settings of an SSO application in a project. */
 export type SSOApplicationOIDCSettings = {
   loginPageUrl: string;
   issuer: string;
   discoveryUrl: string;
 };
 
-/** Represents SAML settings of an sso application in a project.
- */
+/** Represents SAML settings of an sso application in a project. */
 export type SSOApplicationSAMLSettings = {
   loginPageUrl: string;
   idpCert: string;
@@ -165,8 +163,7 @@ export type SSOApplicationSAMLSettings = {
   subjectNameIdFormat: string;
 };
 
-/** Represents an sso application in a project.
- */
+/** Represents an sso application in a project. */
 export type SSOApplication = {
   id: string;
   name: string;

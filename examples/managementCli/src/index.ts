@@ -309,7 +309,12 @@ program
   .argument('<name>', 'sso application name')
   .argument('<loginPageUrl>', 'The URL where login page is hosted')
   .action(async (name, loginPageUrl) => {
-    handleSdkRes(await sdk.management.ssoApplication.createOidcApplication(name, loginPageUrl));
+    handleSdkRes(
+      await sdk.management.ssoApplication.createOidcApplication({
+        name: name,
+        loginPageUrl: loginPageUrl,
+      }),
+    );
   });
 
 // sso-application-create-saml
@@ -321,16 +326,13 @@ program
   .argument('<metadataUrl>', 'SP metadata url which include all the SP SAML info')
   .action(async (name, loginPageUrl, metadataUrl) => {
     handleSdkRes(
-      await sdk.management.ssoApplication.createSamlApplication(
-        name,
-        loginPageUrl,
-        undefined,
-        undefined,
-        undefined,
-        true,
-        true,
-        metadataUrl,
-      ),
+      await sdk.management.ssoApplication.createSamlApplication({
+        name: name,
+        loginPageUrl: loginPageUrl,
+        enabled: true,
+        useMetadataInfo: true,
+        metadataUrl: metadataUrl,
+      }),
     );
   });
 
@@ -342,7 +344,13 @@ program
   .argument('<name>', 'sso application name')
   .argument('<loginPageUrl>', 'The URL where login page is hosted')
   .action(async (id, name, loginPageUrl) => {
-    handleSdkRes(await sdk.management.ssoApplication.updateOidcApplication(id, name, loginPageUrl));
+    handleSdkRes(
+      await sdk.management.ssoApplication.updateOidcApplication({
+        id: id,
+        name: name,
+        loginPageUrl: loginPageUrl,
+      }),
+    );
   });
 
 // sso-application-update-saml
@@ -357,19 +365,16 @@ program
   .argument('<certificate>', 'SP certificate')
   .action(async (id, name, loginPageUrl, entityId, acsUrl, certificate) => {
     handleSdkRes(
-      await sdk.management.ssoApplication.updateSamlApplication(
-        id,
-        name,
-        loginPageUrl,
-        undefined,
-        undefined,
-        true,
-        false,
-        undefined,
-        entityId,
-        acsUrl,
-        certificate,
-      ),
+      await sdk.management.ssoApplication.updateSamlApplication({
+        id: id,
+        name: name,
+        loginPageUrl: loginPageUrl,
+        enabled: true,
+        useMetadataInfo: false,
+        entityId: entityId,
+        acsUrl: acsUrl,
+        certificate: certificate,
+      }),
     );
   });
 
