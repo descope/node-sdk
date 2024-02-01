@@ -81,7 +81,7 @@ export type SamlIdpGroupsMappingInfo = {
   roles: SAMLIDPRoleGroupMappingInfo[];
 };
 
-/** The ID of a newly created sso application */
+/** The ID of a newly created SSO application */
 export type CreateSSOApplicationResponse = {
   id: string;
 };
@@ -144,7 +144,7 @@ export type SSOApplicationOIDCSettings = {
   discoveryUrl: string;
 };
 
-/** Represents SAML settings of an sso application in a project. */
+/** Represents SAML settings of an SSO application in a project. */
 export type SSOApplicationSAMLSettings = {
   loginPageUrl: string;
   idpCert: string;
@@ -163,7 +163,7 @@ export type SSOApplicationSAMLSettings = {
   subjectNameIdFormat: string;
 };
 
-/** Represents an sso application in a project. */
+/** Represents an SSO application in a project. */
 export type SSOApplication = {
   id: string;
   name: string;
