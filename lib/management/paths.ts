@@ -29,10 +29,13 @@ export default {
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
     generateEmbeddedLink: '/v1/mgmt/user/signin/embeddedlink',
+    history: '/v1/mgmt/user/history',
   },
   project: {
     updateName: '/v1/mgmt/project/update/name',
     clone: '/v1/mgmt/project/clone',
+    export: '/v1/mgmt/project/export',
+    import: '/v1/mgmt/project/import',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
@@ -82,6 +85,7 @@ export default {
   },
   flow: {
     list: '/v1/mgmt/flow/list',
+    delete: '/v1/mgmt/flow/delete',
     export: '/v1/mgmt/flow/export',
     import: '/v1/mgmt/flow/import',
   },
@@ -113,5 +117,6 @@ export default {
     resource: '/v1/mgmt/authz/re/resource',
     targets: '/v1/mgmt/authz/re/targets',
     targetAll: '/v1/mgmt/authz/re/targetall',
+    getModified: '/v1/mgmt/authz/getmodified',
   },
 };

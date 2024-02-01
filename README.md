@@ -431,11 +431,9 @@ For multi-tenant uses:
 
 ```typescript
 // You can validate specific permissions
-const validTenantPermissions = descopeClient.validateTenantPermissions(
-  authInfo,
-  'my-tenant-ID',
-  ['Permission to validate'],
-);
+const validTenantPermissions = descopeClient.validateTenantPermissions(authInfo, 'my-tenant-ID', [
+  'Permission to validate',
+]);
 if (!validTenantPermissions) {
   // Deny access
 }
@@ -450,14 +448,14 @@ if (!validTenantRoles) {
 
 // Or get the matched roles/permissions
 const matchedTenantRoles = descopeClient.getMatchedTenantRoles(authInfo, 'my-tenant-ID', [
-	'Role to validate',
-	'Another role to validate'
+  'Role to validate',
+  'Another role to validate',
 ]);
 
 const matchedTenantPermissions = descopeClient.getMatchedTenantPermissions(
-	authInfo,
-	'my-tenant-ID',
-	['Permission to validate', 'Another permission to validate']],
+  authInfo,
+  'my-tenant-ID',
+  ['Permission to validate', 'Another permission to validate'],
 );
 ```
 
@@ -628,30 +626,25 @@ You can create, update, delete or load users, as well as search according to fil
 // A user must have a login ID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.create(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.create('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Alternatively, a user can be created and invited via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information.
-await descopeClient.management.user.invite(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.invite('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // You can invite batch of users via an email / text message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
-// and that an email address / phone number is provided in the information.
+// and that an email address / phone number is provided in the information. You can also set
+// a cleartext password or import a prehashed one from another service.
 await descopeClient.management.user.inviteBatch(
   [
     {
@@ -660,6 +653,11 @@ await descopeClient.management.user.inviteBatch(
       phone: '+123456789123',
       displayName: 'Desmond Copeland',
       userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+      hashedPassword: {
+        bcrypt: {
+          hash: '$2a$...',
+        },
+      },
     },
   ],
   '<invite_url>',
@@ -668,14 +666,11 @@ await descopeClient.management.user.inviteBatch(
 );
 
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.user.update(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1', 'role-name2'] }],
-);
+await descopeClient.management.user.update('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Update explicit data for a user rather than overriding all fields
 await descopeClient.management.user.updatePhone('desmond@descope.com', '+18005551234', true);
@@ -704,7 +699,14 @@ usersRes.data.forEach((user) => {
 
 await descopeClient.management.user.logoutUser('my-custom-id');
 
-await descopeClient.management.tenant.logoutUserByUserId('<user-ID>');
+await descopeClient.management.user.logoutUserByUserId('<user-ID>');
+
+// Get users' authentication history
+const userIds = ['user-id-1', 'user-id-2'];
+const usersHistoryRes = await descopeClient.management.user.history(userIds);
+usersHistoryRes.forEach((userHistory) => {
+  // do something
+});
 ```
 
 #### Set or Expire User Password
@@ -734,6 +736,18 @@ await descopeClient.management.project.updateName('new-project-name');
 const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 
+You can manage your project's settings and configurations by exporting your
+project's environment. You can also import previously exported data into
+the same project or a different one.
+
+```typescript
+// Exports the current state of the project
+const files = await descopeClient.management.project.export();
+
+// Import the previously exported data into the current project
+await descopeClient.management.project.import(files);
+```
+
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:
@@ -742,6 +756,7 @@ You can create, update, delete or load access keys, as well as search according 
 // An access key must have a name and expiration, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
+// If userId is supplied, then authorization would be ignored, and access key would be bound to the users authorization
 await descopeClient.management.accessKey.create(
   'key-name',
   123456789, // expiration time
@@ -903,6 +918,10 @@ console.log('found total flows', res.total);
 res.flows.forEach((flowMetadata) => {
   // do something
 });
+
+// Delete flows by ids
+await descopeClient.management.flow.delete(['flow-1', 'flow-2']);
+
 // Export the flow and it's matching screens based on the given id
 const res = await descopeClient.management.flow.export('sign-up');
 console.log('found flow', res.data.flow);
@@ -1159,14 +1178,11 @@ that way, you don't need to use 3rd party messaging services in order to receive
 // Test user must have a loginId, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-await descopeClient.management.user.createTestUser(
-  'desmond@descope.com',
-  'desmond@descope.com',
-  null,
-  'Desmond Copeland',
-  null,
-  [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
-);
+await descopeClient.management.user.createTestUser('desmond@descope.com', {
+  email: 'desmond@descope.com',
+  displayName: 'Desmond Copeland',
+  userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
 
 // Now test user got created, and this user will be available until you delete it,
 // you can use any management operation for test user CRUD.

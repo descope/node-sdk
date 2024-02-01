@@ -83,6 +83,35 @@ describe('Management flow', () => {
     });
   });
 
+  describe('delete', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<FlowsResponse> = await management.flow.delete(['flow-1', 'flow-2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.flow.delete,
+        { ids: ['flow-1', 'flow-2'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
+
   describe('export', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

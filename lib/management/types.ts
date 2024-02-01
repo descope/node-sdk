@@ -98,6 +98,7 @@ export type AccessKey = {
   expiresTime: number;
   createdBy: string;
   clientId: string;
+  boundUserId?: string;
 };
 
 /** Access Key extended details including created key cleartext */
@@ -286,6 +287,40 @@ export type User = {
   verifiedPhone?: boolean;
   test?: boolean;
   additionalLoginIds?: string[];
+  password?: string; // a cleartext password to set for the user
+  hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
+};
+
+// The kind of prehashed password to set for a user (only one should be set)
+export type UserPasswordHashed = {
+  bcrypt?: UserPasswordBcrypt;
+  pbkdf2?: UserPasswordPbkdf2;
+  firebase?: UserPasswordFirebase;
+  django?: UserPasswordDjango;
+};
+
+export type UserPasswordBcrypt = {
+  hash: string; // the bcrypt hash in plaintext format, for example "$2a$..."
+};
+
+export type UserPasswordPbkdf2 = {
+  hash: string; // the password hash as a base64 string (standard encoding with padding)
+  salt: string; // the salt as a base64 string (standard encoding with padding)
+  iterations: number; // the iterations cost value (usually in the thousands)
+  type: 'sha1' | 'sha256' | 'sha512'; // the type of hash algorithm used
+};
+
+export type UserPasswordFirebase = {
+  hash: string; // the password hash as a base64 string (standard encoding with padding)
+  salt: string; // the salt as a base64 string (standard encoding with padding)
+  saltSeparator: string; // the salt separator (usually 1 byte) as a base64 string (standard encoding with padding)
+  signerKey: string; // the signer key as a base64 string (standard encoding with padding)
+  memory: number; // the memory cost value (usually between 12 to 17)
+  rounds: number; // the rounds cost value (usually between 6 to 10)
+};
+
+export type UserPasswordDjango = {
+  hash: string; // the django hash in plaintext format, for example "pbkdf2_sha256$..."
 };
 
 export type UserMapping = {
@@ -475,6 +510,15 @@ export type AuthzRelationQuery = {
   namespace: string;
   target: string;
   hasRelation?: boolean;
+};
+
+/**
+ * AuthzModified has the list of resources and targets that were modified since given time returned from GetModified
+ */
+export type AuthzModified = {
+  resources: string[];
+  targets: string[];
+  schemaChanged: boolean;
 };
 
 // Currently only production tag is supported

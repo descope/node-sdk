@@ -9,6 +9,7 @@ import {
   ProviderTokenResponse,
   GenerateEmbeddedLinkResponse,
   InviteBatchResponse,
+  UserPasswordHashed,
 } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -42,7 +43,7 @@ describe('Management User', () => {
   });
 
   describe('create', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -140,10 +141,48 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.create('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+        additionalLoginIds: ['id-1', 'id-2'],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          customAttributes: { a: 'a', b: 1, c: true },
+          additionalLoginIds: ['id-1', 'id-2'],
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('createTestUser', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -186,10 +225,47 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.createTestUser('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          test: true,
+          customAttributes: { a: 'a', b: 1, c: true },
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('invite', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -241,6 +317,47 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.invite('loginId', {
+        email: 'a@b.c',
+        roles: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+        inviteUrl: 'https://invite.me',
+        sendMail: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          roleNames: ['r1', 'r2'],
+          invite: true,
+          customAttributes: { a: 'a', b: 1, c: true },
+          inviteUrl: 'https://invite.me',
+          sendMail: true,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('invite batch', () => {
@@ -255,10 +372,21 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
+      const hashed: UserPasswordHashed = {
+        firebase: {
+          hash: 'h',
+          salt: 's',
+          saltSeparator: 'ss',
+          signerKey: 'sk',
+          memory: 14,
+          rounds: 8,
+        },
+      };
+
       const resp: SdkResponse<InviteBatchResponse> = await management.user.inviteBatch(
         [
-          { loginId: 'one', email: 'one@one' },
-          { loginId: 'two', email: 'two@two' },
+          { loginId: 'one', email: 'one@one', password: 'clear' },
+          { loginId: 'two', email: 'two@two', hashedPassword: hashed },
         ],
         'https://invite.me',
         true,
@@ -271,10 +399,21 @@ describe('Management User', () => {
             {
               loginId: 'one',
               email: 'one@one',
+              password: 'clear',
             },
             {
               loginId: 'two',
               email: 'two@two',
+              hashedPassword: {
+                firebase: {
+                  hash: 'h',
+                  salt: 's',
+                  saltSeparator: 'ss',
+                  signerKey: 'sk',
+                  memory: 14,
+                  rounds: 8,
+                },
+              },
             },
           ],
           invite: true,
@@ -294,7 +433,7 @@ describe('Management User', () => {
   });
 
   describe('update', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response with multiple arguments', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUserResponse,
@@ -306,6 +445,35 @@ describe('Management User', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<UserResponse> = await management.user.update('loginId', 'a@b.c');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.update,
+        { loginId: 'loginId', email: 'a@b.c' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response with option argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.update('loginId', {
+        email: 'a@b.c',
+      });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.update,
@@ -585,6 +753,8 @@ describe('Management User', () => {
         statuses: ['enabled'],
         emails: ['a@b.com'],
         phones: ['+11111111'],
+        text: 'some text',
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -596,6 +766,8 @@ describe('Management User', () => {
           statuses: ['enabled'],
           emails: ['a@b.com'],
           phones: ['+11111111'],
+          text: 'some text',
+          sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         },
         { token: 'key' },
       );
@@ -1391,6 +1563,50 @@ describe('Management User', () => {
       expect(resp).toEqual({
         code: 200,
         data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('history', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const usersHistoryRes = [
+        {
+          userId: 'some-id-1',
+          loginTime: 12,
+          city: 'aa-1',
+          country: 'bb-1',
+          ip: 'cc-1',
+        },
+        {
+          userId: 'some-id-2',
+          loginTime: 21,
+          city: 'aa-2',
+          country: 'bb-2',
+          ip: 'cc-2',
+        },
+      ];
+      const httpResponse = {
+        ok: true,
+        json: () => usersHistoryRes,
+        clone: () => ({
+          json: () => Promise.resolve(usersHistoryRes),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const userIds = ['some-id-1', 'some-id-2'];
+      const resp = await management.user.history(userIds);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.history, userIds, {
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: usersHistoryRes,
         ok: true,
         response: httpResponse,
       });
