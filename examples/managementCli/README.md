@@ -92,6 +92,29 @@ $ npm run start -- tenant-delete <tenant-id>
 # Load all tenants
 $ npm run start -- tenant-all
 
+## SSO application
+
+# Create a OIDC sso application
+$ npm run start -- sso-application-create-oidc <sso-application-name> <loginPageUrl>
+
+# Create a SAML sso application
+$ npm run start -- sso-application-create-oidc <sso-application-name> <loginPageUrl> <metadataUrl>
+
+# Update a OIDC sso application
+$ npm run start -- sso-application-update-oidc <sso-application-id> <sso-application-name> <loginPageUrl>
+
+# Update a SAML sso application
+$ npm run start -- sso-application-update-saml <sso-application-id> <sso-application-name> <loginPageUrl> <entityId> <acsUrl> <certificate>
+
+# Delete an sso application
+$ npm run start -- sso-application-delete <sso-application-id>
+
+# Load specific sso applications
+$ npm run start -- sso-application-load <sso-application-id>
+
+# Load all sso applications
+$ npm run start -- sso-application-all
+
 ## Groups
 
 # Load all groups for a tenant

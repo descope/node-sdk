@@ -74,6 +74,7 @@ Then, you can use that to work with the following functions:
 11. [Search Audit](#search-audit)
 12. [Manage Authz](#manage-authz)
 13. [Manage Project](#manage-project)
+14. [Manage SSO applications](#manage-sso-applications)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -560,6 +561,59 @@ tenantsRes.data.forEach((tenant) => {
 // Search all tenants according to various parameters
 const searchRes = await descopeClient.management.tenant.searchAll(['id']);
 searchRes.data.forEach((tenant) => {
+  // do something
+});
+```
+
+### Manage SSO applications
+
+You can create, update, delete or load SSO applications:
+
+```typescript
+// Create OIDC sso application
+await descopeClient.management.ssoApplication.createOidcApplication({
+  name: 'My OIDC app name',
+  loginPageUrl: 'http://dummy.com/login',
+});
+
+// Create SAML sso application
+await descopeClient.management.ssoApplication.createSamlApplication({
+  name: 'My SAML app name',
+  loginPageUrl: 'http://dummy.com/login',
+  useMetadataInfo: true,
+  metadataUrl: 'http://dummy.com/metadata',
+});
+
+// Update OIDC sso application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.ssoApplication.updateOidcApplication({
+  id: 'my-app-id',
+  name: 'My OIDC app name',
+  loginPageUrl: 'http://dummy.com/login',
+});
+
+// Update SAML sso application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.ssoApplication.updateSamlApplication({
+  id: 'my-app-id',
+  name: 'My SAML app name',
+  loginPageUrl: 'http://dummy.com/login',
+  enabled: true,
+  useMetadataInfo: false,
+  entityId: 'entity1234',
+  aceUrl: 'http://dummy.com/acs',
+  certificate: 'certificate',
+});
+
+// Tenant deletion cannot be undone. Use carefully.
+await descopeClient.management.ssoApplication.delete('my-app-id');
+
+// Load sso application by id
+const app = await descopeClient.management.ssoApplication.load('my-app-id');
+
+// Load all sso applications
+const appsRes = await descopeClient.management.ssoApplication.loadAll();
+appsRes.data.forEach((app) => {
   // do something
 });
 ```

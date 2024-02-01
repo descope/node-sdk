@@ -1,6 +1,7 @@
 import { UserResponse } from '@descope/core-js-sdk';
 
-/** Represents a tenant association for a User or Access Key. The tenantId is required to denote
+/**
+ * Represents a tenant association for a User or Access Key. The tenantId is required to denote
  * which tenant the user or access key belongs to. The roleNames array is an optional list of
  * roles for the user or access key in this specific tenant.
  */
@@ -11,6 +12,77 @@ export type AssociatedTenant = {
 
 /** The tenantId of a newly created tenant */
 export type CreateTenantResponse = {
+  id: string;
+};
+
+/**
+ * Options to create or update an OIDC application.
+ *
+ * **Note:** When updating, `id` will be required to perform the operation
+ */
+export type OidcApplicationOptions = {
+  name: string;
+  loginPageUrl: string;
+  id?: string;
+  description?: string;
+  logo?: string;
+  enabled?: boolean;
+};
+
+/**
+ * Options to create or update a SAML application.
+ *
+ * **Note:** When updating, `id` will be required to perform the operation
+ */
+export type SamlApplicationOptions = {
+  name: string;
+  loginPageUrl: string;
+  id?: string;
+  description?: string;
+  logo?: string;
+  enabled?: boolean;
+  useMetadataInfo?: boolean;
+  metadataUrl?: string;
+  entityId?: string;
+  acsUrl?: string;
+  certificate?: string;
+  attributeMapping?: SamlIdpAttributeMappingInfo[];
+  groupsMapping?: SamlIdpGroupsMappingInfo[];
+  acsAllowedCallbacks?: string[];
+  subjectNameIdType?: string;
+  subjectNameIdFormat?: string;
+};
+
+/**
+ * Represents a SAML IDP attribute mapping object. Use this class for mapping Descope attribute
+ * to the relevant SAML Assertion attributes matching your expected SP attributes names.
+ */
+export type SamlIdpAttributeMappingInfo = {
+  name: string;
+  type: string;
+  value: string;
+};
+
+/** Represents a SAML IDP Role Group mapping object. */
+export type SAMLIDPRoleGroupMappingInfo = {
+  id: string;
+  name: string;
+};
+
+/**
+ * Represents a SAML IDP groups mapping object. Use this class for mapping Descope roles
+ * to the relevant SAML Assertion groups attributes that matching your expected SP groups attributes names.
+ */
+export type SamlIdpGroupsMappingInfo = {
+  name: string;
+  type: string;
+  filterType: string;
+  value: string;
+  roles: SAMLIDPRoleGroupMappingInfo[];
+};
+
+/** The ID of a newly created SSO application */
+export type CreateSSOApplicationResponse = {
   id: string;
 };
 
@@ -64,6 +136,44 @@ export type Tenant = {
   name: string;
   selfProvisioningDomains: string[];
   customAttributes?: Record<string, string | number | boolean>;
+};
+
+/** Represents OIDC settings of an SSO application in a project. */
+export type SSOApplicationOIDCSettings = {
+  loginPageUrl: string;
+  issuer: string;
+  discoveryUrl: string;
+};
+
+/** Represents SAML settings of an SSO application in a project. */
+export type SSOApplicationSAMLSettings = {
+  loginPageUrl: string;
+  idpCert: string;
+  useMetadataInfo: boolean;
+  metadataUrl: string;
+  entityId: string;
+  acsUrl: string;
+  certificate: string;
+  attributeMapping: SamlIdpAttributeMappingInfo[];
+  groupsMapping: SamlIdpGroupsMappingInfo[];
+  idpMetadataUrl: string;
+  idpEntityId: string;
+  idpSsoUrl: string;
+  acsAllowedCallbacks: string[];
+  subjectNameIdType: string;
+  subjectNameIdFormat: string;
+};
+
+/** Represents an SSO application in a project. */
+export type SSOApplication = {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  logo: string;
+  appType: string;
+  samlSettings: SSOApplicationSAMLSettings;
+  oidcSettings: SSOApplicationOIDCSettings;
 };
 
 /** Represents a permission in a project. It has a name and optionally a description.
