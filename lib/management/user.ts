@@ -39,6 +39,7 @@ type SearchRequest = {
   customAttributes?: Record<string, AttributesTypes>;
   withTestUser?: boolean;
   testUsersOnly?: boolean;
+  ssoAppIds?: string[];
 };
 
 type SingleUserResponse = {
@@ -707,6 +708,33 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         ),
         (data) => data.user,
       ),
+    addSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.addSSOApps,
+          { loginId, ssoAppIds },
+          { token: managementKey },
+        ),
+        (data) => data.user,
+      ),
+    setSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.setSSOApps,
+          { loginId, ssoAppIds },
+          { token: managementKey },
+        ),
+        (data) => data.user,
+      ),
+    removeSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.removeSSOApps,
+          { loginId, ssoAppIds },
+          { token: managementKey },
+        ),
+        (data) => data.user,
+      ),
 
     /**
      * Generate OTP for the given login ID of a test user.
@@ -866,6 +894,7 @@ export interface UserOptions {
   middleName?: string;
   familyName?: string;
   additionalLoginIds?: string[];
+  ssoAppIds?: string[];
 }
 
 export default withUser;

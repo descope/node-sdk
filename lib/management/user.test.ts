@@ -1147,6 +1147,102 @@ describe('Management User', () => {
     });
   });
 
+  describe('setSSOApps', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.setSSOapps('lid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.setSSOApps,
+        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('addSSOApps', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.addSSOapps('lid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.addSSOApps,
+        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeSSOApps', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.removeSSOapps('lid', [
+        'foo',
+        'bar',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeSSOApps,
+        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('addTenant', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
