@@ -70,6 +70,14 @@ export default {
     settings: '/v1/mgmt/sso/settings',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
+    settingsv2: '/v2/mgmt/sso/settings',
+    oidc: {
+      configure: '/v1/mgmt/sso/oidc',
+    },
+    saml: {
+      configure: '/v1/mgmt/sso/saml',
+      metadata: '/v1/mgmt/sso/saml/metadata',
+    },
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
