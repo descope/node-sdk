@@ -136,6 +136,8 @@ export type Tenant = {
   name: string;
   selfProvisioningDomains: string[];
   customAttributes?: Record<string, string | number | boolean>;
+  domains?: string[];
+  authType?: 'none' | 'saml' | 'oidc';
 };
 
 /** Represents OIDC settings of an SSO application in a project. */
@@ -356,6 +358,73 @@ export type SSOSettingsResponse = {
   domains: string[];
   // Deprecated - use domains instead
   domain: string;
+};
+
+export type SSOSAMLSettingsResponse = {
+  idpEntityId: string;
+  idpSSOUrl: string;
+  idpCertificate: string;
+  idpMetadataUrl: string;
+  spEntityId: string;
+  spACSUrl: string;
+  spCertificate: string;
+  attributeMapping: AttributeMapping;
+  groupsMapping: RoleMappings;
+  redirectUrl: string;
+};
+
+export type SSOSettings = {
+  tenant: Tenant;
+  saml?: SSOSAMLSettingsResponse;
+  oidc?: SSOOIDCSettings;
+};
+
+export type OIDCAttributeMapping = {
+  loginId?: string;
+  name?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  email?: string;
+  verifiedEmail?: string;
+  username?: string;
+  phoneNumber?: string;
+  verifiedPhone?: string;
+  picture?: string;
+};
+
+export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
+
+export type SSOOIDCSettings = {
+  name: string;
+  clientId: string;
+  clientSecret?: string;
+  redirectUrl?: string;
+  authUrl?: string;
+  tokenUrl?: string;
+  userDataUrl?: string;
+  scope?: string[];
+  jwks_url?: string;
+  attributeMapping?: OIDCAttributeMapping;
+  manageProviderTokens?: boolean;
+  callbackDomain?: string;
+  prompt?: Prompt[];
+  grantType?: 'authorization_code' | 'implicit';
+  issuer?: string;
+};
+
+export type SSOSAMLSettings = {
+  idpURL: string;
+  idpCert: string;
+  entityId: string;
+  roleMappings?: RoleMappings;
+  attributeMapping?: AttributeMapping;
+};
+
+export type SSOSAMLByMetadataSettings = {
+  idpMetadataUrl: string;
+  roleMappings?: RoleMappings;
+  attributeMapping?: AttributeMapping;
 };
 
 export type ProviderTokenResponse = {
