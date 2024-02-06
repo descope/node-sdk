@@ -792,19 +792,25 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
 // You can get SSO settings for a specific tenant ID
-const ssoSettings = await descopeClient.management.sso.getSettings("tenant-id")
+const ssoSettings = await descopeClient.management.sso.loadSettings("tenant-id")
 
 // You can configure SSO settings manually by setting the required fields directly
 const tenantId = 'tenant-id' // Which tenant this configuration is for
 const idpURL = 'https://idp.com'
 const entityID = 'my-idp-entity-id'
 const idpCert = '<your-cert-here>'
-const redirectURL = 'https://my-app.com/handle-saml' // Global redirect URL for SSO/SAML
+const redirectURL = 'https://my-app.com/handle-sso' // Global redirect URL for SSO/SAML
 const domains = ['tenant-users.com'] // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domains)
+await descopeClient.management.sso.configureSAMLSettings(tenantID, {idpURL, entityID, idpCert}, redirectURL, domains)
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureMetadata(tenantID, 'https://idp.com/my-idp-metadata', redirectURL, domains)
+await descopeClient.management.sso.configureSAMLByMetadata(tenantID, {idpMetadataUrl: 'https://idp.com/my-idp-metadata'}, redirectURL, domains)
+
+// In case SSO is configured to work with OIDC use the following
+const name = 'some-name';
+const clientId = 'client id of OIDC';
+const clientSecret =  'client secret';
+await descopeClient.management.sso.configureOIDCSettings(tenantID, {name, clientId, clientSecret, redirectUrl}, domains)
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.
