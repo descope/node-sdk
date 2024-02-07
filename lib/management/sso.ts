@@ -137,17 +137,15 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
           };
           delete readySettings.oidc.userAttrMapping;
         }
-        const mappings: RoleMappings = [];
-        readySettings.saml?.groupsMapping?.forEach((gm: any) => {
-          const rm = gm;
-          rm.roleName = rm.role.name;
-          delete rm.role;
-          mappings.push(rm);
-        });
         if (readySettings.saml?.groupsMapping) {
-          readySettings.saml.groupsMapping = mappings;
+          readySettings.saml.groupsMapping = readySettings.saml?.groupsMapping.map((gm: any) => {
+            const rm = gm;
+            rm.roleName = rm.role.name;
+            delete rm.role;
+            return rm;
+          });
         }
-        return data;
+        return readySettings;
       },
     ),
 });
