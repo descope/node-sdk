@@ -110,7 +110,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         : {
             loginId,
             ...emailOrOptions,
-            roleNames: emailOrOptions.roles,
+            roleNames: emailOrOptions?.roles,
             roles: undefined,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
@@ -183,7 +183,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         : {
             loginId,
             ...emailOrOptions,
-            roleNames: emailOrOptions.roles,
+            roleNames: emailOrOptions?.roles,
             roles: undefined,
             test: true,
           };
@@ -270,7 +270,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         : {
             loginId,
             ...emailOrOptions,
-            roleNames: emailOrOptions.roles,
+            roleNames: emailOrOptions?.roles,
             roles: undefined,
             invite: true,
           };
@@ -340,7 +340,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         : {
             loginId,
             ...emailOrOptions,
-            roleNames: emailOrOptions.roles,
+            roleNames: emailOrOptions?.roles,
             roles: undefined,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
