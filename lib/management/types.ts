@@ -404,7 +404,7 @@ export type SSOOIDCSettings = {
   tokenUrl?: string;
   userDataUrl?: string;
   scope?: string[];
-  jwks_url?: string;
+  JWKsUrl?: string;
   attributeMapping?: OIDCAttributeMapping;
   manageProviderTokens?: boolean;
   callbackDomain?: string;
@@ -414,7 +414,7 @@ export type SSOOIDCSettings = {
 };
 
 export type SSOSAMLSettings = {
-  idpURL: string;
+  idpUrl: string;
   idpCert: string;
   entityId: string;
   roleMappings?: RoleMappings;

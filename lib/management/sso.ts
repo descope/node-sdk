@@ -81,14 +81,21 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     tenantId: string,
     settings: SSOOIDCSettings,
     domains?: string[],
-  ): Promise<SdkResponse<never>> =>
-    transformResponse(
+  ): Promise<SdkResponse<never>> => {
+    const readySettings = { ...settings, userAttrMapping: settings.attributeMapping };
+    delete readySettings.attributeMapping;
+    return transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.oidc.configure,
-        { tenantId, settings, domains },
+        {
+          tenantId,
+          settings: readySettings,
+          domains,
+        },
         { token: managementKey },
       ),
-    ),
+    );
+  },
   configureSAMLSettings: (
     tenantId: string,
     settings: SSOSAMLSettings,
@@ -121,7 +128,25 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
         queryParams: { tenantId },
         token: managementKey,
       }),
-      (data) => data,
+      (data) => {
+        const readySettings = data as any;
+        if (readySettings.oidc) {
+          readySettings.oidc = {
+            ...readySettings.oidc,
+            attributeMapping: readySettings.oidc.userAttrMapping,
+          };
+          delete readySettings.oidc.userAttrMapping;
+        }
+        if (readySettings.saml?.groupsMapping) {
+          readySettings.saml.groupsMapping = readySettings.saml?.groupsMapping.map((gm: any) => {
+            const rm = gm;
+            rm.roleName = rm.role.name;
+            delete rm.role;
+            return rm;
+          });
+        }
+        return readySettings;
+      },
     ),
 });
 
