@@ -221,7 +221,7 @@ describe('Management SSO', () => {
           settings: {
             clientId: 'cid',
             name: 'cn',
-            attributeMapping: {
+            userAttrMapping: {
               email: 'em',
             },
             redirectUrl: 'http://redirect.com',
@@ -253,7 +253,7 @@ describe('Management SSO', () => {
       const resp = await management.sso.configureSAMLSettings(
         't1',
         {
-          idpURL: 'https://idp.url',
+          idpUrl: 'https://idp.url',
           entityId: 'eid',
           idpCert: 'bsae64cert',
         },
@@ -266,7 +266,7 @@ describe('Management SSO', () => {
         {
           tenantId: 't1',
           settings: {
-            idpURL: 'https://idp.url',
+            idpUrl: 'https://idp.url',
             entityId: 'eid',
             idpCert: 'bsae64cert',
           },
@@ -334,6 +334,9 @@ describe('Management SSO', () => {
           id: 't1',
           name: 'nm',
         },
+        saml: {
+          groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
+        },
       };
       const httpResponse = {
         ok: true,
@@ -357,8 +360,49 @@ describe('Management SSO', () => {
         code: 200,
         ok: true,
         response: httpResponse,
-        data: mockResponse,
+        data: {
+          tenant: {
+            id: 't1',
+            name: 'nm',
+          },
+          saml: {
+            groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
+          },
+        },
       });
+    });
+  });
+
+  it('should send the correct request and receive correct response where there are no mappings', async () => {
+    const mockResponse = {
+      tenant: {
+        id: 't1',
+        name: 'nm',
+      },
+    };
+    const httpResponse = {
+      ok: true,
+      json: () => mockResponse,
+      clone: () => ({
+        json: () => Promise.resolve(mockResponse),
+      }),
+      status: 200,
+    };
+    mockHttpClient.get.mockResolvedValue(httpResponse);
+    const resp = await management.sso.loadSettings('t1');
+
+    expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.settingsv2, {
+      queryParams: {
+        tenantId: 't1',
+      },
+      token: 'key',
+    });
+
+    expect(resp).toEqual({
+      code: 200,
+      ok: true,
+      response: httpResponse,
+      data: mockResponse,
     });
   });
 });
