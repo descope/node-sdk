@@ -334,6 +334,11 @@ describe('Management SSO', () => {
           id: 't1',
           name: 'nm',
         },
+        oidc: {
+          userAttrMapping: {
+            name: 'uan',
+          },
+        },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
         },
@@ -364,6 +369,11 @@ describe('Management SSO', () => {
           tenant: {
             id: 't1',
             name: 'nm',
+          },
+          oidc: {
+            attributeMapping: {
+              name: 'uan',
+            },
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
