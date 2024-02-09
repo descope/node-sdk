@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { CreateTenantResponse, Tenant, AttributesTypes } from './types';
+import { CreateTenantResponse, Tenant, AttributesTypes, TenantSettings } from './types';
 
 type MultipleTenantResponse = {
   tenants: Tenant[];
@@ -83,6 +83,24 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
       (data) => data.tenants,
+    ),
+  getSettings: (tenantId: string): Promise<SdkResponse<TenantSettings>> =>
+    transformResponse<TenantSettings, TenantSettings>(
+      sdk.httpClient.get(apiPaths.tenant.settings, {
+        queryParams: { id: tenantId },
+        token: managementKey,
+      }),
+      (data) => data,
+    ),
+  configureSettings: (tenantId: string, settings: TenantSettings): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.tenant.settings,
+        { ...settings, tenantId },
+        {
+          token: managementKey,
+        },
+      ),
     ),
 });
 

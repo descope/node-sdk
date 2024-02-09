@@ -296,6 +296,26 @@ program
     handleSdkRes(await sdk.management.tenant.loadAll());
   });
 
+// tenant-settings
+program
+  .command('tenant-settings')
+  .description('Load tenant settings by id')
+  .argument('<id>', 'Tenant ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.tenant.getSettings(id));
+  });
+
+// *** Password commands ***
+
+// password-settings
+program
+  .command('password-settings')
+  .description('Load password settings by tenant id')
+  .argument('<tenant-id>', 'Tenant ID')
+  .action(async (tenantId) => {
+    handleSdkRes(await sdk.management.password.getSettings(tenantId));
+  });
+
 // *** SSO application commands ***
 
 // sso-application-create-oidc

@@ -13,6 +13,7 @@ import WithTheme from './theme';
 import WithAudit from './audit';
 import WithAuthz from './authz';
 import withSSOApplication from './ssoapplication';
+import withPassword from './password';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
@@ -24,6 +25,7 @@ const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
   sso: withSSOSettings(sdk, managementKey),
   jwt: withJWT(sdk, managementKey),
   permission: withPermission(sdk, managementKey),
+  password: withPassword(sdk, managementKey),
   role: withRole(sdk, managementKey),
   group: withGroup(sdk, managementKey),
   flow: WithFlow(sdk, managementKey),

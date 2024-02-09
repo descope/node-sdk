@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { CreateTenantResponse, Tenant } from './types';
+import { CreateTenantResponse, Tenant, TenantSettings } from './types';
 import { mockCoreSdk, mockHttpClient } from './testutils';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -15,6 +15,20 @@ const mockTenants = [
   { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'] },
   { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'] },
 ];
+
+const mockSettings: TenantSettings = {
+  domains: ['domain1.com'],
+  selfProvisioningDomains: ['domain1.com'],
+  sessionSettingsEnabled: true,
+  refreshTokenExpiration: 12,
+  refreshTokenExpirationUnit: 'days',
+  sessionTokenExpiration: 10,
+  sessionTokenExpirationUnit: 'minutes',
+  enableInactivity: true,
+  JITDisabled: false,
+  InactivityTime: 10,
+  InactivityTimeUnit: 'minutes',
+};
 
 const mockAllTenantsResponse = {
   tenants: mockTenants,
@@ -197,6 +211,68 @@ describe('Management Tenant', () => {
       expect(resp).toEqual({
         code: 200,
         data: mockTenants,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockSettings,
+        clone: () => ({
+          json: () => Promise.resolve(mockSettings),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<TenantSettings> = await management.tenant.getSettings('test');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.settings, {
+        queryParams: { id: 'test' },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockSettings,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('configureSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.tenant.configureSettings(
+        'test',
+        mockSettings,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.settings,
+        { ...mockSettings, tenantId: 'test' },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: undefined,
         ok: true,
         response: httpResponse,
       });
