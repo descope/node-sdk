@@ -524,7 +524,7 @@ const descopeClient = DescopeClient({
 
 ### Manage Tenants
 
-You can create, update, delete or load tenants:
+You can create, update, delete or load tenants, as well as read and update tenant settings:
 
 ```typescript
 // The self provisioning domains or optional. If given they'll be used to associate
@@ -562,6 +562,49 @@ tenantsRes.data.forEach((tenant) => {
 const searchRes = await descopeClient.management.tenant.searchAll(['id']);
 searchRes.data.forEach((tenant) => {
   // do something
+});
+
+// Load tenant settings by id
+const tenantSettings = await descopeClient.management.tenant.getSettings('my-tenant-id');
+
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.tenant.configureSettings('my-tenant-id', {
+  domains: ['domain1.com'],
+  selfProvisioningDomains: ['domain1.com'],
+  sessionSettingsEnabled: true,
+  refreshTokenExpiration: 12,
+  refreshTokenExpirationUnit: 'days',
+  sessionTokenExpiration: 10,
+  sessionTokenExpirationUnit: 'minutes',
+  enableInactivity: true,
+  JITDisabled: false,
+  InactivityTime: 10,
+  InactivityTimeUnit: 'minutes',
+});
+```
+
+### Manage Password
+
+You can read and update any tenant password settings and policy:
+
+```typescript
+// Load tenant password settings by id
+const passwordSettings = await descopeClient.management.password.getSettings('my-tenant-id');
+
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.password.configureSettings('my-tenant-id', {
+  enabled: true,
+  minLength: 8,
+  expiration: true,
+  expirationWeeks: 4,
+  lock: true,
+  lockAttempts: 5,
+  reuse: true,
+  reuseAmount: 6,
+  lowercase: true,
+  uppercase: false,
+  number: true,
+  nonAlphaNumeric: false,
 });
 ```
 

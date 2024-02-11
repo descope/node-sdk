@@ -1,5 +1,7 @@
 import { UserResponse } from '@descope/core-js-sdk';
 
+export type ExpirationUnit = 'minutes' | 'hours' | 'days' | 'weeks';
+
 /**
  * Represents a tenant association for a User or Access Key. The tenantId is required to denote
  * which tenant the user or access key belongs to. The roleNames array is an optional list of
@@ -138,6 +140,42 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
+};
+
+/** Represents settings of a tenant in a project. It has an id, a name and an array of
+ * self provisioning domains used to associate users with that tenant.
+ */
+export type TenantSettings = {
+  selfProvisioningDomains: string[];
+  domains?: string[];
+  authType?: 'none' | 'saml' | 'oidc';
+  sessionSettingsEnabled?: boolean;
+  refreshTokenExpiration?: number;
+  refreshTokenExpirationUnit?: ExpirationUnit;
+  sessionTokenExpiration?: number;
+  sessionTokenExpirationUnit?: ExpirationUnit;
+  stepupTokenExpiration?: number;
+  stepupTokenExpirationUnit?: ExpirationUnit;
+  enableInactivity?: boolean;
+  InactivityTime?: number;
+  InactivityTimeUnit?: ExpirationUnit;
+  JITDisabled?: boolean;
+};
+
+/** Represents password settings of a tenant in a project. It has the password policy details. */
+export type PasswordSettings = {
+  enabled: boolean;
+  minLength: number;
+  lowercase: boolean;
+  uppercase: boolean;
+  number: boolean;
+  nonAlphaNumeric: boolean;
+  expiration: boolean;
+  expirationWeeks: number;
+  reuse: boolean;
+  reuseAmount: number;
+  lock: boolean;
+  lockAttempts: number;
 };
 
 /** Represents OIDC settings of an SSO application in a project. */

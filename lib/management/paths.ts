@@ -54,6 +54,7 @@ export default {
     update: '/v1/mgmt/tenant/update',
     delete: '/v1/mgmt/tenant/delete',
     load: '/v1/mgmt/tenant',
+    settings: '/v1/mgmt/tenant/settings',
     loadAll: '/v1/mgmt/tenant/all',
     searchAll: '/v1/mgmt/tenant/search',
   },
@@ -81,6 +82,9 @@ export default {
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
+  },
+  password: {
+    settings: '/v1/mgmt/password/settings',
   },
   permission: {
     create: '/v1/mgmt/permission/create',
