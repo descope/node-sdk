@@ -906,7 +906,7 @@ You can create, update, delete or load roles:
 
 ```typescript
 // You can optionally set a description and associated permission for a roles.
-// setting tenant id - will create this role for this specific tenant scope, leave empty to create a role taht will be allowed on all tenants
+// The optional `tenantId` will scope this role for a specific tenant. If left empty, the role will be available to all tenants.
 const name = 'My Role';
 const tenantId = '<tenant id>';
 let description = 'Optional description to briefly explain what this role allows.';
