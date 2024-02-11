@@ -12,11 +12,12 @@ const withRole = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     description?: string,
     permissionNames?: string[],
+    tenantId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.role.create,
-        { name, description, permissionNames },
+        { name, description, permissionNames, tenantId },
         { token: managementKey },
       ),
     ),
@@ -25,17 +26,18 @@ const withRole = (sdk: CoreSdk, managementKey?: string) => ({
     newName: string,
     description?: string,
     permissionNames?: string[],
+    tenantId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.role.update,
-        { name, newName, description, permissionNames },
+        { name, newName, description, permissionNames, tenantId },
         { token: managementKey },
       ),
     ),
-  delete: (name: string): Promise<SdkResponse<never>> =>
+  delete: (name: string, tenantId?: string): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.role.delete, { name }, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.role.delete, { name, tenantId }, { token: managementKey }),
     ),
   loadAll: (): Promise<SdkResponse<Role[]>> =>
     transformResponse<MultipleRoleResponse, Role[]>(
