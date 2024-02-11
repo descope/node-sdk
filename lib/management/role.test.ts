@@ -24,6 +24,7 @@ const mockRoles = [
     description: 'description3',
     permissionNames: [],
     createdTime: new Date().getTime(),
+    tenantId: 't1',
   },
 ];
 
@@ -48,11 +49,11 @@ describe('Management Role', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.role.create('name', 'description', ['p1', 'p2']);
+      const resp = await management.role.create('name', 'description', ['p1', 'p2'], 't1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.role.create,
-        { name: 'name', description: 'description', permissionNames: ['p1', 'p2'] },
+        { name: 'name', description: 'description', permissionNames: ['p1', 'p2'], tenantId: 't1' },
         { token: 'key' },
       );
 
@@ -75,12 +76,19 @@ describe('Management Role', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.role.update('name', 'newName', 'description', ['p1', 'p2']);
+      const resp = await management.role.update(
+        'name',
+        'newName',
+        'description',
+        ['p1', 'p2'],
+        't1',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.role.update,
         {
           name: 'name',
+          tenantId: 't1',
           newName: 'newName',
           description: 'description',
           permissionNames: ['p1', 'p2'],
@@ -107,11 +115,11 @@ describe('Management Role', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.role.delete('name');
+      const resp = await management.role.delete('name', 't1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.role.delete,
-        { name: 'name' },
+        { name: 'name', tenantId: 't1' },
         { token: 'key' },
       );
 

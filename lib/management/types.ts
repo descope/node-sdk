@@ -233,6 +233,7 @@ export type Role = {
   description?: string;
   permissionNames: string[];
   createdTime: number;
+  tenantId?: string;
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */

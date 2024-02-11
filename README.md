@@ -906,19 +906,21 @@ You can create, update, delete or load roles:
 
 ```typescript
 // You can optionally set a description and associated permission for a roles.
+// setting tenant id - will create this role for this specific tenant scope, leave empty to create a role taht will be allowed on all tenants
 const name = 'My Role';
+const tenantId = '<tenant id>';
 let description = 'Optional description to briefly explain what this role allows.';
 const permissionNames = ['My Updated Permission'];
-descopeClient.management.role.create(name, description, permissionNames);
+descopeClient.management.role.create(name, description, permissionNames, tenantId);
 
 // Update will override all fields as is. Use carefully.
 const newName = 'My Updated Role';
 description = 'A revised description';
 permissionNames.push('Another Permission');
-descopeClient.management.role.update(name, newName, description, permissionNames);
+descopeClient.management.role.update(name, newName, description, permissionNames, tenantId);
 
 // Role deletion cannot be undone. Use carefully.
-descopeClient.management.role.delete(newName);
+descopeClient.management.role.delete(newName, tenantId);
 
 // Load all roles
 const rolesRes = await descopeClient.management.role.loadAll();
