@@ -1588,13 +1588,13 @@ describe('Management User', () => {
 
       const loginId = 'some-id';
       const password = 'some-password';
-      const persistPassword = false
+      const persistPassword = false;
       const resp = await management.user.setPassword(loginId, password);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.setPassword,
-          {loginId, password, persistPassword},
-          {token: 'key'},
+        { loginId, password, persistPassword },
+        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -1609,8 +1609,7 @@ describe('Management User', () => {
   it('should send the correct request and receive correct response - keep persist password', async () => {
     const httpResponse = {
       ok: true,
-      json: () => {
-      },
+      json: () => {},
       clone: () => ({
         json: () => Promise.resolve({}),
       }),
@@ -1620,13 +1619,13 @@ describe('Management User', () => {
 
     const loginId = 'some-id';
     const password = 'some-password';
-    const persistPassword = true
+    const persistPassword = true;
     const resp = await management.user.setPassword(loginId, password, persistPassword);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.setPassword,
-        {loginId, password, persistPassword},
-        { token: 'key' },
+      apiPaths.user.setPassword,
+      { loginId, password, persistPassword },
+      { token: 'key' },
     );
 
     expect(resp).toEqual({
@@ -1636,7 +1635,6 @@ describe('Management User', () => {
       response: httpResponse,
     });
   });
-});
 
   describe('expirePassword', () => {
     it('should send the correct request and receive correct response', async () => {
