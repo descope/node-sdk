@@ -833,17 +833,17 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * See also: expirePassword
      * @param loginId The login ID of the user
      * @param password The password to set for the user
-     * @param persistPassword Keep the password persist so it will not be expired on next log-in
+     * @param setActive Keep the password persist so it will not be expired on next log-in
      */
     setPassword: (
       loginId: string,
       password: string,
-      persistPassword: boolean = false,
+      setActive: boolean = false,
     ): Promise<SdkResponse<never>> =>
       transformResponse<never>(
         sdk.httpClient.post(
           apiPaths.user.setPassword,
-          { loginId, password, persistPassword },
+          { loginId, password, setActive },
           { token: managementKey },
         ),
         (data) => data,

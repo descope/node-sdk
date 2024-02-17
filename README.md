@@ -755,7 +755,7 @@ usersHistoryRes.forEach((userHistory) => {
 #### Set or Expire User Password
 
 You can set or expire a user's password.
-Note: When setting a password, it will automatically be set as expired unless persistPassword flag set to True,
+Note: When setting a password, it will automatically be set as expired unless setActive flag set to True,
 The user will not be able log-in using an expired password, and will be required replace it on next login.
 
 ```typescript
@@ -763,7 +763,7 @@ The user will not be able log-in using an expired password, and will be required
 await descopeClient.management.user.setPassword(
   '<login-ID>',
   '<some-password>',
-  '<persist-password-flag>',
+  '<set-active-flag>',
 );
 
 // Or alternatively, expire a user password

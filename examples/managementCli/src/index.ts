@@ -133,9 +133,9 @@ program
   .description('Set a user password')
   .argument('<login-id>', 'Login ID')
   .argument('<password>', 'Password')
-  .argument('<persistPassword>', 'Password')
-  .action(async (loginId, password, persistPassword) => {
-    handleSdkRes(await sdk.management.user.setPassword(loginId, password, persistPassword));
+  .argument('<setActive>', 'setActive')
+  .action(async (loginId, password, setActive) => {
+    handleSdkRes(await sdk.management.user.setPassword(loginId, password, setActive));
   });
 
 // user-expire-password
