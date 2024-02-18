@@ -127,15 +127,24 @@ program
     );
   });
 
-// user-set-password
+// user-set-temporary-password
 program
-  .command('user-set-password')
+  .command('user-set-temporary-password')
+  .description('Set a user temporary password')
+  .argument('<login-id>', 'Login ID')
+  .argument('<password>', 'Password')
+  .action(async (loginId, password) => {
+    handleSdkRes(await sdk.management.user.setTemporaryPassword(loginId, password));
+  });
+
+// user-set-active-password
+program
+  .command('user-set-active-password')
   .description('Set a user password')
   .argument('<login-id>', 'Login ID')
   .argument('<password>', 'Password')
-  .argument('<setActive>', 'setActive')
-  .action(async (loginId, password, setActive) => {
-    handleSdkRes(await sdk.management.user.setPassword(loginId, password, setActive));
+  .action(async (loginId, password) => {
+    handleSdkRes(await sdk.management.user.setActivePassword(loginId, password));
   });
 
 // user-expire-password
