@@ -833,17 +833,45 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * See also: expirePassword
      * @param loginId The login ID of the user
      * @param password The password to set for the user
-     * @param setActive Keep the password active so it will not be expired on next log-in
      */
-    setPassword: (
-      loginId: string,
-      password: string,
-      setActive?: boolean,
-    ): Promise<SdkResponse<never>> =>
+    setTemporaryPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
         sdk.httpClient.post(
           apiPaths.user.setPassword,
-          { loginId, password, setActive },
+          { loginId, password, setActive: false },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    /**
+     * Set password for the given login ID of user.
+     * @param loginId The login ID of the user
+     * @param password The password to set for the user
+     */
+    setActivePassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(
+          apiPaths.user.setPassword,
+          { loginId, password, setActive: true },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    /** Deprecated (user setTemporaryPassword instead)
+     * Set password for the given login ID of user.
+     * Note: The password will automatically be set as expired.
+     * The user will not be able to log-in with this password, and will be required to replace it on next login.
+     * See also: expirePassword
+     * @param loginId The login ID of the user
+     * @param password The password to set for the user
+     */
+    setPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(
+          apiPaths.user.setPassword,
+          { loginId, password, setActive: false },
           { token: managementKey },
         ),
         (data) => data,

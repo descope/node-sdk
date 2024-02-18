@@ -1606,7 +1606,37 @@ describe('Management User', () => {
     });
   });
 
-  it('should send the correct request and receive correct response - keep persist password', async () => {
+  it('should send the correct request and receive correct response - set temporary password', async () => {
+    const httpResponse = {
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    };
+    mockHttpClient.post.mockResolvedValue(httpResponse);
+
+    const loginId = 'some-id';
+    const password = 'some-password';
+    const setActive = false;
+    const resp = await management.user.setTemporaryPassword(loginId, password);
+
+    expect(mockHttpClient.post).toHaveBeenCalledWith(
+      apiPaths.user.setPassword,
+      { loginId, password, setActive },
+      { token: 'key' },
+    );
+
+    expect(resp).toEqual({
+      code: 200,
+      data: {},
+      ok: true,
+      response: httpResponse,
+    });
+  });
+
+  it('should send the correct request and receive correct response - set active password', async () => {
     const httpResponse = {
       ok: true,
       json: () => {},
@@ -1620,7 +1650,7 @@ describe('Management User', () => {
     const loginId = 'some-id';
     const password = 'some-password';
     const setActive = true;
-    const resp = await management.user.setPassword(loginId, password, setActive);
+    const resp = await management.user.setActivePassword(loginId, password);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
       apiPaths.user.setPassword,
