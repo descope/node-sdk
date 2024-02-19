@@ -25,7 +25,9 @@ export default {
     removeSSOApps: '/v1/mgmt/user/update/ssoapp/remove',
     addTenant: '/v1/mgmt/user/update/tenant/add',
     removeTenant: '/v1/mgmt/user/update/tenant/remove',
-    setPassword: '/v1/mgmt/user/password/set',
+    setPassword: '/v1/mgmt/user/password/set', // Deprecated
+    setTemporaryPassword: '/v1/mgmt/user/password/set/temporary',
+    setActivePassword: '/v1/mgmt/user/password/set/active',
     expirePassword: '/v1/mgmt/user/password/expire',
     removeAllPasskeys: '/v1/mgmt/user/passkeys/delete',
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',

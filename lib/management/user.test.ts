@@ -1623,7 +1623,7 @@ describe('Management User', () => {
     const resp = await management.user.setTemporaryPassword(loginId, password);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.user.setPassword,
+      apiPaths.user.setTemporaryPassword,
       { loginId, password, setActive },
       { token: 'key' },
     );
@@ -1653,7 +1653,7 @@ describe('Management User', () => {
     const resp = await management.user.setActivePassword(loginId, password);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.user.setPassword,
+      apiPaths.user.setActivePassword,
       { loginId, password, setActive },
       { token: 'key' },
     );
