@@ -754,9 +754,9 @@ usersHistoryRes.forEach((userHistory) => {
 
 #### Set or Expire User Password
 
-You can set (temporary/active) or expire a user's password.
-Note: When using SetTemporaryPassword password will automatically be set as expired.
-The user will not be able log-in using an expired password, and will be required replace it on next login.
+You can set a new active password for a user that they can sign in with.
+You can also set a temporary password that they user will be forced to change on the next login.
+For a user that already has an active password, you can expire their current password, effectively requiring them to change it on the next login.
 
 ```typescript
 // Set a user's temporary password
@@ -764,9 +764,6 @@ await descopeClient.management.user.setTemporaryPassword('<login-ID>', '<some-pa
 
 // Set a user's password
 await descopeClient.management.user.setActivePassword('<login-ID>', '<some-password>');
-
-// Deprecated (use setTemporaryPassword instead)
-await descopeClient.management.user.setPassword('<login-ID>', '<some-password>');
 
 // Or alternatively, expire a user password
 await descopeClient.management.user.expirePassword('<login-ID>');
