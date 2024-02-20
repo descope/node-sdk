@@ -1588,12 +1588,11 @@ describe('Management User', () => {
 
       const loginId = 'some-id';
       const password = 'some-password';
-      const setActive = false;
       const resp = await management.user.setPassword(loginId, password);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.setPassword,
-        { loginId, password, setActive },
+        { loginId, password },
         { token: 'key' },
       );
 
@@ -1619,12 +1618,11 @@ describe('Management User', () => {
 
     const loginId = 'some-id';
     const password = 'some-password';
-    const setActive = false;
     const resp = await management.user.setTemporaryPassword(loginId, password);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
       apiPaths.user.setTemporaryPassword,
-      { loginId, password, setActive },
+      { loginId, password },
       { token: 'key' },
     );
 
@@ -1649,12 +1647,11 @@ describe('Management User', () => {
 
     const loginId = 'some-id';
     const password = 'some-password';
-    const setActive = true;
     const resp = await management.user.setActivePassword(loginId, password);
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
       apiPaths.user.setActivePassword,
-      { loginId, password, setActive },
+      { loginId, password },
       { token: 'key' },
     );
 

@@ -838,7 +838,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       transformResponse<never>(
         sdk.httpClient.post(
           apiPaths.user.setTemporaryPassword,
-          { loginId, password, setActive: false },
+          { loginId, password },
           { token: managementKey },
         ),
         (data) => data,
@@ -853,7 +853,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       transformResponse<never>(
         sdk.httpClient.post(
           apiPaths.user.setActivePassword,
-          { loginId, password, setActive: true },
+          { loginId, password },
           { token: managementKey },
         ),
         (data) => data,
@@ -871,7 +871,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       transformResponse<never>(
         sdk.httpClient.post(
           apiPaths.user.setPassword,
-          { loginId, password, setActive: false },
+          { loginId, password },
           { token: managementKey },
         ),
         (data) => data,
