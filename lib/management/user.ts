@@ -827,6 +827,39 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
 
     /**
+     * Set temporary password for the given login ID of user.
+     * Note: The password will automatically be set as expired.
+     * The user will not be able to log-in with this password, and will be required to replace it on next login.
+     * See also: expirePassword
+     * @param loginId The login ID of the user
+     * @param password The password to set for the user
+     */
+    setTemporaryPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(
+          apiPaths.user.setTemporaryPassword,
+          { loginId, password },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    /**
+     * Set password for the given login ID of user.
+     * @param loginId The login ID of the user
+     * @param password The password to set for the user
+     */
+    setActivePassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(
+          apiPaths.user.setActivePassword,
+          { loginId, password },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    /** Deprecated (user setTemporaryPassword instead)
      * Set password for the given login ID of user.
      * Note: The password will automatically be set as expired.
      * The user will not be able to log-in with this password, and will be required to replace it on next login.
