@@ -84,6 +84,7 @@ export default {
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
+    impersonate: '/v1/mgmt/impersonate',
   },
   password: {
     settings: '/v1/mgmt/password/settings',
