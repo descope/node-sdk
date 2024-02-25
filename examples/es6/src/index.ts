@@ -6,10 +6,13 @@ import { readFileSync } from 'fs';
 import { createServer } from 'https';
 import path from 'path';
 import process from 'process';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
-const port = 443;
+const port = process.env.PORT || 443;
 
 const options = {
   key: readFileSync(path.resolve('./server.key')),
@@ -100,6 +103,17 @@ app.post('/otp/signin', async (req: Request, res: Response) => {
   const { loginId, deliveryMethod } = getMethodAndLoginId(req);
   try {
     const out = await clientAuth.auth.otp.signIn[deliveryMethod](loginId);
+    returnOK(res, out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/otp/sign-up-or-in', async (req: Request, res: Response) => {
+  const { loginId, deliveryMethod } = getMethodAndLoginId(req);
+  try {
+    const out = await clientAuth.auth.otp.signUpOrIn[deliveryMethod](loginId);
     returnOK(res, out);
   } catch (error) {
     console.log(error);
@@ -311,6 +325,11 @@ app.post('/password/update', authMiddleware, async (req: Request, res: Response)
     console.log(error);
     res.sendStatus(401);
   }
+});
+
+app.get('/api/public', (_unused: Request, res: Response) => {
+  console.log('Public API');
+  res.status(200).send({ message: 'Public API response!' });
 });
 
 app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {

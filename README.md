@@ -1282,7 +1282,7 @@ const { link, pendingRef } = await descopeClient.management.user.generateEnchant
 
 ## Code Examples
 
-You can find various usage examples in the [examples folder](https://github.com/descope/node-sdk/blob/main/examples).
+You can find various usage examples in the [examples folder](/examples).
 
 ### Setup
 
