@@ -263,21 +263,21 @@ describe('sdk', () => {
     it('should fail when the server call throws', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockRejectedValueOnce('error');
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
-      expect(spyExchange).toHaveBeenCalledWith('key');
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should fail when getting an unexpected response from the server', async () => {
       const spyExchange = jest
         .spyOn(sdk.accessKey, 'exchange')
         .mockResolvedValueOnce({ data: {} } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
-      expect(spyExchange).toHaveBeenCalledWith('key');
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should fail when the session token the server returns is invalid', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
         data: { sessionJwt: expiredToken },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
-      expect(spyExchange).toHaveBeenCalledWith('key');
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should return the same session token it got from the server', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
@@ -287,8 +287,9 @@ describe('sdk', () => {
         jwt: validToken,
         token: { exp: 1981398111, iss: 'project-id' },
       };
-      await expect(sdk.exchangeAccessKey('key')).resolves.toMatchObject(expected);
-      expect(spyExchange).toHaveBeenCalledWith('key');
+      const loginOptions = { customClaims: { k1: 'v1' } };
+      await expect(sdk.exchangeAccessKey('key', loginOptions)).resolves.toMatchObject(expected);
+      expect(spyExchange).toHaveBeenCalledWith('key', loginOptions);
     });
   });
 
