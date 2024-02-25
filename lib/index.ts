@@ -1,4 +1,9 @@
-import createSdk, { ExchangeAccessKeyResponse, SdkResponse, wrapWith } from '@descope/core-js-sdk';
+import createSdk, {
+  ExchangeAccessKeyResponse,
+  AccessKeyLoginOptions,
+  SdkResponse,
+  wrapWith,
+} from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
   permissionsClaimName,
@@ -184,14 +189,18 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     /**
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
+     * @param loginOptions Optional advanced controls over login parameters
      * @returns AuthenticationInfo with session JWT data
      */
-    async exchangeAccessKey(accessKey: string): Promise<AuthenticationInfo> {
+    async exchangeAccessKey(
+      accessKey: string,
+      loginOptions?: AccessKeyLoginOptions,
+    ): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty');
 
       let resp: SdkResponse<ExchangeAccessKeyResponse>;
       try {
-        resp = await sdk.accessKey.exchange(accessKey);
+        resp = await sdk.accessKey.exchange(accessKey, loginOptions);
       } catch (error) {
         logger?.error('failed to exchange access key', error);
         throw Error(`could not exchange access key - Failed to exchange. Error: ${error}`);

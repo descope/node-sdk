@@ -287,8 +287,9 @@ describe('sdk', () => {
         jwt: validToken,
         token: { exp: 1981398111, iss: 'project-id' },
       };
-      await expect(sdk.exchangeAccessKey('key')).resolves.toMatchObject(expected);
-      expect(spyExchange).toHaveBeenCalledWith('key');
+      const loginOptions = { customClaims: { k1: 'v1' } };
+      await expect(sdk.exchangeAccessKey('key', loginOptions)).resolves.toMatchObject(expected);
+      expect(spyExchange).toHaveBeenCalledWith('key', loginOptions);
     });
   });
 
