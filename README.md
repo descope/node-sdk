@@ -804,6 +804,7 @@ You can create, update, delete or load access keys, as well as search according 
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
 // If userId is supplied, then authorization would be ignored, and access key would be bound to the users authorization
+// If customClaims is supplied
 await descopeClient.management.accessKey.create(
   'key-name',
   123456789, // expiration time
