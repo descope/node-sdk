@@ -18,7 +18,7 @@ runs:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
 
     - name: Cache node modules 💸
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
         cache-name: cache-node-modules
