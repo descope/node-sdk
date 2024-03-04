@@ -803,8 +803,8 @@ You can create, update, delete or load access keys, as well as search according 
 // An access key must have a name and expiration, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-// If userId is supplied, then authorization would be ignored, and access key would be bound to the users authorization
-// If customClaims is supplied
+// If userId is supplied, then authorization will be ignored, and the access key will be bound to the user's authorization.
+// If customClaims is supplied, then those claims will be present in the JWT returned by calls to ExchangeAccessKey.
 await descopeClient.management.accessKey.create(
   'key-name',
   123456789, // expiration time
