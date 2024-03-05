@@ -19,6 +19,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param roles Optional roles in the project. Does not apply for multi-tenants
    * @param keyTenants Optional associated tenants for this key and its roles for each.
    * @param userId Optional bind this access key to a specific user.
+   * @param customClaims Optional map of claims and their values that will be present in the JWT.
    * @returns A newly created key and its cleartext. Make sure to save the cleartext securely.
    */
   create: (
@@ -27,11 +28,12 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     roles?: string[],
     keyTenants?: AssociatedTenant[],
     userId?: string,
+    customClaims?: Record<string, any>,
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.accessKey.create,
-        { name, expireTime, roleNames: roles, keyTenants, userId },
+        { name, expireTime, roleNames: roles, keyTenants, userId, customClaims },
         { token: managementKey },
       ),
     ),
