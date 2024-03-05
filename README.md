@@ -931,6 +931,15 @@ const rolesRes = await descopeClient.management.role.loadAll();
 rolesRes.data.forEach((role) => {
   // do something
 });
+
+// Search roles
+const rolesRes = await descopeClient.management.role.search({
+  tenantIds: ['t1', 't2'],
+  roleNames: ['role1'],
+});
+rolesRes.data.forEach((role) => {
+  // do something
+});
 ```
 
 ### Query SSO Groups
