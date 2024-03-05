@@ -47,6 +47,7 @@ describe('Management Access Keys', () => {
         ['r1', 'r2'],
         null,
         'uid',
+        { k1: 'v1' },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -57,6 +58,7 @@ describe('Management Access Keys', () => {
           roleNames: ['r1', 'r2'],
           keyTenants: null,
           userId: 'uid',
+          customClaims: { k1: 'v1' },
         },
         { token: 'key' },
       );
