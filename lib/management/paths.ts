@@ -100,6 +100,7 @@ export default {
     update: '/v1/mgmt/role/update',
     delete: '/v1/mgmt/role/delete',
     loadAll: '/v1/mgmt/role/all',
+    search: '/v1/mgmt/role/search',
   },
   flow: {
     list: '/v1/mgmt/flow/list',

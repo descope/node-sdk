@@ -2,7 +2,7 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
-import { Role } from './types';
+import { Role, RoleSearchOptions } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
 
@@ -146,6 +146,38 @@ describe('Management Role', () => {
       const resp: SdkResponse<Role[]> = await management.role.loadAll();
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.role.loadAll, {
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockRoles,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('search', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockAllRolesResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockAllRolesResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      const req: RoleSearchOptions = {
+        tenantIds: ['t'],
+        roleNames: ['r'],
+        roleNameLike: 'x',
+        permissionNames: ['p'],
+      };
+      const resp: SdkResponse<Role[]> = await management.role.search(req);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.search, req, {
         token: 'key',
       });
 
