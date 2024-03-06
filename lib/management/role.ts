@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { Role } from './types';
+import { Role, RoleSearchOptions } from './types';
 
 type MultipleRoleResponse = {
   roles: Role[];
@@ -42,6 +42,13 @@ const withRole = (sdk: CoreSdk, managementKey?: string) => ({
   loadAll: (): Promise<SdkResponse<Role[]>> =>
     transformResponse<MultipleRoleResponse, Role[]>(
       sdk.httpClient.get(apiPaths.role.loadAll, {
+        token: managementKey,
+      }),
+      (data) => data.roles,
+    ),
+  search: (options: RoleSearchOptions): Promise<SdkResponse<Role[]>> =>
+    transformResponse<MultipleRoleResponse, Role[]>(
+      sdk.httpClient.post(apiPaths.role.search, options, {
         token: managementKey,
       }),
       (data) => data.roles,
