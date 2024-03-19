@@ -100,7 +100,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@descope/core-js-sdk": "2.11.0",
+    "@descope/core-js-sdk": "2.11.5",
     "cross-fetch": "^4.0.0",
     "jose": "4.15.5",
     "tslib": "^1.14.1"
