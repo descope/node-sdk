@@ -91,8 +91,11 @@ export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant:
 /**
  * Wrap a function with a deprecation warning
  */
-export function deprecate(fn: Function, message: string) {
-  return (...args: any[]) => {
+export function deprecate<T extends(...args: any[]) => any>(
+  fn: T,
+  message: string,
+): (...args: Parameters<T>) => ReturnType<T> {
+  return (...args: Parameters<T>): ReturnType<T> => {
     // eslint-disable-next-line no-console
     console.warn(message);
     return fn(...args);
