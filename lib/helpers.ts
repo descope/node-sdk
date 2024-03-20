@@ -87,3 +87,14 @@ export function getAuthorizationClaimItems(
 export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant: string): boolean {
   return !!authInfo.token[authorizedTenantsClaimName]?.[tenant];
 }
+
+/**
+ * Wrap a function with a deprecation warning
+ */
+export function deprecate(fn: Function, message: string) {
+  return (...args: any[]) => {
+    // eslint-disable-next-line no-console
+    console.warn(message);
+    return fn(...args);
+  };
+}

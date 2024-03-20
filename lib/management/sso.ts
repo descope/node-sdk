@@ -1,5 +1,4 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { deprecate } from 'util';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
 import {
@@ -11,6 +10,7 @@ import {
   SSOSAMLByMetadataSettings,
   SSOSettings,
 } from './types';
+import { deprecate } from '../helpers';
 
 const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
   getSettings: deprecate(

@@ -5,7 +5,6 @@ import {
   UserResponse,
   LoginOptions,
 } from '@descope/core-js-sdk';
-import { deprecate } from 'util';
 import {
   ProviderTokenResponse,
   AssociatedTenant,
@@ -20,6 +19,7 @@ import {
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
+import { deprecate } from '../helpers';
 
 type SearchSort = {
   field: string;
