@@ -1,5 +1,4 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { deprecate } from 'util';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
 import {
@@ -13,17 +12,17 @@ import {
 } from './types';
 
 const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
-  getSettings: deprecate(
-    (tenantId: string): Promise<SdkResponse<SSOSettingsResponse>> =>
-      transformResponse<SSOSettingsResponse>(
-        sdk.httpClient.get(apiPaths.sso.settings, {
-          queryParams: { tenantId },
-          token: managementKey,
-        }),
-        (data) => data,
-      ),
-    'getSettings is deprecated, please use loadSettings instead',
-  ),
+  /**
+   * @deprecated  Use loadSettings instead
+   */
+  getSettings: (tenantId: string): Promise<SdkResponse<SSOSettingsResponse>> =>
+    transformResponse<SSOSettingsResponse>(
+      sdk.httpClient.get(apiPaths.sso.settings, {
+        queryParams: { tenantId },
+        token: managementKey,
+      }),
+      (data) => data,
+    ),
   deleteSettings: (tenantId: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.delete(apiPaths.sso.settings, {
@@ -31,40 +30,40 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
         token: managementKey,
       }),
     ),
-  configureSettings: deprecate(
-    (
-      tenantId: string,
-      idpURL: string,
-      idpCert: string,
-      entityId: string,
-      redirectURL: string,
-      domains: string[],
-    ): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(
-          apiPaths.sso.settings,
-          { tenantId, idpURL, entityId, idpCert, redirectURL, domains },
-          { token: managementKey },
-        ),
+  /**
+   * @deprecated  Use configureSAMLSettings instead
+   */
+  configureSettings: (
+    tenantId: string,
+    idpURL: string,
+    idpCert: string,
+    entityId: string,
+    redirectURL: string,
+    domains: string[],
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.sso.settings,
+        { tenantId, idpURL, entityId, idpCert, redirectURL, domains },
+        { token: managementKey },
       ),
-    'configureSettings is deprecated, please use configureSAMLSettings instead ',
-  ),
-  configureMetadata: deprecate(
-    (
-      tenantId: string,
-      idpMetadataURL: string,
-      redirectURL: string,
-      domains: string[],
-    ): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(
-          apiPaths.sso.metadata,
-          { tenantId, idpMetadataURL, redirectURL, domains },
-          { token: managementKey },
-        ),
+    ),
+  /**
+   * @deprecated  Use configureSAMLByMetadata instead
+   */
+  configureMetadata: (
+    tenantId: string,
+    idpMetadataURL: string,
+    redirectURL: string,
+    domains: string[],
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.sso.metadata,
+        { tenantId, idpMetadataURL, redirectURL, domains },
+        { token: managementKey },
       ),
-    'configureMetadata is deprecated, please use configureSAMLByMetadata instead',
-  ),
+    ),
   configureMapping: (
     tenantId: string,
     roleMappings?: RoleMappings,
