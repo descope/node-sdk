@@ -91,7 +91,7 @@ export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant:
 /**
  * Wrap a function with a deprecation warning
  */
-export function deprecate<T extends(...args: any[]) => any>(
+export function deprecate<T extends (...args: any[]) => any>(
   fn: T,
   message: string,
 ): (...args: Parameters<T>) => ReturnType<T> {
