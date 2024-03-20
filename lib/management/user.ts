@@ -452,7 +452,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     /**
      * Search all users. Results can be filtered according to tenants and/or
      * roles, and also paginated used the limit and page parameters.
-     * @deprecated use search instead
+     * @deprecated Use search instead
      * @param tenantIds optional list of tenant IDs to filter by
      * @param roles optional list of roles to filter by
      * @param limit optionally limit the response, leave out for default limit
