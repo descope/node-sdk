@@ -54,6 +54,39 @@ program
     );
   });
 
+// user-invite
+program
+  .command('user-invite')
+  .description('Invite a new user')
+  .argument('<loginId>', 'Login ID')
+  .option('-e, --email <email>', `User's email address`)
+  .option('-p, --phone <phone>', `User's phone number`)
+  .option('-n, --name <name>', `User's display name`)
+  .option(
+    '-o, --template-options <k1=v1,k2=v2>',
+    'Template options to pass in as key-value pairs',
+    (val: string, memo: Record<string, string>) => {
+      const pairs = val.split(',');
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        memo[key] = value;
+      }
+      return memo;
+    },
+    {},
+  )
+  .action(async (loginId, options) => {
+    handleSdkRes(
+      await sdk.management.user.invite(loginId, {
+        email: options.email,
+        phone: options.phone,
+        displayName: options.name,
+        userTenants: options.tenants?.map((tenantId: string) => ({ tenantId })),
+        templateOptions: options.templateOptions,
+      }),
+    );
+  });
+
 // user-update
 program
   .command('user-update')

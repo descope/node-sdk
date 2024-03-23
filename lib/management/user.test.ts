@@ -335,6 +335,7 @@ describe('Management User', () => {
         customAttributes: { a: 'a', b: 1, c: true },
         inviteUrl: 'https://invite.me',
         sendMail: true,
+        templateOptions: { k1: 'v1' },
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -347,6 +348,7 @@ describe('Management User', () => {
           customAttributes: { a: 'a', b: 1, c: true },
           inviteUrl: 'https://invite.me',
           sendMail: true,
+          templateOptions: { k1: 'v1' },
         },
         { token: 'key' },
       );

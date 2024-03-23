@@ -16,6 +16,7 @@ import {
   UserStatus,
   User,
   InviteBatchResponse,
+  TemplateOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -200,6 +201,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       inviteUrl?: string;
       sendMail?: boolean; // send invite via mail, default is according to project settings
       sendSMS?: boolean; // send invite via text message, default is according to project settings
+      templateOptions?: TemplateOptions;
     },
   ): Promise<SdkResponse<UserResponse>>;
   function invite(
@@ -368,6 +370,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       inviteUrl?: string,
       sendMail?: boolean, // send invite via mail, default is according to project settings
       sendSMS?: boolean, // send invite via text message, default is according to project settings
+      templateOptions?: TemplateOptions,
     ): Promise<SdkResponse<InviteBatchResponse>> =>
       transformResponse<InviteBatchResponse, InviteBatchResponse>(
         sdk.httpClient.post(
@@ -378,6 +381,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             inviteUrl,
             sendMail,
             sendSMS,
+            templateOptions,
           },
           { token: managementKey },
         ),

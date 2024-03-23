@@ -37,6 +37,9 @@ $ npm run start help
 # Create a user
 $ npm run start -- user-create <login-id> --email <my@domain.com> --name=<some-name>
 
+# Invite a user
+$ npm run start -- user-create <login-id> --email <my@domain.com> --name=<some-name> --template-options=k1=v1,k2=v2
+
 # Update a user
 $ npm run start -- user-update <login-id> --email <new@domain.com> --name=<new-name>
 
