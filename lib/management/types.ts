@@ -323,6 +323,8 @@ export type GenerateEmbeddedLinkResponse = {
 
 export type AttributesTypes = string | boolean | number;
 
+export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
+
 export type User = {
   loginId: string;
   email?: string;
