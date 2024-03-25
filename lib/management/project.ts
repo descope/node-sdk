@@ -65,7 +65,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   import: (files: Record<string, any>): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
-        apiPaths.project.export,
+        apiPaths.project.import,
         {
           files,
         },
