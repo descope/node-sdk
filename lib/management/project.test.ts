@@ -131,7 +131,7 @@ describe('import', () => {
     const resp = await management.project.import({ 'foo/bar.json': { foo: 'bar' } });
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.project.export,
+      apiPaths.project.import,
       {
         files: {
           'foo/bar.json': {
