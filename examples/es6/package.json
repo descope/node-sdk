@@ -21,7 +21,7 @@
   "homepage": "https://github.com/descope/node-sdk#readme",
   "dependencies": {
     "@descope/node-sdk": "file:../..",
-    "express": "^4.18.1"
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.0",
