@@ -1433,6 +1433,38 @@ describe('Management User', () => {
       });
     });
 
+    it('should send the correct request and receive correct response for voice', async () => {
+      const mockResponse = { loginId: 'some-id', code: '123456' };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginOptions: LoginOptions = {
+        stepup: true,
+      };
+      const resp: SdkResponse<GenerateOTPForTestResponse> =
+        await management.user.generateOTPForTestUser('voice', 'some-id', loginOptions);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.generateOTPForTest,
+        { loginId: 'some-id', deliveryMethod: 'voice', loginOptions },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
     it('should send the correct request and receive correct response when passing embedded delivery method', async () => {
       const mockResponse = { loginId: 'some-id', code: '123456' };
       const httpResponse = {
