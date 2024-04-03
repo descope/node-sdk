@@ -739,7 +739,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     /**
      * Generate OTP for the given login ID of a test user.
      * Choose the selected delivery method for verification.
-     * Returns the code for the login (exactly as it sent via Email or SMS)
+     * Returns the code for the login (exactly as it sent via Email, SMS, Voice call or WhatsApp)
      * This is useful when running tests and don't want to use 3rd party messaging services
      *
      * @param deliveryMethod optional DeliveryMethod

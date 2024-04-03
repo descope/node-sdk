@@ -241,6 +241,9 @@ const getMethodAndLoginId = (req) => {
   if (req.body.sms) {
     return { loginId: req.body.sms, deliveryMethod: DescopeClient.DeliveryMethods.SMS };
   }
+  if (req.body.voice) {
+    return { loginId: req.body.voice, deliveryMethod: DescopeClient.DeliveryMethods.voice };
+  }
   if (req.body.whatsapp) {
     return {
       loginId: req.body.whatsapp,

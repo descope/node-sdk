@@ -333,6 +333,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     [
       'otp.verify.email',
       'otp.verify.sms',
+      'otp.verify.voice',
       'otp.verify.whatsapp',
       'magicLink.verify',
       'enchantedLink.signUp',

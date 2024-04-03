@@ -359,6 +359,9 @@ const getMethodAndLoginId = (req: Request): { loginId: string; deliveryMethod: D
   if (req.body.sms) {
     return { loginId: req.body.sms as string, deliveryMethod: 'sms' };
   }
+  if (req.body.voice) {
+    return { loginId: req.body.voice as string, deliveryMethod: 'voice' };
+  }
   if (req.body.whatsapp) {
     return { loginId: req.body.whatsapp as string, deliveryMethod: 'whatsapp' };
   }

@@ -115,7 +115,7 @@ try {
 
 ### OTP Authentication
 
-Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS_). An email address or phone number must be provided accordingly.
+Send a user a one-time password (OTP) using your preferred delivery method (_Email / SMS / Voice call / WhatsApp_). An email address or phone number must be provided accordingly.
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
@@ -1253,7 +1253,7 @@ const q = await descopeClient.management.authz.hasRelations([
 ### Utils for your end to end (e2e) tests and integration tests
 
 To ease your e2e tests, we exposed dedicated management methods,
-that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
+that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Email, SMS, Voice call or WhatsApp, and avoid the need of parsing the code and token from them.
 
 ```typescript
 // User for test can be created, this user will be able to generate code/link without
@@ -1274,7 +1274,7 @@ await descopeClient.management.user.deleteAllTestUsers();
 
 // OTP code can be generated for test user, for example:
 const { code } = await descopeClient.management.user.generateOTPForTestUser(
-  'sms',
+  'sms', // you can use also 'email', 'whatsapp', 'voice'
   'desmond@descope.com',
 );
 // Now you can verify the code is valid (using descopeClient.auth.*.verify for example)
