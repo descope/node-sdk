@@ -514,6 +514,18 @@ export type AuditSearchOptions = {
   to?: number; // Retrieve records older than given time. Time is from epoch in milliseconds.
 };
 
+export type AuditType = 'info' | 'warn' | 'error';
+
+/** Audit create options for creating audit event */
+export type AuditCreateOptions = {
+  userId?: string;
+  action: string;
+  type: AuditType;
+  actorId: string;
+  tenantId: string;
+  data?: Record<string, any>;
+};
+
 /** Audit record response from the audit trail. Occurred is in milliseconds. */
 export type AuditRecord = {
   projectId: string;

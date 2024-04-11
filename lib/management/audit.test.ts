@@ -61,4 +61,46 @@ describe('Management Audit', () => {
       });
     });
   });
+
+  describe('create event', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.audit.createEvent({
+        userId: 'userId',
+        type: 'info',
+        action: 'action',
+        actorId: 'actorId',
+        tenantId: 'tenantId',
+        data: { a: 'b' },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.audit.createEvent,
+        {
+          userId: 'userId',
+          type: 'info',
+          action: 'action',
+          actorId: 'actorId',
+          tenantId: 'tenantId',
+          data: { a: 'b' },
+        },
+        { token: 'key' },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });
