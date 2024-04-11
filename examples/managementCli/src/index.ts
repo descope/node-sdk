@@ -670,6 +670,23 @@ program
     handleSdkRes(await sdk.management.audit.search({ text }), option.output);
   });
 
+// create event
+program
+  .command('audit-create-event')
+  .description('Create audit event')
+  .argument('<user-id>', 'User id to create the audit for')
+  .argument('<action>', 'Audit action')
+  .argument('<type>', 'Audit type (info/warn/error)')
+  .argument('<actor-id>', 'Actor Id')
+  .argument('<tenant-id>', 'Tenant Id')
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (userId, action, type, actorId, tenantId, option) => {
+    handleSdkRes(
+      await sdk.management.audit.createEvent({ userId, action, type, actorId, tenantId }),
+      option.output,
+    );
+  });
+
 // authz
 program
   .command('authz-load-schema')

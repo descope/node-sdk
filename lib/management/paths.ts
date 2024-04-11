@@ -119,6 +119,7 @@ export default {
   },
   audit: {
     search: '/v1/mgmt/audit/search',
+    createEvent: '/v1/mgmt/audit/event',
   },
   authz: {
     schemaSave: '/v1/mgmt/authz/schema/save',

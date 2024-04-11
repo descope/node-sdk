@@ -72,7 +72,7 @@ Then, you can use that to work with the following functions:
 9. [Manage JWTs](#manage-jwts)
 10. [Impersonate](#impersonate)
 11. [Embedded Links](#embedded-links)
-12. [Search Audit](#search-audit)
+12. [Audit](#audit)
 13. [Manage Authz](#manage-authz)
 14. [Manage Project](#manage-project)
 15. [Manage SSO applications](#manage-sso-applications)
@@ -1054,7 +1054,7 @@ const { token } = await descopeClient.management.user.generateEmbeddedLink('desm
 });
 ```
 
-### Search Audit
+### Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
 
@@ -1069,6 +1069,17 @@ console.log(audits);
 // Search successful logins in the last 30 days
 const audits = await descopeClient.management.audit.search({ actions: ['LoginSucceed'] });
 console.log(audits);
+```
+
+You can also create audit event with data
+
+```go
+await descopeClient.management.audit.createEvent({
+  action: "pencil.created",
+  type: "info", // info/warn/error
+  actorId: "UXXX",
+  tenantId: "tenant-id"
+});
 ```
 
 ### Manage Authz

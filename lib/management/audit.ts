@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { AuditSearchOptions, AuditRecord } from './types';
+import { AuditSearchOptions, AuditRecord, AuditCreateOptions } from './types';
 
 const WithAudit = (sdk: CoreSdk, managementKey?: string) => ({
   /**
@@ -24,6 +24,17 @@ const WithAudit = (sdk: CoreSdk, managementKey?: string) => ({
           delete res.externalIds;
           return res;
         }),
+    );
+  },
+  /**
+   * Create audit event
+   * @param createOptions to define which audit event to create
+   * @returns the audit records array
+   */
+  createEvent: (createOptions: AuditCreateOptions): Promise<SdkResponse<never>> => {
+    const body = { ...createOptions };
+    return transformResponse(
+      sdk.httpClient.post(apiPaths.audit.createEvent, body, { token: managementKey }),
     );
   },
 });
