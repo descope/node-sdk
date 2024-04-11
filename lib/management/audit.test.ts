@@ -97,6 +97,7 @@ describe('Management Audit', () => {
       );
       expect(resp).toEqual({
         code: 200,
+        data: {},
         ok: true,
         response: httpResponse,
       });
