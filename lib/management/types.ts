@@ -523,7 +523,7 @@ export type AuditCreateOptions = {
   type: AuditType;
   actorId: string;
   tenantId: string;
-  data: Record<string, any>;
+  data?: Record<string, any>;
 };
 
 /** Audit record response from the audit trail. Occurred is in milliseconds. */
