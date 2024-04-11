@@ -1073,12 +1073,15 @@ console.log(audits);
 
 You can also create audit event with data
 
-```go
+```typescript
 await descopeClient.management.audit.createEvent({
-  action: "pencil.created",
-  type: "info", // info/warn/error
-  actorId: "UXXX",
-  tenantId: "tenant-id"
+  action: 'pencil.created',
+  type: 'info', // info/warn/error
+  actorId: 'UXXX',
+  tenantId: 'tenant-id',
+  data: {
+    some: 'data',
+  },
 });
 ```
 
