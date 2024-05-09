@@ -35,7 +35,7 @@ jobs:
         uses: phips28/gh-action-bump-version@master
         with:
           skip-push: 'true'
-          tag-suffix: '-next-${{ env.SHORT_SHA}}-${{ TIMESTAMP }}'
+          tag-suffix: '-next-${{ env.SHORT_SHA}}-${{ env.TIMESTAMP }}'
       - name: Show Next Version
         run: |
           cat package.json
