@@ -27,10 +27,16 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Get Short SHA
         run: echo "SHORT_SHA=`echo ${{ github.sha }} | cut -c1-8`" >> $GITHUB_ENV
+      - name: Automated Version Bump
+        id: version-bump
+        uses: phips28/gh-action-bump-version@master
+        with:
+          skip-push: 'true'
+          tag-suffix: '-next'
       - name: Get Next Version
         run: |
           current_date=$(date +'%Y%m%d')
-          echo "NEW_VERSION=0.0.0-next-${SHORT_SHA}-${current_date}" >> $GITHUB_ENV
+          echo "NEW_VERSION=${{ steps.version-bump.outputs.newTag }}-${SHORT_SHA}-${current_date}" >> $GITHUB_ENV
       - name: Use Next Version
         run: |
           git config --global user.email "info@descope.com"
