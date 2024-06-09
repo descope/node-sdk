@@ -548,7 +548,8 @@ await descopeClient.management.tenant.update(
 );
 
 // Tenant deletion cannot be undone. Use carefully.
-await descopeClient.management.tenant.delete('my-custom-id');
+// Path true to cascade value, in case you want to delete all users/keys associated only with this tenant
+await descopeClient.management.tenant.delete('my-custom-id', true);
 
 // Load tenant by id
 const tenant = await descopeClient.management.tenant.load('my-custom-id');
