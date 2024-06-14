@@ -52,6 +52,9 @@ $ npm run start -- user-load <login-id>
 # Search users
 $ npm run start -- user-search-all <limit> [<page>]
 
+# Update custom attribute
+$ npm run start -- user-update-custom-attribute <login-id> <attribute-name> <attribute-value>
+
 ## Projects	##
 
 # Update project name

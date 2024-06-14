@@ -199,6 +199,19 @@ program
     handleSdkRes(await sdk.management.user.getProviderToken(loginId, provider));
   });
 
+// user-update-custom-attribute
+program
+  .command('user-update-custom-attribute')
+  .description("Update a user's custom attribute")
+  .argument('<login-id>', 'Login ID')
+  .argument('<attribute-key>', 'Attribute key')
+  .argument('<attribute-value>', 'Attribute value')
+  .action(async (loginId, attributeKey, attributeValue) => {
+    handleSdkRes(
+      await sdk.management.user.updateCustomAttribute(loginId, attributeKey, attributeValue),
+    );
+  });
+
 // *** Project commands ***
 
 // project-update-name
