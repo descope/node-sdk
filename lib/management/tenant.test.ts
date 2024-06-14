@@ -145,11 +145,11 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.tenant.delete('t1');
+      const resp = await management.tenant.delete('t1', true);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.delete,
-        { id: 't1' },
+        { id: 't1', cascade: true },
         { token: 'key' },
       );
 

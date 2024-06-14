@@ -46,9 +46,9 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
-  delete: (id: string): Promise<SdkResponse<never>> =>
+  delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.tenant.delete, { id }, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.tenant.delete, { id, cascade }, { token: managementKey }),
     ),
   load: (id: string): Promise<SdkResponse<Tenant>> =>
     transformResponse<Tenant, Tenant>(
