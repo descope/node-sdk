@@ -387,7 +387,7 @@ describe('Management User', () => {
 
       const resp: SdkResponse<InviteBatchResponse> = await management.user.inviteBatch(
         [
-          { loginId: 'one', email: 'one@one', password: 'clear' },
+          { loginId: 'one', email: 'one@one', password: 'clear', seed: 'aaa' },
           { loginId: 'two', email: 'two@two', hashedPassword: hashed },
         ],
         'https://invite.me',
@@ -402,6 +402,7 @@ describe('Management User', () => {
               loginId: 'one',
               email: 'one@one',
               password: 'clear',
+              seed: 'aaa',
             },
             {
               loginId: 'two',
