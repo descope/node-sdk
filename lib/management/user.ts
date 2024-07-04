@@ -351,6 +351,63 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
   }
   /* Update User End */
 
+  /**
+   * Patches an existing user.
+   * @param loginId The login ID of the user
+   * @param options The fields to update. Only the provided ones will be updated.
+   */
+  function patch(loginId: string, options: PatchUserOptions): Promise<SdkResponse<UserResponse>> {
+    const body = {
+      loginId,
+    } as any;
+
+    if (options.email !== undefined) {
+      body.email = options.email;
+    }
+    if (options.phone !== undefined) {
+      body.phone = options.phone;
+    }
+    if (options.displayName !== undefined) {
+      body.displayName = options.displayName;
+    }
+    if (options.givenName !== undefined) {
+      body.givenName = options.givenName;
+    }
+    if (options.middleName !== undefined) {
+      body.middleName = options.middleName;
+    }
+    if (options.familyName !== undefined) {
+      body.familyName = options.familyName;
+    }
+    if (options.roles !== undefined) {
+      body.roleNames = options.roles;
+    }
+    if (options.userTenants !== undefined) {
+      body.userTenants = options.userTenants;
+    }
+    if (options.customAttributes !== undefined) {
+      body.customAttributes = options.customAttributes;
+    }
+    if (options.picture !== undefined) {
+      body.picture = options.picture;
+    }
+    if (options.verifiedEmail !== undefined) {
+      body.verifiedEmail = options.verifiedEmail;
+    }
+    if (options.verifiedPhone !== undefined) {
+      body.verifiedPhone = options.verifiedPhone;
+    }
+    if (options.ssoAppIds !== undefined) {
+      body.ssoAppIds = options.ssoAppIds;
+    }
+
+    // TODO patch instead of post
+    return transformResponse<SingleUserResponse, UserResponse>(
+      sdk.httpClient.post(apiPaths.user.patch, body, { token: managementKey }),
+      (data) => data.user,
+    );
+  }
+
   return {
     create,
     /**
@@ -388,6 +445,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         (data) => data,
       ),
     update,
+    patch,
     /**
      * Delete an existing user.
      * @param loginId The login ID of the user
@@ -927,6 +985,22 @@ export interface UserOptions {
   middleName?: string;
   familyName?: string;
   additionalLoginIds?: string[];
+  ssoAppIds?: string[];
+}
+
+export interface PatchUserOptions {
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  roles?: string[];
+  userTenants?: AssociatedTenant[];
+  customAttributes?: Record<string, AttributesTypes>;
+  picture?: string;
+  verifiedEmail?: boolean;
+  verifiedPhone?: boolean;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
   ssoAppIds?: string[];
 }
 
