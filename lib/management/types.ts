@@ -477,6 +477,11 @@ export type SSOSAMLByMetadataSettings = {
   attributeMapping?: AttributeMapping;
 };
 
+export type ProviderTokenOptions = {
+  withRefreshToken?: boolean;
+  forceRefresh?: boolean;
+};
+
 export type ProviderTokenResponse = {
   provider: string;
   providerUserId: string;
