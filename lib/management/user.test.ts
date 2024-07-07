@@ -800,10 +800,12 @@ describe('Management User', () => {
       const resp: SdkResponse<ProviderTokenResponse> = await management.user.getProviderToken(
         'loginId',
         'p1',
+        true,
+        true,
       );
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.getProviderToken, {
-        queryParams: { loginId: 'loginId', provider: 'p1' },
+        queryParams: { loginId: 'loginId', provider: 'p1', withRefreshToken: 'true', forceRefresh: 'true'},
         token: 'key',
       });
 
