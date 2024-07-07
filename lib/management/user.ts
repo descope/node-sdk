@@ -536,8 +536,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
           queryParams: {
             loginId,
             provider,
-            withRefreshToken: String(withRefreshToken),
-            forceRefresh: String(forceRefresh),
+            withRefreshToken: withRefreshToken ? 'true' : 'false',
+            forceRefresh: forceRefresh ? 'true' : 'false',
           },
           token: managementKey,
         }),
