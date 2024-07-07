@@ -17,6 +17,7 @@ import {
   User,
   InviteBatchResponse,
   TemplateOptions,
+  ProviderTokenOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -528,16 +529,15 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     getProviderToken: (
       loginId: string,
       provider: string,
-      withRefreshToken?: boolean,
-      forceRefresh?: boolean,
+      providerTokenOptions?: ProviderTokenOptions,
     ): Promise<SdkResponse<ProviderTokenResponse>> =>
       transformResponse<ProviderTokenResponse>(
         sdk.httpClient.get(apiPaths.user.getProviderToken, {
           queryParams: {
             loginId,
             provider,
-            withRefreshToken: withRefreshToken ? 'true' : 'false',
-            forceRefresh: forceRefresh ? 'true' : 'false',
+            withRefreshToken: providerTokenOptions?.withRefreshToken ? 'true' : 'false',
+            forceRefresh: providerTokenOptions?.forceRefresh ? 'true' : 'false',
           },
           token: managementKey,
         }),
