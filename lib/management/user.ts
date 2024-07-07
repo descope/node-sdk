@@ -522,8 +522,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * Note: The 'Manage tokens from provider' setting must be enabled.
      * @param loginId the login ID of the user
      * @param provider the provider name (google, facebook, etc.).
-     * @param withRefreshToken optional, include the refresh token in the response
-     * @param forceRefresh optional, force to refresh the token
+     * @param providerTokenOptions optional, includes options for getting the provider token:
+     *    withRefreshToken - include the refresh token in the response
+     *    forceRefresh - force to refresh the token
      * @returns The ProviderTokenResponse of the given user and provider
      */
     getProviderToken: (
