@@ -503,7 +503,7 @@ describe('Management User', () => {
         }),
         status: 200,
       };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
 
       let resp: SdkResponse<UserResponse> = await management.user.patch('loginId', {
         email: 'a@b.c',
@@ -515,7 +515,7 @@ describe('Management User', () => {
         roles: ['r1', 'r2'],
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
         apiPaths.user.patch,
         {
           loginId: 'loginId',
@@ -548,7 +548,7 @@ describe('Management User', () => {
         ssoAppIds: ['sso1', 'sso2'],
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
         apiPaths.user.patch,
         {
           loginId: 'loginId',

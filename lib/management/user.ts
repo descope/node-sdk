@@ -402,9 +402,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       body.ssoAppIds = options.ssoAppIds;
     }
 
-    // TODO patch instead of post
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.patch, body, { token: managementKey }),
+      sdk.httpClient.patch(apiPaths.user.patch, body, { token: managementKey }),
       (data) => data.user,
     );
   }
