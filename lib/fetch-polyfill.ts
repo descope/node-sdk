@@ -9,8 +9,11 @@ const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
   // we can get Request on the first arg, or RequestInfo on the second arg
   // we want to make sure we are setting the "highWaterMark" so we are doing it on both args
   args.forEach((arg) => {
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unused-expressions
-    arg && ((arg as any).highWaterMark ??= highWaterMarkMb);
+    // Updated to only apply highWaterMark to objects, as it can't be applied to strings (it breaks it)
+    if (arg && typeof arg === 'object') {
+      // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unused-expressions
+      (arg as any).highWaterMark ??= highWaterMarkMb;
+    }
   });
 
   return crossFetch(...args);
