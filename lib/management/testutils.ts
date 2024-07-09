@@ -2,10 +2,11 @@
 const mockHttpClient = {
   get: jest.fn(),
   post: jest.fn(),
+  patch: jest.fn(),
   put: jest.fn(),
   delete: jest.fn(),
   reset: () =>
-    ['get', 'post', 'put', 'delete'].forEach((key) =>
+    ['get', 'post', 'patch', 'put', 'delete'].forEach((key) =>
       mockHttpClient[key].mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ body: 'body' }),

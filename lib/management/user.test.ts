@@ -493,6 +493,78 @@ describe('Management User', () => {
     });
   });
 
+  describe('patch', () => {
+    it('should send the request only with the set options', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+
+      let resp: SdkResponse<UserResponse> = await management.user.patch('loginId', {
+        email: 'a@b.c',
+        phone: '+11111111',
+        displayName: undefined,
+        givenName: 'name1',
+        middleName: 'name2',
+        familyName: 'name3',
+        roles: ['r1', 'r2'],
+      });
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
+        apiPaths.user.patch,
+        {
+          loginId: 'loginId',
+          email: 'a@b.c',
+          phone: '+11111111',
+          givenName: 'name1',
+          middleName: 'name2',
+          familyName: 'name3',
+          roleNames: ['r1', 'r2'],
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+
+      resp = await management.user.patch('loginId', {
+        displayName: 'name',
+        roles: undefined,
+        email: undefined,
+        userTenants: [{ tenantId: 't1', roleNames: ['r1'] }],
+        customAttributes: { a: 'a', b: 1, c: true },
+        picture: 'pic',
+        verifiedEmail: true,
+        verifiedPhone: false,
+        ssoAppIds: ['sso1', 'sso2'],
+      });
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
+        apiPaths.user.patch,
+        {
+          loginId: 'loginId',
+          displayName: 'name',
+          userTenants: [{ tenantId: 't1', roleNames: ['r1'] }],
+          customAttributes: { a: 'a', b: 1, c: true },
+          picture: 'pic',
+          verifiedEmail: true,
+          verifiedPhone: false,
+          ssoAppIds: ['sso1', 'sso2'],
+        },
+        { token: 'key' },
+      );
+    });
+  });
+
   describe('delete', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
