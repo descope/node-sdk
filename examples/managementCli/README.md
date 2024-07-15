@@ -55,6 +55,9 @@ $ npm run start -- user-search-all <limit> [<page>]
 # Update custom attribute
 $ npm run start -- user-update-custom-attribute <login-id> <attribute-name> <attribute-value>
 
+# Create a test user
+$ npm run start -- test-user-create <login-id> --email <my@domain.com> --name=<some-name> --verified-email
+
 ## Projects	##
 
 # Update project name
