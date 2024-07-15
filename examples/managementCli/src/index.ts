@@ -212,6 +212,38 @@ program
     );
   });
 
+// test-user-create
+program
+  .command('test-user-create')
+  .description('Create a new test user')
+  .argument('<loginId>', 'Login ID')
+  .option('-e, --email <email>', `User's email address`)
+  .option('-p, --phone <phone>', `User's phone number`)
+  .option('-n, --name <name>', `User's display name`)
+  .option('-ve, --verified-email', `User's email is verified`)
+  .option('-vp, --verified-phone', `User's phone is verified`)
+  .option(
+    '-t, --tenants <t1,t2>',
+    `User's tenant IDs`,
+    (val: string, memo: string[]) => {
+      memo.push(val);
+      return memo;
+    },
+    [],
+  )
+  .action(async (loginId, options) => {
+    handleSdkRes(
+      await sdk.management.user.createTestUser(loginId, {
+        email: options.email,
+        phone: options.phone,
+        displayName: options.name,
+        userTenants: options.tenants?.map((tenantId: string) => ({ tenantId })),
+        verifiedEmail: options.verifiedEmail,
+        verifiedPhone: options.verifiedPhone,
+      }),
+    );
+  });
+
 // *** Project commands ***
 
 // project-update-name
