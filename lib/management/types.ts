@@ -101,6 +101,7 @@ export type AccessKey = {
   createdBy: string;
   clientId: string;
   boundUserId?: string;
+  description?: string;
 };
 
 /** Access Key extended details including created key cleartext */
