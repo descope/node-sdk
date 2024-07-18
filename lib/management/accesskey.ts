@@ -20,6 +20,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param keyTenants Optional associated tenants for this key and its roles for each.
    * @param userId Optional bind this access key to a specific user.
    * @param customClaims Optional map of claims and their values that will be present in the JWT.
+   * @param description Optional free text description
    * @returns A newly created key and its cleartext. Make sure to save the cleartext securely.
    */
   create: (
@@ -29,11 +30,12 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     keyTenants?: AssociatedTenant[],
     userId?: string,
     customClaims?: Record<string, any>,
+    description?: string,
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.accessKey.create,
-        { name, expireTime, roleNames: roles, keyTenants, userId, customClaims },
+        { name, expireTime, roleNames: roles, keyTenants, userId, customClaims, description },
         { token: managementKey },
       ),
     ),
@@ -64,11 +66,16 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * Update an access key.
    * @param id Access key ID to load
    * @param name The updated access key name
+   * @param description Optional updated access key description
    * @returns The updated access key
    */
-  update: (id: string, name: string): Promise<SdkResponse<AccessKey>> =>
+  update: (id: string, name: string, description?: string): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
-      sdk.httpClient.post(apiPaths.accessKey.update, { id, name }, { token: managementKey }),
+      sdk.httpClient.post(
+        apiPaths.accessKey.update,
+        { id, name, description },
+        { token: managementKey },
+      ),
       (data) => data.key,
     ),
   /**

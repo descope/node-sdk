@@ -9,6 +9,7 @@ const management = withManagement(mockCoreSdk, 'key');
 const mockAccessKeyResponse = {
   id: 'ak1',
   name: 'foo',
+  description: '123ab',
 };
 
 const mockMgmtAccessKeyResponse = {
@@ -48,6 +49,7 @@ describe('Management Access Keys', () => {
         null,
         'uid',
         { k1: 'v1' },
+        'hey',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -59,6 +61,7 @@ describe('Management Access Keys', () => {
           keyTenants: null,
           userId: 'uid',
           customClaims: { k1: 'v1' },
+          description: 'hey',
         },
         { token: 'key' },
       );
@@ -141,11 +144,15 @@ describe('Management Access Keys', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AccessKey> = await management.accessKey.update('id', 'name');
+      const resp: SdkResponse<AccessKey> = await management.accessKey.update(
+        'id',
+        'name',
+        'description',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.accessKey.update,
-        { id: 'id', name: 'name' },
+        { id: 'id', name: 'name', description: 'description' },
         { token: 'key' },
       );
 
