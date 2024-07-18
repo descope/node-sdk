@@ -810,7 +810,7 @@ You can create, update, delete or load access keys, as well as search according 
 // on a per-tenant basis.
 // If userId is supplied, then authorization will be ignored, and the access key will be bound to the user's authorization.
 // If customClaims is supplied, then those claims will be present in the JWT returned by calls to ExchangeAccessKey.
-// If description is supplied, then the access key will hold an descriptive text.
+// If description is supplied, then the access key will hold a descriptive text.
 await descopeClient.management.accessKey.create(
   'key-name',
   123456789, // expiration time
