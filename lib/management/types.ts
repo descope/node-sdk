@@ -102,6 +102,7 @@ export type AccessKey = {
   clientId: string;
   boundUserId?: string;
   description?: string;
+  permittedIps?: string[];
 };
 
 /** Access Key extended details including created key cleartext */

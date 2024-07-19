@@ -21,6 +21,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param userId Optional bind this access key to a specific user.
    * @param customClaims Optional map of claims and their values that will be present in the JWT.
    * @param description Optional free text description
+   * @param permittedIps Optional list of IP addresses or CIDR ranges that are allowed to use this access key.
    * @returns A newly created key and its cleartext. Make sure to save the cleartext securely.
    */
   create: (
@@ -31,11 +32,21 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     userId?: string,
     customClaims?: Record<string, any>,
     description?: string,
+    permittedIps?: string[],
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.accessKey.create,
-        { name, expireTime, roleNames: roles, keyTenants, userId, customClaims, description },
+        {
+          name,
+          expireTime,
+          roleNames: roles,
+          keyTenants,
+          userId,
+          customClaims,
+          description,
+          permittedIps,
+        },
         { token: managementKey },
       ),
     ),
