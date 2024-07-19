@@ -50,6 +50,7 @@ describe('Management Access Keys', () => {
         'uid',
         { k1: 'v1' },
         'hey',
+        ['10.0.0.1', '192.168.1.0/24'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -62,6 +63,7 @@ describe('Management Access Keys', () => {
           userId: 'uid',
           customClaims: { k1: 'v1' },
           description: 'hey',
+          permittedIps: ['10.0.0.1', '192.168.1.0/24'],
         },
         { token: 'key' },
       );
