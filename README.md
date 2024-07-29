@@ -730,6 +730,10 @@ await descopeClient.management.user.removeTenantRoles(
   'role-name2',
 );
 
+// Update explicit user's data using patch (will override only provided fields)
+const options: PatchUserOptions = {displayName: 'Desmond Copeland Jr.'}
+await descopeClient.management.user.patch('desmond@descope.com', options)
+
 // User deletion cannot be undone. Use carefully.
 await descopeClient.management.user.delete('desmond@descope.com');
 
