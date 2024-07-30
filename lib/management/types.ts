@@ -29,6 +29,7 @@ export type OidcApplicationOptions = {
   description?: string;
   logo?: string;
   enabled?: boolean;
+  forceAuthentication?: boolean;
 };
 
 /**
@@ -53,6 +54,9 @@ export type SamlApplicationOptions = {
   acsAllowedCallbacks?: string[];
   subjectNameIdType?: string;
   subjectNameIdFormat?: string;
+  defaultRelayState?: string;
+  forceAuthentication?: boolean;
+  logoutRedirectUrl?: string;
 };
 
 /**
@@ -185,6 +189,7 @@ export type SSOApplicationOIDCSettings = {
   loginPageUrl: string;
   issuer: string;
   discoveryUrl: string;
+  forceAuthentication: boolean;
 };
 
 /** Represents SAML settings of an SSO application in a project. */
@@ -204,6 +209,10 @@ export type SSOApplicationSAMLSettings = {
   acsAllowedCallbacks: string[];
   subjectNameIdType: string;
   subjectNameIdFormat: string;
+  defaultRelayState: string;
+  forceAuthentication: boolean;
+  idpLogoutUrl: string;
+  logoutRedirectUrl: string;
 };
 
 /** Represents an SSO application in a project. */
