@@ -42,6 +42,10 @@ const mockSSOApplications = [
       acsAllowedCallbacks: [],
       subjectNameIdType: '',
       subjectNameIdFormat: '',
+      defaultRelayState: 'rs',
+      forceAuthentication: false,
+      idpLogoutUrl: 'http://dummyidp.com/logout',
+      logoutRedirectUrl: 'http://dummy.com/logout',
     },
     oidcSettings: null,
   },
@@ -57,6 +61,7 @@ const mockSSOApplications = [
       loginPageUrl: 'http://dummy.com/login',
       issuer: 'http://dummy.com/issuer',
       discoveryUrl: 'http://dummy/discovery',
+      forceAuthentication: true,
     },
   },
 ];
@@ -87,6 +92,7 @@ describe('Management SSOApplication', () => {
         await management.ssoApplication.createOidcApplication({
           name: 'name',
           loginPageUrl: 'http://dummy.com',
+          forceAuthentication: true,
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -98,6 +104,7 @@ describe('Management SSOApplication', () => {
           description: undefined,
           enabled: true,
           logo: undefined,
+          forceAuthentication: true,
         },
         { token: 'key' },
       );
@@ -129,6 +136,9 @@ describe('Management SSOApplication', () => {
           loginPageUrl: 'http://dummy.com',
           useMetadataInfo: true,
           metadataUrl: 'http://dummy.com/metadata',
+          defaultRelayState: 'rs',
+          forceAuthentication: true,
+          logoutRedirectUrl: 'http://dummy.com/logout',
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -150,6 +160,9 @@ describe('Management SSOApplication', () => {
           acsAllowedCallbacks: undefined,
           subjectNameIdType: undefined,
           subjectNameIdFormat: undefined,
+          defaultRelayState: 'rs',
+          forceAuthentication: true,
+          logoutRedirectUrl: 'http://dummy.com/logout',
         },
         { token: 'key' },
       );
@@ -242,6 +255,7 @@ describe('Management SSOApplication', () => {
           description: undefined,
           enabled: false,
           logo: undefined,
+          forceAuthentication: undefined,
         },
         { token: 'key' },
       );
@@ -295,6 +309,9 @@ describe('Management SSOApplication', () => {
           acsAllowedCallbacks: undefined,
           subjectNameIdType: undefined,
           subjectNameIdFormat: undefined,
+          defaultRelayState: undefined,
+          forceAuthentication: undefined,
+          logoutRedirectUrl: undefined,
         },
         { token: 'key' },
       );
