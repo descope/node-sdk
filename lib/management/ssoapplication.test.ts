@@ -255,7 +255,7 @@ describe('Management SSOApplication', () => {
           description: undefined,
           enabled: false,
           logo: undefined,
-          forceAuthentication: false,
+          forceAuthentication: undefined,
         },
         { token: 'key' },
       );
@@ -310,7 +310,7 @@ describe('Management SSOApplication', () => {
           subjectNameIdType: undefined,
           subjectNameIdFormat: undefined,
           defaultRelayState: undefined,
-          forceAuthentication: false,
+          forceAuthentication: undefined,
           logoutRedirectUrl: undefined,
         },
         { token: 'key' },
