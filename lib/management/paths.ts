@@ -140,4 +140,9 @@ export default {
     targetAll: '/v1/mgmt/authz/re/targetall',
     getModified: '/v1/mgmt/authz/getmodified',
   },
+  fga: {
+    schema: '/v1/mgmt/fga/schema',
+    relations: '/v1/mgmt/fga/relations',
+    check: '/v1/mgmt/fga/check',
+  },
 };
