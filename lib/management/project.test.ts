@@ -40,7 +40,7 @@ describe('Management Project', () => {
     });
   });
 
-  describe('updateCustomTags', () => {
+  describe('setTags', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -53,10 +53,10 @@ describe('Management Project', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const tags = ['tag1!', 'tag2'];
-      const resp = await management.project.updateCustomTags(tags);
+      const resp = await management.project.setTags(tags);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.updateCustomTags,
+        apiPaths.project.setTags,
         { tags },
         { token: 'key' },
       );
@@ -88,13 +88,13 @@ describe('Management Project', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const name = 'name1';
-      const tag = 'production';
-      const customTags = ['tag1', 'tag2@'];
-      const resp = await management.project.clone('name1', tag, customTags);
+      const environment = 'production';
+      const tags = ['tag1', 'tag2@'];
+      const resp = await management.project.clone('name1', environment, tags);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.project.clone,
-        { name, tag, customTags },
+        { name, environment, tags },
         { token: 'key' },
       );
 

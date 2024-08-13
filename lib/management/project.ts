@@ -23,10 +23,10 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * Update the current project tags.
    * @param tags The wanted tags
    */
-  updateCustomTags: (tags: string[]): Promise<SdkResponse<never>> =>
+  setTags: (tags: string[]): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
-        apiPaths.project.updateCustomTags,
+        apiPaths.project.setTags,
         {
           tags,
         },
@@ -38,22 +38,21 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    *  - This action is supported only with a pro license or above.
    *  - Users, tenants and access keys are not cloned.
    * @param name The name of the new project
-   * @param tag The tag of the new project
-   * @param customTags array of free text tags
+   * @param environment Determine if the project is in production or not.
+   * @param tags array of free text tags
    * @returns The new project details (name, id, and tag)
    */
   clone: (
     name: string,
-    tag?: ProjectTag,
-    customTags?: string[],
-  ): Promise<SdkResponse<CloneProjectResponse>> =>
-    transformResponse(
+    environment?: ProjectTag,
+    tags?: string[],
+  ): Promise<SdkResponse<CloneProjectResponse>> => transformResponse(
       sdk.httpClient.post(
         apiPaths.project.clone,
         {
           name,
-          tag,
-          customTags,
+          environment,
+          tags,
         },
         { token: managementKey },
       ),

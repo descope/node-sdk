@@ -674,5 +674,6 @@ export type ProjectTag = 'production';
 export type CloneProjectResponse = {
   projectId: string;
   projectName: string;
-  tag?: string;
+  environment?: string;
+  tags?: string;
 };

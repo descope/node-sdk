@@ -787,8 +787,8 @@ You can update project name and tags, as well as to clone the current project to
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.project.updateName('new-project-name');
 
-// Update will override all fields as is. Use carefully.
-await descopeClient.management.project.updateCustomTags(['tag1!', 'new']);
+// Set will override all fields as is. Use carefully.
+await descopeClient.management.project.setTags(['tag1!', 'new']);
 
 // Clone the current project to a new one
 // Note that this action is supported only with a pro license or above.
