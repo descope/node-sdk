@@ -46,7 +46,8 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     environment?: ProjectTag,
     tags?: string[],
-  ): Promise<SdkResponse<CloneProjectResponse>> => transformResponse(
+  ): Promise<SdkResponse<CloneProjectResponse>> =>
+    transformResponse(
       sdk.httpClient.post(
         apiPaths.project.clone,
         {
