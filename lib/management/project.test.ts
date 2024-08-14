@@ -107,9 +107,13 @@ describe('Management Project', () => {
 
       const resp: SdkResponse<Project[]> = await management.project.projectsList();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.projectsList, {
-        token: 'key',
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.projectsList,
+        {},
+        {
+          token: 'key',
+        },
+      );
       expect(resp).toEqual({
         code: 200,
         data: mockListProjectsResponse,
