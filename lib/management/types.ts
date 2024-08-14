@@ -675,5 +675,12 @@ export type CloneProjectResponse = {
   projectId: string;
   projectName: string;
   environment?: string;
-  tags?: string;
+  tags?: string[];
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  environment?: string;
+  tags?: string[];
 };

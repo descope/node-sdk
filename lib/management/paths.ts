@@ -43,6 +43,7 @@ export default {
     clone: '/v1/mgmt/project/clone',
     export: '/v1/mgmt/project/export',
     import: '/v1/mgmt/project/import',
+    projectsList: '/v1/mgmt/projects/list',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',

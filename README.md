@@ -795,6 +795,12 @@ await descopeClient.management.project.setTags(['tag1!', 'new']);
 const cloneRes = await descopeClient.management.project.clone('new-project-name');
 ```
 
+With using a company management key you can get a list of all the projects in the company:
+
+```typescript
+const projects = await descopeClient.management.project.projectsList();
+```
+
 You can manage your project's settings and configurations by exporting your
 project's environment. You can also import previously exported data into
 the same project or a different one.

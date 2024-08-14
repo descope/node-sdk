@@ -1,7 +1,11 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { CloneProjectResponse, ProjectTag } from './types';
+import { CloneProjectResponse, Project, ProjectTag } from './types';
+
+type ListProjectsResponse = {
+  projects: Project[];
+};
 
 const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   /**
@@ -40,7 +44,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * @param name The name of the new project
    * @param environment Determine if the project is in production or not.
    * @param tags array of free text tags
-   * @returns The new project details (name, id, and tag)
+   * @returns The new project details (name, id, environment and tags)
    */
   clone: (
     name: string,
@@ -57,6 +61,28 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
         },
         { token: managementKey },
       ),
+    ),
+
+  /**
+   * list of all the projects in the company
+   * @returns List of projects details (name, id, environment and tags)
+   */
+  projectsList: async (): Promise<SdkResponse<Project[]>> =>
+    transformResponse<ListProjectsResponse, Project[]>(
+      sdk.httpClient.post(
+        apiPaths.project.projectsList,
+        {},
+        {
+          token: managementKey,
+        },
+      ),
+      (data) =>
+        data.projects.map(({ id, name, environment, tags }) => ({
+          id,
+          name,
+          environment,
+          tags,
+        })),
     ),
 
   /**
