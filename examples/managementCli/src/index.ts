@@ -255,13 +255,13 @@ program
     handleSdkRes(await sdk.management.project.updateName(name));
   });
 
-// project-set-tags
+// project-update-tags
 program
-  .command('project-set-tags')
+  .command('project-update-tags')
   .description('Set the current project tags')
   .argument('<tags>', 'Tags')
   .action(async (tags) => {
-    handleSdkRes(await sdk.management.project.setTags(tags));
+    handleSdkRes(await sdk.management.project.updateTags(tags));
   });
 
 // *** Access key commands ***

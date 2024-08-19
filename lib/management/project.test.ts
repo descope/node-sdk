@@ -63,7 +63,7 @@ describe('Management Project', () => {
     });
   });
 
-  describe('setTags', () => {
+  describe('updateTags', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -76,10 +76,10 @@ describe('Management Project', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const tags = ['tag1!', 'tag2'];
-      const resp = await management.project.setTags(tags);
+      const resp = await management.project.updateTags(tags);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.setTags,
+        apiPaths.project.updateTags,
         { tags },
         { token: 'key' },
       );

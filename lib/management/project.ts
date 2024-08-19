@@ -27,10 +27,10 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * Update the current project tags.
    * @param tags The wanted tags
    */
-  setTags: (tags: string[]): Promise<SdkResponse<never>> =>
+  updateTags: (tags: string[]): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
-        apiPaths.project.setTags,
+        apiPaths.project.updateTags,
         {
           tags,
         },

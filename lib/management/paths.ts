@@ -39,7 +39,7 @@ export default {
   },
   project: {
     updateName: '/v1/mgmt/project/update/name',
-    setTags: '/v1/mgmt/project/set/tags',
+    updateTags: '/v1/mgmt/project/update/tags',
     clone: '/v1/mgmt/project/clone',
     export: '/v1/mgmt/project/export',
     import: '/v1/mgmt/project/import',
