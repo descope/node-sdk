@@ -781,7 +781,7 @@ await descopeClient.management.user.expirePassword('<login-ID>');
 
 ### Manage Project
 
-You can update project name and tags, as well to clone the current project to a new one:
+You can update project name and tags, as well as clone the current project to a new one:
 
 ```typescript
 // Update will override all fields as is. Use carefully.
