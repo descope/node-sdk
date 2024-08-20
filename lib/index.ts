@@ -75,6 +75,9 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
   const sdk = {
     ...coreSdk,
 
+    // Overrides core-sdk refresh, because the core-sdk exposes queryParams, which is for internal use only
+    refresh: async (token?: string) => coreSdk.refresh(token),
+
     /**
      * Provides various APIs for managing a Descope project programmatically. A management key must
      * be provided as an argument when initializing the SDK to use these APIs. Management keys can be
