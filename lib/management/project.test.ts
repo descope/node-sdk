@@ -1,8 +1,31 @@
+import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
+import { Project } from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
+
+const mockMgmtListProjectsResponse = {
+  projects: [
+    {
+      id: '1',
+      name: '2',
+      tag: '',
+      environment: '',
+      tags: ['hey', 'sup'],
+    },
+  ],
+};
+
+const mockListProjectsResponse: Project[] = [
+  {
+    id: '1',
+    name: '2',
+    environment: '',
+    tags: ['hey', 'sup'],
+  },
+];
 
 describe('Management Project', () => {
   afterEach(() => {
@@ -40,6 +63,66 @@ describe('Management Project', () => {
     });
   });
 
+  describe('updateTags', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tags = ['tag1!', 'tag2'];
+      const resp = await management.project.updateTags(tags);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.updateTags,
+        { tags },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('projectsList', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtListProjectsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtListProjectsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Project[]> = await management.project.listProjects();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.projectsList,
+        {},
+        {
+          token: 'key',
+        },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: mockListProjectsResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('clone', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockCloneProjectResponse = {
@@ -58,12 +141,12 @@ describe('Management Project', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const name = 'name1';
-      const tag = 'production';
-      const resp = await management.project.clone('name1', tag);
-
+      const environment = 'production';
+      const tags = ['tag1', 'tag2@'];
+      const resp = await management.project.clone('name1', environment, tags);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.project.clone,
-        { name, tag },
+        { name, environment, tags },
         { token: 'key' },
       );
 
