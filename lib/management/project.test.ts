@@ -105,7 +105,7 @@ describe('Management Project', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<Project[]> = await management.project.projectsList();
+      const resp: SdkResponse<Project[]> = await management.project.listProjects();
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.project.projectsList,

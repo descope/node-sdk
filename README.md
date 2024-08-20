@@ -781,7 +781,7 @@ await descopeClient.management.user.expirePassword('<login-ID>');
 
 ### Manage Project
 
-You can update project name and tags, as well as to clone the current project to a new one:
+You can update project name and tags, as well to clone the current project to a new one:
 
 ```typescript
 // Update will override all fields as is. Use carefully.
@@ -798,7 +798,7 @@ const cloneRes = await descopeClient.management.project.clone('new-project-name'
 With using a company management key you can get a list of all the projects in the company:
 
 ```typescript
-const projects = await descopeClient.management.project.projectsList();
+const projects = await descopeClient.management.project.listProjects();
 ```
 
 You can manage your project's settings and configurations by exporting your

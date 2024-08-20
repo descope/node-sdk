@@ -67,7 +67,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * list of all the projects in the company
    * @returns List of projects details (name, id, environment and tags)
    */
-  projectsList: async (): Promise<SdkResponse<Project[]>> =>
+  listProjects: async (): Promise<SdkResponse<Project[]>> =>
     transformResponse<ListProjectsResponse, Project[]>(
       sdk.httpClient.post(
         apiPaths.project.projectsList,
