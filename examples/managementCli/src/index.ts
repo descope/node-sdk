@@ -860,6 +860,94 @@ program
     handleSdkRes(await sdk.management.authz.whatCanTargetAccess(target), option.output);
   });
 
+// fga
+program
+  .command('fga-save-schema')
+  .description('Save the fga schema defined in the given file')
+  .argument('<filename>', 'Schema input filename')
+  .action(async (filename) => {
+    const contents = fs.readFileSync(filename, 'utf8');
+    console.log('file contents', contents);
+    handleSdkRes(await sdk.management.fga.saveSchema({ dsl: contents }), undefined);
+  });
+
+program
+  .command('fga-create-relations')
+  .description('Create the given relations')
+  .argument('<filename>', 'Relations filename')
+  .action(async (filename) => {
+    // read file
+    const content = fs.readFileSync(filename, 'utf8');
+    const relations = JSON.parse(content);
+    if (!relations) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.createRelations(relations));
+  });
+
+program
+  .command('fga-create-relation')
+  .description('Create a relation')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-R, --resourceType <resourceType>', 'The resource type for the relation')
+  .option('-l, --relation <relation>', 'The relation for the relation')
+  .option('-t, --target <target>', 'The target for the relation')
+  .option('-T, --targetType <targetType>', 'The target type for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.fga.createRelations([
+        {
+          resource: option.resource,
+          resourceType: option.resourceType,
+          relation: option.relation,
+          target: option.target,
+          targetType: option.targetType,
+        },
+      ]),
+      undefined,
+    );
+  });
+
+program
+  .command('fga-check-relations')
+  .description('Check if the given relations exist')
+  .argument('<filename>', 'Relations filename')
+  .action(async (filename) =>
+    // read file
+    {
+      const content = fs.readFileSync(filename, 'utf8');
+      const relations = JSON.parse(content);
+      if (!relations) {
+        console.error('Invalid file content');
+        return;
+      }
+      handleSdkRes(await sdk.management.fga.check(relations));
+    },
+  );
+
+program
+  .command('fga-check-relation')
+  .description('Check if the given relation exists')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-R, --resourceType <resourceType>', 'The resource type for the relation')
+  .option('-l, --relation <relation>', 'The relation for the relation')
+  .option('-t, --target <target>', 'The target for the relation')
+  .option('-T, --targetType <targetType>', 'The target type for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.fga.check([
+        {
+          resource: option.resource,
+          resourceType: option.resourceType,
+          relation: option.relation,
+          target: option.target,
+          targetType: option.targetType,
+        },
+      ]),
+    );
+  });
+
 // *** Helper functions ***
 
 function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {

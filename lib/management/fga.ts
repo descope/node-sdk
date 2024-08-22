@@ -30,7 +30,7 @@ const WithFGA = (sdk: CoreSdk, managementKey?: string) => ({
    */
   createRelations: (relations: FGARelation[]): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.authz.reCreate, { tuples: relations }, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.fga.relations, { tuples: relations }, { token: managementKey }),
     ),
   /**
    * Check if the given relations exist.
