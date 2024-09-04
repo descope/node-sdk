@@ -44,6 +44,7 @@ export default {
     export: '/v1/mgmt/project/export',
     import: '/v1/mgmt/project/import',
     projectsList: '/v1/mgmt/projects/list',
+    delete: '/v1/mgmt/project/delete',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',

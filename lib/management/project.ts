@@ -86,6 +86,12 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
     ),
 
   /**
+   * Delete current project.
+   */
+  delete: (): Promise<SdkResponse<never>> =>
+    transformResponse(sdk.httpClient.post(apiPaths.project.delete, {}, { token: managementKey })),
+
+  /**
    * Exports all settings and configurations for a project and returns the
    * raw JSON files response as an object.
    *  - This action is supported only with a pro license or above.

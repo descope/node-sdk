@@ -793,6 +793,9 @@ await descopeClient.management.project.updateTags(['tag1!', 'new']);
 // Clone the current project to a new one
 // Note that this action is supported only with a pro license or above.
 const cloneRes = await descopeClient.management.project.clone('new-project-name');
+
+// Delete current project
+await descopeClient.management.project.delete();
 ```
 
 With using a company management key you can get a list of all the projects in the company:
