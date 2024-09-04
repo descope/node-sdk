@@ -17,6 +17,10 @@ export type CreateTenantResponse = {
   id: string;
 };
 
+export type GenerateSSOConfigurationLinkResponse = {
+  adminSSOConfigurationLink: string;
+};
+
 /**
  * Options to create or update an OIDC application.
  *

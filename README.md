@@ -583,6 +583,13 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTime: 10,
   InactivityTimeUnit: 'minutes',
 });
+
+// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
+  'my-tenant-id',
+  60 * 60 * 24,
+);
+console.log(res.adminSSOConfigurationLink);
 ```
 
 ### Manage Password
