@@ -1,7 +1,13 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { CreateTenantResponse, Tenant, AttributesTypes, TenantSettings } from './types';
+import {
+  CreateTenantResponse,
+  Tenant,
+  AttributesTypes,
+  TenantSettings,
+  GenerateSSOConfigurationLinkResponse,
+} from './types';
 
 type MultipleTenantResponse = {
   tenants: Tenant[];
@@ -101,6 +107,20 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
           token: managementKey,
         },
       ),
+    ),
+  generateSSOConfigurationLink: (
+    tenantId: string,
+    expireDuration: number,
+  ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
+    transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
+      sdk.httpClient.post(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        { tenantId, expireTime: expireDuration },
+        {
+          token: managementKey,
+        },
+      ),
+      (data) => data,
     ),
 });
 
