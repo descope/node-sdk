@@ -41,6 +41,7 @@ type SearchRequest = {
   withTestUser?: boolean;
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
+  loginIds?: string[];
 };
 
 type SingleUserResponse = {
