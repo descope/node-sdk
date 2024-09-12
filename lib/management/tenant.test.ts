@@ -16,9 +16,9 @@ const mockTenantCreateResponse = {
 };
 
 const mockTenants = [
-  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'] },
-  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'] },
-  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'] },
+  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'], createdTime: 1 },
+  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'], createdTime: 1 },
+  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'], createdTime: 1 },
 ];
 
 const mockSettings: TenantSettings = {
