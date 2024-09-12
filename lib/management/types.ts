@@ -147,6 +147,7 @@ export type Tenant = {
   id: string;
   name: string;
   selfProvisioningDomains: string[];
+  createdTime: number;
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
