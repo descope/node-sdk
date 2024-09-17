@@ -9,7 +9,7 @@ export default {
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     logout: '/v1/mgmt/user/logout',
-    search: '/v1/mgmt/user/search',
+    search: '/v2/mgmt/user/search',
     getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
     updateLoginId: '/v1/mgmt/user/update/loginid',
