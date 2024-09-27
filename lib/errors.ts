@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/prefer-default-export
 /** Common Error Codes */
-export const descopeErrors = {
+export default {
   badRequest: 'E011001',
   missingArguments: 'E011002',
   invalidRequest: 'E011003',
