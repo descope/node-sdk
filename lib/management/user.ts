@@ -434,7 +434,14 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         sdk.httpClient.post(
           apiPaths.user.createBatch,
           {
-            users,
+            users: users.map((u) => {
+              const res = {
+                ...u,
+                roleNames: u.roles,
+              };
+              delete res.roles;
+              return res;
+            }),
             invite: true,
             inviteUrl,
             sendMail,
