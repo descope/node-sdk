@@ -485,12 +485,16 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  spAcsUrl?: string;
+  spEntityId?: string;
 };
 
 export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  spAcsUrl?: string;
+  spEntityId?: string;
 };
 
 export type ProviderTokenOptions = {
