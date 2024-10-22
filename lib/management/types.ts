@@ -487,7 +487,7 @@ export type SSOSAMLSettings = {
   attributeMapping?: AttributeMapping;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
-  spAcsUrl?: string;
+  spACSUrl?: string;
   spEntityId?: string;
 };
 
@@ -497,7 +497,7 @@ export type SSOSAMLByMetadataSettings = {
   attributeMapping?: AttributeMapping;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
-  spAcsUrl?: string;
+  spACSUrl?: string;
   spEntityId?: string;
 };
 
