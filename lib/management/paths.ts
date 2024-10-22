@@ -41,9 +41,10 @@ export default {
     updateName: '/v1/mgmt/project/update/name',
     updateTags: '/v1/mgmt/project/update/tags',
     clone: '/v1/mgmt/project/clone',
-    export: '/v1/mgmt/project/export',
-    import: '/v1/mgmt/project/import',
     projectsList: '/v1/mgmt/projects/list',
+    exportSnapshot: '/v1/mgmt/project/snapshot/export',
+    importSnapshot: '/v1/mgmt/project/snapshot/import',
+    validateSnapshot: '/v1/mgmt/project/snapshot/validate',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
