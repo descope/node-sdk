@@ -78,13 +78,19 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param id Access key ID to load
    * @param name The updated access key name
    * @param description Optional updated access key description
+   * @param permittedIps Optional updated list of IP addresses or CIDR ranges that are allowed to use this access key.
    * @returns The updated access key
    */
-  update: (id: string, name: string, description?: string): Promise<SdkResponse<AccessKey>> =>
+  update: (
+    id: string,
+    name: string,
+    description?: string,
+    permittedIps?: string[],
+  ): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
       sdk.httpClient.post(
         apiPaths.accessKey.update,
-        { id, name, description },
+        { id, name, description, permittedIps },
         { token: managementKey },
       ),
       (data) => data.key,
