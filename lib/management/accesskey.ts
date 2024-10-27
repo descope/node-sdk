@@ -78,19 +78,25 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param id Access key ID to load
    * @param name The updated access key name
    * @param description Optional updated access key description
-   * @param permittedIps Optional updated list of IP addresses or CIDR ranges that are allowed to use this access key.
+   * @param roles Optional roles in the project. Does not apply for multi-tenants
+   * @param keyTenants Optional associated tenants for this key and its roles for each.
+   * @param customClaims Optional map of claims and their values that will be present in the JWT.
+   * @param permittedIps Optional list of IP addresses or CIDR ranges that are allowed to use this access key.
    * @returns The updated access key
    */
   update: (
     id: string,
     name: string,
     description?: string,
+    roles?: string[],
+    keyTenants?: AssociatedTenant[],
+    customClaims?: Record<string, any>,
     permittedIps?: string[],
   ): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
       sdk.httpClient.post(
         apiPaths.accessKey.update,
-        { id, name, description, permittedIps },
+        { id, name, description, roleNames: roles, keyTenants, customClaims, permittedIps },
         { token: managementKey },
       ),
       (data) => data.key,

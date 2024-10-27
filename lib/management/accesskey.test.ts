@@ -150,12 +150,23 @@ describe('Management Access Keys', () => {
         'id',
         'name',
         'description',
+        ['r1', 'r2'],
+        undefined,
+        { k1: 'v1' },
         ['1.2.3.4'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.accessKey.update,
-        { id: 'id', name: 'name', description: 'description', permittedIps: ['1.2.3.4'] },
+        {
+          id: 'id',
+          name: 'name',
+          description: 'description',
+          roleNames: ['r1', 'r2'],
+          keyTenants: undefined,
+          customClaims: { k1: 'v1' },
+          permittedIps: ['1.2.3.4'],
+        },
         { token: 'key' },
       );
 
