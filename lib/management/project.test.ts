@@ -2,7 +2,13 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
-import { Project } from './types';
+import {
+  ExportSnapshotResponse,
+  ImportSnapshotRequest,
+  Project,
+  ValidateSnapshotRequest,
+  ValidateSnapshotResponse,
+} from './types';
 
 const management = withManagement(mockCoreSdk, 'key');
 
@@ -159,7 +165,128 @@ describe('Management Project', () => {
     });
   });
 
-  describe('export', () => {
+  describe('exportSnapshot', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockExportSnapshotResponse: ExportSnapshotResponse = {
+        files: {
+          'foo/bar.json': {
+            foo: 'bar',
+          },
+        },
+      };
+
+      const httpResponse = {
+        ok: true,
+        json: () => mockExportSnapshotResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockExportSnapshotResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.project.exportSnapshot();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.exportSnapshot,
+        {},
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockExportSnapshotResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('importSnapshot', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockImportSnapshotResponse = {};
+
+      const httpResponse = {
+        ok: true,
+        json: () => mockImportSnapshotResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockImportSnapshotResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const importSnapshotRequest: ImportSnapshotRequest = {
+        files: { 'foo/bar.json': { foo: 'bar' } },
+        inputSecrets: {
+          connectors: [{ id: 'i', name: 'n', type: 't', value: 'v' }],
+          oauthProviders: [{ id: 'a', name: 'b', type: 'c', value: 'd' }],
+        },
+      };
+
+      const resp = await management.project.importSnapshot(importSnapshotRequest);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.importSnapshot,
+        importSnapshotRequest,
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockImportSnapshotResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('validateSnapshot', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockSecrets = {
+        connectors: [{ id: 'i', name: 'n', type: 't', value: 'v' }],
+        oauthProviders: [{ id: 'a', name: 'b', type: 'c', value: 'd' }],
+      };
+
+      const mockValidateSnapshotResponse: ValidateSnapshotResponse = {
+        ok: true,
+        failures: ['a'],
+        missingSecrets: mockSecrets,
+      };
+
+      const httpResponse = {
+        ok: true,
+        json: () => mockValidateSnapshotResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockValidateSnapshotResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const validateSnapshotRequest: ValidateSnapshotRequest = {
+        files: { 'foo/bar.json': { foo: 'bar' } },
+        inputSecrets: mockSecrets,
+      };
+
+      const resp = await management.project.validateSnapshot(validateSnapshotRequest);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.validateSnapshot,
+        validateSnapshotRequest,
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockValidateSnapshotResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('export deprecated', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockExportProjectResponse = {
         files: {
@@ -182,7 +309,7 @@ describe('Management Project', () => {
       const resp = await management.project.export();
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.export,
+        apiPaths.project.exportSnapshot,
         {},
         { token: 'key' },
       );
@@ -195,41 +322,41 @@ describe('Management Project', () => {
       });
     });
   });
-});
 
-describe('import', () => {
-  it('should send the correct request and receive correct response', async () => {
-    const mockImportProjectResponse = {};
+  describe('import deprecated', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockImportProjectResponse = {};
 
-    const httpResponse = {
-      ok: true,
-      json: () => mockImportProjectResponse,
-      clone: () => ({
-        json: () => Promise.resolve(mockImportProjectResponse),
-      }),
-      status: 200,
-    };
-    mockHttpClient.post.mockResolvedValue(httpResponse);
+      const httpResponse = {
+        ok: true,
+        json: () => mockImportProjectResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockImportProjectResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
 
-    const resp = await management.project.import({ 'foo/bar.json': { foo: 'bar' } });
+      const resp = await management.project.import({ 'foo/bar.json': { foo: 'bar' } });
 
-    expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.project.import,
-      {
-        files: {
-          'foo/bar.json': {
-            foo: 'bar',
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.project.importSnapshot,
+        {
+          files: {
+            'foo/bar.json': {
+              foo: 'bar',
+            },
           },
         },
-      },
-      { token: 'key' },
-    );
+        { token: 'key' },
+      );
 
-    expect(resp).toEqual({
-      code: 200,
-      data: mockImportProjectResponse,
-      ok: true,
-      response: httpResponse,
+      expect(resp).toEqual({
+        code: 200,
+        data: mockImportProjectResponse,
+        ok: true,
+        response: httpResponse,
+      });
     });
   });
 });
