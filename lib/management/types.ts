@@ -535,6 +535,7 @@ export type UserFailedResponse = {
 export type InviteBatchResponse = {
   createdUsers: UserResponse[];
   failedUsers: UserFailedResponse[];
+  additionalErrors: Record<string, string>;
 };
 
 /**
