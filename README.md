@@ -503,12 +503,6 @@ invalidate all user's refresh tokens. After calling this function, you must inva
 await descopeClient.logoutAll(refreshToken);
 ```
 
-It is also possible to sign the user out from all previous sessions.
-
-```typescript
-await descopeClient.logoutPrevious(refreshToken);
-```
-
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
