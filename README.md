@@ -1320,6 +1320,12 @@ await descopeClient.management.user.createTestUser('desmond@descope.com', {
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
 });
 
+// Search all test users according to various parameters
+const searchRes = await descopeClient.management.user.searchTestUsers(['id']);
+searchRes.data.forEach((user) => {
+  // do something
+});
+
 // Now test user got created, and this user will be available until you delete it,
 // you can use any management operation for test user CRUD.
 // You can also delete all test users.

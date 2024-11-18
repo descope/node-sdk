@@ -204,7 +204,7 @@ describe('Management User', () => {
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
+        apiPaths.user.createTestUser,
         {
           loginId: 'loginId',
           email: 'a@b.c',
@@ -244,7 +244,7 @@ describe('Management User', () => {
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
+        apiPaths.user.createTestUser,
         {
           loginId: 'loginId',
           email: 'a@b.c',
