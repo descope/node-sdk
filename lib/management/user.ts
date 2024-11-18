@@ -190,7 +190,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             test: true,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.create, body, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.user.createTestUser, body, { token: managementKey }),
       (data) => data.user,
     );
   }
@@ -562,12 +562,21 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         ),
         (data) => data.users,
       ),
-    /**
-     * Search all users. Results can be filtered according to tenants roles and more,
-     * Pagination is also available using the limit and page parameters.
-     * @param searchReq an object with all the constraints for this search
-     * @returns An array of UserResponse found by the query
-     */
+    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        sdk.httpClient.post(
+          apiPaths.user.searchTestUsers,
+          {
+            ...searchReq,
+            withTestUser: true,
+            testUsersOnly: true,
+            roleNames: searchReq.roles,
+            roles: undefined,
+          },
+          { token: managementKey },
+        ),
+        (data) => data.users,
+      ),
     search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
       transformResponse<MultipleUsersResponse, UserResponse[]>(
         sdk.httpClient.post(

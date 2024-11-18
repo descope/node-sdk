@@ -2,6 +2,7 @@
 export default {
   user: {
     create: '/v1/mgmt/user/create',
+    createTestUser: '/v1/mgmt/user/create/test',
     createBatch: '/v1/mgmt/user/create/batch',
     update: '/v1/mgmt/user/update',
     patch: '/v1/mgmt/user/patch',
@@ -10,6 +11,7 @@ export default {
     load: '/v1/mgmt/user',
     logout: '/v1/mgmt/user/logout',
     search: '/v2/mgmt/user/search',
+    searchTestUsers: '/v2/mgmt/user/search/test',
     getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
     updateLoginId: '/v1/mgmt/user/update/loginid',
