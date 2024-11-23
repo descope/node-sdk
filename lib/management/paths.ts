@@ -21,7 +21,7 @@ export default {
     updatePicture: '/v1/mgmt/user/update/picture',
     updateCustomAttribute: '/v1/mgmt/user/update/customAttribute',
     setRole: '/v1/mgmt/user/update/role/set',
-    addRole: '/v1/mgmt/user/update/role/add',
+    addRole: '/v2/mgmt/user/update/role/add',
     removeRole: '/v1/mgmt/user/update/role/remove',
     setSSOApps: '/v1/mgmt/user/update/ssoapp/set',
     addSSOApps: '/v1/mgmt/user/update/ssoapp/add',
