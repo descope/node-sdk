@@ -1,7 +1,12 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { CreateTenantResponse, Tenant, TenantSettings } from './types';
+import {
+  CreateTenantResponse,
+  GenerateSSOConfigurationLinkResponse,
+  Tenant,
+  TenantSettings,
+} from './types';
 import { mockCoreSdk, mockHttpClient } from './testutils';
 
 const management = withManagement(mockCoreSdk, 'key');
@@ -11,9 +16,9 @@ const mockTenantCreateResponse = {
 };
 
 const mockTenants = [
-  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'] },
-  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'] },
-  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'] },
+  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'], createdTime: 1 },
+  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'], createdTime: 1 },
+  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'], createdTime: 1 },
 ];
 
 const mockSettings: TenantSettings = {
@@ -273,6 +278,40 @@ describe('Management Tenant', () => {
       expect(resp).toEqual({
         code: 200,
         data: undefined,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('generateSSOConfigurationLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({
+          adminSSOConfigurationLink: 'some link',
+        }),
+        clone: () => ({
+          json: () => Promise.resolve({ adminSSOConfigurationLink: 'some link' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateSSOConfigurationLinkResponse> =
+        await management.tenant.generateSSOConfigurationLink('test', 60 * 60 * 24);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        { tenantId: 'test', expireTime: 60 * 60 * 24 },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { adminSSOConfigurationLink: 'some link' },
         ok: true,
         response: httpResponse,
       });

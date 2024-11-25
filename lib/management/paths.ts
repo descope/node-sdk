@@ -2,6 +2,7 @@
 export default {
   user: {
     create: '/v1/mgmt/user/create',
+    createTestUser: '/v1/mgmt/user/create/test',
     createBatch: '/v1/mgmt/user/create/batch',
     update: '/v1/mgmt/user/update',
     patch: '/v1/mgmt/user/patch',
@@ -9,7 +10,8 @@ export default {
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     logout: '/v1/mgmt/user/logout',
-    search: '/v1/mgmt/user/search',
+    search: '/v2/mgmt/user/search',
+    searchTestUsers: '/v2/mgmt/user/search/test',
     getProviderToken: '/v1/mgmt/user/provider/token',
     updateStatus: '/v1/mgmt/user/update/status',
     updateLoginId: '/v1/mgmt/user/update/loginid',
@@ -19,7 +21,7 @@ export default {
     updatePicture: '/v1/mgmt/user/update/picture',
     updateCustomAttribute: '/v1/mgmt/user/update/customAttribute',
     setRole: '/v1/mgmt/user/update/role/set',
-    addRole: '/v1/mgmt/user/update/role/add',
+    addRole: '/v2/mgmt/user/update/role/add',
     removeRole: '/v1/mgmt/user/update/role/remove',
     setSSOApps: '/v1/mgmt/user/update/ssoapp/set',
     addSSOApps: '/v1/mgmt/user/update/ssoapp/add',
@@ -41,9 +43,10 @@ export default {
     updateName: '/v1/mgmt/project/update/name',
     updateTags: '/v1/mgmt/project/update/tags',
     clone: '/v1/mgmt/project/clone',
-    export: '/v1/mgmt/project/export',
-    import: '/v1/mgmt/project/import',
     projectsList: '/v1/mgmt/projects/list',
+    exportSnapshot: '/v1/mgmt/project/snapshot/export',
+    importSnapshot: '/v1/mgmt/project/snapshot/import',
+    validateSnapshot: '/v1/mgmt/project/snapshot/validate',
   },
   accessKey: {
     create: '/v1/mgmt/accesskey/create',
@@ -62,6 +65,7 @@ export default {
     settings: '/v1/mgmt/tenant/settings',
     loadAll: '/v1/mgmt/tenant/all',
     searchAll: '/v1/mgmt/tenant/search',
+    generateSSOConfigurationLink: '/v1/mgmt/tenant/adminlinks/sso/generate',
   },
   ssoApplication: {
     oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',

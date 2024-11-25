@@ -583,6 +583,13 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTime: 10,
   InactivityTimeUnit: 'minutes',
 });
+
+// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
+  'my-tenant-id',
+  60 * 60 * 24,
+);
+console.log(res.adminSSOConfigurationLink);
 ```
 
 ### Manage Password
@@ -801,16 +808,32 @@ With using a company management key you can get a list of all the projects in th
 const projects = await descopeClient.management.project.listProjects();
 ```
 
-You can manage your project's settings and configurations by exporting your
-project's environment. You can also import previously exported data into
-the same project or a different one.
+You can manage your project's settings and configurations by exporting a snapshot:
 
 ```typescript
 // Exports the current state of the project
-const files = await descopeClient.management.project.export();
+const exportRes = await descopeClient.management.project.exportSnapshot();
+```
 
-// Import the previously exported data into the current project
-await descopeClient.management.project.import(files);
+You can also import previously exported snapshots into the same project or a different one:
+
+```typescript
+const validateReq = {
+  files: exportRes.files,
+};
+
+// Validate that an exported snapshot can be imported into the current project
+const validateRes = await descopeClient.management.project.import(files);
+if (!validateRes.ok) {
+  // validation failed, check failures and missingSecrets to fix this
+}
+
+// Import the previously exported snapshot into the current project
+const importReq = {
+  files: exportRes.files,
+};
+
+await descopeClient.management.project.importSnapshot(files);
 ```
 
 ### Manage Access Keys
@@ -1295,6 +1318,12 @@ await descopeClient.management.user.createTestUser('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
+
+// Search all test users according to various parameters
+const searchRes = await descopeClient.management.user.searchTestUsers(['id']);
+searchRes.data.forEach((user) => {
+  // do something
 });
 
 // Now test user got created, and this user will be available until you delete it,

@@ -17,6 +17,10 @@ export type CreateTenantResponse = {
   id: string;
 };
 
+export type GenerateSSOConfigurationLinkResponse = {
+  adminSSOConfigurationLink: string;
+};
+
 /**
  * Options to create or update an OIDC application.
  *
@@ -143,6 +147,7 @@ export type Tenant = {
   id: string;
   name: string;
   selfProvisioningDomains: string[];
+  createdTime: number;
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
@@ -360,6 +365,8 @@ export type UserPasswordHashed = {
   pbkdf2?: UserPasswordPbkdf2;
   firebase?: UserPasswordFirebase;
   django?: UserPasswordDjango;
+  phpass?: UserPasswordPhpass;
+  md5?: UserPasswordMd5;
 };
 
 export type UserPasswordBcrypt = {
@@ -384,6 +391,17 @@ export type UserPasswordFirebase = {
 
 export type UserPasswordDjango = {
   hash: string; // the django hash in plaintext format, for example "pbkdf2_sha256$..."
+};
+
+export type UserPasswordPhpass = {
+  hash: string; // the hash as base64 encoded string with . and / characters
+  salt: string; // the salt as base64 encoded string with . and / characters
+  iterations: number; // the iterations cost value (usually in the tens of thousands)
+  type: 'md5' | 'sha512'; // the type of hash algorithm used
+};
+
+export type UserPasswordMd5 = {
+  hash: string; // the md5 hash in plaintext format, for example "68f724c9ad..."
 };
 
 export type UserMapping = {
@@ -480,12 +498,20 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+
+  // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
+  spACSUrl?: string;
+  spEntityId?: string;
 };
 
 export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+
+  // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
+  spACSUrl?: string;
+  spEntityId?: string;
 };
 
 export type ProviderTokenOptions = {
@@ -509,6 +535,7 @@ export type UserFailedResponse = {
 export type InviteBatchResponse = {
   createdUsers: UserResponse[];
   failedUsers: UserFailedResponse[];
+  additionalErrors: Record<string, string>;
 };
 
 /**
@@ -668,8 +695,68 @@ export type AuthzModified = {
   schemaChanged: boolean;
 };
 
-// Currently only production tag is supported
-export type ProjectTag = 'production';
+// Currently only production environment is supported
+export type ProjectEnvironment = 'production';
+
+export type ExportSnapshotResponse = {
+  /** All project settings and configurations represented as JSON files */
+  files: Record<string, any>;
+};
+
+export type ImportSnapshotRequest = {
+  /** All project settings and configurations represented as JSON files */
+  files: Record<string, any>;
+  /**
+   * An optional map of project entities and their secrets that will be
+   * injected into the snapshot before import (see below)
+   */
+  inputSecrets?: SnapshotSecrets;
+};
+
+export type ValidateSnapshotRequest = {
+  /** All project settings and configurations represented as JSON files */
+  files: Record<string, any>;
+  /**
+   * An optional map of project entities and their secrets that will be
+   * injected into the snapshot before validation (see below)
+   */
+  inputSecrets?: SnapshotSecrets;
+};
+
+export type ValidateSnapshotResponse = {
+  /** Whether the validation passed or not (true if and only if `failures` is empty) */
+  ok: boolean;
+  /** An array with `string` representations of any validation failures that were found */
+  failures?: string[];
+  /**
+   * An optional object that lists which if any secret values need to be provided in
+   * the request for an `importSnapshot` call so it doesn't fail (see below)
+   */
+  missingSecrets?: SnapshotSecrets;
+};
+
+export type SnapshotSecrets = {
+  /** Any missing or input secrets for connectors in a snapshot */
+  connectors?: SnapshotSecret[];
+  /** Any missing or input secrets for OAuth providers in a snapshot */
+  oauthProviders?: SnapshotSecret[];
+};
+
+export type SnapshotSecret = {
+  /** The id of the project entity that requires this secret */
+  id: string;
+  /** The name of the project entity that requires this secret */
+  name: string;
+  /** The type of secret, e.g., "bearertoken", "password" */
+  type: string;
+  /**
+   * The cleartext value of the secret. This value must not be empty when used in
+   * request objects when calling ValidateSnapshot and ImportSnapshot. Conversely,
+   * this value is an empty string when returned in ValidateSnapshotResponse to
+   * signify that this is a missing secret.
+   */
+  value: string;
+};
 
 export type CloneProjectResponse = {
   projectId: string;

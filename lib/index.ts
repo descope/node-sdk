@@ -1,6 +1,6 @@
 import createSdk, {
-  ExchangeAccessKeyResponse,
   AccessKeyLoginOptions,
+  ExchangeAccessKeyResponse,
   SdkResponse,
   wrapWith,
 } from '@descope/core-js-sdk';
@@ -11,10 +11,10 @@ import {
   rolesClaimName,
   sessionTokenCookieName,
 } from './constants';
+import fetch from './fetch-polyfill';
 import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
-import fetch from './fetch-polyfill';
 
 declare const BUILD_VERSION: string;
 
@@ -375,10 +375,10 @@ nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
 export default nodeSdk;
 export type {
   DeliveryMethod,
+  JWTResponse,
   OAuthProvider,
   ResponseData,
   SdkResponse,
-  JWTResponse,
 } from '@descope/core-js-sdk';
+export * as descopeErrors from './errors';
 export type { AuthenticationInfo };
-export { descopeErrors } from './errors';
