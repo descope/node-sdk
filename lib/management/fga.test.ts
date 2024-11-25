@@ -72,7 +72,20 @@ describe('Management FGA', () => {
       const relations = [relation1];
       const response = await WithFGA(mockCoreSdk).createRelations(relations);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.reCreate,
+        apiPaths.fga.relations,
+        { tuples: relations },
+        { token: undefined },
+      );
+      expect(response).toEqual(emptySuccessResponse);
+    });
+  });
+
+  describe('deleteRelations', () => {
+    it('should delete the relations', async () => {
+      const relations = [relation1];
+      const response = await WithFGA(mockCoreSdk).deleteRelations(relations);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.fga.deleteRelations,
         { tuples: relations },
         { token: undefined },
       );

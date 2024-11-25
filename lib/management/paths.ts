@@ -149,6 +149,7 @@ export default {
   fga: {
     schema: '/v1/mgmt/fga/schema',
     relations: '/v1/mgmt/fga/relations',
+    deleteRelations: '/v1/mgmt/fga/relations/delete',
     check: '/v1/mgmt/fga/check',
   },
 };

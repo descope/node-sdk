@@ -32,6 +32,24 @@ const WithFGA = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(apiPaths.fga.relations, { tuples: relations }, { token: managementKey }),
     ),
+
+  /**
+   * Delete the given relations.
+   * This is a bulk operation and will delete all the given relations.
+   *
+   * @param relations to delete.
+   * @returns standard success or failure response
+   */
+
+  deleteRelations: (relations: FGARelation[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.fga.deleteRelations,
+        { tuples: relations },
+        { token: managementKey },
+      ),
+    ),
+
   /**
    * Check if the given relations exist.
    * This is a read-only operation and will not create any relations.
