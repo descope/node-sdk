@@ -893,7 +893,7 @@ program
   .action(async (filename) => {
     const contents = readFileSync(filename, 'utf8');
     console.log('file contents', contents);
-    handleSdkRes(await sdk.management.fga.saveSchema({ dsl: contents }), undefined);
+    handleSdkRes(await sdk.management.fga.saveSchema({ schema: contents }), undefined);
   });
 
 program

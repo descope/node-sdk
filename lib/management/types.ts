@@ -774,7 +774,7 @@ export type Project = {
 
 // Define the types for the SaveDSLSchema endpoint
 export type FGASchema = {
-  dsl: string;
+  schema: string;
 };
 
 // Define the types for the Tuple
