@@ -46,7 +46,7 @@ describe('Management FGA', () => {
   });
   describe('saveSchema', () => {
     it('should save the schema', async () => {
-      const schema = { schema: 'schema' };
+      const schema = { dsl: 'schema' };
       const response = await WithFGA(mockCoreSdk).saveSchema(schema);
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema, {
         token: undefined,
