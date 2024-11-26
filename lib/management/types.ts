@@ -771,3 +771,22 @@ export type Project = {
   environment?: string;
   tags?: string[];
 };
+
+// Define the types for the SaveDSLSchema endpoint
+export type FGASchema = {
+  dsl: string;
+};
+
+// Define the types for the Tuple
+export type FGARelation = {
+  resource: string;
+  resourceType?: string;
+  relation: string;
+  target: string;
+  targetType?: string;
+};
+
+export type CheckResponseRelation = {
+  allowed: boolean;
+  tuple: FGARelation;
+};

@@ -180,4 +180,26 @@ $ npm run start -- theme-export --output <output-file-path>
 # Import a theme
 $ npm run start -- theme-import <theme-file-path>
 
+## FGA
+
+# Save an FGA schema
+$ npm run start -- fga-save-schema <schema-file-path>
+
+# Create FGA relations
+$ npm run start -- fga-create-relations <relations-file-path>
+
+# Create an FGA relation
+$ npm run start -- fga-create-relation [--resource <resource>] [--resource-type <resource-type>] [--relation <relation>] [--target <target>] [--target-type <target-type>]
+
+# Delete FGA relations
+$ npm run start -- fga-delete-relations <relations-file-path>
+
+# Delete an FGA relation
+$ npm run start -- fga-delete [--resource <resource>] [--resource-type <resource-type>] [--relation <relation>] [--target <target>] [--target-type <target-type>]
+
+# Check FGA relations
+$ npm run start -- fga-check-relations <relations-file-path>
+
+# Check an FGA relation
+$ npm run start -- fga-check [--resource <resource>] [--resource-type <resource-type>] [--relation <relation>] [--target <target>] [--target-type <target-type>]
 ```

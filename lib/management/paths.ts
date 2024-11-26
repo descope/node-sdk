@@ -146,4 +146,10 @@ export default {
     targetAll: '/v1/mgmt/authz/re/targetall',
     getModified: '/v1/mgmt/authz/getmodified',
   },
+  fga: {
+    schema: '/v1/mgmt/fga/schema',
+    relations: '/v1/mgmt/fga/relations',
+    deleteRelations: '/v1/mgmt/fga/relations/delete',
+    check: '/v1/mgmt/fga/check',
+  },
 };

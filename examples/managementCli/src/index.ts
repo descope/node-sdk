@@ -1,9 +1,25 @@
+/* eslint-disable no-console */
 import DescopeClient, { SdkResponse } from '@descope/node-sdk';
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
+import { config } from 'dotenv';
+import { writeFileSync, readFileSync } from 'fs';
 import { Command } from 'commander';
 
-dotenv.config();
+config();
+
+// *** Helper functions ***
+
+function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
+  if (res.ok) {
+    if (responseFile) {
+      console.log('Success. Response saved to:', responseFile);
+      writeFileSync(responseFile, JSON.stringify(res.data, null, 2));
+    } else {
+      console.log('Success. Response: ', res.data);
+    }
+  } else {
+    console.error('Failure. Got error:', res.error);
+  }
+}
 
 const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
 const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
@@ -424,8 +440,8 @@ program
   .action(async (name, loginPageUrl) => {
     handleSdkRes(
       await sdk.management.ssoApplication.createOidcApplication({
-        name: name,
-        loginPageUrl: loginPageUrl,
+        name,
+        loginPageUrl,
       }),
     );
   });
@@ -440,11 +456,11 @@ program
   .action(async (name, loginPageUrl, metadataUrl) => {
     handleSdkRes(
       await sdk.management.ssoApplication.createSamlApplication({
-        name: name,
-        loginPageUrl: loginPageUrl,
+        name,
+        loginPageUrl,
         enabled: true,
         useMetadataInfo: true,
-        metadataUrl: metadataUrl,
+        metadataUrl,
       }),
     );
   });
@@ -459,9 +475,9 @@ program
   .action(async (id, name, loginPageUrl) => {
     handleSdkRes(
       await sdk.management.ssoApplication.updateOidcApplication({
-        id: id,
-        name: name,
-        loginPageUrl: loginPageUrl,
+        id,
+        name,
+        loginPageUrl,
       }),
     );
   });
@@ -479,14 +495,14 @@ program
   .action(async (id, name, loginPageUrl, entityId, acsUrl, certificate) => {
     handleSdkRes(
       await sdk.management.ssoApplication.updateSamlApplication({
-        id: id,
-        name: name,
-        loginPageUrl: loginPageUrl,
+        id,
+        name,
+        loginPageUrl,
         enabled: true,
         useMetadataInfo: false,
-        entityId: entityId,
-        acsUrl: acsUrl,
-        certificate: certificate,
+        entityId,
+        acsUrl,
+        certificate,
       }),
     );
   });
@@ -675,7 +691,7 @@ program
   .argument('<filename>', 'Flow filename')
   .action(async (flowId, filename) => {
     // read file
-    const content = await fs.readFileSync(filename, 'utf8');
+    const content = await readFileSync(filename, 'utf8');
 
     const { flow, screens } = JSON.parse(content);
     if (!flow || !screens) {
@@ -703,7 +719,7 @@ program
   .argument('<filename>', 'Theme filename')
   .action(async (filename) => {
     // read file
-    const content = fs.readFileSync(filename, 'utf8');
+    const content = readFileSync(filename, 'utf8');
     const theme = JSON.parse(content);
     if (!theme) {
       console.error('Invalid file content');
@@ -755,7 +771,7 @@ program
   .description('Save the schema defined in the given file')
   .option('-i, --input <filename>', 'Schema input filename')
   .action(async (option) => {
-    const file = fs.readFileSync(option.input, 'utf8');
+    const file = readFileSync(option.input, 'utf8');
     const s = JSON.parse(file);
     handleSdkRes(await sdk.management.authz.saveSchema(s, true), undefined);
   });
@@ -869,19 +885,127 @@ program
     handleSdkRes(await sdk.management.authz.whatCanTargetAccess(target), option.output);
   });
 
-// *** Helper functions ***
+// fga
+program
+  .command('fga-save-schema')
+  .description('Save the fga schema defined in the given file')
+  .argument('<filename>', 'Schema input filename')
+  .action(async (filename) => {
+    const contents = readFileSync(filename, 'utf8');
+    console.log('file contents', contents);
+    handleSdkRes(await sdk.management.fga.saveSchema({ dsl: contents }), undefined);
+  });
 
-function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
-  if (res.ok) {
-    if (responseFile) {
-      console.log('Success. Response saved to:', responseFile);
-      fs.writeFileSync(responseFile, JSON.stringify(res.data, null, 2));
-    } else {
-      console.log('Success. Response: ', res.data);
+program
+  .command('fga-create-relations')
+  .description('Create the given relations')
+  .argument('<filename>', 'Relations filename')
+  .action(async (filename) => {
+    // read file
+    const content = readFileSync(filename, 'utf8');
+    const relations = JSON.parse(content);
+    if (!relations) {
+      console.error('Invalid file content');
+      return;
     }
-  } else {
-    console.error('Failure. Got error:', res.error);
-  }
-}
+    handleSdkRes(await sdk.management.fga.createRelations(relations));
+  });
+
+program
+  .command('fga-create-relation')
+  .description('Create a relation')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-R, --resourceType <resourceType>', 'The resource type for the relation')
+  .option('-l, --relation <relation>', 'The relation for the relation')
+  .option('-t, --target <target>', 'The target for the relation')
+  .option('-T, --targetType <targetType>', 'The target type for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.fga.createRelations([
+        {
+          resource: option.resource,
+          resourceType: option.resourceType,
+          relation: option.relation,
+          target: option.target,
+          targetType: option.targetType,
+        },
+      ]),
+      undefined,
+    );
+  });
+
+program
+  .command('fga-delete-relations')
+  .description('Delete the given relations')
+  .argument('<filename>', 'Relations filename')
+  .action(async (filename) => {
+    // read file
+    const content = readFileSync(filename, 'utf8');
+    const relations = JSON.parse(content);
+    if (!relations) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.deleteRelations(relations));
+  });
+
+program
+  .command('fga-delete-relation')
+  .description('Delete a relation')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-R, --resourceType <resourceType>', 'The resource type for the relation')
+  .option('-l, --relation <relation>', 'The relation for the relation')
+  .option('-t, --target <target>', 'The target for the relation')
+  .option('-T, --targetType <targetType>', 'The target type for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.fga.deleteRelations([
+        {
+          resource: option.resource,
+          resourceType: option.resourceType,
+          relation: option.relation,
+          target: option.target,
+          targetType: option.targetType,
+        },
+      ]),
+    );
+  });
+
+program
+  .command('fga-check-relations')
+  .description('Check if the given relations exist')
+  .argument('<filename>', 'Relations filename')
+  .action(async (filename) => {
+    // read file
+    const content = readFileSync(filename, 'utf8');
+    const relations = JSON.parse(content);
+    if (!relations) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.check(relations));
+  });
+
+program
+  .command('fga-check-relation')
+  .description('Check if the given relation exists')
+  .option('-r, --resource <resource>', 'The resource for the relation')
+  .option('-R, --resourceType <resourceType>', 'The resource type for the relation')
+  .option('-l, --relation <relation>', 'The relation for the relation')
+  .option('-t, --target <target>', 'The target for the relation')
+  .option('-T, --targetType <targetType>', 'The target type for the relation')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.fga.check([
+        {
+          resource: option.resource,
+          resourceType: option.resourceType,
+          relation: option.relation,
+          target: option.target,
+          targetType: option.targetType,
+        },
+      ]),
+    );
+  });
 
 program.parse();
