@@ -272,6 +272,8 @@ program
   .description('Create a new access key')
   .argument('<name>', 'Access key name')
   .argument('<expire-time>', 'Access key expiration time')
+  .option('--description <value>', 'Access key description')
+  .option('--permitted-ips <ips>', 'Permitted IPs', (val) => val?.split(','))
   .option(
     '-t, --tenants <t1,t2>',
     `Access key's tenant IDs`,
@@ -288,6 +290,10 @@ program
         expireTime,
         undefined,
         options.tenants?.map((tenantId: string) => ({ tenantId })),
+        undefined,
+        undefined,
+        options.description,
+        options.permittedIps,
       ),
     );
   });
@@ -298,8 +304,12 @@ program
   .description('Update an access key')
   .argument('<id>', 'Access key ID')
   .argument('<name>', 'Access key name')
-  .action(async (id, name) => {
-    handleSdkRes(await sdk.management.accessKey.update(id, name));
+  .option('--description <value>', 'Access key description')
+  .option('--permitted-ips <ips>', 'Permitted IPs', (val) => val?.split(','))
+  .action(async (id, name, options) => {
+    handleSdkRes(
+      await sdk.management.accessKey.update(id, name, options.description, options.permittedIps),
+    );
   });
 
 // access-key-delete
