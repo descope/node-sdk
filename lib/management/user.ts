@@ -204,6 +204,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       sendMail?: boolean; // send invite via mail, default is according to project settings
       sendSMS?: boolean; // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions;
+      templateId?: string;
     },
   ): Promise<SdkResponse<UserResponse>>;
   function invite(
@@ -224,6 +225,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>>;
 
   function invite(
@@ -244,6 +246,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of invite user
     // 1. The new form - invite(loginId, { email, phone, ... }})
@@ -269,6 +272,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             sendMail,
             sendSMS,
             additionalLoginIds,
+            templateId,
           }
         : {
             loginId,
@@ -429,6 +433,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       sendMail?: boolean, // send invite via mail, default is according to project settings
       sendSMS?: boolean, // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions,
+      templateId?: string,
     ): Promise<SdkResponse<InviteBatchResponse>> =>
       transformResponse<InviteBatchResponse, InviteBatchResponse>(
         sdk.httpClient.post(
@@ -447,6 +452,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             sendMail,
             sendSMS,
             templateOptions,
+            templateId,
           },
           { token: managementKey },
         ),
