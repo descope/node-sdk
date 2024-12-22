@@ -790,3 +790,62 @@ export type CheckResponseRelation = {
   allowed: boolean;
   tuple: FGARelation;
 };
+
+export type ThirdPartyApplicationScope = {
+  name: string;
+  description: string;
+  values?: string[];
+};
+
+/**
+ * Represents a third party application request in a project.
+ * This type is used to create a new third party application in a project.
+ */
+export type ThirdPartyApplicationOptions = {
+  name: string;
+  description?: string;
+  logo?: string;
+  loginPageUrl: string;
+  approvedCallbackUrls?: string[];
+  permissionsScopes: ThirdPartyApplicationScope[];
+  attributesScopes?: ThirdPartyApplicationScope[];
+};
+
+/**
+ * Represents a third party application in a project.
+ */
+export type ThirdPartyApplication = ThirdPartyApplicationOptions & {
+  id: string;
+  clientId: string;
+};
+
+export type CreateThirdPartyApplicationResponse = {
+  id: string;
+  cleartext: string;
+};
+
+/**
+ * Represents a third party application consent for a single application
+ * for a specific user within the project.
+ */
+export type ThirdPartyApplicationConsent = {
+  id: string;
+  appId: string;
+  userId: string;
+  scopes: string[];
+  grantedBy: string;
+  createdTime: number;
+};
+
+export type ThirdPartyApplicationConsentSearchOptions = {
+  appId?: string;
+  userId?: string;
+  consentId?: string;
+  page?: number;
+};
+
+export type ThirdPartyApplicationConsentDeleteOptions = {
+  consentIds?: string[];
+  appId?: string;
+  userIds?: string[];
+};

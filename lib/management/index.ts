@@ -15,6 +15,7 @@ import WithAuthz from './authz';
 import withSSOApplication from './ssoapplication';
 import withPassword from './password';
 import WithFGA from './fga';
+import withThirdPartyApplication from './thirdpartyapplication';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
@@ -23,6 +24,7 @@ const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
   accessKey: withAccessKey(sdk, managementKey),
   tenant: withTenant(sdk, managementKey),
   ssoApplication: withSSOApplication(sdk, managementKey),
+  thirdPartyApplication: withThirdPartyApplication(sdk, managementKey),
   sso: withSSOSettings(sdk, managementKey),
   jwt: withJWT(sdk, managementKey),
   permission: withPermission(sdk, managementKey),
