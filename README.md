@@ -622,13 +622,13 @@ await descopeClient.management.password.configureSettings('my-tenant-id', {
 You can create, update, delete or load SSO applications:
 
 ```typescript
-// Create OIDC sso application
+// Create OIDC SSO application
 await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Create SAML sso application
+// Create SAML SSO application
 await descopeClient.management.ssoApplication.createSamlApplication({
   name: 'My SAML app name',
   loginPageUrl: 'http://dummy.com/login',
@@ -636,7 +636,7 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   metadataUrl: 'http://dummy.com/metadata',
 });
 
-// Update OIDC sso application.
+// Update OIDC SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateOidcApplication({
   id: 'my-app-id',
@@ -644,7 +644,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Update SAML sso application.
+// Update SAML SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateSamlApplication({
   id: 'my-app-id',
@@ -657,13 +657,13 @@ await descopeClient.management.ssoApplication.updateSamlApplication({
   certificate: 'certificate',
 });
 
-// Tenant deletion cannot be undone. Use carefully.
+// SSO application deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');
 
-// Load sso application by id
+// Load SSO application by id
 const app = await descopeClient.management.ssoApplication.load('my-app-id');
 
-// Load all sso applications
+// Load all SSO applications
 const appsRes = await descopeClient.management.ssoApplication.loadAll();
 appsRes.data.forEach((app) => {
   // do something
@@ -1191,6 +1191,68 @@ const relations = await descopeClient.management.fga.check([
     targetType: 'user',
   },
 ]);
+```
+
+### Manage Third Party Aplications
+
+You can create, update, delete or load third party applications:
+
+```typescript
+// Create a third party application.
+const { id, cleartext: secret } =
+  await descopeClient.management.thirdPartyApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    logo: 'data:image/png;..',
+    approvedCallbackUrls: ['dummy.com'],
+    permissionsScopes: [
+      {
+        name: 'read_support',
+        description: 'read for support',
+        values: ['Support'],
+      },
+    ],
+    attributesScopes: [
+      {
+        name: 'read_email',
+        description: 'read user email',
+        values: ['email'],
+      },
+    ],
+    loginPageUrl: 'http://dummy.com/login',
+  });
+
+// Update a third party application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.thirdPartyApplication.updateApplication({
+  name: 'my updated app',
+  loginPageUrl: 'http://dummy.com/login',
+  approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
+});
+
+// third party application deletion cannot be undone. Use carefully.
+await descopeClient.management.thirdPartyApplication.deleteApplication('my-app-id');
+
+// Load third party application by id
+const app = await descopeClient.management.thirdPartyApplication.loadApplication('my-app-id');
+
+// Load all third party applications
+const appsRes = await descopeClient.management.thirdPartyApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Search in all consents. search consents by the given app id and offset to the third page.
+const consentsRes = await descopeClient.management.thirdPartyApplication.searchConsents({
+  appId: 'my-app',
+  page: 2,
+});
+
+// Delete consents. delete all user consents.
+// third party application consents deletion cannot be undone. Use carefully.
+await descopeClient.management.thirdPartyApplication.deleteConsents({
+  userIds: ['user'],
+});
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
