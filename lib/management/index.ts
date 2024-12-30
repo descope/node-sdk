@@ -14,6 +14,7 @@ import WithAudit from './audit';
 import WithAuthz from './authz';
 import withSSOApplication from './ssoapplication';
 import withPassword from './password';
+import WithFGA from './fga';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
@@ -32,6 +33,7 @@ const withManagement = (sdk: CoreSdk, managementKey?: string) => ({
   theme: WithTheme(sdk, managementKey),
   audit: WithAudit(sdk, managementKey),
   authz: WithAuthz(sdk, managementKey),
+  fga: WithFGA(sdk, managementKey),
 });
 
 export default withManagement;
