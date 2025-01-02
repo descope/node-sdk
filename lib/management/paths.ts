@@ -76,6 +76,17 @@ export default {
     load: '/v1/mgmt/sso/idp/app/load',
     loadAll: '/v1/mgmt/sso/idp/apps/load',
   },
+  thirdPartyApplication: {
+    create: '/v1/mgmt/thirdparty/app/create',
+    update: '/v1/mgmt/thirdparty/app/update',
+    delete: '/v1/mgmt/thirdparty/app/delete',
+    load: '/v1/mgmt/thirdparty/app/load',
+    loadAll: '/v1/mgmt/thirdparty/apps/load',
+  },
+  thirdPartyApplicationConsents: {
+    delete: '/v1/mgmt/thirdparty/consents/delete',
+    search: '/v1/mgmt/thirdparty/consents/search',
+  },
   sso: {
     settings: '/v1/mgmt/sso/settings',
     metadata: '/v1/mgmt/sso/metadata',
