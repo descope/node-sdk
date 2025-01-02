@@ -15,11 +15,13 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
     impersonatorId: string,
     loginId: string,
     validateConsent: boolean,
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
   ): Promise<SdkResponse<UpdateJWTResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.jwt.impersonate,
-        { impersonatorId, loginId, validateConsent },
+        { impersonatorId, loginId, validateConsent, customClaims, selectedTenant },
         { token: managementKey },
       ),
     ),
