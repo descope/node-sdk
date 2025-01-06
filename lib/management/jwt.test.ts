@@ -63,11 +63,19 @@ describe('Management JWT', () => {
         'imp1',
         'imp2',
         true,
+        { k1: 'v1' },
+        't1',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.jwt.impersonate,
-        { impersonatorId: 'imp1', loginId: 'imp2', validateConsent: true },
+        {
+          impersonatorId: 'imp1',
+          loginId: 'imp2',
+          validateConsent: true,
+          customClaims: { k1: 'v1' },
+          selectedTenant: 't1',
+        },
         { token: 'key' },
       );
 
