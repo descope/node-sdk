@@ -28,13 +28,17 @@ describe('Management JWT', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<UpdateJWTResponse> = await management.jwt.update('jwt', {
-        foo: 'bar',
-      });
+      const resp: SdkResponse<UpdateJWTResponse> = await management.jwt.update(
+        'jwt',
+        {
+          foo: 'bar',
+        },
+        4,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.jwt.update,
-        { jwt: 'jwt', customClaims: { foo: 'bar' } },
+        { jwt: 'jwt', customClaims: { foo: 'bar' }, refreshDuration: 4 },
         { token: 'key' },
       );
 
