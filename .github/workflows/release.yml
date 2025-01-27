@@ -13,7 +13,7 @@ jobs:
     if: "contains(github.event.head_commit.message, 'RELEASE')"
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
           ref: ${{ github.ref }}
@@ -22,7 +22,7 @@ jobs:
 
       - name: Get token
         id: get_token
-        uses: tibdex/github-app-token@v2
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2
         with:
           private_key: ${{ secrets.RELEASE_APP_PEM }}
           app_id: ${{ secrets.RELEASE_APP_ID }}
