@@ -7,9 +7,14 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   update: (
     jwt: string,
     customClaims?: Record<string, any>,
+    refreshDuration?: number,
   ): Promise<SdkResponse<UpdateJWTResponse>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.jwt.update, { jwt, customClaims }, { token: managementKey }),
+      sdk.httpClient.post(
+        apiPaths.jwt.update,
+        { jwt, customClaims, refreshDuration },
+        { token: managementKey },
+      ),
     ),
   impersonate: (
     impersonatorId: string,

@@ -11,14 +11,14 @@ runs:
   using: composite
   steps:
     - name: Setup Node.js 🔠
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
       with:
         node-version: ${{ inputs.node_version }}
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
 
     - name: Cache node modules 💸
-      uses: actions/cache@v4
+      uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
         cache-name: cache-node-modules

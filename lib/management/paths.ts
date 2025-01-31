@@ -65,7 +65,7 @@ export default {
     settings: '/v1/mgmt/tenant/settings',
     loadAll: '/v1/mgmt/tenant/all',
     searchAll: '/v1/mgmt/tenant/search',
-    generateSSOConfigurationLink: '/v1/mgmt/tenant/adminlinks/sso/generate',
+    generateSSOConfigurationLink: '/v2/mgmt/tenant/adminlinks/sso/generate',
   },
   ssoApplication: {
     oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',
