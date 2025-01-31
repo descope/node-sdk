@@ -1227,9 +1227,18 @@ const { id, cleartext: secret } =
 // Update a third party application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.thirdPartyApplication.updateApplication({
+  id: 'my-app-id',
   name: 'my updated app',
   loginPageUrl: 'http://dummy.com/login',
   approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
+});
+
+// Patch a third party application.
+// patch will not override all fields, but update only what given.
+await descopeClient.management.thirdPartyApplication.patchApplication({
+  id: 'my-app-id',
+  name: 'my updated app name',
+  description: 'my new description',
 });
 
 // third party application deletion cannot be undone. Use carefully.
@@ -1243,6 +1252,16 @@ const appsRes = await descopeClient.management.thirdPartyApplication.loadAllAppl
 appsRes.data.forEach((app) => {
   // do something
 });
+
+// Get a third party application secret by application id.
+const { cleartext } = await descopeClient.management.thirdPartyApplication.getApplicationSecret(
+  'my-app-id',
+);
+
+// Rotate a third party application secret by application id.
+const { cleartext } = await descopeClient.management.thirdPartyApplication.rotateApplicationSecret(
+  'my-app-id',
+);
 
 // Search in all consents. search consents by the given app id and offset to the third page.
 const consentsRes = await descopeClient.management.thirdPartyApplication.searchConsents({

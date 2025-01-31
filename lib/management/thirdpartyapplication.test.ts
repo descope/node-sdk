@@ -5,6 +5,7 @@ import {
   CreateThirdPartyApplicationResponse,
   ThirdPartyApplication,
   ThirdPartyApplicationConsent,
+  ThirdPartyApplicationSecretResponse,
 } from './types';
 import { mockCoreSdk, mockHttpClient } from './testutils';
 
@@ -165,6 +166,47 @@ describe('Management ThirdPartyApplication', () => {
     });
   });
 
+  describe('patchThirdPartyApplication', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.thirdPartyApplication.patchApplication({
+        id: 'app1',
+        logo: 'logo',
+        description: 'desc',
+        loginPageUrl: 'http://dummy.com',
+        permissionsScopes: [],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.thirdPartyApplication.patch,
+        {
+          id: 'app1',
+          permissionsScopes: [],
+          logo: 'logo',
+          description: 'desc',
+          loginPageUrl: 'http://dummy.com',
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('deleteThirdPartyApplication', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -217,6 +259,70 @@ describe('Management ThirdPartyApplication', () => {
       expect(resp).toEqual({
         code: 200,
         data: mockThirdPartyApplications[0],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getThirdPartyApplicationSecret', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {
+          '1';
+        },
+        clone: () => ({
+          json: () => Promise.resolve({ cleartext: '1' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<ThirdPartyApplicationSecretResponse> =
+        await management.thirdPartyApplication.getApplicationSecret(
+          mockThirdPartyApplications[0].id,
+        );
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.thirdPartyApplication.secret, {
+        queryParams: { id: mockThirdPartyApplications[0].id },
+        token: 'key',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { cleartext: '1' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('rotateThirdPartyApplication', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {
+          '1';
+        },
+        clone: () => ({
+          json: () => Promise.resolve({ cleartext: '1' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.thirdPartyApplication.rotateApplicationSecret('app1');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.thirdPartyApplication.rotate,
+        { id: 'app1' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { cleartext: '1' },
         ok: true,
         response: httpResponse,
       });

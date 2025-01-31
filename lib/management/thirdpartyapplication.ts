@@ -8,6 +8,7 @@ import {
   ThirdPartyApplicationConsentSearchOptions,
   CreateThirdPartyApplicationResponse,
   ThirdPartyApplicationOptions,
+  ThirdPartyApplicationSecretResponse,
 } from './types';
 
 type MultipleThirdPartyApplicationResponse = {
@@ -41,6 +42,16 @@ const withThirdPartyApplication = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
+  patchApplication: (
+    options: Partial<ThirdPartyApplicationOptions> & { id: string },
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.thirdPartyApplication.patch,
+        { ...options },
+        { token: managementKey },
+      ),
+    ),
   deleteApplication: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(apiPaths.thirdPartyApplication.delete, { id }, { token: managementKey }),
@@ -59,6 +70,18 @@ const withThirdPartyApplication = (sdk: CoreSdk, managementKey?: string) => ({
         token: managementKey,
       }),
       (data) => data.apps,
+    ),
+  getApplicationSecret: (id: string): Promise<SdkResponse<ThirdPartyApplicationSecretResponse>> =>
+    transformResponse<ThirdPartyApplicationSecretResponse, ThirdPartyApplicationSecretResponse>(
+      sdk.httpClient.get(apiPaths.thirdPartyApplication.secret, {
+        queryParams: { id },
+        token: managementKey,
+      }),
+      (data) => data,
+    ),
+  rotateApplicationSecret: (id: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.thirdPartyApplication.rotate, { id }, { token: managementKey }),
     ),
   searchConsents: (
     options?: ThirdPartyApplicationConsentSearchOptions,

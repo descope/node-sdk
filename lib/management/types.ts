@@ -819,10 +819,13 @@ export type ThirdPartyApplication = ThirdPartyApplicationOptions & {
   clientId: string;
 };
 
-export type CreateThirdPartyApplicationResponse = {
-  id: string;
+export type ThirdPartyApplicationSecretResponse = {
   cleartext: string;
 };
+
+export type CreateThirdPartyApplicationResponse = {
+  id: string;
+} & ThirdPartyApplicationSecretResponse;
 
 /**
  * Represents a third party application consent for a single application
