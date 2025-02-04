@@ -21,6 +21,24 @@ function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
   }
 }
 
+function parseObjectString(objStr?: string) {
+  if (!objStr) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(objStr);
+  } catch (e) {
+    console.error('Invalid object string:', objStr);
+    // try eval to catch {a: 1} strings
+    try {
+      return eval(`(${objStr})`); // this is not the most elegant way, but since its in a CLI, it should be fine
+    } catch (e) {
+      console.error('Invalid object string:', objStr);
+    }
+    return undefined;
+  }
+}
+
 const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
 const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
 const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
@@ -1005,6 +1023,79 @@ program
           targetType: option.targetType,
         },
       ]),
+    );
+  });
+
+/* JWT commands */
+
+// sign-in
+program
+  .command('jwt-sign-in')
+  .description('Sign in a user and get a JWT token')
+  .argument('<loginId>', 'Login ID')
+  .option('-j, --jwt <jwt>', `User's current JWT token`)
+  .option('-cc, --custom-claims <custom-claims>', `User's custom claims`)
+  .option('-m, --mfa', 'Enable MFA') // Boolean flag
+  .action(async (loginId, options) => {
+    const customClaims = parseObjectString(options.customClaims);
+    handleSdkRes(
+      await sdk.management.jwt.signIn(loginId, {
+        jwt: options.jwt,
+        mfa: options.mfa,
+        customClaims,
+      }),
+    );
+  });
+
+// sign-up
+program
+  .command('jwt-sign-up')
+  .description('Sign up a user and get a JWT token')
+  .argument('<loginId>', 'Login ID')
+  .option('-e, --email <email>', `User's email address`)
+  .option('-p, --phone <phone>', `User's phone number`)
+  .option('-n, --name <name>', `User's display name`)
+  .option('-cc, --custom-claims <custom-claims>', `User's custom claims`)
+  .action(async (loginId, options) => {
+    const customClaims = parseObjectString(options.customClaims);
+    handleSdkRes(
+      await sdk.management.jwt.signUp(
+        loginId,
+        {
+          email: options.email,
+          phone: options.phone,
+          name: options.name,
+        },
+        {
+          customClaims,
+        },
+      ),
+    );
+  });
+
+// sign-up-or-in
+program
+  .command('jwt-sign-up-or-in')
+  .description('Sign up or in a user and get a JWT token')
+  .argument('<loginId>', 'Login ID')
+  .option('-e, --email <email>', `User's email address`)
+  .option('-p, --phone <phone>', `User's phone number`)
+  .option('-n, --name <name>', `User's display name`)
+  .option('-cc, --custom-claims <custom-claims>', `User's custom claims`)
+  .action(async (loginId, options) => {
+    const customClaims = parseObjectString(options.customClaims);
+    handleSdkRes(
+      await sdk.management.jwt.signUpOrIn(
+        loginId,
+        {
+          email: options.email,
+          phone: options.phone,
+          name: options.name,
+        },
+        {
+          customClaims,
+        },
+      ),
     );
   });
 

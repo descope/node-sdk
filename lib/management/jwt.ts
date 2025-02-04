@@ -1,7 +1,7 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
+import { JWTResponse, SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { UpdateJWTResponse } from './types';
+import { MgmtLoginOptions, MgmtSignUpOptions, MgmtUserOptions, UpdateJWTResponse } from './types';
 
 const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   update: (
@@ -27,6 +27,38 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.jwt.impersonate,
         { impersonatorId, loginId, validateConsent, customClaims, selectedTenant },
+        { token: managementKey },
+      ),
+    ),
+  signIn: (loginId: string, loginOptions?: MgmtLoginOptions): Promise<SdkResponse<JWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.signIn,
+        { loginId, ...loginOptions },
+        { token: managementKey },
+      ),
+    ),
+  signUp: (
+    loginId: string,
+    user?: MgmtUserOptions,
+    signUpOptions?: MgmtSignUpOptions,
+  ): Promise<SdkResponse<JWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.signUp,
+        { loginId, user, ...signUpOptions },
+        { token: managementKey },
+      ),
+    ),
+  signUpOrIn: (
+    loginId: string,
+    user?: MgmtUserOptions,
+    signUpOptions?: MgmtSignUpOptions,
+  ): Promise<SdkResponse<JWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.signUpOrIn,
+        { loginId, user, ...signUpOptions },
         { token: managementKey },
       ),
     ),
