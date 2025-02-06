@@ -18,6 +18,7 @@ import {
   InviteBatchResponse,
   TemplateOptions,
   ProviderTokenOptions,
+  UserOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -1002,23 +1003,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
   };
 };
-
-export interface UserOptions {
-  email?: string;
-  phone?: string;
-  displayName?: string;
-  roles?: string[];
-  userTenants?: AssociatedTenant[];
-  customAttributes?: Record<string, AttributesTypes>;
-  picture?: string;
-  verifiedEmail?: boolean;
-  verifiedPhone?: boolean;
-  givenName?: string;
-  middleName?: string;
-  familyName?: string;
-  additionalLoginIds?: string[];
-  ssoAppIds?: string[];
-}
 
 export interface PatchUserOptions {
   email?: string;

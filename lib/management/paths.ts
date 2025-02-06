@@ -92,6 +92,9 @@ export default {
   jwt: {
     update: '/v1/mgmt/jwt/update',
     impersonate: '/v1/mgmt/impersonate',
+    signIn: '/v1/mgmt/auth/signin',
+    signUp: '/v1/mgmt/auth/signup',
+    signUpOrIn: '/v1/mgmt/auth/signup-in',
   },
   password: {
     settings: '/v1/mgmt/password/settings',

@@ -1,4 +1,4 @@
-import { UserResponse } from '@descope/core-js-sdk';
+import { UserResponse, LoginOptions } from '@descope/core-js-sdk';
 
 export type ExpirationUnit = 'minutes' | 'hours' | 'days' | 'weeks';
 
@@ -789,4 +789,38 @@ export type FGARelation = {
 export type CheckResponseRelation = {
   allowed: boolean;
   tuple: FGARelation;
+};
+
+// should have the type of loginoptions expect templateId and templateOptions
+export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
+  jwt?: string;
+};
+
+export type MgmtSignUpOptions = {
+  // we can replace this with partial `SignUpOptions` from core-js-sdk once its exported
+  customClaims?: Record<string, any>;
+};
+
+export interface UserOptions {
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  roles?: string[];
+  userTenants?: AssociatedTenant[];
+  customAttributes?: Record<string, AttributesTypes>;
+  picture?: string;
+  verifiedEmail?: boolean;
+  verifiedPhone?: boolean;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  additionalLoginIds?: string[];
+  ssoAppIds?: string[];
+}
+
+export type MgmtUserOptions = Omit<
+  UserOptions,
+  'roles' | 'userTenants' | 'customAttributes' | 'picture' | 'additionalLoginIds' | 'displayName'
+> & {
+  name?: string;
 };
