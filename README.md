@@ -691,6 +691,8 @@ await descopeClient.management.user.invite('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+  // You can override the project's User Invitation Redirect URL with this parameter
+  inviteUrl: '<invite-url>',
   // You can inject custom data into the template.
   // Note that you first need to configure custom template in Descope Console
   // For example: configure {{options_k1}} in the custom template, and pass { k1: 'v1' } as templateOptions
