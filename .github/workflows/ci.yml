@@ -96,4 +96,4 @@ jobs:
           CI: true
           NODE_AUTH_TOKEN: ${{ secrets.CI_NPM_READ_ORG }}
       - name: Testing
-        run: npm test
+        run: npm run build && npm test
