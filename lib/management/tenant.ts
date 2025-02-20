@@ -111,11 +111,12 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
   generateSSOConfigurationLink: (
     tenantId: string,
     expireDuration: number,
+    ssoId?: string,
   ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
     transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
       sdk.httpClient.post(
         apiPaths.tenant.generateSSOConfigurationLink,
-        { tenantId, expireTime: expireDuration },
+        { tenantId, expireTime: expireDuration, ssoId },
         {
           token: managementKey,
         },

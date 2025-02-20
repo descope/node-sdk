@@ -316,5 +316,37 @@ describe('Management Tenant', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request and receive correct response with sso id', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({
+          adminSSOConfigurationLink: 'some link',
+        }),
+        clone: () => ({
+          json: () => Promise.resolve({ adminSSOConfigurationLink: 'some link' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateSSOConfigurationLinkResponse> =
+        await management.tenant.generateSSOConfigurationLink('test', 60 * 60 * 24, 'some-ssoid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        { tenantId: 'test', expireTime: 60 * 60 * 24, ssoId: 'some-ssoid' },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { adminSSOConfigurationLink: 'some link' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 });
