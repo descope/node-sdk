@@ -89,7 +89,9 @@ Every `async` operation may fail. In case it does, there will be information reg
 A typical case of error handling might look something like:
 
 ```ts
-import { SdkResponse, descopeErrors } from '@descope/node-sdk';
+import DescopeClient, { SdkResponse } from '@descope/node-sdk';
+
+const { DescopeErrors } = DescopeClient;
 
 // ...
 
@@ -97,7 +99,7 @@ try {
   const resp = await sdk.otp.signIn.email(loginId);
   if (resp.error) {
     switch (resp.error.errorCode) {
-      case descopeErrors.userNotFound:
+      case DescopeErrors.userNotFound:
         // Handle specifically
         break;
       default:
