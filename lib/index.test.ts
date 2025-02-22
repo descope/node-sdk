@@ -268,11 +268,11 @@ describe('sdk', () => {
     it('should fail when getting an unexpected response from the server', async () => {
       const spyExchange = jest
         .spyOn(sdk.accessKey, 'exchange')
-        .mockResolvedValueOnce({ data: {} } as SdkResponse<ExchangeAccessKeyResponse>);
+        .mockResolvedValueOnce({ ok: true, data: {} } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
-    it('should fail when getting an error response from the serve', async () => {
+    it('should fail when getting an error response from the server', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
         ok: false,
         error: {
