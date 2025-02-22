@@ -210,6 +210,11 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
         throw Error(`could not exchange access key - Failed to exchange. Error: ${error}`);
       }
 
+      if (!resp.ok) {
+        logger?.error('failed to exchange access key', resp.error);
+        throw Error(`could not exchange access key - ${resp.error?.errorMessage}`);
+      }
+
       const { sessionJwt } = resp.data;
       if (!sessionJwt) {
         logger?.error('failed to parse exchange access key response');
