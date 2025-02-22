@@ -272,8 +272,21 @@ describe('sdk', () => {
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
+    it('should fail when getting an error response from the serve', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: false,
+        error: {
+          errorMessage: 'error-1',
+        },
+      } as SdkResponse<ExchangeAccessKeyResponse>);
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow(
+        'could not exchange access key - error-1',
+      );
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
+    });
     it('should fail when the session token the server returns is invalid', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
         data: { sessionJwt: expiredToken },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
@@ -281,6 +294,7 @@ describe('sdk', () => {
     });
     it('should return the same session token it got from the server', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
         data: { sessionJwt: validToken },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       const expected: AuthenticationInfo = {
