@@ -331,11 +331,23 @@ describe('Management Tenant', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<GenerateSSOConfigurationLinkResponse> =
-        await management.tenant.generateSSOConfigurationLink('test', 60 * 60 * 24, 'some-ssoid');
+        await management.tenant.generateSSOConfigurationLink(
+          'test',
+          60 * 60 * 24,
+          'some-ssoid',
+          'some-email@aa.com',
+          'some-template-id',
+        );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.generateSSOConfigurationLink,
-        { tenantId: 'test', expireTime: 60 * 60 * 24, ssoId: 'some-ssoid' },
+        {
+          tenantId: 'test',
+          expireTime: 60 * 60 * 24,
+          ssoId: 'some-ssoid',
+          email: 'some-email@aa.com',
+          templateId: 'some-template-id',
+        },
         {
           token: 'key',
         },
