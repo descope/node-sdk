@@ -586,8 +586,9 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTimeUnit: 'minutes',
 });
 
-// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+// Generate tenant admin self service link for SSO Suite (valid for 24 hours)
 // ssoId can be provided for a specific sso configuration
+// email can be provided to send the link to (email's templateId can be provided as well)
 const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   'my-tenant-id',
   60 * 60 * 24,
