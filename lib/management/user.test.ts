@@ -1872,6 +1872,36 @@ describe('Management User', () => {
     });
   });
 
+  describe('removeTOTPSeed', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const resp = await management.user.removeTOTPSeed(loginId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeTOTPSeed,
+        { loginId },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('history', () => {
     it('should send the correct request and receive correct response', async () => {
       const usersHistoryRes = [
