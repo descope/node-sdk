@@ -33,6 +33,7 @@ export default {
     setActivePassword: '/v1/mgmt/user/password/set/active',
     expirePassword: '/v1/mgmt/user/password/expire',
     removeAllPasskeys: '/v1/mgmt/user/passkeys/delete',
+    removeTOTPSeed: '/v1/mgmt/user/totp/delete',
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',

@@ -993,6 +993,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
 
     /**
+     * Removes TOTP seed for the user with the given login ID.
+     * Note: The user might not be able to login anymore if they have no other authentication
+     * methods or a verified email/phone.
+     * @param loginId The login ID of the user
+     */
+    removeTOTPSeed: (loginId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(apiPaths.user.removeTOTPSeed, { loginId }, { token: managementKey }),
+        (data) => data,
+      ),
+
+    /**
      * Retrieve users' authentication history, by the given user's ids.
      * @param userIds The user IDs
      */
