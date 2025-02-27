@@ -227,7 +227,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     ),
 
   /**
-   * Return all resources which the target can access via relation paths that include the given relation definition
+   * Return all resources which the target can access via relation paths that end with the given relation definition
    *
    * @param target The target to check resource access for, e.g. user:123
    * @param relationDefinition A relation on a resource, e.g. owner
