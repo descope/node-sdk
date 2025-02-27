@@ -661,6 +661,10 @@ export type AuthzUserQuery = {
   customAttributes?: Record<string, any>;
 };
 
+export type AuthzResource = {
+  resource: string;
+};
+
 /**
  * AuthzRelation defines a relation between resource and target
  */
