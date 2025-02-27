@@ -486,6 +486,35 @@ describe('Management Authz', () => {
     });
   });
 
+  describe('whatCanTargetAccessWithRelation', () => {
+    it('should load the relations for the given target with specific relation definition and namespace', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRelationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRelationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AuthzRelation[]> =
+        await management.authz.whatCanTargetAccessWithRelation('t', 'owner', 'doc');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.authz.targetWithRelation,
+        { target: 't', relationDefinition: 'owner', namespace: 'doc' },
+        { token: 'key' },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockRelation],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('getModified', () => {
     it('should load the resources and targets changes', async () => {
       const httpResponse = {

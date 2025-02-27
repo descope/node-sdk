@@ -224,6 +224,28 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(apiPaths.authz.targetAll, { target }, { token: managementKey }),
       (data) => data.relations,
     ),
+
+  /**
+   * Return the list of all relations for the given target and relation including derived relations from the schema tree which include the given relation definition in the path.
+   *
+   * @param target The target for the relation, e.g. user:123
+   * @param relationDefinition A relation on a resource, e.g. can_access
+   * @param namespace The namespace (type) of the resource in which the relation is defined, e.g. folder
+   * @returns array of resources that the target can access on relation paths which include the given relation definition
+   */
+  whatCanTargetAccessWithRelation: (
+    target: string,
+    relationDefinition: string,
+    namespace: string,
+  ): Promise<SdkResponse<AuthzRelation[]>> => transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.targetWithRelation,
+        { target, relationDefinition, namespace },
+        { token: managementKey },
+      ),
+      (data) => data.resources,
+    ),
+
   /**
    * Return the list of all relations for the given target including derived relations from the schema tree.
    *
