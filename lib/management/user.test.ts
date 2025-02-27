@@ -811,6 +811,63 @@ describe('Management User', () => {
     });
   });
 
+  describe('searchTestUsers', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      const now = new Date().getTime();
+      const resp: SdkResponse<UserResponse[]> = await management.user.searchTestUsers({
+        tenantIds: ['t1'],
+        roles: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.searchTestUsers,
+        {
+          tenantIds: ['t1'],
+          roleNames: ['r1'],
+          limit: 100,
+          statuses: ['enabled'],
+          emails: ['a@b.com'],
+          phones: ['+11111111'],
+          text: 'some text',
+          fromCreatedTime: now,
+          toCreatedTime: now,
+          fromModifiedTime: now,
+          toModifiedTime: now,
+          withTestUser: true,
+          testUsersOnly: true,
+          sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('search', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -822,7 +879,7 @@ describe('Management User', () => {
         status: 200,
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
-
+      const now = new Date().getTime();
       const resp: SdkResponse<UserResponse[]> = await management.user.search({
         tenantIds: ['t1'],
         roles: ['r1'],
@@ -831,6 +888,10 @@ describe('Management User', () => {
         emails: ['a@b.com'],
         phones: ['+11111111'],
         text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
       });
 
@@ -844,6 +905,10 @@ describe('Management User', () => {
           emails: ['a@b.com'],
           phones: ['+11111111'],
           text: 'some text',
+          fromCreatedTime: now,
+          toCreatedTime: now,
+          fromModifiedTime: now,
+          toModifiedTime: now,
           sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         },
         { token: 'key' },
@@ -1859,6 +1924,36 @@ describe('Management User', () => {
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.removeAllPasskeys,
+        { loginId },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeTOTPSeed', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginId = 'some-id';
+      const resp = await management.user.removeTOTPSeed(loginId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.removeTOTPSeed,
         { loginId },
         { token: 'key' },
       );

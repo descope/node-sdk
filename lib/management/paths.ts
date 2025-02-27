@@ -33,6 +33,7 @@ export default {
     setActivePassword: '/v1/mgmt/user/password/set/active',
     expirePassword: '/v1/mgmt/user/password/expire',
     removeAllPasskeys: '/v1/mgmt/user/passkeys/delete',
+    removeTOTPSeed: '/v1/mgmt/user/totp/delete',
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
@@ -65,7 +66,7 @@ export default {
     settings: '/v1/mgmt/tenant/settings',
     loadAll: '/v1/mgmt/tenant/all',
     searchAll: '/v1/mgmt/tenant/search',
-    generateSSOConfigurationLink: '/v1/mgmt/tenant/adminlinks/sso/generate',
+    generateSSOConfigurationLink: '/v2/mgmt/tenant/adminlinks/sso/generate',
   },
   ssoApplication: {
     oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',
@@ -92,6 +93,9 @@ export default {
   jwt: {
     update: '/v1/mgmt/jwt/update',
     impersonate: '/v1/mgmt/impersonate',
+    signIn: '/v1/mgmt/auth/signin',
+    signUp: '/v1/mgmt/auth/signup',
+    signUpOrIn: '/v1/mgmt/auth/signup-in',
   },
   password: {
     settings: '/v1/mgmt/password/settings',

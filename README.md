@@ -89,7 +89,9 @@ Every `async` operation may fail. In case it does, there will be information reg
 A typical case of error handling might look something like:
 
 ```ts
-import { SdkResponse, descopeErrors } from '@descope/node-sdk';
+import DescopeClient, { SdkResponse } from '@descope/node-sdk';
+
+const { DescopeErrors } = DescopeClient;
 
 // ...
 
@@ -97,7 +99,7 @@ try {
   const resp = await sdk.otp.signIn.email(loginId);
   if (resp.error) {
     switch (resp.error.errorCode) {
-      case descopeErrors.userNotFound:
+      case DescopeErrors.userNotFound:
         // Handle specifically
         break;
       default:
@@ -584,7 +586,9 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTimeUnit: 'minutes',
 });
 
-// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+// Generate tenant admin self service link for SSO Suite (valid for 24 hours)
+// ssoId can be provided for a specific sso configuration
+// email can be provided to send the link to (email's templateId can be provided as well)
 const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   'my-tenant-id',
   60 * 60 * 24,
@@ -691,6 +695,8 @@ await descopeClient.management.user.invite('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+  // You can override the project's User Invitation Redirect URL with this parameter
+  inviteUrl: '<invite-url>',
   // You can inject custom data into the template.
   // Note that you first need to configure custom template in Descope Console
   // For example: configure {{options_k1}} in the custom template, and pass { k1: 'v1' } as templateOptions
@@ -1076,6 +1082,8 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
   'impersonator-id',
   'login-id',
   true,
+  { k1: 'v1' },
+  't1',
 );
 ```
 
