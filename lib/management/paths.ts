@@ -149,6 +149,7 @@ export default {
     resource: '/v1/mgmt/authz/re/resource',
     targets: '/v1/mgmt/authz/re/targets',
     targetAll: '/v1/mgmt/authz/re/targetall',
+    targetWithRelation: '/v1/mgmt/authz/re/targetwithrelation',
     getModified: '/v1/mgmt/authz/getmodified',
   },
   fga: {
