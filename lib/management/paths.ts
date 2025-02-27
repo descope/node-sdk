@@ -96,6 +96,7 @@ export default {
     signIn: '/v1/mgmt/auth/signin',
     signUp: '/v1/mgmt/auth/signup',
     signUpOrIn: '/v1/mgmt/auth/signup-in',
+    anonymous: '/v1/mgmt/auth/anonymous',
   },
   password: {
     settings: '/v1/mgmt/password/settings',

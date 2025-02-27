@@ -3,6 +3,8 @@ import { CoreSdk } from '../types';
 import apiPaths from './paths';
 import { MgmtLoginOptions, MgmtSignUpOptions, MgmtUserOptions, UpdateJWTResponse } from './types';
 
+type AnonymousJWTResponse = Omit<JWTResponse, 'user' | 'firstSeen'>;
+
 const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   update: (
     jwt: string,
@@ -59,6 +61,17 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.jwt.signUpOrIn,
         { loginId, user, ...signUpOptions },
+        { token: managementKey },
+      ),
+    ),
+  anonymous: (
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
+  ): Promise<SdkResponse<AnonymousJWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.anonymous,
+        { customClaims, selectedTenant },
         { token: managementKey },
       ),
     ),
