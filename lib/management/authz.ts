@@ -238,7 +238,8 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     target: string,
     relationDefinition: string,
     namespace: string,
-  ): Promise<SdkResponse<AuthzResource[]>> => transformResponse(
+  ): Promise<SdkResponse<AuthzResource[]>> =>
+    transformResponse(
       sdk.httpClient.post(
         apiPaths.authz.targetWithRelation,
         { target, relationDefinition, namespace },
