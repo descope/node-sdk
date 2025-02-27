@@ -197,4 +197,28 @@ describe('Management JWT', () => {
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
     });
   });
+
+  describe('anonymous', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockJWTResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockJWTResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<JWTResponse> = await management.jwt.anonymous({ k1: 'v1' }, 't1');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.jwt.anonymous,
+        { customClaims: { k1: 'v1' }, selectedTenant: 't1' },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
+    });
+  });
 });
