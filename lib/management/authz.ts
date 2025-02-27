@@ -8,6 +8,7 @@ import {
   AuthzRelation,
   AuthzRelationQuery,
   AuthzModified,
+  AuthzResource,
 } from './types';
 
 const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
@@ -226,10 +227,10 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     ),
 
   /**
-   * Return the list of all relations for the given target and relation including derived relations from the schema tree which include the given relation definition in the path.
+   * Return all resources which the target can access via relation paths that include the given relation definition
    *
-   * @param target The target for the relation, e.g. user:123
-   * @param relationDefinition A relation on a resource, e.g. can_access
+   * @param target The target to check resource access for, e.g. user:123
+   * @param relationDefinition A relation on a resource, e.g. owner
    * @param namespace The namespace (type) of the resource in which the relation is defined, e.g. folder
    * @returns array of resources that the target can access on relation paths which include the given relation definition
    */
@@ -237,13 +238,13 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     target: string,
     relationDefinition: string,
     namespace: string,
-  ): Promise<SdkResponse<AuthzRelation[]>> => transformResponse(
+  ): Promise<SdkResponse<AuthzResource[]>> => transformResponse(
       sdk.httpClient.post(
         apiPaths.authz.targetWithRelation,
         { target, relationDefinition, namespace },
         { token: managementKey },
       ),
-      (data) => data.resources,
+      (data) => data.resources.map((resource: string) => ({ resource })),
     ),
 
   /**

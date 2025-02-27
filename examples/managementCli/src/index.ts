@@ -888,11 +888,8 @@ program
 program
   .command('authz-target-access-with-relation')
   .description('Display all relations for the given target with the given relation')
-  .option('-t, --target <target>', 'The target for the relation, e.g. user:123')
-  .option(
-    '-r, --relationDefinition <relationDefinition>',
-    'A relation on a resource, e.g. can_access',
-  )
+  .option('-t, --target <target>', 'The target to check resource access for, e.g. user:123')
+  .option('-r, --relationDefinition <relationDefinition>', 'A relation on a resource, e.g. owner')
   .option(
     '-n, --namespace <namespace>',
     'The namespace (type) of the resource in which the relation is defined, e.g. folder',
