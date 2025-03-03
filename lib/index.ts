@@ -1,6 +1,6 @@
 import createSdk, {
-  ExchangeAccessKeyResponse,
   AccessKeyLoginOptions,
+  ExchangeAccessKeyResponse,
   SdkResponse,
   wrapWith,
 } from '@descope/core-js-sdk';
@@ -11,10 +11,11 @@ import {
   rolesClaimName,
   sessionTokenCookieName,
 } from './constants';
+import fetch from './fetch-polyfill';
 import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
-import fetch from './fetch-polyfill';
+import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
 
@@ -209,6 +210,11 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
         throw Error(`could not exchange access key - Failed to exchange. Error: ${error}`);
       }
 
+      if (!resp.ok) {
+        logger?.error('failed to exchange access key', resp.error);
+        throw Error(`could not exchange access key - ${resp.error?.errorMessage}`);
+      }
+
       const { sessionJwt } = resp.data;
       if (!sessionJwt) {
         logger?.error('failed to parse exchange access key response');
@@ -371,14 +377,14 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
 
 nodeSdk.RefreshTokenCookieName = refreshTokenCookieName;
 nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
+nodeSdk.DescopeErrors = descopeErrors;
 
 export default nodeSdk;
 export type {
   DeliveryMethod,
+  JWTResponse,
   OAuthProvider,
   ResponseData,
   SdkResponse,
-  JWTResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
-export { descopeErrors } from './errors';

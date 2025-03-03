@@ -73,7 +73,7 @@ Then, you can use that to work with the following functions:
 10. [Impersonate](#impersonate)
 11. [Embedded Links](#embedded-links)
 12. [Audit](#audit)
-13. [Manage Authz](#manage-authz)
+13. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
 14. [Manage Project](#manage-project)
 15. [Manage SSO applications](#manage-sso-applications)
 
@@ -89,7 +89,9 @@ Every `async` operation may fail. In case it does, there will be information reg
 A typical case of error handling might look something like:
 
 ```ts
-import { SdkResponse, descopeErrors } from '@descope/node-sdk';
+import DescopeClient, { SdkResponse } from '@descope/node-sdk';
+
+const { DescopeErrors } = DescopeClient;
 
 // ...
 
@@ -97,7 +99,7 @@ try {
   const resp = await sdk.otp.signIn.email(loginId);
   if (resp.error) {
     switch (resp.error.errorCode) {
-      case descopeErrors.userNotFound:
+      case DescopeErrors.userNotFound:
         // Handle specifically
         break;
       default:
@@ -584,7 +586,9 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTimeUnit: 'minutes',
 });
 
-// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+// Generate tenant admin self service link for SSO Suite (valid for 24 hours)
+// ssoId can be provided for a specific sso configuration
+// email can be provided to send the link to (email's templateId can be provided as well)
 const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   'my-tenant-id',
   60 * 60 * 24,
@@ -691,6 +695,8 @@ await descopeClient.management.user.invite('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+  // You can override the project's User Invitation Redirect URL with this parameter
+  inviteUrl: '<invite-url>',
   // You can inject custom data into the template.
   // Note that you first need to configure custom template in Descope Console
   // For example: configure {{options_k1}} in the custom template, and pass { k1: 'v1' } as templateOptions
@@ -808,16 +814,32 @@ With using a company management key you can get a list of all the projects in th
 const projects = await descopeClient.management.project.listProjects();
 ```
 
-You can manage your project's settings and configurations by exporting your
-project's environment. You can also import previously exported data into
-the same project or a different one.
+You can manage your project's settings and configurations by exporting a snapshot:
 
 ```typescript
 // Exports the current state of the project
-const files = await descopeClient.management.project.export();
+const exportRes = await descopeClient.management.project.exportSnapshot();
+```
 
-// Import the previously exported data into the current project
-await descopeClient.management.project.import(files);
+You can also import previously exported snapshots into the same project or a different one:
+
+```typescript
+const validateReq = {
+  files: exportRes.files,
+};
+
+// Validate that an exported snapshot can be imported into the current project
+const validateRes = await descopeClient.management.project.import(files);
+if (!validateRes.ok) {
+  // validation failed, check failures and missingSecrets to fix this
+}
+
+// Import the previously exported snapshot into the current project
+const importReq = {
+  files: exportRes.files,
+};
+
+await descopeClient.management.project.importSnapshot(files);
 ```
 
 ### Manage Access Keys
@@ -1060,6 +1082,8 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
   'impersonator-id',
   'login-id',
   true,
+  { k1: 'v1' },
+  't1',
 );
 ```
 
@@ -1108,181 +1132,71 @@ await descopeClient.management.audit.createEvent({
 });
 ```
 
-### Manage Authz
+### Manage FGA (Fine-grained Authorization)
 
-Descope support full relation based access control (ReBAC) using a zanzibar like schema and operations.
-A schema is comprized of namespaces (entities like documents, folders, orgs, etc.) and each namespace has relation definitions to define relations.
-Each relation definition can be simple (either you have it or not) or complex (union of nodes).
+Descope supports full relation based access control (ReBAC) using a zanzibar like schema and operations.
+A schema is comprised of types (entities like documents, folders, orgs, etc.) and each type has relation definitions and permission to define relations to other types.
 
 A simple example for a file system like schema would be:
 
 ```yaml
-# Example schema for the authz tests
-name: Files
-namespaces:
-  - name: org
-    relationDefinitions:
-      - name: parent
-      - name: member
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationLeft
-                relationDefinition: parent
-                relationDefinitionNamespace: org
-                targetRelationDefinition: member
-                targetRelationDefinitionNamespace: org
-  - name: folder
-    relationDefinitions:
-      - name: parent
-      - name: owner
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: folder
-                targetRelationDefinition: owner
-                targetRelationDefinitionNamespace: folder
-      - name: editor
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: folder
-                targetRelationDefinition: editor
-                targetRelationDefinitionNamespace: folder
-            - nType: child
-              expression:
-                neType: targetSet
-                targetRelationDefinition: owner
-                targetRelationDefinitionNamespace: folder
-      - name: viewer
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: folder
-                targetRelationDefinition: viewer
-                targetRelationDefinitionNamespace: folder
-            - nType: child
-              expression:
-                neType: targetSet
-                targetRelationDefinition: editor
-                targetRelationDefinitionNamespace: folder
-  - name: doc
-    relationDefinitions:
-      - name: parent
-      - name: owner
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: doc
-                targetRelationDefinition: owner
-                targetRelationDefinitionNamespace: folder
-      - name: editor
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: doc
-                targetRelationDefinition: editor
-                targetRelationDefinitionNamespace: folder
-            - nType: child
-              expression:
-                neType: targetSet
-                targetRelationDefinition: owner
-                targetRelationDefinitionNamespace: doc
-      - name: viewer
-        complexDefinition:
-          nType: union
-          children:
-            - nType: child
-              expression:
-                neType: self
-            - nType: child
-              expression:
-                neType: relationRight
-                relationDefinition: parent
-                relationDefinitionNamespace: doc
-                targetRelationDefinition: viewer
-                targetRelationDefinitionNamespace: folder
-            - nType: child
-              expression:
-                neType: targetSet
-                targetRelationDefinition: editor
-                targetRelationDefinitionNamespace: doc
+model AuthZ 1.0
+
+type user
+
+type org
+  relation member: user
+  relation parent: org
+
+type folder
+  relation parent: folder
+  relation owner: user | org#member
+  relation editor: user
+  relation viewer: user
+
+  permission can_create: owner | parent.owner
+  permission can_edit: editor | can_create
+  permission can_view: viewer | can_edit
+
+type doc
+  relation parent: folder
+  relation owner: user | org#member
+  relation editor: user
+  relation viewer: user
+
+  permission can_create: owner | parent.owner
+  permission can_edit: editor | can_create
+  permission can_view: viewer | can_edit
 ```
 
 Descope SDK allows you to fully manage the schema and relations as well as perform simple (and not so simple) checks regarding the existence of relations.
 
 ```typescript
-// Load the existing schema
-const s = await descopeClient.management.authz.loadSchema();
-console.log(s);
+const descopeClient = require('@descope/node-sdk');
 
-// Save schema and make sure to remove all namespaces not listed
-await descopeClient.management.authz.saveSchema(s, true);
+// Save schema
+await descopeClient.management.fga.saveSchema(schema);
 
 // Create a relation between a resource and user
-await descopeClient.management.authz.createRelations([
+await descopeClient.management.fga.createRelations([
   {
     resource: 'some-doc',
-    relationDefinition: 'owner',
-    namespace: 'doc',
+    resourceType: 'doc',
+    relation: 'owner',
     target: 'u1',
-  },
-  {
-    resource: 'some-doc',
-    relationDefinition: 'editor',
-    namespace: 'doc',
-    target: 'u2',
+    targetType: 'user',
   },
 ]);
 
-// Check if target has the relevant relation
-// The answer should be true because an owner is also a viewer
-const q = await descopeClient.management.authz.hasRelations([
+// Check if target has a relevant relation
+// The answer should be true because an owner can also view
+const relations = await descopeClient.management.fga.check([
   {
     resource: 'some-doc',
-    relationDefinition: 'viewer',
-    namespace: 'doc',
+    resourceType: 'doc',
+    relation: 'can_view',
     target: 'u1',
+    targetType: 'user',
   },
 ]);
 ```
@@ -1302,6 +1216,12 @@ await descopeClient.management.user.createTestUser('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+});
+
+// Search all test users according to various parameters
+const searchRes = await descopeClient.management.user.searchTestUsers(['id']);
+searchRes.data.forEach((user) => {
+  // do something
 });
 
 // Now test user got created, and this user will be available until you delete it,

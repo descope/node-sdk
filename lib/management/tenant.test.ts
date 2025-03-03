@@ -16,9 +16,9 @@ const mockTenantCreateResponse = {
 };
 
 const mockTenants = [
-  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'] },
-  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'] },
-  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'] },
+  { id: 't1', name: 'name1', selfProvisioningDomains: ['domain1.com'], createdTime: 1 },
+  { id: 't2', name: 'name2', selfProvisioningDomains: ['domain2.com'], createdTime: 1 },
+  { id: 't3', name: 'name3', selfProvisioningDomains: ['domain3.com'], createdTime: 1 },
 ];
 
 const mockSettings: TenantSettings = {
@@ -304,6 +304,50 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.generateSSOConfigurationLink,
         { tenantId: 'test', expireTime: 60 * 60 * 24 },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { adminSSOConfigurationLink: 'some link' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response with sso id', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({
+          adminSSOConfigurationLink: 'some link',
+        }),
+        clone: () => ({
+          json: () => Promise.resolve({ adminSSOConfigurationLink: 'some link' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateSSOConfigurationLinkResponse> =
+        await management.tenant.generateSSOConfigurationLink(
+          'test',
+          60 * 60 * 24,
+          'some-ssoid',
+          'some-email@aa.com',
+          'some-template-id',
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        {
+          tenantId: 'test',
+          expireTime: 60 * 60 * 24,
+          ssoId: 'some-ssoid',
+          email: 'some-email@aa.com',
+          templateId: 'some-template-id',
+        },
         {
           token: 'key',
         },

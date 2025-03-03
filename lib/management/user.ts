@@ -18,6 +18,7 @@ import {
   InviteBatchResponse,
   TemplateOptions,
   ProviderTokenOptions,
+  UserOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -42,6 +43,10 @@ type SearchRequest = {
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
   loginIds?: string[];
+  fromCreatedTime?: number; // Search users created after this time (epoch in milliseconds)
+  toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
+  fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
+  toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
 };
 
 type SingleUserResponse = {
@@ -190,7 +195,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             test: true,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.create, body, { token: managementKey }),
+      sdk.httpClient.post(apiPaths.user.createTestUser, body, { token: managementKey }),
       (data) => data.user,
     );
   }
@@ -204,6 +209,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       sendMail?: boolean; // send invite via mail, default is according to project settings
       sendSMS?: boolean; // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions;
+      templateId?: string;
     },
   ): Promise<SdkResponse<UserResponse>>;
   function invite(
@@ -224,6 +230,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>>;
 
   function invite(
@@ -244,6 +251,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of invite user
     // 1. The new form - invite(loginId, { email, phone, ... }})
@@ -269,6 +277,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             sendMail,
             sendSMS,
             additionalLoginIds,
+            templateId,
           }
         : {
             loginId,
@@ -429,17 +438,26 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       sendMail?: boolean, // send invite via mail, default is according to project settings
       sendSMS?: boolean, // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions,
+      templateId?: string,
     ): Promise<SdkResponse<InviteBatchResponse>> =>
       transformResponse<InviteBatchResponse, InviteBatchResponse>(
         sdk.httpClient.post(
           apiPaths.user.createBatch,
           {
-            users,
+            users: users.map((u) => {
+              const res = {
+                ...u,
+                roleNames: u.roles,
+              };
+              delete res.roles;
+              return res;
+            }),
             invite: true,
             inviteUrl,
             sendMail,
             sendSMS,
             templateOptions,
+            templateId,
           },
           { token: managementKey },
         ),
@@ -555,12 +573,21 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         ),
         (data) => data.users,
       ),
-    /**
-     * Search all users. Results can be filtered according to tenants roles and more,
-     * Pagination is also available using the limit and page parameters.
-     * @param searchReq an object with all the constraints for this search
-     * @returns An array of UserResponse found by the query
-     */
+    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        sdk.httpClient.post(
+          apiPaths.user.searchTestUsers,
+          {
+            ...searchReq,
+            withTestUser: true,
+            testUsersOnly: true,
+            roleNames: searchReq.roles,
+            roles: undefined,
+          },
+          { token: managementKey },
+        ),
+        (data) => data.users,
+      ),
     search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
       transformResponse<MultipleUsersResponse, UserResponse[]>(
         sdk.httpClient.post(
@@ -970,6 +997,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
 
     /**
+     * Removes TOTP seed for the user with the given login ID.
+     * Note: The user might not be able to login anymore if they have no other authentication
+     * methods or a verified email/phone.
+     * @param loginId The login ID of the user
+     */
+    removeTOTPSeed: (loginId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(apiPaths.user.removeTOTPSeed, { loginId }, { token: managementKey }),
+        (data) => data,
+      ),
+
+    /**
      * Retrieve users' authentication history, by the given user's ids.
      * @param userIds The user IDs
      */
@@ -980,23 +1019,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
   };
 };
-
-export interface UserOptions {
-  email?: string;
-  phone?: string;
-  displayName?: string;
-  roles?: string[];
-  userTenants?: AssociatedTenant[];
-  customAttributes?: Record<string, AttributesTypes>;
-  picture?: string;
-  verifiedEmail?: boolean;
-  verifiedPhone?: boolean;
-  givenName?: string;
-  middleName?: string;
-  familyName?: string;
-  additionalLoginIds?: string[];
-  ssoAppIds?: string[];
-}
 
 export interface PatchUserOptions {
   email?: string;
