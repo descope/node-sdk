@@ -34,6 +34,7 @@ const sdk = DescopeClient({
   projectId: DESCOPE_PROJECT_ID,
   baseUrl: DESCOPE_API_BASE_URL,
   managementKey: DESCOPE_MANAGEMENT_KEY,
+  logger: console,
 });
 
 const program = new Command();
