@@ -409,7 +409,14 @@ export type UserMapping = {
   email: string;
   username: string;
   phoneNumber: string;
+  givenName: string;
+  middleName: string;
+  familyName: string;
+  picture: string;
+  verifiedEmail: string;
+  verifiedPhone: string;
   group: string;
+  customAttributes: Record<string, string>;
 };
 
 export type RoleItem = {
