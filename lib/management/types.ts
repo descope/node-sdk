@@ -131,8 +131,16 @@ export type RoleMappings = RoleMapping[];
 export type AttributeMapping = {
   name?: string;
   email?: string;
+  username?: string;
   phoneNumber?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
   group?: string;
+  customAttributes?: Record<string, string>;
 };
 
 /** UpdateJWT response with a new JWT value with the added custom claims */
@@ -409,7 +417,6 @@ export type UserMapping = {
   email: string;
   username: string;
   phoneNumber: string;
-  group: string;
 };
 
 export type RoleItem = {
@@ -461,15 +468,16 @@ export type SSOSettings = {
 export type OIDCAttributeMapping = {
   loginId?: string;
   name?: string;
+  email?: string;
+  username?: string;
+  phoneNumber?: string;
   givenName?: string;
   middleName?: string;
   familyName?: string;
-  email?: string;
-  verifiedEmail?: string;
-  username?: string;
-  phoneNumber?: string;
-  verifiedPhone?: string;
   picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
+  customAttributes?: Record<string, string>;
 };
 
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
