@@ -325,7 +325,15 @@ program
   .option('--permitted-ips <ips>', 'Permitted IPs', (val) => val?.split(','))
   .action(async (id, name, options) => {
     handleSdkRes(
-      await sdk.management.accessKey.update(id, name, options.description, options.permittedIps),
+      await sdk.management.accessKey.update(
+        id,
+        name,
+        options.description,
+        undefined,
+        undefined,
+        undefined,
+        options.permittedIps,
+      ),
     );
   });
 
