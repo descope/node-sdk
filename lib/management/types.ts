@@ -463,6 +463,7 @@ export type SSOSettings = {
   tenant: Tenant;
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
+  ssoId?: string;
 };
 
 export type OIDCAttributeMapping = {
