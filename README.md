@@ -889,33 +889,55 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
 // You can get SSO settings for a specific tenant ID
-const ssoSettings = await descopeClient.management.sso.loadSettings("tenant-id")
+// You can pass ssoId in case using multi SSO and you want to load specific SSO configuration
+const ssoSettings = await descopeClient.management.sso.loadSettings('tenant-id');
+
+// You can get all configured SSO settings for a specific tenant ID (for multi SSO usage)
+const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenant-id');
 
 // You can configure SSO settings manually by setting the required fields directly
-const tenantId = 'tenant-id' // Which tenant this configuration is for
-const idpURL = 'https://idp.com'
-const entityID = 'my-idp-entity-id'
-const idpCert = '<your-cert-here>'
-const redirectURL = 'https://my-app.com/handle-sso' // Global redirect URL for SSO/SAML
-const domains = ['tenant-users.com'] // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSAMLSettings(tenantID, {idpURL, entityID, idpCert}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+const tenantId = 'tenant-id'; // Which tenant this configuration is for
+const idpURL = 'https://idp.com';
+const entityID = 'my-idp-entity-id';
+const idpCert = '<your-cert-here>';
+const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
+const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpURL, entityID, idpCert },
+  redirectURL,
+  domains,
+);
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureSAMLByMetadata(tenantID, {idpMetadataUrl: 'https://idp.com/my-idp-metadata'}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+await descopeClient.management.sso.configureSAMLByMetadata(
+  tenantID,
+  { idpMetadataUrl: 'https://idp.com/my-idp-metadata' },
+  redirectURL,
+  domains,
+);
 
 // In case SSO is configured to work with OIDC use the following
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
 const clientId = 'client id of OIDC';
-const clientSecret =  'client secret';
-await descopeClient.management.sso.configureOIDCSettings(tenantID, {name, clientId, clientSecret, redirectUrl}, domains)
+const clientSecret = 'client secret';
+await descopeClient.management.sso.configureOIDCSettings(
+  tenantID,
+  { name, clientId, clientSecret, redirectUrl },
+  domains,
+);
 
-// Map IDP groups to Descope roles, or map user attributes.
-// This function overrides any previous mapping (even when empty). Use carefully.
-await descopeClient.management.sso.configureMapping(
-   tenantId,
-   [{ groups: ['IDP_ADMIN'], roleName: 'Tenant Admin'}]
-   { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
-)
+// You can create new SSO configuration (aka multi SSO)
+const ssoId = 'my-new-additional-sso-id';
+const displayName = 'My additional SSO configuration';
+await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
+
+// You can delete existing SSO configuration
+// You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
+await descopeClient.management.sso.deleteSettings(tenantID);
 ```
 
 Note: Certificates should have a similar structure to:
