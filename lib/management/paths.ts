@@ -79,9 +79,11 @@ export default {
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',
+    settingsNew: '/v1/mgmt/sso/settings/new',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
     settingsv2: '/v2/mgmt/sso/settings',
+    settingsAllV2: '/v2/mgmt/sso/settings/all',
     oidc: {
       configure: '/v1/mgmt/sso/oidc',
     },
