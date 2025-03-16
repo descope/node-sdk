@@ -680,23 +680,25 @@ describe('Management SSO', () => {
 
   describe('loadAllSettings', () => {
     it('should send the correct request and receive correct response', async () => {
-      const mockResponse = [
-        {
-          tenant: {
-            id: 't1',
-            name: 'nm',
-          },
-          oidc: {
-            userAttrMapping: {
-              name: 'uan',
+      const mockResponse = {
+        SSOSettings: [
+          {
+            tenant: {
+              id: 't1',
+              name: 'nm',
             },
+            oidc: {
+              userAttrMapping: {
+                name: 'uan',
+              },
+            },
+            saml: {
+              groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
+            },
+            ssoId: 'somessoid',
           },
-          saml: {
-            groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
-          },
-          ssoId: 'somessoid',
-        },
-      ];
+        ],
+      };
       const httpResponse = {
         ok: true,
         json: () => mockResponse,
