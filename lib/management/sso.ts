@@ -32,7 +32,7 @@ function transformSettingsResponse(data) {
 }
 
 function transformAllSettingsResponse(data) {
-  const readySettings = data as any[];
+  const readySettings = data.SSOSettings as any[];
   const res = [];
   readySettings.forEach((setting) => res.push(transformSettingsResponse(setting)));
   return res;
