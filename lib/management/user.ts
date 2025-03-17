@@ -43,6 +43,7 @@ type SearchRequest = {
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
   loginIds?: string[];
+  userIds?: string[];
   fromCreatedTime?: number; // Search users created after this time (epoch in milliseconds)
   toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
   fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
