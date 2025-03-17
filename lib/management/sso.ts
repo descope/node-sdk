@@ -58,7 +58,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse<SSOSettings>(
       sdk.httpClient.post(
         apiPaths.sso.settingsNew,
-        { tenantId, ssoId, displayName },
+        { tenantId, ...(ssoId ? { ssoId } : {}), displayName },
         { token: managementKey },
       ),
       (data) => transformSettingsResponse(data),
@@ -66,7 +66,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
   deleteSettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.delete(apiPaths.sso.settings, {
-        queryParams: { tenantId, ssoId },
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
         token: managementKey,
       }),
     ),
@@ -134,7 +134,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
           tenantId,
           settings: readySettings,
           domains,
-          ssoId,
+          ...(ssoId ? { ssoId } : {}),
         },
         { token: managementKey },
       ),
@@ -150,7 +150,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.saml.configure,
-        { tenantId, settings, redirectUrl, domains, ssoId },
+        { tenantId, settings, redirectUrl, domains, ...(ssoId ? { ssoId } : {}) },
         { token: managementKey },
       ),
     ),
@@ -164,14 +164,14 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(
         apiPaths.sso.saml.metadata,
-        { tenantId, settings, redirectUrl, domains, ssoId },
+        { tenantId, settings, redirectUrl, domains, ...(ssoId ? { ssoId } : {}) },
         { token: managementKey },
       ),
     ),
   loadSettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<SSOSettings>> =>
     transformResponse<SSOSettings>(
       sdk.httpClient.get(apiPaths.sso.settingsv2, {
-        queryParams: { tenantId, ssoId },
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
         token: managementKey,
       }),
       (data) => transformSettingsResponse(data),
