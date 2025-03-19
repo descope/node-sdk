@@ -547,6 +547,7 @@ describe('Management User', () => {
         picture: 'pic',
         verifiedEmail: true,
         verifiedPhone: false,
+        scim: true,
         ssoAppIds: ['sso1', 'sso2'],
       });
 
@@ -561,6 +562,7 @@ describe('Management User', () => {
           verifiedEmail: true,
           verifiedPhone: false,
           ssoAppIds: ['sso1', 'sso2'],
+          scim: true,
         },
         { token: 'key' },
       );
