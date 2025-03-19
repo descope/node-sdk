@@ -306,7 +306,7 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 #### Deleting the TOTP Seed
 
-Pass the `loginId` to the function to remove the user's TOTP seed.
+Provide the `loginId` to the function to remove the user's TOTP seed.
 
 ```typescript
 const response = await descopeClient.management.user.removeTOTPSeed(loginId);
