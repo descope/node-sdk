@@ -412,6 +412,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     if (options.ssoAppIds !== undefined) {
       body.ssoAppIds = options.ssoAppIds;
     }
+    if (options.scim !== undefined) {
+      body.scim = options.scim;
+    }
 
     return transformResponse<SingleUserResponse, UserResponse>(
       sdk.httpClient.patch(apiPaths.user.patch, body, { token: managementKey }),
@@ -1035,6 +1038,7 @@ export interface PatchUserOptions {
   middleName?: string;
   familyName?: string;
   ssoAppIds?: string[];
+  scim?: boolean;
 }
 
 export default withUser;
