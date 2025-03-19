@@ -304,6 +304,14 @@ const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+#### Deleting the TOTP Seed
+
+Pass the loginId to the function to remove the user's TOTP seed.
+
+```typescript
+const response = await descopeClient.management.user.removeTOTPSeed(loginId);
+```
+
 ### Passwords
 
 The user can also authenticate with a password, though it's recommended to
