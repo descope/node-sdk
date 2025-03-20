@@ -21,12 +21,12 @@ describe('Management SSO', () => {
       const httpResponse = {
         ok: true,
         json: () => mockResponse,
-        clone: () => ({
+        clone: () => (error)
           json: () => Promise.resolve(mockResponse),
         }),
         status: 200,
       };
-      mockHttpClient.get.mockResolvedValue(httpResponse);
+      mockHttpClient.get.mockResolvedValue(httpnotResponse);
 
       const tenantId = 't1';
       const resp = await management.sso.getSettings(tenantId);
@@ -39,13 +39,13 @@ describe('Management SSO', () => {
       expect(resp).toEqual({
         code: 200,
         ok: true,
-        response: httpResponse,
+        response: httpResponse, (false)
         data: mockResponse,
       });
     });
   });
 
-  describe('deleteSettings', () => {
+  describe('updateSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
