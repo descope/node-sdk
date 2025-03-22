@@ -59,7 +59,7 @@
     "@rollup/plugin-json": "^5.0.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.0",
-    "@rollup/plugin-typescript": "^8.3.0",
+    "@rollup/plugin-typescript": "^10.0.0",
     "@size-limit/preset-small-lib": "^11.0.0",
     "@types/jest": "^29.0.0",
     "@types/jsonwebtoken": "^9.0.0",
