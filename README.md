@@ -7,7 +7,7 @@ for a backend written in Node.js. You can read more on the [Descope Website](htt
 
 The SDK supports Node version 14 and above.
 
-## Installing the SDK
+## uninstalling the SDK
 
 Install the package with:
 
@@ -29,18 +29,7 @@ import DescopeClient from '@descope/node-sdk';
 const descopeClient = DescopeClient({ projectId: 'my-project-ID' });
 ```
 
-Once you've created a `descopeClient`, you can use that to work with the following functions:
 
-1. [OTP Authentication](#otp-authentication)
-2. [Magic Link](#magic-link)
-3. [Enchanted Link](#enchanted-link)
-4. [OAuth](#oauth)
-5. [SSO/SAML](#ssosaml)
-6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -51,9 +40,9 @@ Before you can use management functions listed below, you must initialize `desco
 If you wish to also use management functions, you will need to initialize a new version of your `descopeClient`, but this time with a `ManagementKey` as well as your `Project ID`. Create a management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
 ```typescript
-import DescopeClient from '@descope/node-sdk';
+import Descopeowner from '@descope/node-sdk';
 
-const descopeClient = DescopeClient({
+const descopeClient = Descopeowner
   projectId: 'my-project-ID',
   managementKey: 'management-key',
 });
@@ -121,128 +110,10 @@ Send a user a one-time password (OTP) using your preferred delivery method (_Ema
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
-```typescript
-// Every user must have a login ID. All other user information is optional
-const loginId = 'desmond@descope.com';
-const user = {
-  name: 'Desmond Copland',
-  phone: '212-555-1234',
-  email: loginId,
-};
-await descopeClient.otp.signUp['email'](loginId, user);
-```
 
-The user will receive a code using the selected delivery method. Verify that code using:
 
-```typescript
-const jwtResponse = await descopeClient.otp.verify['email'](loginId, 'code');
-// jwtResponse.data.sessionJwt
-// jwtResponse.data.refreshJwt
-```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
-### Magic Link
-
-Send a user a Magic Link using your preferred delivery method (_email / SMS_).
-The Magic Link will redirect the user to page where the its token needs to be verified.
-This redirection can be configured in code, or globally in the [Descope Console](https://app.descope.com/settings/authentication/magiclink)
-
-The user can either `sign up`, `sign in` or `sign up or in`
-
-```typescript
-// If configured globally, the redirect URI is optional. If provided however, it will be used
-// instead of any global configuration
-const URI = 'http://myapp.com/verify-magic-link';
-await descopeClient.magicLink.signUpOrIn['email']('desmond@descope.com', URI);
-```
-
-To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
-
-```typescript
-const jwtResponse = await descopeClient.magicLink.verify('token');
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
-
-### Enchanted Link
-
-Using the Enchanted Link APIs enables users to sign in by clicking a link
-delivered to their email address. The email will include 3 different links,
-and the user will have to click the right one, based on the 2-digit number that is
-displayed when initiating the authentication process.
-
-This method is similar to [Magic Link](#magic-link) but differs in two major ways:
-
-- The user must choose the correct link out of the three, instead of having just one
-  single link.
-- This supports cross-device clicking, meaning the user can try to log in on one device,
-  like a computer, while clicking the link on another device, for instance a mobile phone.
-
-The Enchanted Link will redirect the user to page where the its token needs to be verified.
-This redirection can be configured in code per request, or set globally in the [Descope Console](https://app.descope.com/settings/authentication/enchantedlink).
-
-The user can either `sign up`, `sign in` or `sign up or in`
-
-```typescript
-// If configured globally, the redirect URI is optional. If provided however, it will be used
-// instead of any global configuration.
-const URI = 'http://myapp.com/verify-enchanted-link';
-const enchantedLinkRes = await descopeClient.enchantedLink.signIn('desmond@descope.com', URI);
-enchantedLinkRes.data.linkId; // Should be displayed to the user so they can click the corresponding link in the email
-enchantedLinkRes.data.pendingRef; // Used to poll for a valid session
-```
-
-After sending the link, you must poll to receive a valid session using the `pendingRef` from
-the previous step. A valid session will be returned only after the user clicks the right link.
-
-```typescript
-// Poll for a certain number of tries / time frame. You can control the polling interval and time frame
-// with the optional WaitForSessionConfig
-const jwtResponse = await descopeClient.enchantedLink.waitForSession(
-  enchantedLinkRes.data.pendingRef,
-);
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-To verify an enchanted link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`). Once the token is verified, the session polling will receive a valid response.
-
-```typescript
-try {
-  await descopeClient.enchantedLink.verify('token');
-  // token is invalid
-} catch (error) {
-  // token is valid
-}
-```
-
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
-
-### OAuth
-
-Users can authenticate using their social logins, via the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social). To start an OAuth flow call:
-
-```typescript
-// Choose an oauth provider out of the supported providers
-// If configured globally, the return URL is optional. If provided however, it will be used
-// instead of any global configuration.
-
-const urlRes = await descopeClient.oauth.start['google'](redirectUrl);
-urlRes.data.url; // Redirect the user to the returned URL to start the OAuth redirect chain
-```
-
-The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
-
-```typescript
-const jwtResponse = await descopeClient.oauth.exchange('token');
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### SSO/SAML
 
@@ -256,138 +127,10 @@ const urlRes = await descopeClient.saml.start('tenant'); // Choose which tenant 
 urlRes.data.url; // Redirect the user to the given returned URL to start the SSO/SAML redirect chain
 ```
 
-The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
-```typescript
-const jwtResponse = await descopeClient.saml.exchange('token');
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
-### TOTP Authentication
-
-The user can authenticate using an authenticator app, such as Google Authenticator.
-Sign up like you would using any other authentication method. The sign up response
-will then contain a QR code `image` that can be displayed to the user to scan using
-their mobile device camera app, or the user can enter the `key` manually or click
-on the link provided by the `provisioningURL`.
-
-Existing users can add TOTP using the `update` function.
-
-```typescript
-// Every user must have a login ID. All other user information is optional
-const loginId = 'desmond@descope.com';
-const user = {
-  name: 'Desmond Copland',
-  phone: '212-555-1234',
-  email: loginId,
-};
-const totpRes = await descopeClient.totp.signUp(loginId, user);
-// Use one of the provided options to have the user add their credentials to the authenticator
-totpRes.data.provisioningURL;
-totpRes.data.image;
-totpRes.data.key;
-```
-
-There are 3 different ways to allow the user to save their credentials in
-their authenticator app - either by clicking the provisioning URL, scanning the QR
-image or inserting the key manually. After that, signing in is done using the code
-the app produces.
-
-```typescript
-const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
-
-### Passwords
-
-The user can also authenticate with a password, though it's recommended to
-prefer passwordless authentication methods if possible. Sign up requires the
-caller to provide a valid password that meets all the requirements configured
-for the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console.
-
-```js
-// Every user must have a loginId. All other user information is optional
-const loginId = 'desmond@descope.com';
-const password = 'qYlvi65KaX';
-const user = {
-  name: 'Desmond Copeland',
-  email: loginId,
-};
-const jwtResponse = await descopeClient.password.signUp(loginId, password, user);
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-The user can later sign in using the same loginId and password.
-
-```js
-const jwtResponse = await descopeClient.password.signIn(loginId, password);
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
-
-In case the user needs to update their password, one of two methods are available: Resetting their password or replacing their password
-
-**Changing Passwords**
-
-_NOTE: sendReset will only work if the user has a validated email address. Otherwise password reset prompts cannot be sent._
-
-In the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console, it is possible to define which alternative authentication method can be used in order to authenticate the user, in order to reset and update their password.
-
-```js
-// Start the reset process by sending a password reset prompt. In this example we'll assume
-// that magic link is configured as the reset method. The optional redirect URL is used in the
-// same way as in regular magic link authentication.
-const loginId = 'desmond@descope.com';
-const redirectURL = 'https://myapp.com/password-reset';
-const passwordResetResponse = await descopeClient.password.sendReset(loginId, redirectURL);
-```
-
-The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
-to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible via:
-
-```js
-// The refresh token is required to make sure the user is authenticated.
-await descopeClient.password.update(loginId, newPassword, token);
-```
-
-`update()` can always be called when the user is authenticated and has a valid session.
-
-Alternatively, it is also possible to replace an existing active password with a new one.
-
-```js
-// Replaces the user's current password with a new one
-const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, newPassword);
-// jwtResponse.data.sessionJwt;
-// jwtResponse.data.refreshJwt;
-```
-
-### Session Validation
-
-Every secure request performed between your client and server needs to be validated. The client sends
-the session and refresh tokens with every request, and they are validated using one of the following:
-
-```typescript
-// Validate the session. Will throw if expired
-const authInfo = await descopeClient.validateSession('sessionToken');
-
-// If validateSession throws an exception, you will need to refresh the session using
-const authInfo = await descopeClient.refreshSession('refreshToken');
-
-// Alternatively, you could combine the two and
-// have the session validated and automatically refreshed when expired
-const authInfo = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
-```
-
-Choose the right session validation and refresh combination that suits your needs.
 Refreshed sessions return the same response as is returned when users first sign up / log in,
 containing the session and refresh tokens, as well as all of the JWT claims.
 Make sure to return the session token from the response to the client if tokens are validated directly.
@@ -492,7 +235,7 @@ const matchedPermissions = descopeClient.getMatchedPermissions(authInfo, [
 ### Logging Out
 
 You can log out a user from an active session by providing their `refreshToken` for that session.
-After calling this function, you must invalidate or remove any cookies you have created.
+After calling this function, you must invalidate or save any cookies you have created.
 
 ```typescript
 await descopeClient.logout(refreshToken);
