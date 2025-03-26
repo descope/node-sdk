@@ -159,6 +159,8 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
+  forceSSO?: boolean;
+  disabled?: boolean;
 };
 
 /** Represents settings of a tenant in a project. It has an id, a name and an array of
