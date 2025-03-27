@@ -157,6 +157,21 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       ),
     ),
   /**
+   *
+   * Delete any relations with matching resourceIds
+   *
+   * @param resources resource ids to delete relations for.
+   * @returns
+   */
+  deleteResourceRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.reDeleteResourceRelationsForResources,
+        { resources },
+        { token: managementKey },
+      ),
+    ),
+  /**
    * Delete any relations with matching resourceIds OR targetIds
    *
    * @param ids ids to delete relations for.
