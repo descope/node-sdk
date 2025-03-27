@@ -335,6 +335,7 @@ describe('Management SSO', () => {
           idpCert: 'bsae64cert',
           spACSUrl: 'https://spacs.url',
           spEntityId: 'spentityid',
+          defaultSSORoles: ['aa', 'bb'],
         },
         'http://redirect.com',
         ['a.com', 'b.com'],
@@ -350,6 +351,7 @@ describe('Management SSO', () => {
             idpCert: 'bsae64cert',
             spACSUrl: 'https://spacs.url',
             spEntityId: 'spentityid',
+            defaultSSORoles: ['aa', 'bb'],
           },
           redirectUrl: 'http://redirect.com',
           domains: ['a.com', 'b.com'],
@@ -432,6 +434,7 @@ describe('Management SSO', () => {
           attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
           spACSUrl: 'https://spacs.url',
           spEntityId: 'spentityid',
+          defaultSSORoles: ['aa', 'bb'],
         },
         'http://redirect.com',
         ['a.com', 'b.com'],
@@ -446,6 +449,7 @@ describe('Management SSO', () => {
             attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
             spACSUrl: 'https://spacs.url',
             spEntityId: 'spentityid',
+            defaultSSORoles: ['aa', 'bb'],
           },
           redirectUrl: 'http://redirect.com',
           domains: ['a.com', 'b.com'],
@@ -522,6 +526,7 @@ describe('Management SSO', () => {
         },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
+          defaultSSORoles: ['aa', 'bb'],
         },
       };
       const httpResponse = {
@@ -561,6 +566,7 @@ describe('Management SSO', () => {
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
+            defaultSSORoles: ['aa', 'bb'],
           },
         },
       });

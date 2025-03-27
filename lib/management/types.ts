@@ -456,6 +456,7 @@ export type SSOSAMLSettingsResponse = {
   spCertificate: string;
   attributeMapping: AttributeMapping;
   groupsMapping: RoleMappings;
+  defaultSSORoles: string[];
   redirectUrl: string;
 };
 
@@ -507,6 +508,7 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -517,6 +519,7 @@ export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
