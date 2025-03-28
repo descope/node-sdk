@@ -146,6 +146,7 @@ export default {
     reCreate: '/v1/mgmt/authz/re/create',
     reDelete: '/v1/mgmt/authz/re/delete',
     reDeleteResources: '/v1/mgmt/authz/re/deleteresources',
+    reDeleteResourceRelationsForResources: '/v1/mgmt/authz/re/deleteresourcesrelations',
     hasRelations: '/v1/mgmt/authz/re/has',
     who: '/v1/mgmt/authz/re/who',
     resource: '/v1/mgmt/authz/re/resource',

@@ -64,6 +64,14 @@ const WithFGA = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(apiPaths.fga.check, { tuples: relations }, { token: managementKey }),
       (data) => data.tuples,
     ),
+
+  /**
+   * Delete all relations.
+   *
+   * @returns standard success or failure response
+   */
+  deleteAllRelations: (): Promise<SdkResponse<never>> =>
+    transformResponse(sdk.httpClient.delete(apiPaths.fga.relations, { token: managementKey })),
 });
 
 export default WithFGA;
