@@ -57,13 +57,23 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create('name', [
-        'd1',
-      ]);
+      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create(
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.create,
-        { name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
@@ -92,11 +102,21 @@ describe('Management Tenant', () => {
         't1',
         'name',
         ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.create,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          id: 't1',
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
@@ -121,11 +141,25 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.tenant.update('t1', 'name', ['d1']);
+      const resp = await management.tenant.update(
+        't1',
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.update,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          id: 't1',
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
