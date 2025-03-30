@@ -93,6 +93,16 @@ describe('Management FGA', () => {
     });
   });
 
+  describe('deleteAllRelations', () => {
+    it('should delete all relations', async () => {
+      const response = await WithFGA(mockCoreSdk).deleteAllRelations();
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.fga.relations, {
+        token: undefined,
+      });
+      expect(response).toEqual(emptySuccessResponse);
+    });
+  });
+
   describe('check', () => {
     it('should check the relations', async () => {
       const relations = [relation1, relation2];
