@@ -141,9 +141,11 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(apiPaths.authz.reDelete, { relations }, { token: managementKey }),
     ),
   /**
-   * Delete the relations for the given resources.
+   * @deprecated use `deleteRelationsForIds` instead for better clarity
    *
-   * @param resources resources to delete relations for.
+   * Delete any relations with matching resourceIds OR targetIds
+   *
+   * @param resources ids to delete relations for.
    * @returns standard success or failure response
    */
   deleteRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
@@ -151,6 +153,35 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.authz.reDeleteResources,
         { resources },
+        { token: managementKey },
+      ),
+    ),
+  /**
+   *
+   * Delete any relations with matching resourceIds
+   *
+   * @param resources resource ids to delete relations for.
+   * @returns
+   */
+  deleteResourceRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.reDeleteResourceRelationsForResources,
+        { resources },
+        { token: managementKey },
+      ),
+    ),
+  /**
+   * Delete any relations with matching resourceIds OR targetIds
+   *
+   * @param ids ids to delete relations for.
+   * @returns standard success or failure response
+   */
+  deleteRelationsForIds: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.reDeleteResources,
+        { resources: ids },
         { token: managementKey },
       ),
     ),
