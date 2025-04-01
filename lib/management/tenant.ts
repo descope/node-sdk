@@ -82,6 +82,8 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     names?: string[],
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
   ): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
       sdk.httpClient.post(
@@ -91,6 +93,8 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
           tenantNames: names,
           tenantSelfProvisioningDomains: selfProvisioningDomains,
           customAttributes,
+          enforceSSO,
+          disabled,
         },
         { token: managementKey },
       ),

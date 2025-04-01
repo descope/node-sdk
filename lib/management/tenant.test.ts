@@ -256,6 +256,50 @@ describe('Management Tenant', () => {
     });
   });
 
+  describe('searchAll', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockAllTenantsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockAllTenantsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Tenant[]> = await management.tenant.searchAll(
+        ['t2'],
+        ['name2'],
+        ['domain2.com'],
+        undefined,
+        false,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.searchAll,
+        {
+          tenantIds: ['t2'],
+          tenantNames: ['name2'],
+          tenantSelfProvisioningDomains: ['domain2.com'],
+          customAttributes: undefined,
+          enforceSSO: false,
+          disabled: undefined,
+        },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenants,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('getSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
