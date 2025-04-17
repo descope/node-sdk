@@ -882,8 +882,12 @@ program
   .description('Load relations for the given resource')
   .option('-r, --resource <resource>', 'The resource for the relations')
   .option('-o, --output <filename>', 'Output filename')
+  .option('--ignore-target-sets', 'Ignore target sets')
   .action(async (option) => {
-    handleSdkRes(await sdk.management.authz.resourceRelations(option.resource), option.output);
+    handleSdkRes(
+      await sdk.management.authz.resourceRelations(option.resource, option.ignoreTargetSets),
+      option.output,
+    );
   });
 
 program
@@ -891,8 +895,12 @@ program
   .description('Load relations for the given target')
   .option('-t, --target <target>', 'The target for the relations')
   .option('-o, --output <filename>', 'Output filename')
+  .option('--include-target-sets', 'Include target sets')
   .action(async (option) => {
-    handleSdkRes(await sdk.management.authz.targetsRelations([option.target]), option.output);
+    handleSdkRes(
+      await sdk.management.authz.targetsRelations([option.target], option.includeTargetSets),
+      option.output,
+    );
   });
 
 program

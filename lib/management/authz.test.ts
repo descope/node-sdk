@@ -482,11 +482,14 @@ describe('Management Authz', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AuthzRelation[]> = await management.authz.resourceRelations('r');
+      const resp: SdkResponse<AuthzRelation[]> = await management.authz.resourceRelations(
+        'r',
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.resource,
-        { resource: 'r' },
+        { resource: 'r', ignoreTargetSetRelations: true },
         { token: 'key' },
       );
       expect(resp).toEqual({
@@ -510,11 +513,14 @@ describe('Management Authz', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AuthzRelation[]> = await management.authz.targetsRelations(['t']);
+      const resp: SdkResponse<AuthzRelation[]> = await management.authz.targetsRelations(
+        ['t'],
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.targets,
-        { targets: ['t'] },
+        { targets: ['t'], includeTargetSetRelations: true },
         { token: 'key' },
       );
       expect(resp).toEqual({
