@@ -266,6 +266,7 @@ export type RoleSearchOptions = {
   roleNames?: string[];
   roleNameLike?: string; // Search roles where name contains this - case insensitive
   permissionNames?: string[];
+  includeProjectRoles?: boolean; // Include project roles in the search
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
