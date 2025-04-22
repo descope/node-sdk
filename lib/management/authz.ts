@@ -141,9 +141,11 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(apiPaths.authz.reDelete, { relations }, { token: managementKey }),
     ),
   /**
-   * Delete the relations for the given resources.
+   * @deprecated use `deleteRelationsForIds` instead for better clarity
    *
-   * @param resources resources to delete relations for.
+   * Delete any relations with matching resourceIds OR targetIds
+   *
+   * @param resources ids to delete relations for.
    * @returns standard success or failure response
    */
   deleteRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
@@ -151,6 +153,35 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.authz.reDeleteResources,
         { resources },
+        { token: managementKey },
+      ),
+    ),
+  /**
+   *
+   * Delete any relations with matching resourceIds
+   *
+   * @param resources resource ids to delete relations for.
+   * @returns
+   */
+  deleteResourceRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.reDeleteResourceRelationsForResources,
+        { resources },
+        { token: managementKey },
+      ),
+    ),
+  /**
+   * Delete any relations with matching resourceIds OR targetIds
+   *
+   * @param ids ids to delete relations for.
+   * @returns standard success or failure response
+   */
+  deleteRelationsForIds: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.authz.reDeleteResources,
+        { resources: ids },
         { token: managementKey },
       ),
     ),
@@ -196,22 +227,38 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * Return the list of all defined relations (not recursive) on the given resource.
    *
    * @param resource The resource we are checking
+   * @param ignoreTargetSetRelations if true, will not return target set relations even if they exist
    * @returns array of relations that exist for the given resource
    */
-  resourceRelations: (resource: string): Promise<SdkResponse<AuthzRelation[]>> =>
+  resourceRelations: (
+    resource: string,
+    ignoreTargetSetRelations = false,
+  ): Promise<SdkResponse<AuthzRelation[]>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.authz.resource, { resource }, { token: managementKey }),
+      sdk.httpClient.post(
+        apiPaths.authz.resource,
+        { resource, ignoreTargetSetRelations },
+        { token: managementKey },
+      ),
       (data) => data.relations,
     ),
   /**
    * Return the list of all defined relations (not recursive) for the given targets.
    *
    * @param targets array of targets we want to check
+   * @param includeTargetSetRelations if true, will include target set relations as well as target relations
    * @returns array of relations that exist for the given targets
    */
-  targetsRelations: (targets: string[]): Promise<SdkResponse<AuthzRelation[]>> =>
+  targetsRelations: (
+    targets: string[],
+    includeTargetSetRelations = false,
+  ): Promise<SdkResponse<AuthzRelation[]>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.authz.targets, { targets }, { token: managementKey }),
+      sdk.httpClient.post(
+        apiPaths.authz.targets,
+        { targets, includeTargetSetRelations },
+        { token: managementKey },
+      ),
       (data) => data.relations,
     ),
   /**

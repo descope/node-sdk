@@ -325,6 +325,64 @@ describe('Management Authz', () => {
     });
   });
 
+  describe('deleteResourceRelationsForResources', () => {
+    it('should delete the relations for given resource', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.authz.deleteResourceRelationsForResources([
+        'x',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.authz.reDeleteResourceRelationsForResources,
+        { resources: ['x'] },
+        { token: 'key' },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteRelationsForIDs', () => {
+    it('should delete the relations for the given ids using the reDeleteResources API', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.authz.deleteRelationsForIds(['x']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.authz.reDeleteResources,
+        { resources: ['x'] },
+        { token: 'key' },
+      );
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('deleteRelations', () => {
     it('should delete the relations', async () => {
       const httpResponse = {
@@ -424,11 +482,14 @@ describe('Management Authz', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AuthzRelation[]> = await management.authz.resourceRelations('r');
+      const resp: SdkResponse<AuthzRelation[]> = await management.authz.resourceRelations(
+        'r',
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.resource,
-        { resource: 'r' },
+        { resource: 'r', ignoreTargetSetRelations: true },
         { token: 'key' },
       );
       expect(resp).toEqual({
@@ -452,11 +513,14 @@ describe('Management Authz', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AuthzRelation[]> = await management.authz.targetsRelations(['t']);
+      const resp: SdkResponse<AuthzRelation[]> = await management.authz.targetsRelations(
+        ['t'],
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.targets,
-        { targets: ['t'] },
+        { targets: ['t'], includeTargetSetRelations: true },
         { token: 'key' },
       );
       expect(resp).toEqual({
