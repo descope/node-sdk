@@ -1101,6 +1101,24 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
+Generate a JWT for a user, simulating a signin request.
+
+```typescript
+const res = await descopeClient.management.jwt.signIn('dummy');
+```
+
+Generate a JWT for a user, simulating a signup request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUp('dummy');
+```
+
+Generate a JWT for a user, simulating a signup or in request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUpOrIn('dummy');
+```
+
 ### Impersonate
 
 You can impersonate to another user
