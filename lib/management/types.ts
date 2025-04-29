@@ -253,6 +253,7 @@ export type Permission = {
  * a list of permissions it grants.
  */
 export type Role = {
+  id: string;
   name: string;
   description?: string;
   permissionNames: string[];
