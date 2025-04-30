@@ -812,11 +812,13 @@ export type CheckResponseRelation = {
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
   jwt?: string;
+  refreshDuration?: number;
 };
 
 export type MgmtSignUpOptions = {
   // we can replace this with partial `SignUpOptions` from core-js-sdk once its exported
   customClaims?: Record<string, any>;
+  refreshDuration?: number;
 };
 
 export interface UserOptions {
