@@ -18,11 +18,13 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
   ): Promise<SdkResponse<CreateTenantResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.tenant.create,
-        { name, selfProvisioningDomains, customAttributes },
+        { name, selfProvisioningDomains, customAttributes, enforceSSO, disabled },
         { token: managementKey },
       ),
     ),
@@ -31,11 +33,13 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.tenant.create,
-        { id, name, selfProvisioningDomains, customAttributes },
+        { id, name, selfProvisioningDomains, customAttributes, enforceSSO, disabled },
         { token: managementKey },
       ),
     ),
@@ -44,11 +48,13 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.tenant.update,
-        { id, name, selfProvisioningDomains, customAttributes },
+        { id, name, selfProvisioningDomains, customAttributes, enforceSSO, disabled },
         { token: managementKey },
       ),
     ),
