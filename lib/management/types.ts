@@ -268,6 +268,7 @@ export type RoleSearchOptions = {
   roleNames?: string[];
   roleNameLike?: string; // Search roles where name contains this - case insensitive
   permissionNames?: string[];
+  includeProjectRoles?: boolean; // Include project roles in the search
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
@@ -367,6 +368,7 @@ export type User = {
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
+  status?: UserStatus; // the status of the user (enabled, disabled, invited)
 };
 
 // The kind of prehashed password to set for a user (only one should be set)
@@ -812,11 +814,13 @@ export type CheckResponseRelation = {
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
   jwt?: string;
+  refreshDuration?: number;
 };
 
 export type MgmtSignUpOptions = {
   // we can replace this with partial `SignUpOptions` from core-js-sdk once its exported
   customClaims?: Record<string, any>;
+  refreshDuration?: number;
 };
 
 export interface UserOptions {

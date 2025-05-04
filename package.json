@@ -1,6 +1,6 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.7.2",
+  "version": "1.7.5",
   "description": "Node.js library used to integrate with Descope",
   "typings": "./dist/index.d.ts",
   "main": "dist/cjs/index.cjs.js",
@@ -100,7 +100,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@descope/core-js-sdk": "2.40.0",
+    "@descope/core-js-sdk": "2.44.0",
     "cross-fetch": "^4.0.0",
     "jose": "5.2.2",
     "tslib": "^2.0.0"

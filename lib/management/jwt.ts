@@ -24,11 +24,12 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
     validateConsent: boolean,
     customClaims?: Record<string, any>,
     selectedTenant?: string,
+    refreshDuration?: number,
   ): Promise<SdkResponse<UpdateJWTResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.jwt.impersonate,
-        { impersonatorId, loginId, validateConsent, customClaims, selectedTenant },
+        { impersonatorId, loginId, validateConsent, customClaims, selectedTenant, refreshDuration },
         { token: managementKey },
       ),
     ),
@@ -67,11 +68,12 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   anonymous: (
     customClaims?: Record<string, any>,
     selectedTenant?: string,
+    refreshDuration?: number,
   ): Promise<SdkResponse<AnonymousJWTResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.jwt.anonymous,
-        { customClaims, selectedTenant },
+        { customClaims, selectedTenant, refreshDuration },
         { token: managementKey },
       ),
     ),
