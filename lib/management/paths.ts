@@ -160,5 +160,7 @@ export default {
     relations: '/v1/mgmt/fga/relations',
     deleteRelations: '/v1/mgmt/fga/relations/delete',
     check: '/v1/mgmt/fga/check',
+    resourcesLoad: '/v1/mgmt/fga/resources/load',
+    resourcesSave: '/v1/mgmt/fga/resources/save',
   },
 };

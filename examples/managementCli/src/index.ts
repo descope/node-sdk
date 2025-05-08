@@ -1056,4 +1056,34 @@ program
     );
   });
 
+program
+  .command('fga-save-resources-details')
+  .description('Save resource details defined in the given file')
+  .argument('<filename>', 'Resources details JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const details = JSON.parse(content);
+    if (!details) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.saveResourcesDetails(details));
+  });
+
+program
+  .command('fga-load-resources-details')
+  .description('Load resource details for the given identifiers defined in the given file')
+  .argument('<filename>', 'Resource identifiers JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const ids = JSON.parse(content);
+    if (!ids) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.loadResourcesDetails(ids));
+  });
+
+program.parse();
+
 program.parse();

@@ -811,6 +811,17 @@ export type CheckResponseRelation = {
   tuple: FGARelation;
 };
 
+export interface FGAResourceIdentifier {
+  resourceId: string;
+  resourceType: string;
+}
+
+export interface FGAResourceDetails {
+  resourceId: string;
+  resourceType: string;
+  displayName: string;
+}
+
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
   jwt?: string;

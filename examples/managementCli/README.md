@@ -202,4 +202,9 @@ $ npm run start -- fga-check-relations <relations-file-path>
 
 # Check an FGA relation
 $ npm run start -- fga-check [--resource <resource>] [--resource-type <resource-type>] [--relation <relation>] [--target <target>] [--target-type <target-type>]
+
+# Save FGA Resources Details
+$ npm run start -- fga-save-resources-details <resources-details-json-array-file-path>
+# Load FGA Resources Details
+$ npm run start -- fga-load-resources-details <resource-identifiers-json-array-file-path>
 ```

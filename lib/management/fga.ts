@@ -1,7 +1,13 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { CheckResponseRelation, FGARelation, FGASchema } from './types';
+import {
+  CheckResponseRelation,
+  FGARelation,
+  FGASchema,
+  FGAResourceDetails,
+  FGAResourceIdentifier,
+} from './types';
 
 const WithFGA = (sdk: CoreSdk, managementKey?: string) => ({
   /**
@@ -63,6 +69,35 @@ const WithFGA = (sdk: CoreSdk, managementKey?: string) => ({
     transformResponse(
       sdk.httpClient.post(apiPaths.fga.check, { tuples: relations }, { token: managementKey }),
       (data) => data.tuples,
+    ),
+
+  /**
+   * Load details for the given resource identifiers.
+   * @param resourceIdentifiers the resource identifiers (resourceId and resourceType tuples) to load details for
+   */
+  loadResourcesDetails: (
+    resourceIdentifiers: FGAResourceIdentifier[],
+  ): Promise<SdkResponse<FGAResourceDetails[]>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.fga.resourcesLoad,
+        { resourceIdentifiers },
+        { token: managementKey },
+      ),
+      (data) => data.resourcesDetails,
+    ),
+
+  /**
+   * Save details for the given resources.
+   * @param resourcesDetails the resources details to save
+   */
+  saveResourcesDetails: (resourcesDetails: FGAResourceDetails[]): Promise<SdkResponse<never>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.fga.resourcesSave,
+        { resourcesDetails },
+        { token: managementKey },
+      ),
     ),
 
   /**
