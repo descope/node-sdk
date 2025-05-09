@@ -92,6 +92,45 @@ describe('Management JWT', () => {
     });
   });
 
+  describe('stopImpersonation', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockJWTResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockJWTResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UpdateJWTResponse> = await management.jwt.stopImpersonation(
+        'jwt',
+        { k1: 'v1' },
+        't1',
+        32,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.jwt.stopImpersonation,
+        {
+          jwt: 'jwt',
+          customClaims: { k1: 'v1' },
+          selectedTenant: 't1',
+          refreshDuration: 32,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockJWTResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('sign-in', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

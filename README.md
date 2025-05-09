@@ -1135,6 +1135,16 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
 );
 ```
 
+Once impersonation is done, you can call `stopImpersonation`, and get back a jwt of hte the actor
+
+```typescript
+const updatedJWTRes = await descopeClient.management.jwt.impersonate(
+  '<jwt string>',
+  { k1: 'v1' },
+  't1',
+);
+```
+
 Note 1: The generate code/link functions, work only for test users, will not work for regular users.
 Note 2: In case of testing sign-in / sign-up operations with test users, need to make sure to generate the code prior calling the sign-in / sign-up operations.
 
