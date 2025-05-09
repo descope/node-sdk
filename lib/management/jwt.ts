@@ -33,6 +33,19 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
         { token: managementKey },
       ),
     ),
+  stopImpersonation: (
+    jwt: string,
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
+    refreshDuration?: number,
+  ): Promise<SdkResponse<UpdateJWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.stopImpersonation,
+        { jwt, customClaims, selectedTenant, refreshDuration },
+        { token: managementKey },
+      ),
+    ),
   signIn: (loginId: string, loginOptions?: MgmtLoginOptions): Promise<SdkResponse<JWTResponse>> =>
     transformResponse(
       sdk.httpClient.post(
