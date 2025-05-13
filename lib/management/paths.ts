@@ -33,6 +33,7 @@ export default {
     setActivePassword: '/v1/mgmt/user/password/set/active',
     expirePassword: '/v1/mgmt/user/password/expire',
     removeAllPasskeys: '/v1/mgmt/user/passkeys/delete',
+    removeTOTPSeed: '/v1/mgmt/user/totp/delete',
     generateOTPForTest: '/v1/mgmt/tests/generate/otp',
     generateMagicLinkForTest: '/v1/mgmt/tests/generate/magiclink',
     generateEnchantedLinkForTest: '/v1/mgmt/tests/generate/enchantedlink',
@@ -92,9 +93,11 @@ export default {
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',
+    settingsNew: '/v1/mgmt/sso/settings/new',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
     settingsv2: '/v2/mgmt/sso/settings',
+    settingsAllV2: '/v2/mgmt/sso/settings/all',
     oidc: {
       configure: '/v1/mgmt/sso/oidc',
     },
@@ -106,6 +109,11 @@ export default {
   jwt: {
     update: '/v1/mgmt/jwt/update',
     impersonate: '/v1/mgmt/impersonate',
+    stopImpersonation: '/v1/mgmt/stop/impersonation',
+    signIn: '/v1/mgmt/auth/signin',
+    signUp: '/v1/mgmt/auth/signup',
+    signUpOrIn: '/v1/mgmt/auth/signup-in',
+    anonymous: '/v1/mgmt/auth/anonymous',
   },
   password: {
     settings: '/v1/mgmt/password/settings',
@@ -153,11 +161,13 @@ export default {
     reCreate: '/v1/mgmt/authz/re/create',
     reDelete: '/v1/mgmt/authz/re/delete',
     reDeleteResources: '/v1/mgmt/authz/re/deleteresources',
+    reDeleteResourceRelationsForResources: '/v1/mgmt/authz/re/deleteresourcesrelations',
     hasRelations: '/v1/mgmt/authz/re/has',
     who: '/v1/mgmt/authz/re/who',
     resource: '/v1/mgmt/authz/re/resource',
     targets: '/v1/mgmt/authz/re/targets',
     targetAll: '/v1/mgmt/authz/re/targetall',
+    targetWithRelation: '/v1/mgmt/authz/re/targetwithrelation',
     getModified: '/v1/mgmt/authz/getmodified',
   },
   fga: {
@@ -165,5 +175,7 @@ export default {
     relations: '/v1/mgmt/fga/relations',
     deleteRelations: '/v1/mgmt/fga/relations/delete',
     check: '/v1/mgmt/fga/check',
+    resourcesLoad: '/v1/mgmt/fga/resources/load',
+    resourcesSave: '/v1/mgmt/fga/resources/save',
   },
 };

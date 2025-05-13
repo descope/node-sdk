@@ -89,7 +89,9 @@ Every `async` operation may fail. In case it does, there will be information reg
 A typical case of error handling might look something like:
 
 ```ts
-import { SdkResponse, descopeErrors } from '@descope/node-sdk';
+import DescopeClient, { SdkResponse } from '@descope/node-sdk';
+
+const { DescopeErrors } = DescopeClient;
 
 // ...
 
@@ -97,7 +99,7 @@ try {
   const resp = await sdk.otp.signIn.email(loginId);
   if (resp.error) {
     switch (resp.error.errorCode) {
-      case descopeErrors.userNotFound:
+      case DescopeErrors.userNotFound:
         // Handle specifically
         break;
       default:
@@ -301,6 +303,14 @@ const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+#### Deleting the TOTP Seed
+
+Provide the `loginId` to the function to remove the user's TOTP seed.
+
+```typescript
+const response = await descopeClient.management.user.removeTOTPSeed(loginId);
+```
 
 ### Passwords
 
@@ -584,7 +594,9 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   InactivityTimeUnit: 'minutes',
 });
 
-// Generate tenant admin self service link for SSO configuration (valid for 24 hours)
+// Generate tenant admin self service link for SSO Suite (valid for 24 hours)
+// ssoId can be provided for a specific sso configuration
+// email can be provided to send the link to (email's templateId can be provided as well)
 const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   'my-tenant-id',
   60 * 60 * 24,
@@ -691,6 +703,8 @@ await descopeClient.management.user.invite('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
   userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+  // You can override the project's User Invitation Redirect URL with this parameter
+  inviteUrl: '<invite-url>',
   // You can inject custom data into the template.
   // Note that you first need to configure custom template in Descope Console
   // For example: configure {{options_k1}} in the custom template, and pass { k1: 'v1' } as templateOptions
@@ -883,33 +897,55 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
 // You can get SSO settings for a specific tenant ID
-const ssoSettings = await descopeClient.management.sso.loadSettings("tenant-id")
+// You can pass ssoId in case using multi SSO and you want to load specific SSO configuration
+const ssoSettings = await descopeClient.management.sso.loadSettings('tenant-id');
+
+// You can get all configured SSO settings for a specific tenant ID (for multi SSO usage)
+const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenant-id');
 
 // You can configure SSO settings manually by setting the required fields directly
-const tenantId = 'tenant-id' // Which tenant this configuration is for
-const idpURL = 'https://idp.com'
-const entityID = 'my-idp-entity-id'
-const idpCert = '<your-cert-here>'
-const redirectURL = 'https://my-app.com/handle-sso' // Global redirect URL for SSO/SAML
-const domains = ['tenant-users.com'] // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSAMLSettings(tenantID, {idpURL, entityID, idpCert}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+const tenantId = 'tenant-id'; // Which tenant this configuration is for
+const idpURL = 'https://idp.com';
+const entityID = 'my-idp-entity-id';
+const idpCert = '<your-cert-here>';
+const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
+const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpURL, entityID, idpCert },
+  redirectURL,
+  domains,
+);
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureSAMLByMetadata(tenantID, {idpMetadataUrl: 'https://idp.com/my-idp-metadata'}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+await descopeClient.management.sso.configureSAMLByMetadata(
+  tenantID,
+  { idpMetadataUrl: 'https://idp.com/my-idp-metadata' },
+  redirectURL,
+  domains,
+);
 
 // In case SSO is configured to work with OIDC use the following
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
 const clientId = 'client id of OIDC';
-const clientSecret =  'client secret';
-await descopeClient.management.sso.configureOIDCSettings(tenantID, {name, clientId, clientSecret, redirectUrl}, domains)
+const clientSecret = 'client secret';
+await descopeClient.management.sso.configureOIDCSettings(
+  tenantID,
+  { name, clientId, clientSecret, redirectUrl },
+  domains,
+);
 
-// Map IDP groups to Descope roles, or map user attributes.
-// This function overrides any previous mapping (even when empty). Use carefully.
-await descopeClient.management.sso.configureMapping(
-   tenantId,
-   [{ groups: ['IDP_ADMIN'], roleName: 'Tenant Admin'}]
-   { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
-)
+// You can create new SSO configuration (aka multi SSO)
+const ssoId = 'my-new-additional-sso-id';
+const displayName = 'My additional SSO configuration';
+await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
+
+// You can delete existing SSO configuration
+// You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
+await descopeClient.management.sso.deleteSettings(tenantID);
 ```
 
 Note: Certificates should have a similar structure to:
@@ -1065,6 +1101,24 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
+Generate a JWT for a user, simulating a signin request.
+
+```typescript
+const res = await descopeClient.management.jwt.signIn('dummy');
+```
+
+Generate a JWT for a user, simulating a signup request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUp('dummy');
+```
+
+Generate a JWT for a user, simulating a signup or in request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUpOrIn('dummy');
+```
+
 ### Impersonate
 
 You can impersonate to another user
@@ -1076,6 +1130,16 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
   'impersonator-id',
   'login-id',
   true,
+  { k1: 'v1' },
+  't1',
+);
+```
+
+Once impersonation is done, you can call `stopImpersonation`, and get back a jwt of hte the actor
+
+```typescript
+const updatedJWTRes = await descopeClient.management.jwt.impersonate(
+  '<jwt string>',
   { k1: 'v1' },
   't1',
 );

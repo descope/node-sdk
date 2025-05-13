@@ -57,13 +57,23 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create('name', [
-        'd1',
-      ]);
+      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create(
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.create,
-        { name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
@@ -92,11 +102,21 @@ describe('Management Tenant', () => {
         't1',
         'name',
         ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.create,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          id: 't1',
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
@@ -121,11 +141,25 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.tenant.update('t1', 'name', ['d1']);
+      const resp = await management.tenant.update(
+        't1',
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.update,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
+        {
+          id: 't1',
+          name: 'name',
+          selfProvisioningDomains: ['d1'],
+          customAttributes: { customAttr: 'value' },
+          enforceSSO: true,
+          disabled: true,
+        },
         { token: 'key' },
       );
 
@@ -304,6 +338,50 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.generateSSOConfigurationLink,
         { tenantId: 'test', expireTime: 60 * 60 * 24 },
+        {
+          token: 'key',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { adminSSOConfigurationLink: 'some link' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request and receive correct response with sso id', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({
+          adminSSOConfigurationLink: 'some link',
+        }),
+        clone: () => ({
+          json: () => Promise.resolve({ adminSSOConfigurationLink: 'some link' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateSSOConfigurationLinkResponse> =
+        await management.tenant.generateSSOConfigurationLink(
+          'test',
+          60 * 60 * 24,
+          'some-ssoid',
+          'some-email@aa.com',
+          'some-template-id',
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        {
+          tenantId: 'test',
+          expireTime: 60 * 60 * 24,
+          ssoId: 'some-ssoid',
+          email: 'some-email@aa.com',
+          templateId: 'some-template-id',
+        },
         {
           token: 'key',
         },

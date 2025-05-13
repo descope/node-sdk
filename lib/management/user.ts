@@ -18,6 +18,7 @@ import {
   InviteBatchResponse,
   TemplateOptions,
   ProviderTokenOptions,
+  UserOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -42,6 +43,11 @@ type SearchRequest = {
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
   loginIds?: string[];
+  userIds?: string[];
+  fromCreatedTime?: number; // Search users created after this time (epoch in milliseconds)
+  toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
+  fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
+  toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
 };
 
 type SingleUserResponse = {
@@ -405,6 +411,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     }
     if (options.ssoAppIds !== undefined) {
       body.ssoAppIds = options.ssoAppIds;
+    }
+    if (options.scim !== undefined) {
+      body.scim = options.scim;
     }
 
     return transformResponse<SingleUserResponse, UserResponse>(
@@ -992,6 +1001,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
 
     /**
+     * Removes TOTP seed for the user with the given login ID.
+     * Note: The user might not be able to login anymore if they have no other authentication
+     * methods or a verified email/phone.
+     * @param loginId The login ID of the user
+     */
+    removeTOTPSeed: (loginId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        sdk.httpClient.post(apiPaths.user.removeTOTPSeed, { loginId }, { token: managementKey }),
+        (data) => data,
+      ),
+
+    /**
      * Retrieve users' authentication history, by the given user's ids.
      * @param userIds The user IDs
      */
@@ -1002,23 +1023,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       ),
   };
 };
-
-export interface UserOptions {
-  email?: string;
-  phone?: string;
-  displayName?: string;
-  roles?: string[];
-  userTenants?: AssociatedTenant[];
-  customAttributes?: Record<string, AttributesTypes>;
-  picture?: string;
-  verifiedEmail?: boolean;
-  verifiedPhone?: boolean;
-  givenName?: string;
-  middleName?: string;
-  familyName?: string;
-  additionalLoginIds?: string[];
-  ssoAppIds?: string[];
-}
 
 export interface PatchUserOptions {
   email?: string;
@@ -1034,6 +1038,7 @@ export interface PatchUserOptions {
   middleName?: string;
   familyName?: string;
   ssoAppIds?: string[];
+  scim?: boolean;
 }
 
 export default withUser;

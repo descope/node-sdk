@@ -15,6 +15,7 @@ import fetch from './fetch-polyfill';
 import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo } from './types';
+import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
 
@@ -209,6 +210,11 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
         throw Error(`could not exchange access key - Failed to exchange. Error: ${error}`);
       }
 
+      if (!resp.ok) {
+        logger?.error('failed to exchange access key', resp.error);
+        throw Error(`could not exchange access key - ${resp.error?.errorMessage}`);
+      }
+
       const { sessionJwt } = resp.data;
       if (!sessionJwt) {
         logger?.error('failed to parse exchange access key response');
@@ -371,6 +377,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
 
 nodeSdk.RefreshTokenCookieName = refreshTokenCookieName;
 nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
+nodeSdk.DescopeErrors = descopeErrors;
 
 export default nodeSdk;
 export type {
@@ -380,5 +387,4 @@ export type {
   ResponseData,
   SdkResponse,
 } from '@descope/core-js-sdk';
-export * as descopeErrors from './errors';
 export type { AuthenticationInfo };

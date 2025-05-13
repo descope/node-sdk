@@ -1,4 +1,4 @@
-import { UserResponse } from '@descope/core-js-sdk';
+import { UserResponse, LoginOptions } from '@descope/core-js-sdk';
 
 export type ExpirationUnit = 'minutes' | 'hours' | 'days' | 'weeks';
 
@@ -131,8 +131,16 @@ export type RoleMappings = RoleMapping[];
 export type AttributeMapping = {
   name?: string;
   email?: string;
+  username?: string;
   phoneNumber?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
   group?: string;
+  customAttributes?: Record<string, string>;
 };
 
 /** UpdateJWT response with a new JWT value with the added custom claims */
@@ -151,6 +159,8 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
+  forceSSO?: boolean;
+  disabled?: boolean;
 };
 
 /** Represents settings of a tenant in a project. It has an id, a name and an array of
@@ -258,6 +268,7 @@ export type RoleSearchOptions = {
   roleNames?: string[];
   roleNameLike?: string; // Search roles where name contains this - case insensitive
   permissionNames?: string[];
+  includeProjectRoles?: boolean; // Include project roles in the search
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
@@ -357,6 +368,7 @@ export type User = {
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
+  status?: UserStatus; // the status of the user (enabled, disabled, invited)
 };
 
 // The kind of prehashed password to set for a user (only one should be set)
@@ -409,7 +421,6 @@ export type UserMapping = {
   email: string;
   username: string;
   phoneNumber: string;
-  group: string;
 };
 
 export type RoleItem = {
@@ -449,6 +460,7 @@ export type SSOSAMLSettingsResponse = {
   spCertificate: string;
   attributeMapping: AttributeMapping;
   groupsMapping: RoleMappings;
+  defaultSSORoles: string[];
   redirectUrl: string;
 };
 
@@ -456,20 +468,22 @@ export type SSOSettings = {
   tenant: Tenant;
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
+  ssoId?: string;
 };
 
 export type OIDCAttributeMapping = {
   loginId?: string;
   name?: string;
+  email?: string;
+  username?: string;
+  phoneNumber?: string;
   givenName?: string;
   middleName?: string;
   familyName?: string;
-  email?: string;
-  verifiedEmail?: string;
-  username?: string;
-  phoneNumber?: string;
-  verifiedPhone?: string;
   picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
+  customAttributes?: Record<string, string>;
 };
 
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
@@ -498,6 +512,7 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -508,6 +523,7 @@ export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -661,6 +677,10 @@ export type AuthzUserQuery = {
   customAttributes?: Record<string, any>;
 };
 
+export type AuthzResource = {
+  resource: string;
+};
+
 /**
  * AuthzRelation defines a relation between resource and target
  */
@@ -789,6 +809,53 @@ export type FGARelation = {
 export type CheckResponseRelation = {
   allowed: boolean;
   tuple: FGARelation;
+};
+
+export interface FGAResourceIdentifier {
+  resourceId: string;
+  resourceType: string;
+}
+
+export interface FGAResourceDetails {
+  resourceId: string;
+  resourceType: string;
+  displayName: string;
+}
+
+// should have the type of loginoptions expect templateId and templateOptions
+export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
+  jwt?: string;
+  refreshDuration?: number;
+};
+
+export type MgmtSignUpOptions = {
+  // we can replace this with partial `SignUpOptions` from core-js-sdk once its exported
+  customClaims?: Record<string, any>;
+  refreshDuration?: number;
+};
+
+export interface UserOptions {
+  email?: string;
+  phone?: string;
+  displayName?: string;
+  roles?: string[];
+  userTenants?: AssociatedTenant[];
+  customAttributes?: Record<string, AttributesTypes>;
+  picture?: string;
+  verifiedEmail?: boolean;
+  verifiedPhone?: boolean;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  additionalLoginIds?: string[];
+  ssoAppIds?: string[];
+}
+
+export type MgmtUserOptions = Omit<
+  UserOptions,
+  'roles' | 'userTenants' | 'customAttributes' | 'picture' | 'additionalLoginIds' | 'displayName'
+> & {
+  name?: string;
 };
 
 export type ThirdPartyApplicationScope = {
