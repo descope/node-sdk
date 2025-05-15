@@ -21,13 +21,9 @@ function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
   }
 }
 
-// const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
-// const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
-// const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
-const DESCOPE_PROJECT_ID = 'P2PECqt62MNoxvcaoezgjvTgvzHF';
-const DESCOPE_MANAGEMENT_KEY =
-  'K2wntfLAe4aKIm4AIzB190okt6AFLkIv5JPkYqoJgZYL8wVPgXHnxGNhsgtbTw4WsNuHzJt';
-const DESCOPE_API_BASE_URL = 'https://api.descope.com';
+const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
+const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
+const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
 
 if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
   console.error('Missing DESCOPE_PROJECT_ID or DESCOPE_MANAGEMENT_KEY environment variables');
