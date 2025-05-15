@@ -579,7 +579,7 @@ program
   .command('inbound-application-consent-delete')
   .description('Delete inbound application consents')
   .argument('<appId>', 'Inbound application ID')
-  .action(async (appId, userId) => {
+  .action(async (appId) => {
     handleSdkRes(await sdk.management.inboundApplication.deleteConsents({ appId }));
   });
 
