@@ -1305,10 +1305,11 @@ await descopeClient.management.inboundApplication.patchApplication({
   description: 'my new description',
 });
 
+// delete an inbound application by id.
 // inbound application deletion cannot be undone. Use carefully.
 await descopeClient.management.inboundApplication.deleteApplication('my-app-id');
 
-// Load inbound application by id
+// Load an inbound application by id
 const app = await descopeClient.management.inboundApplication.loadApplication('my-app-id');
 
 // Load all inbound applications
@@ -1317,12 +1318,12 @@ appsRes.data.forEach((app) => {
   // do something
 });
 
-// Get a inbound application secret by application id.
+// Get an inbound application secret by application id.
 const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
   'my-app-id',
 );
 
-// Rotate a inbound application secret by application id.
+// Rotate an inbound application secret by application id.
 const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
   'my-app-id',
 );
@@ -1333,7 +1334,7 @@ const consentsRes = await descopeClient.management.inboundApplication.searchCons
   page: 2,
 });
 
-// Delete consents. delete all user consents.
+// Delete consents. delete all user consents, application consents or specific consents by id.
 // inbound application consents deletion cannot be undone. Use carefully.
 await descopeClient.management.inboundApplication.deleteConsents({
   userIds: ['user'],

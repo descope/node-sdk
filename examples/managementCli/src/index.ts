@@ -459,8 +459,6 @@ program
     val?.split(','),
   )
   .action(async (name, permissionsScopes) => {
-    console.log(typeof permissionsScopes);
-    console.log(JSON.parse(permissionsScopes));
     handleSdkRes(
       await sdk.management.inboundApplication.createApplication({
         name,
