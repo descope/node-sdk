@@ -21,9 +21,13 @@ function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
   }
 }
 
-const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
-const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
-const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
+// const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
+// const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
+// const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
+const DESCOPE_PROJECT_ID = 'P2PECqt62MNoxvcaoezgjvTgvzHF';
+const DESCOPE_MANAGEMENT_KEY =
+  'K2wntfLAe4aKIm4AIzB190okt6AFLkIv5JPkYqoJgZYL8wVPgXHnxGNhsgtbTw4WsNuHzJt';
+const DESCOPE_API_BASE_URL = 'https://api.descope.com';
 
 if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
   console.error('Missing DESCOPE_PROJECT_ID or DESCOPE_MANAGEMENT_KEY environment variables');
@@ -446,6 +450,137 @@ program
   .argument('<tenant-id>', 'Tenant ID')
   .action(async (tenantId) => {
     handleSdkRes(await sdk.management.password.getSettings(tenantId));
+  });
+
+// *** Inbound application commands ***
+
+// inbound-application-create
+program
+  .command('inbound-application-create')
+  .description('Create a new inbound application')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (name, permissionsScopes) => {
+    console.log(typeof permissionsScopes);
+    console.log(JSON.parse(permissionsScopes));
+    handleSdkRes(
+      await sdk.management.inboundApplication.createApplication({
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-update
+program
+  .command('inbound-application-update')
+  .description('Update an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (id, name, permissionsScopes) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.updateApplication({
+        id,
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-patch
+program
+  .command('inbound-application-patch')
+  .description('Patch an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .action(async (id, name) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.patchApplication({
+        id,
+        name,
+      }),
+    );
+  });
+
+// inbound-application-delete
+program
+  .command('inbound-application-delete')
+  .description('Delete an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteApplication(id));
+  });
+
+// inbound-application-load
+program
+  .command('inbound-application-load')
+  .description('Load inbound application by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.loadApplication(id));
+  });
+
+// inbound-application-load-all
+program
+  .command('inbound-application-load-all')
+  .description('Load all inbound applications')
+  .action(async () => {
+    handleSdkRes(await sdk.management.inboundApplication.loadAllApplications());
+  });
+
+// inbound-application-secret
+program
+  .command('inbound-application-secret')
+  .description('Get inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.getApplicationSecret(id));
+  });
+
+// inbound-application-rotate-secret
+program
+  .command('inbound-application-rotate-secret')
+  .description('Rotate inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.rotateApplicationSecret(id));
+  });
+
+// inbound-application-consent-search
+program
+  .command('inbound-application-consent-search')
+  .description('Search inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId) => {
+    handleSdkRes(await sdk.management.inboundApplication.searchConsents({ appId }));
+  });
+
+// inbound-application-consent-delete
+program
+  .command('inbound-application-consent-delete')
+  .description('Delete inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId, userId) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteConsents({ appId }));
   });
 
 // *** SSO application commands ***

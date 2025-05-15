@@ -1259,14 +1259,14 @@ const relations = await descopeClient.management.fga.check([
 ]);
 ```
 
-### Manage Third Party Aplications
+### Manage Inbound Applications
 
-You can create, update, delete or load third party applications:
+You can create, update, delete or load inbound applications:
 
 ```typescript
-// Create a third party application.
+// Create a inbound application.
 const { id, cleartext: secret } =
-  await descopeClient.management.thirdPartyApplication.createApplication({
+  await descopeClient.management.inboundApplication.createApplication({
     name: 'my new app',
     description: 'my desc',
     logo: 'data:image/png;..',
@@ -1288,54 +1288,54 @@ const { id, cleartext: secret } =
     loginPageUrl: 'http://dummy.com/login',
   });
 
-// Update a third party application.
+// Update a inbound application.
 // Update will override all fields as is. Use carefully.
-await descopeClient.management.thirdPartyApplication.updateApplication({
+await descopeClient.management.inboundApplication.updateApplication({
   id: 'my-app-id',
   name: 'my updated app',
   loginPageUrl: 'http://dummy.com/login',
   approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
 });
 
-// Patch a third party application.
+// Patch a inbound application.
 // patch will not override all fields, but update only what given.
-await descopeClient.management.thirdPartyApplication.patchApplication({
+await descopeClient.management.inboundApplication.patchApplication({
   id: 'my-app-id',
   name: 'my updated app name',
   description: 'my new description',
 });
 
-// third party application deletion cannot be undone. Use carefully.
-await descopeClient.management.thirdPartyApplication.deleteApplication('my-app-id');
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteApplication('my-app-id');
 
-// Load third party application by id
-const app = await descopeClient.management.thirdPartyApplication.loadApplication('my-app-id');
+// Load inbound application by id
+const app = await descopeClient.management.inboundApplication.loadApplication('my-app-id');
 
-// Load all third party applications
-const appsRes = await descopeClient.management.thirdPartyApplication.loadAllApplications();
+// Load all inbound applications
+const appsRes = await descopeClient.management.inboundApplication.loadAllApplications();
 appsRes.data.forEach((app) => {
   // do something
 });
 
-// Get a third party application secret by application id.
-const { cleartext } = await descopeClient.management.thirdPartyApplication.getApplicationSecret(
+// Get a inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
   'my-app-id',
 );
 
-// Rotate a third party application secret by application id.
-const { cleartext } = await descopeClient.management.thirdPartyApplication.rotateApplicationSecret(
+// Rotate a inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
   'my-app-id',
 );
 
 // Search in all consents. search consents by the given app id and offset to the third page.
-const consentsRes = await descopeClient.management.thirdPartyApplication.searchConsents({
+const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
   appId: 'my-app',
   page: 2,
 });
 
 // Delete consents. delete all user consents.
-// third party application consents deletion cannot be undone. Use carefully.
-await descopeClient.management.thirdPartyApplication.deleteConsents({
+// inbound application consents deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteConsents({
   userIds: ['user'],
 });
 ```

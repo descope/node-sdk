@@ -858,47 +858,49 @@ export type MgmtUserOptions = Omit<
   name?: string;
 };
 
-export type ThirdPartyApplicationScope = {
+export type InboundApplicationScope = {
   name: string;
   description: string;
   values?: string[];
+  optional?: boolean;
 };
 
 /**
- * Represents a third party application request in a project.
- * This type is used to create a new third party application in a project.
+ * Represents a inbound application request in a project.
+ * This type is used to create a new inbound application in a project.
  */
-export type ThirdPartyApplicationOptions = {
+export type InboundApplicationOptions = {
   name: string;
   description?: string;
   logo?: string;
-  loginPageUrl: string;
+  loginPageUrl?: string;
   approvedCallbackUrls?: string[];
-  permissionsScopes: ThirdPartyApplicationScope[];
-  attributesScopes?: ThirdPartyApplicationScope[];
+  permissionsScopes: InboundApplicationScope[];
+  attributesScopes?: InboundApplicationScope[];
 };
 
 /**
- * Represents a third party application in a project.
+ * Represents a inbound application in a project.
  */
-export type ThirdPartyApplication = ThirdPartyApplicationOptions & {
+export type InboundApplication = InboundApplicationOptions & {
   id: string;
   clientId: string;
 };
 
-export type ThirdPartyApplicationSecretResponse = {
+export type InboundApplicationSecretResponse = {
   cleartext: string;
 };
 
-export type CreateThirdPartyApplicationResponse = {
+export type CreateInboundApplicationResponse = {
   id: string;
-} & ThirdPartyApplicationSecretResponse;
+  clientId: string;
+} & InboundApplicationSecretResponse;
 
 /**
- * Represents a third party application consent for a single application
+ * Represents a inbound application consent for a single application
  * for a specific user within the project.
  */
-export type ThirdPartyApplicationConsent = {
+export type InboundApplicationConsent = {
   id: string;
   appId: string;
   userId: string;
@@ -907,14 +909,14 @@ export type ThirdPartyApplicationConsent = {
   createdTime: number;
 };
 
-export type ThirdPartyApplicationConsentSearchOptions = {
+export type InboundApplicationConsentSearchOptions = {
   appId?: string;
   userId?: string;
   consentId?: string;
   page?: number;
 };
 
-export type ThirdPartyApplicationConsentDeleteOptions = {
+export type InboundApplicationConsentDeleteOptions = {
   consentIds?: string[];
   appId?: string;
   userIds?: string[];

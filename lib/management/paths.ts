@@ -77,7 +77,7 @@ export default {
     load: '/v1/mgmt/sso/idp/app/load',
     loadAll: '/v1/mgmt/sso/idp/apps/load',
   },
-  thirdPartyApplication: {
+  inboundApplication: {
     create: '/v1/mgmt/thirdparty/app/create',
     update: '/v1/mgmt/thirdparty/app/update',
     patch: '/v1/mgmt/thirdparty/app/patch',
@@ -87,7 +87,7 @@ export default {
     secret: '/v1/mgmt/thirdparty/app/secret',
     rotate: '/v1/mgmt/thirdparty/app/rotate',
   },
-  thirdPartyApplicationConsents: {
+  inboundApplicationConsents: {
     delete: '/v1/mgmt/thirdparty/consents/delete',
     search: '/v1/mgmt/thirdparty/consents/search',
   },
