@@ -91,6 +91,16 @@ export default {
     delete: '/v1/mgmt/thirdparty/consents/delete',
     search: '/v1/mgmt/thirdparty/consents/search',
   },
+  outboundApplication: {
+    load: '/v1/mgmt/outbound/app',
+    loadAll: '/v1/mgmt/outbound/apps',
+  },
+  outboundApplicationToken: {
+    fetchUserTokenByScopes: '/v1/mgmt/outbound/app/user/token',
+    fetchTenantTokenByScopes: '/v1/mgmt/outbound/app/tenant/token',
+    fetchLatestUserToken: '/v1/mgmt/outbound/app/user/token/latest',
+    fetchLatestTenantToken: '/v1/mgmt/outbound/app/tenant/token/latest',
+  },
   sso: {
     settings: '/v1/mgmt/sso/settings',
     settingsNew: '/v1/mgmt/sso/settings/new',

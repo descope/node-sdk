@@ -921,3 +921,44 @@ export type InboundApplicationConsentDeleteOptions = {
   appId?: string;
   userIds?: string[];
 };
+
+/**
+ * Represents a outbound application in a project.
+ */
+export type OutboundApplication = {
+  id: string;
+  name: string;
+  description: string;
+  templateId: string;
+  clientId: string;
+  logo: string;
+  discoveryUrl: string;
+  authorizationUrl: string;
+  authorizationUrlParams: string[];
+  tokenUrl: string;
+  tokenUrlParams: string[];
+  revocationUrl: string;
+  defaultScopes: string[];
+  defaultRedirectUrl: string;
+  callbackDomain: string;
+  pkce: boolean;
+  accessType: string;
+  prompt: string[];
+};
+
+export type OutboundApplicationToken = {}
+
+// message FetchOutboundAppUserTokenRequest {
+//   string appId = 1 [(validate).string = {std_len: true}];
+//   string userId = 2 [(validate).string = {std_len: true}];
+//   repeated string scopes = 3 [(validate).repeated.items.string = {std_len: true}];
+//   FetchOutboundAppTokenOptions options = 4;
+//   string tenantId = 5 [(validate).string = {tenant_id: true, optional: true}];
+// }
+export type FetchOutboundApplicationTokenOptions = {
+  appId: string;
+  options?: {
+    withRefreshToken?: boolean;
+    forceRefresh?: boolean;
+  };
+};
