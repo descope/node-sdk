@@ -857,3 +857,67 @@ export type MgmtUserOptions = Omit<
 > & {
   name?: string;
 };
+
+export type InboundApplicationScope = {
+  name: string;
+  description: string;
+  values?: string[];
+  optional?: boolean;
+};
+
+/**
+ * Represents an inbound application request in a project.
+ * This type is used to create a new inbound application in a project.
+ */
+export type InboundApplicationOptions = {
+  name: string;
+  description?: string;
+  logo?: string;
+  loginPageUrl?: string;
+  approvedCallbackUrls?: string[];
+  permissionsScopes: InboundApplicationScope[];
+  attributesScopes?: InboundApplicationScope[];
+};
+
+/**
+ * Represents an inbound application in a project.
+ */
+export type InboundApplication = InboundApplicationOptions & {
+  id: string;
+  clientId: string;
+};
+
+export type InboundApplicationSecretResponse = {
+  cleartext: string;
+};
+
+export type CreateInboundApplicationResponse = {
+  id: string;
+  clientId: string;
+} & InboundApplicationSecretResponse;
+
+/**
+ * Represents an inbound application consent for a single application
+ * for a specific user within the project.
+ */
+export type InboundApplicationConsent = {
+  id: string;
+  appId: string;
+  userId: string;
+  scopes: string[];
+  grantedBy: string;
+  createdTime: number;
+};
+
+export type InboundApplicationConsentSearchOptions = {
+  appId?: string;
+  userId?: string;
+  consentId?: string;
+  page?: number;
+};
+
+export type InboundApplicationConsentDeleteOptions = {
+  consentIds?: string[];
+  appId?: string;
+  userIds?: string[];
+};

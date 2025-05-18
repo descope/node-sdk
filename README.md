@@ -634,13 +634,13 @@ await descopeClient.management.password.configureSettings('my-tenant-id', {
 You can create, update, delete or load SSO applications:
 
 ```typescript
-// Create OIDC sso application
+// Create OIDC SSO application
 await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Create SAML sso application
+// Create SAML SSO application
 await descopeClient.management.ssoApplication.createSamlApplication({
   name: 'My SAML app name',
   loginPageUrl: 'http://dummy.com/login',
@@ -648,7 +648,7 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   metadataUrl: 'http://dummy.com/metadata',
 });
 
-// Update OIDC sso application.
+// Update OIDC SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateOidcApplication({
   id: 'my-app-id',
@@ -656,7 +656,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Update SAML sso application.
+// Update SAML SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateSamlApplication({
   id: 'my-app-id',
@@ -669,13 +669,13 @@ await descopeClient.management.ssoApplication.updateSamlApplication({
   certificate: 'certificate',
 });
 
-// Tenant deletion cannot be undone. Use carefully.
+// SSO application deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');
 
-// Load sso application by id
+// Load SSO application by id
 const app = await descopeClient.management.ssoApplication.load('my-app-id');
 
-// Load all sso applications
+// Load all SSO applications
 const appsRes = await descopeClient.management.ssoApplication.loadAll();
 appsRes.data.forEach((app) => {
   // do something
@@ -1257,6 +1257,88 @@ const relations = await descopeClient.management.fga.check([
     targetType: 'user',
   },
 ]);
+```
+
+### Manage Inbound Applications
+
+You can create, update, delete or load inbound applications:
+
+```typescript
+// Create an inbound application.
+const { id, cleartext: secret } =
+  await descopeClient.management.inboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    logo: 'data:image/png;..',
+    approvedCallbackUrls: ['dummy.com'],
+    permissionsScopes: [
+      {
+        name: 'read_support',
+        description: 'read for support',
+        values: ['Support'],
+      },
+    ],
+    attributesScopes: [
+      {
+        name: 'read_email',
+        description: 'read user email',
+        values: ['email'],
+      },
+    ],
+    loginPageUrl: 'http://dummy.com/login',
+  });
+
+// Update an inbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.inboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  loginPageUrl: 'http://dummy.com/login',
+  approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
+});
+
+// Patch an inbound application.
+// patch will not override all fields, but update only what given.
+await descopeClient.management.inboundApplication.patchApplication({
+  id: 'my-app-id',
+  name: 'my updated app name',
+  description: 'my new description',
+});
+
+// delete an inbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteApplication('my-app-id');
+
+// Load an inbound application by id
+const app = await descopeClient.management.inboundApplication.loadApplication('my-app-id');
+
+// Load all inbound applications
+const appsRes = await descopeClient.management.inboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Get an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
+  'my-app-id',
+);
+
+// Rotate an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
+  'my-app-id',
+);
+
+// Search in all consents. search consents by the given app id and offset to the third page.
+const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
+  appId: 'my-app',
+  page: 2,
+});
+
+// Delete consents. delete all user consents, application consents or specific consents by id.
+// inbound application consents deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteConsents({
+  userIds: ['user'],
+});
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
