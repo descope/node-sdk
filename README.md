@@ -1264,7 +1264,7 @@ const relations = await descopeClient.management.fga.check([
 You can create, update, delete or load inbound applications:
 
 ```typescript
-// Create a inbound application.
+// Create an inbound application.
 const { id, cleartext: secret } =
   await descopeClient.management.inboundApplication.createApplication({
     name: 'my new app',
@@ -1288,7 +1288,7 @@ const { id, cleartext: secret } =
     loginPageUrl: 'http://dummy.com/login',
   });
 
-// Update a inbound application.
+// Update an inbound application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.inboundApplication.updateApplication({
   id: 'my-app-id',
@@ -1297,7 +1297,7 @@ await descopeClient.management.inboundApplication.updateApplication({
   approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
 });
 
-// Patch a inbound application.
+// Patch an inbound application.
 // patch will not override all fields, but update only what given.
 await descopeClient.management.inboundApplication.patchApplication({
   id: 'my-app-id',

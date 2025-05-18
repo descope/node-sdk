@@ -866,7 +866,7 @@ export type InboundApplicationScope = {
 };
 
 /**
- * Represents a inbound application request in a project.
+ * Represents an inbound application request in a project.
  * This type is used to create a new inbound application in a project.
  */
 export type InboundApplicationOptions = {
@@ -880,7 +880,7 @@ export type InboundApplicationOptions = {
 };
 
 /**
- * Represents a inbound application in a project.
+ * Represents an inbound application in a project.
  */
 export type InboundApplication = InboundApplicationOptions & {
   id: string;
@@ -897,7 +897,7 @@ export type CreateInboundApplicationResponse = {
 } & InboundApplicationSecretResponse;
 
 /**
- * Represents a inbound application consent for a single application
+ * Represents an inbound application consent for a single application
  * for a specific user within the project.
  */
 export type InboundApplicationConsent = {
