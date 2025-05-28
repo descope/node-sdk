@@ -159,7 +159,7 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
-  forceSSO?: boolean;
+  enforceSSO?: boolean;
   disabled?: boolean;
 };
 
