@@ -1790,6 +1790,53 @@ describe('Management User', () => {
     });
   });
 
+  describe('generateSignUpEmbeddedLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        token: 'myToken',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateEmbeddedLinkResponse> =
+        await management.user.generateSignUpEmbeddedLink(
+          'some-id',
+          { name: 'John Doe' },
+          true,
+          true,
+          { mfa: true },
+          12,
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.generateSignUpEmbeddedLink,
+        {
+          loginId: 'some-id',
+          user: { name: 'John Doe' },
+          emailVerified: true,
+          phoneVerified: true,
+          loginOptions: { mfa: true },
+          timeout: 12,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('setPassword', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
