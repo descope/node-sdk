@@ -915,11 +915,36 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     generateEmbeddedLink: (
       loginId: string,
       customClaims?: Record<string, any>,
+      timeout?: number,
     ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
       transformResponse<GenerateEmbeddedLinkResponse>(
         sdk.httpClient.post(
           apiPaths.user.generateEmbeddedLink,
-          { loginId, customClaims },
+          { loginId, customClaims, timeout },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    generateSignUpEmbeddedLink: (
+      loginId: string,
+      user?: {
+        name?: string;
+        givenName?: string;
+        middleName?: string;
+        familyName?: string;
+        phone?: string;
+        email?: string;
+      },
+      emailVerified?: boolean,
+      phoneVerified?: boolean,
+      loginOptions?: LoginOptions,
+      timeout?: number,
+    ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
+      transformResponse<GenerateEmbeddedLinkResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.generateSignUpEmbeddedLink,
+          { loginId, user, emailVerified, phoneVerified, loginOptions, timeout },
           { token: managementKey },
         ),
         (data) => data,
