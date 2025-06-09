@@ -260,6 +260,7 @@ export type Role = {
   permissionNames: string[];
   createdTime: number;
   tenantId?: string;
+  default?: boolean;
 };
 
 /** Search roles based on the parameters */
