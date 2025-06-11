@@ -406,6 +406,8 @@ The implementation can defer according to your implementation. See our [examples
 If Roles & Permissions are used, validate them immediately after validating the session. See the [next section](#roles--permission-validation)
 for more information.
 
+Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
+
 #### Session Validation Using Middleware
 
 Alternatively, you can create a simple middleware function that internally uses the `validateSession` function.
