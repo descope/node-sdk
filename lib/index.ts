@@ -14,7 +14,7 @@ import {
 import fetch from './fetch-polyfill';
 import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
 import withManagement from './management';
-import { AuthenticationInfo } from './types';
+import { AuthenticationInfo, RefreshAuthenticationInfo } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -146,9 +146,9 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     /**
      * Refresh the session using a refresh token
      * @param refreshToken refresh JWT to refresh the session with
-     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async refreshSession(refreshToken: string): Promise<AuthenticationInfo> {
+    async refreshSession(refreshToken: string): Promise<RefreshAuthenticationInfo> {
       if (!refreshToken) throw Error('refresh token is required to refresh a session');
 
       try {
@@ -156,6 +156,10 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
         const jwtResp = await sdk.refresh(refreshToken);
         if (jwtResp.ok) {
           const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
+          if (jwtResp.data.refreshJwt) {
+            // if refresh returned a refresh JWT, add it to the response
+            (token as RefreshAuthenticationInfo).refreshJwt = jwtResp.data.refreshJwt;
+          }
           return token;
         }
         /* istanbul ignore next */
@@ -171,12 +175,12 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
-     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
       sessionToken?: string,
       refreshToken?: string,
-    ): Promise<AuthenticationInfo> {
+    ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {

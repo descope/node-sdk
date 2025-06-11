@@ -181,7 +181,20 @@ describe('sdk', () => {
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
 
-      await expect(sdk.refreshSession(validToken)).resolves.toHaveProperty('jwt', validToken);
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should fail when refresh returns an error', async () => {
@@ -235,10 +248,19 @@ describe('sdk', () => {
         ok: true,
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
-      await expect(sdk.validateAndRefreshSession('', validToken)).resolves.toHaveProperty(
-        'jwt',
-        validToken,
-      );
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should refresh session and return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should return the session token when it is valid', async () => {
