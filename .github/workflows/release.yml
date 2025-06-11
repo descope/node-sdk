@@ -19,7 +19,7 @@ jobs:
         with:
           private_key: ${{ secrets.RELEASE_APP_PEM }}
           app_id: ${{ secrets.RELEASE_APP_ID }}
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4
         id: release
         with:
           token: ${{ steps.get_token.outputs.token }}
