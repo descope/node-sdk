@@ -5,4 +5,4 @@
 
 ### Features
 
-initial release with release please 
+initial release with release please.
