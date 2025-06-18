@@ -835,7 +835,7 @@ You can also import previously exported snapshots into the same project or a dif
 
 ```typescript
 const validateReq = {
-  files: exportRes.files,
+  files: exportRes.data.files,
 };
 
 // Validate that an exported snapshot can be imported into the current project
@@ -846,7 +846,7 @@ if (!validateRes.ok) {
 
 // Import the previously exported snapshot into the current project
 const importReq = {
-  files: exportRes.files,
+  files: exportRes.data.files,
 };
 
 await descopeClient.management.project.importSnapshot(files);
