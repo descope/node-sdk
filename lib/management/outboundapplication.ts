@@ -3,11 +3,11 @@ import { CoreSdk } from '../types';
 import apiPaths from './paths';
 import { OutboundApplication } from './types';
 
-export type OutboundApplicationResponse = {
+type OutboundApplicationResponse = {
   app: OutboundApplication;
 };
 
-export type MultipleOutboundApplicationResponse = {
+type MultipleOutboundApplicationResponse = {
   apps: OutboundApplication[];
 };
 
