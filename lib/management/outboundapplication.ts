@@ -1,7 +1,7 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { URLParam, AccessType, PromptType, OutboundApplication } from './types';
+import { OutboundApplication } from './types';
 
 export type OutboundApplicationResponse = {
   app: OutboundApplication;
