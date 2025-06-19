@@ -922,3 +922,33 @@ export type InboundApplicationConsentDeleteOptions = {
   appId?: string;
   userIds?: string[];
 };
+
+export type PromptType = 'none' | 'login' | 'consent' | 'select_account';
+export type AccessType = 'offline' | 'online';
+
+export type OutboundApplication = {
+  id: string;
+  name: string;
+  description?: string;
+  templateId?: string;
+  clientId?: string;
+  logo?: string;
+  discoveryUrl?: string;
+  authorizationUrl?: string;
+  authorizationUrlParams?: URLParam[];
+  tokenUrl?: string;
+  tokenUrlParams?: URLParam[];
+  revocationUrl?: string;
+  defaultScopes?: string[];
+  defaultRedirectUrl?: string;
+  callbackDomain?: string;
+  pkce?: boolean;
+  accessType?: AccessType;
+  prompt?: Array<PromptType>;
+};
+
+// Example for URLParam type (adjust as needed)
+export type URLParam = {
+  key: string;
+  value: string;
+};
