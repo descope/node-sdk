@@ -92,6 +92,13 @@ export default {
     delete: '/v1/mgmt/thirdparty/consents/delete',
     search: '/v1/mgmt/thirdparty/consents/search',
   },
+  outboundApplication: {
+    create: '/v1/mgmt/outbound/app/create',
+    update: '/v1/mgmt/outbound/app/update',
+    delete: '/v1/mgmt/outbound/app/delete',
+    load: '/v1/mgmt/outbound/app',
+    loadAll: '/v1/mgmt/outbound/apps',
+  },
   sso: {
     settings: '/v1/mgmt/sso/settings',
     settingsNew: '/v1/mgmt/sso/settings/new',

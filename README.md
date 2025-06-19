@@ -1261,6 +1261,41 @@ const relations = await descopeClient.management.fga.check([
 ]);
 ```
 
+### Manage Outbound Applications
+
+You can create, update, delete or load outbound applications:
+
+```typescript
+// Create an outbound application.
+const { id } =
+  await descopeClient.management.outboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    ...
+  });
+
+// Update an outbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.outboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  ...
+});
+
+// delete an outbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteApplication('my-app-id');
+
+// Load an outbound application by id
+const app = await descopeClient.management.outboundApplication.loadApplication('my-app-id');
+
+// Load all outbound applications
+const appsRes = await descopeClient.management.outboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+```
+
 ### Manage Inbound Applications
 
 You can create, update, delete or load inbound applications:
