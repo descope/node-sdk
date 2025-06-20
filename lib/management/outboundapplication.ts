@@ -27,7 +27,9 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.app,
     ),
-  updateApplication: (app: OutboundApplication & { clientSecret?: string }): Promise<SdkResponse<OutboundApplication>> =>
+  updateApplication: (
+    app: OutboundApplication & { clientSecret?: string },
+  ): Promise<SdkResponse<OutboundApplication>> =>
     transformResponse<OutboundApplicationResponse, OutboundApplication>(
       sdk.httpClient.post(
         apiPaths.outboundApplication.update,
