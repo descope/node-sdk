@@ -932,6 +932,7 @@ export type OutboundApplication = {
   description?: string;
   templateId?: string;
   clientId?: string;
+  clientSecret?: string;
   logo?: string;
   discoveryUrl?: string;
   authorizationUrl?: string;
