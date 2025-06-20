@@ -55,6 +55,7 @@ describe('Management OutboundApplication', () => {
         await management.outboundApplication.createApplication({
           name: 'name',
           description: 'test',
+          clientSecret: 'shhh..',
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -62,6 +63,7 @@ describe('Management OutboundApplication', () => {
         {
           name: 'name',
           description: 'test',
+          clientSecret: 'shhh..',
         },
         { token: 'key' },
       );
@@ -92,6 +94,7 @@ describe('Management OutboundApplication', () => {
         name: 'name',
         logo: 'logo',
         description: 'desc',
+        clientSecret: 'shhh..',
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -102,6 +105,7 @@ describe('Management OutboundApplication', () => {
             name: 'name',
             logo: 'logo',
             description: 'desc',
+            clientSecret: 'shhh..',
           },
         },
         { token: 'key' },
