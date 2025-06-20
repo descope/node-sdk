@@ -15,7 +15,7 @@ type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
   createApplication: (
-    app: WithOptional<OutboundApplication, 'id'>,
+    app: WithOptional<OutboundApplication, 'id'> & { clientSecret?: string },
   ): Promise<SdkResponse<OutboundApplication>> =>
     transformResponse<OutboundApplicationResponse, OutboundApplication>(
       sdk.httpClient.post(
@@ -27,7 +27,7 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.app,
     ),
-  updateApplication: (app: OutboundApplication): Promise<SdkResponse<OutboundApplication>> =>
+  updateApplication: (app: OutboundApplication & { clientSecret?: string }): Promise<SdkResponse<OutboundApplication>> =>
     transformResponse<OutboundApplicationResponse, OutboundApplication>(
       sdk.httpClient.post(
         apiPaths.outboundApplication.update,

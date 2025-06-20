@@ -1263,8 +1263,7 @@ const relations = await descopeClient.management.fga.check([
 
 ### Manage Outbound Applications
 
-You can create, update, delete or load outbound applications.
-Note that in all operations the client secret will be returned masked.
+You can create, update, delete or load outbound applications:
 
 ```typescript
 // Create an outbound application.
