@@ -930,7 +930,6 @@ export type OutboundApplication = {
   id: string;
   name: string;
   description?: string;
-  templateId?: string;
   clientId?: string;
   logo?: string;
   discoveryUrl?: string;
