@@ -2,6 +2,7 @@ import createSdk, {
   AccessKeyLoginOptions,
   ExchangeAccessKeyResponse,
   SdkResponse,
+  JWTResponse as CoreJWTResponse,
   wrapWith,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
@@ -12,12 +13,22 @@ import {
   sessionTokenCookieName,
 } from './constants';
 import fetch from './fetch-polyfill';
-import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
+import {
+  getAuthorizationClaimItems,
+  getCookieValue,
+  isUserAssociatedWithTenant,
+  withCookie,
+} from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo, RefreshAuthenticationInfo } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
+
+// Extend the type wrapped by withCookie
+type JWTResponseWithCookies = CoreJWTResponse & {
+  cookies: string[];
+};
 
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
@@ -155,8 +166,16 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
         await sdk.validateJwt(refreshToken);
         const jwtResp = await sdk.refresh(refreshToken);
         if (jwtResp.ok) {
-          const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
-          if (jwtResp.data.refreshJwt) {
+          // if refresh was successful, validate the new session JWT
+          const seesionJwt =
+            getCookieValue(
+              (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
+              sessionTokenCookieName,
+            ) || jwtResp.data?.sessionJwt;
+          const token = await sdk.validateJwt(seesionJwt);
+          // add cookies to the token response if they exist
+          token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
+          if (jwtResp.data?.refreshJwt) {
             // if refresh returned a refresh JWT, add it to the response
             (token as RefreshAuthenticationInfo).refreshJwt = jwtResp.data.refreshJwt;
           }
