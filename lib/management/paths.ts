@@ -98,6 +98,10 @@ export default {
     delete: '/v1/mgmt/outbound/app/delete',
     load: '/v1/mgmt/outbound/app',
     loadAll: '/v1/mgmt/outbound/apps',
+    fetchUserToken: '/v1/mgmt/outbound/app/user/token',
+    fetchLatestUserToken: '/v1/mgmt/outbound/app/user/token/latest',
+    fetchTenantToken: '/v1/mgmt/outbound/app/tenant/token',
+    fetchLatestTenantToken: '/v1/mgmt/outbound/app/tenant/token/latest',
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',

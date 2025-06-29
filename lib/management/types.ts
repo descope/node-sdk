@@ -951,3 +951,60 @@ export type URLParam = {
   key: string;
   value: string;
 };
+
+export type FetchOutboundAppTokenOptions = {
+  refreshToken?: boolean;
+  forceRefresh?: boolean;
+};
+
+export type OutboundAppToken = {
+  token: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  tokenType?: string;
+  scopes?: string[];
+};
+
+export type FetchOutboundAppUserTokenRequest = {
+  appId: string;
+  userId: string;
+  scopes: string[];
+  options?: FetchOutboundAppTokenOptions;
+  tenantId?: string;
+};
+
+export type FetchOutboundAppUserTokenResponse = {
+  token: OutboundAppToken;
+};
+
+export type FetchLatestOutboundAppUserTokenRequest = {
+  appId: string;
+  userId: string;
+  tenantId?: string;
+  options?: FetchOutboundAppTokenOptions;
+};
+
+export type FetchLatestOutboundAppUserTokenResponse = {
+  token: OutboundAppToken;
+};
+
+export type FetchOutboundAppTenantTokenRequest = {
+  appId: string;
+  tenantId: string;
+  scopes: string[];
+  options?: FetchOutboundAppTokenOptions;
+};
+
+export type FetchOutboundAppTenantTokenResponse = {
+  token: OutboundAppToken;
+};
+
+export type FetchLatestOutboundAppTenantTokenRequest = {
+  appId: string;
+  tenantId: string;
+  options?: FetchOutboundAppTokenOptions;
+};
+
+export type FetchLatestOutboundAppTenantTokenResponse = {
+  token: OutboundAppToken;
+};
