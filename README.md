@@ -1294,6 +1294,38 @@ const appsRes = await descopeClient.management.outboundApplication.loadAllApplic
 appsRes.data.forEach((app) => {
   // do something
 });
+
+// Fetch user token with specific scopes
+const userToken = await descopeClient.management.outboundApplication.fetchTokenByScopes(
+  'my-app-id',
+  'user-id',
+  ['read', 'write'],
+  { refreshToken: true },
+  'tenant-id'
+);
+
+// Fetch latest user token
+const latestUserToken = await descopeClient.management.outboundApplication.fetchToken(
+  'my-app-id',
+  'user-id',
+  'tenant-id',
+  { forceRefresh: true }
+);
+
+// Fetch tenant token with specific scopes
+const tenantToken = await descopeClient.management.outboundApplication.fetchTenantTokenByScopes(
+  'my-app-id',
+  'tenant-id',
+  ['read', 'write'],
+  { refreshToken: true }
+);
+
+// Fetch latest tenant token
+const latestTenantToken = await descopeClient.management.outboundApplication.fetchTenantToken(
+  'my-app-id',
+  'tenant-id',
+  { forceRefresh: true }
+);
 ```
 
 ### Manage Inbound Applications

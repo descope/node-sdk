@@ -1,7 +1,12 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { OutboundApplication } from './types';
+import {
+  OutboundApplication,
+  OutboundAppToken,
+  FetchOutboundAppTokenOptions,
+  OutboundAppTokenResponse,
+} from './types';
 
 type OutboundApplicationResponse = {
   app: OutboundApplication;
@@ -57,6 +62,82 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
         token: managementKey,
       }),
       (data) => data.apps,
+    ),
+  fetchTokenByScopes: (
+    appId: string,
+    userId: string,
+    scopes: string[],
+    options?: FetchOutboundAppTokenOptions,
+    tenantId?: string,
+  ): Promise<SdkResponse<OutboundAppToken>> =>
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
+      sdk.httpClient.post(
+        apiPaths.outboundApplication.fetchTokenByScopes,
+        {
+          appId,
+          userId,
+          scopes,
+          options,
+          tenantId,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.token,
+    ),
+  fetchToken: (
+    appId: string,
+    userId: string,
+    tenantId?: string,
+    options?: FetchOutboundAppTokenOptions,
+  ): Promise<SdkResponse<OutboundAppToken>> =>
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
+      sdk.httpClient.post(
+        apiPaths.outboundApplication.fetchToken,
+        {
+          appId,
+          userId,
+          tenantId,
+          options,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.token,
+    ),
+  fetchTenantTokenByScopes: (
+    appId: string,
+    tenantId: string,
+    scopes: string[],
+    options?: FetchOutboundAppTokenOptions,
+  ): Promise<SdkResponse<OutboundAppToken>> =>
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
+      sdk.httpClient.post(
+        apiPaths.outboundApplication.fetchTenantTokenByScopes,
+        {
+          appId,
+          tenantId,
+          scopes,
+          options,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.token,
+    ),
+  fetchTenantToken: (
+    appId: string,
+    tenantId: string,
+    options?: FetchOutboundAppTokenOptions,
+  ): Promise<SdkResponse<OutboundAppToken>> =>
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
+      sdk.httpClient.post(
+        apiPaths.outboundApplication.fetchTenantToken,
+        {
+          appId,
+          tenantId,
+          options,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.token,
     ),
 });
 
