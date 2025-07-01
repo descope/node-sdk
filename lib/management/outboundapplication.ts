@@ -5,10 +5,7 @@ import {
   OutboundApplication,
   OutboundAppToken,
   FetchOutboundAppTokenOptions,
-  FetchOutboundAppUserTokenResponse,
-  FetchLatestOutboundAppUserTokenResponse,
-  FetchOutboundAppTenantTokenResponse,
-  FetchLatestOutboundAppTenantTokenResponse,
+  OutboundAppTokenResponse,
 } from './types';
 
 type OutboundApplicationResponse = {
@@ -66,16 +63,16 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
       }),
       (data) => data.apps,
     ),
-  fetchUserToken: (
+  fetchTokenByScopes: (
     appId: string,
     userId: string,
     scopes: string[],
     options?: FetchOutboundAppTokenOptions,
     tenantId?: string,
   ): Promise<SdkResponse<OutboundAppToken>> =>
-    transformResponse<FetchOutboundAppUserTokenResponse, OutboundAppToken>(
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
       sdk.httpClient.post(
-        apiPaths.outboundApplication.fetchUserToken,
+        apiPaths.outboundApplication.fetchTokenByScopes,
         {
           appId,
           userId,
@@ -87,19 +84,38 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
       ),
       (data) => data.token,
     ),
-  fetchLatestUserToken: (
+  fetchToken: (
     appId: string,
     userId: string,
     tenantId?: string,
     options?: FetchOutboundAppTokenOptions,
   ): Promise<SdkResponse<OutboundAppToken>> =>
-    transformResponse<FetchLatestOutboundAppUserTokenResponse, OutboundAppToken>(
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
       sdk.httpClient.post(
-        apiPaths.outboundApplication.fetchLatestUserToken,
+        apiPaths.outboundApplication.fetchToken,
         {
           appId,
           userId,
           tenantId,
+          options,
+        },
+        { token: managementKey },
+      ),
+      (data) => data.token,
+    ),
+  fetchTenantTokenByScopes: (
+    appId: string,
+    tenantId: string,
+    scopes: string[],
+    options?: FetchOutboundAppTokenOptions,
+  ): Promise<SdkResponse<OutboundAppToken>> =>
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
+      sdk.httpClient.post(
+        apiPaths.outboundApplication.fetchTenantTokenByScopes,
+        {
+          appId,
+          tenantId,
+          scopes,
           options,
         },
         { token: managementKey },
@@ -109,30 +125,11 @@ const withOutboundApplication = (sdk: CoreSdk, managementKey?: string) => ({
   fetchTenantToken: (
     appId: string,
     tenantId: string,
-    scopes: string[],
     options?: FetchOutboundAppTokenOptions,
   ): Promise<SdkResponse<OutboundAppToken>> =>
-    transformResponse<FetchOutboundAppTenantTokenResponse, OutboundAppToken>(
+    transformResponse<OutboundAppTokenResponse, OutboundAppToken>(
       sdk.httpClient.post(
         apiPaths.outboundApplication.fetchTenantToken,
-        {
-          appId,
-          tenantId,
-          scopes,
-          options,
-        },
-        { token: managementKey },
-      ),
-      (data) => data.token,
-    ),
-  fetchLatestTenantToken: (
-    appId: string,
-    tenantId: string,
-    options?: FetchOutboundAppTokenOptions,
-  ): Promise<SdkResponse<OutboundAppToken>> =>
-    transformResponse<FetchLatestOutboundAppTenantTokenResponse, OutboundAppToken>(
-      sdk.httpClient.post(
-        apiPaths.outboundApplication.fetchLatestTenantToken,
         {
           appId,
           tenantId,

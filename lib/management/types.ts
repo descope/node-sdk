@@ -973,7 +973,7 @@ export type FetchOutboundAppUserTokenRequest = {
   tenantId?: string;
 };
 
-export type FetchOutboundAppUserTokenResponse = {
+export type OutboundAppTokenResponse = {
   token: OutboundAppToken;
 };
 
@@ -984,10 +984,6 @@ export type FetchLatestOutboundAppUserTokenRequest = {
   options?: FetchOutboundAppTokenOptions;
 };
 
-export type FetchLatestOutboundAppUserTokenResponse = {
-  token: OutboundAppToken;
-};
-
 export type FetchOutboundAppTenantTokenRequest = {
   appId: string;
   tenantId: string;
@@ -995,16 +991,8 @@ export type FetchOutboundAppTenantTokenRequest = {
   options?: FetchOutboundAppTokenOptions;
 };
 
-export type FetchOutboundAppTenantTokenResponse = {
-  token: OutboundAppToken;
-};
-
 export type FetchLatestOutboundAppTenantTokenRequest = {
   appId: string;
   tenantId: string;
   options?: FetchOutboundAppTokenOptions;
-};
-
-export type FetchLatestOutboundAppTenantTokenResponse = {
-  token: OutboundAppToken;
 };

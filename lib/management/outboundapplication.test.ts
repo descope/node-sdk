@@ -222,7 +222,7 @@ describe('Management OutboundApplication', () => {
     });
   });
 
-  describe('fetchUserToken', () => {
+  describe('fetchTokenByScopes', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -235,7 +235,7 @@ describe('Management OutboundApplication', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchUserToken(
+        await management.outboundApplication.fetchTokenByScopes(
           'app123',
           'user456',
           ['read', 'write'],
@@ -244,7 +244,7 @@ describe('Management OutboundApplication', () => {
         );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchUserToken,
+        apiPaths.outboundApplication.fetchTokenByScopes,
         {
           appId: 'app123',
           userId: 'user456',
@@ -275,10 +275,10 @@ describe('Management OutboundApplication', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchUserToken('app123', 'user456', ['read']);
+        await management.outboundApplication.fetchTokenByScopes('app123', 'user456', ['read']);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchUserToken,
+        apiPaths.outboundApplication.fetchTokenByScopes,
         {
           appId: 'app123',
           userId: 'user456',
@@ -298,7 +298,7 @@ describe('Management OutboundApplication', () => {
     });
   });
 
-  describe('fetchLatestUserToken', () => {
+  describe('fetchToken', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -310,16 +310,15 @@ describe('Management OutboundApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchLatestUserToken(
-          'app123',
-          'user456',
-          'tenant789',
-          { forceRefresh: true },
-        );
+      const resp: SdkResponse<OutboundAppToken> = await management.outboundApplication.fetchToken(
+        'app123',
+        'user456',
+        'tenant789',
+        { forceRefresh: true },
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchLatestUserToken,
+        apiPaths.outboundApplication.fetchToken,
         {
           appId: 'app123',
           userId: 'user456',
@@ -348,15 +347,92 @@ describe('Management OutboundApplication', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchLatestUserToken('app123', 'user456');
+      const resp: SdkResponse<OutboundAppToken> = await management.outboundApplication.fetchToken(
+        'app123',
+        'user456',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchLatestUserToken,
+        apiPaths.outboundApplication.fetchToken,
         {
           appId: 'app123',
           userId: 'user456',
           tenantId: undefined,
+          options: undefined,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundAppToken,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('fetchTenantTokenByScopes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFetchTokenResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockFetchTokenResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundAppToken> =
+        await management.outboundApplication.fetchTenantTokenByScopes(
+          'app123',
+          'tenant789',
+          ['read', 'write'],
+          { refreshToken: true },
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.fetchTenantTokenByScopes,
+        {
+          appId: 'app123',
+          tenantId: 'tenant789',
+          scopes: ['read', 'write'],
+          options: { refreshToken: true },
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundAppToken,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should work with minimal parameters', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFetchTokenResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockFetchTokenResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundAppToken> =
+        await management.outboundApplication.fetchTenantTokenByScopes('app123', 'tenant789', [
+          'read',
+        ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.fetchTenantTokenByScopes,
+        {
+          appId: 'app123',
+          tenantId: 'tenant789',
+          scopes: ['read'],
           options: undefined,
         },
         { token: 'key' },
@@ -384,85 +460,12 @@ describe('Management OutboundApplication', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchTenantToken(
-          'app123',
-          'tenant789',
-          ['read', 'write'],
-          { refreshToken: true },
-        );
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchTenantToken,
-        {
-          appId: 'app123',
-          tenantId: 'tenant789',
-          scopes: ['read', 'write'],
-          options: { refreshToken: true },
-        },
-        { token: 'key' },
-      );
-
-      expect(resp).toEqual({
-        code: 200,
-        data: mockOutboundAppToken,
-        ok: true,
-        response: httpResponse,
-      });
-    });
-
-    it('should work with minimal parameters', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => mockFetchTokenResponse,
-        clone: () => ({
-          json: () => Promise.resolve(mockFetchTokenResponse),
-        }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
-
-      const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchTenantToken('app123', 'tenant789', ['read']);
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchTenantToken,
-        {
-          appId: 'app123',
-          tenantId: 'tenant789',
-          scopes: ['read'],
-          options: undefined,
-        },
-        { token: 'key' },
-      );
-
-      expect(resp).toEqual({
-        code: 200,
-        data: mockOutboundAppToken,
-        ok: true,
-        response: httpResponse,
-      });
-    });
-  });
-
-  describe('fetchLatestTenantToken', () => {
-    it('should send the correct request and receive correct response', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => mockFetchTokenResponse,
-        clone: () => ({
-          json: () => Promise.resolve(mockFetchTokenResponse),
-        }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
-
-      const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchLatestTenantToken('app123', 'tenant789', {
+        await management.outboundApplication.fetchTenantToken('app123', 'tenant789', {
           forceRefresh: true,
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchLatestTenantToken,
+        apiPaths.outboundApplication.fetchTenantToken,
         {
           appId: 'app123',
           tenantId: 'tenant789',
@@ -491,10 +494,10 @@ describe('Management OutboundApplication', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundAppToken> =
-        await management.outboundApplication.fetchLatestTenantToken('app123', 'tenant789');
+        await management.outboundApplication.fetchTenantToken('app123', 'tenant789');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchLatestTenantToken,
+        apiPaths.outboundApplication.fetchTenantToken,
         {
           appId: 'app123',
           tenantId: 'tenant789',
