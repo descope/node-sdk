@@ -49,11 +49,17 @@ describe('Management Role', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.role.create('name', 'description', ['p1', 'p2'], 't1');
+      const resp = await management.role.create('name', 'description', ['p1', 'p2'], 't1', true);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.role.create,
-        { name: 'name', description: 'description', permissionNames: ['p1', 'p2'], tenantId: 't1' },
+        {
+          name: 'name',
+          description: 'description',
+          permissionNames: ['p1', 'p2'],
+          tenantId: 't1',
+          default: true,
+        },
         { token: 'key' },
       );
 
@@ -82,6 +88,7 @@ describe('Management Role', () => {
         'description',
         ['p1', 'p2'],
         't1',
+        true,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -92,6 +99,7 @@ describe('Management Role', () => {
           newName: 'newName',
           description: 'description',
           permissionNames: ['p1', 'p2'],
+          default: true,
         },
         { token: 'key' },
       );

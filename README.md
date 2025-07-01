@@ -304,6 +304,14 @@ const jwtResponse = await descopeClient.totp.verify(loginId, 'code');
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+#### Deleting the TOTP Seed
+
+Provide the `loginId` to the function to remove the user's TOTP seed.
+
+```typescript
+const response = await descopeClient.management.user.removeTOTPSeed(loginId);
+```
+
 ### Passwords
 
 The user can also authenticate with a password, though it's recommended to
@@ -397,6 +405,8 @@ The implementation can defer according to your implementation. See our [examples
 
 If Roles & Permissions are used, validate them immediately after validating the session. See the [next section](#roles--permission-validation)
 for more information.
+
+Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
 
 #### Session Validation Using Middleware
 
@@ -626,13 +636,13 @@ await descopeClient.management.password.configureSettings('my-tenant-id', {
 You can create, update, delete or load SSO applications:
 
 ```typescript
-// Create OIDC sso application
+// Create OIDC SSO application
 await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Create SAML sso application
+// Create SAML SSO application
 await descopeClient.management.ssoApplication.createSamlApplication({
   name: 'My SAML app name',
   loginPageUrl: 'http://dummy.com/login',
@@ -640,7 +650,7 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   metadataUrl: 'http://dummy.com/metadata',
 });
 
-// Update OIDC sso application.
+// Update OIDC SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateOidcApplication({
   id: 'my-app-id',
@@ -648,7 +658,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Update SAML sso application.
+// Update SAML SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateSamlApplication({
   id: 'my-app-id',
@@ -661,13 +671,13 @@ await descopeClient.management.ssoApplication.updateSamlApplication({
   certificate: 'certificate',
 });
 
-// Tenant deletion cannot be undone. Use carefully.
+// SSO application deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');
 
-// Load sso application by id
+// Load SSO application by id
 const app = await descopeClient.management.ssoApplication.load('my-app-id');
 
-// Load all sso applications
+// Load all SSO applications
 const appsRes = await descopeClient.management.ssoApplication.loadAll();
 appsRes.data.forEach((app) => {
   // do something
@@ -889,33 +899,55 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```typescript
 // You can get SSO settings for a specific tenant ID
-const ssoSettings = await descopeClient.management.sso.loadSettings("tenant-id")
+// You can pass ssoId in case using multi SSO and you want to load specific SSO configuration
+const ssoSettings = await descopeClient.management.sso.loadSettings('tenant-id');
+
+// You can get all configured SSO settings for a specific tenant ID (for multi SSO usage)
+const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenant-id');
 
 // You can configure SSO settings manually by setting the required fields directly
-const tenantId = 'tenant-id' // Which tenant this configuration is for
-const idpURL = 'https://idp.com'
-const entityID = 'my-idp-entity-id'
-const idpCert = '<your-cert-here>'
-const redirectURL = 'https://my-app.com/handle-sso' // Global redirect URL for SSO/SAML
-const domains = ['tenant-users.com'] // Users authentication with this domain will be logged in to this tenant
-await descopeClient.management.sso.configureSAMLSettings(tenantID, {idpURL, entityID, idpCert}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+const tenantId = 'tenant-id'; // Which tenant this configuration is for
+const idpURL = 'https://idp.com';
+const entityID = 'my-idp-entity-id';
+const idpCert = '<your-cert-here>';
+const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
+const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpURL, entityID, idpCert },
+  redirectURL,
+  domains,
+);
 
 // Alternatively, configure using an SSO metadata URL
-await descopeClient.management.sso.configureSAMLByMetadata(tenantID, {idpMetadataUrl: 'https://idp.com/my-idp-metadata'}, redirectURL, domains)
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
+await descopeClient.management.sso.configureSAMLByMetadata(
+  tenantID,
+  { idpMetadataUrl: 'https://idp.com/my-idp-metadata' },
+  redirectURL,
+  domains,
+);
 
 // In case SSO is configured to work with OIDC use the following
+// You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
 const clientId = 'client id of OIDC';
-const clientSecret =  'client secret';
-await descopeClient.management.sso.configureOIDCSettings(tenantID, {name, clientId, clientSecret, redirectUrl}, domains)
+const clientSecret = 'client secret';
+await descopeClient.management.sso.configureOIDCSettings(
+  tenantID,
+  { name, clientId, clientSecret, redirectUrl },
+  domains,
+);
 
-// Map IDP groups to Descope roles, or map user attributes.
-// This function overrides any previous mapping (even when empty). Use carefully.
-await descopeClient.management.sso.configureMapping(
-   tenantId,
-   [{ groups: ['IDP_ADMIN'], roleName: 'Tenant Admin'}]
-   { name: 'IDP_NAME', phoneNumber: 'IDP_PHONE'},
-)
+// You can create new SSO configuration (aka multi SSO)
+const ssoId = 'my-new-additional-sso-id';
+const displayName = 'My additional SSO configuration';
+await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
+
+// You can delete existing SSO configuration
+// You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
+await descopeClient.management.sso.deleteSettings(tenantID);
 ```
 
 Note: Certificates should have a similar structure to:
@@ -1071,6 +1103,24 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
+Generate a JWT for a user, simulating a signin request.
+
+```typescript
+const res = await descopeClient.management.jwt.signIn('dummy');
+```
+
+Generate a JWT for a user, simulating a signup request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUp('dummy');
+```
+
+Generate a JWT for a user, simulating a signup or in request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUpOrIn('dummy');
+```
+
 ### Impersonate
 
 You can impersonate to another user
@@ -1082,6 +1132,16 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
   'impersonator-id',
   'login-id',
   true,
+  { k1: 'v1' },
+  't1',
+);
+```
+
+Once impersonation is done, you can call `stopImpersonation`, and get back a jwt of hte the actor
+
+```typescript
+const updatedJWTRes = await descopeClient.management.jwt.impersonate(
+  '<jwt string>',
   { k1: 'v1' },
   't1',
 );
@@ -1199,6 +1259,155 @@ const relations = await descopeClient.management.fga.check([
     targetType: 'user',
   },
 ]);
+```
+
+### Manage Outbound Applications
+
+You can create, update, delete or load outbound applications:
+
+```typescript
+// Create an outbound application.
+const { id } =
+  await descopeClient.management.outboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    ...
+  });
+
+// Update an outbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.outboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  ...
+});
+
+// delete an outbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteApplication('my-app-id');
+
+// Load an outbound application by id
+const app = await descopeClient.management.outboundApplication.loadApplication('my-app-id');
+
+// Load all outbound applications
+const appsRes = await descopeClient.management.outboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Fetch user token with specific scopes
+const userToken = await descopeClient.management.outboundApplication.fetchTokenByScopes(
+  'my-app-id',
+  'user-id',
+  ['read', 'write'],
+  { refreshToken: true },
+  'tenant-id'
+);
+
+// Fetch latest user token
+const latestUserToken = await descopeClient.management.outboundApplication.fetchToken(
+  'my-app-id',
+  'user-id',
+  'tenant-id',
+  { forceRefresh: true }
+);
+
+// Fetch tenant token with specific scopes
+const tenantToken = await descopeClient.management.outboundApplication.fetchTenantTokenByScopes(
+  'my-app-id',
+  'tenant-id',
+  ['read', 'write'],
+  { refreshToken: true }
+);
+
+// Fetch latest tenant token
+const latestTenantToken = await descopeClient.management.outboundApplication.fetchTenantToken(
+  'my-app-id',
+  'tenant-id',
+  { forceRefresh: true }
+);
+```
+
+### Manage Inbound Applications
+
+You can create, update, delete or load inbound applications:
+
+```typescript
+// Create an inbound application.
+const { id, cleartext: secret } =
+  await descopeClient.management.inboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    logo: 'data:image/png;..',
+    approvedCallbackUrls: ['dummy.com'],
+    permissionsScopes: [
+      {
+        name: 'read_support',
+        description: 'read for support',
+        values: ['Support'],
+      },
+    ],
+    attributesScopes: [
+      {
+        name: 'read_email',
+        description: 'read user email',
+        values: ['email'],
+      },
+    ],
+    loginPageUrl: 'http://dummy.com/login',
+  });
+
+// Update an inbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.inboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  loginPageUrl: 'http://dummy.com/login',
+  approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
+});
+
+// Patch an inbound application.
+// patch will not override all fields, but update only what given.
+await descopeClient.management.inboundApplication.patchApplication({
+  id: 'my-app-id',
+  name: 'my updated app name',
+  description: 'my new description',
+});
+
+// delete an inbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteApplication('my-app-id');
+
+// Load an inbound application by id
+const app = await descopeClient.management.inboundApplication.loadApplication('my-app-id');
+
+// Load all inbound applications
+const appsRes = await descopeClient.management.inboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Get an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
+  'my-app-id',
+);
+
+// Rotate an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
+  'my-app-id',
+);
+
+// Search in all consents. search consents by the given app id and offset to the third page.
+const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
+  appId: 'my-app',
+  page: 2,
+});
+
+// Delete consents. delete all user consents, application consents or specific consents by id.
+// inbound application consents deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteConsents({
+  userIds: ['user'],
+});
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests

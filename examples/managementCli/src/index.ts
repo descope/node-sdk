@@ -3,6 +3,7 @@ import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import { config } from 'dotenv';
 import { writeFileSync, readFileSync } from 'fs';
 import { Command } from 'commander';
+import { UserResponse } from '@descope/core-js-sdk';
 
 config();
 
@@ -34,6 +35,7 @@ const sdk = DescopeClient({
   projectId: DESCOPE_PROJECT_ID,
   baseUrl: DESCOPE_API_BASE_URL,
   managementKey: DESCOPE_MANAGEMENT_KEY,
+  logger: console,
 });
 
 const program = new Command();
@@ -288,6 +290,8 @@ program
   .description('Create a new access key')
   .argument('<name>', 'Access key name')
   .argument('<expire-time>', 'Access key expiration time')
+  .option('--description <value>', 'Access key description')
+  .option('--permitted-ips <ips>', 'Permitted IPs', (val) => val?.split(','))
   .option(
     '-t, --tenants <t1,t2>',
     `Access key's tenant IDs`,
@@ -304,6 +308,10 @@ program
         expireTime,
         undefined,
         options.tenants?.map((tenantId: string) => ({ tenantId })),
+        undefined,
+        undefined,
+        options.description,
+        options.permittedIps,
       ),
     );
   });
@@ -314,8 +322,20 @@ program
   .description('Update an access key')
   .argument('<id>', 'Access key ID')
   .argument('<name>', 'Access key name')
-  .action(async (id, name) => {
-    handleSdkRes(await sdk.management.accessKey.update(id, name));
+  .option('--description <value>', 'Access key description')
+  .option('--permitted-ips <ips>', 'Permitted IPs', (val) => val?.split(','))
+  .action(async (id, name, options) => {
+    handleSdkRes(
+      await sdk.management.accessKey.update(
+        id,
+        name,
+        options.description,
+        undefined,
+        undefined,
+        undefined,
+        options.permittedIps,
+      ),
+    );
   });
 
 // access-key-delete
@@ -427,6 +447,135 @@ program
   .argument('<tenant-id>', 'Tenant ID')
   .action(async (tenantId) => {
     handleSdkRes(await sdk.management.password.getSettings(tenantId));
+  });
+
+// *** Inbound application commands ***
+
+// inbound-application-create
+program
+  .command('inbound-application-create')
+  .description('Create a new inbound application')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (name, permissionsScopes) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.createApplication({
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-update
+program
+  .command('inbound-application-update')
+  .description('Update an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (id, name, permissionsScopes) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.updateApplication({
+        id,
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-patch
+program
+  .command('inbound-application-patch')
+  .description('Patch an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .action(async (id, name) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.patchApplication({
+        id,
+        name,
+      }),
+    );
+  });
+
+// inbound-application-delete
+program
+  .command('inbound-application-delete')
+  .description('Delete an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteApplication(id));
+  });
+
+// inbound-application-load
+program
+  .command('inbound-application-load')
+  .description('Load inbound application by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.loadApplication(id));
+  });
+
+// inbound-application-load-all
+program
+  .command('inbound-application-load-all')
+  .description('Load all inbound applications')
+  .action(async () => {
+    handleSdkRes(await sdk.management.inboundApplication.loadAllApplications());
+  });
+
+// inbound-application-secret
+program
+  .command('inbound-application-secret')
+  .description('Get inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.getApplicationSecret(id));
+  });
+
+// inbound-application-rotate-secret
+program
+  .command('inbound-application-rotate-secret')
+  .description('Rotate inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.rotateApplicationSecret(id));
+  });
+
+// inbound-application-consent-search
+program
+  .command('inbound-application-consent-search')
+  .description('Search inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId) => {
+    handleSdkRes(await sdk.management.inboundApplication.searchConsents({ appId }));
+  });
+
+// inbound-application-consent-delete
+program
+  .command('inbound-application-consent-delete')
+  .description('Delete inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteConsents({ appId }));
   });
 
 // *** SSO application commands ***
@@ -863,8 +1012,12 @@ program
   .description('Load relations for the given resource')
   .option('-r, --resource <resource>', 'The resource for the relations')
   .option('-o, --output <filename>', 'Output filename')
+  .option('--ignore-target-sets', 'Ignore target sets')
   .action(async (option) => {
-    handleSdkRes(await sdk.management.authz.resourceRelations(option.resource), option.output);
+    handleSdkRes(
+      await sdk.management.authz.resourceRelations(option.resource, option.ignoreTargetSets),
+      option.output,
+    );
   });
 
 program
@@ -872,8 +1025,12 @@ program
   .description('Load relations for the given target')
   .option('-t, --target <target>', 'The target for the relations')
   .option('-o, --output <filename>', 'Output filename')
+  .option('--include-target-sets', 'Include target sets')
   .action(async (option) => {
-    handleSdkRes(await sdk.management.authz.targetsRelations([option.target]), option.output);
+    handleSdkRes(
+      await sdk.management.authz.targetsRelations([option.target], option.includeTargetSets),
+      option.output,
+    );
   });
 
 program
@@ -883,6 +1040,27 @@ program
   .option('-o, --output <filename>', 'Output filename')
   .action(async (target, option) => {
     handleSdkRes(await sdk.management.authz.whatCanTargetAccess(target), option.output);
+  });
+
+program
+  .command('authz-target-access-with-relation')
+  .description('Display all relations for the given target with the given relation')
+  .option('-t, --target <target>', 'The target to check resource access for, e.g. user:123')
+  .option('-r, --relationDefinition <relationDefinition>', 'A relation on a resource, e.g. owner')
+  .option(
+    '-n, --namespace <namespace>',
+    'The namespace (type) of the resource in which the relation is defined, e.g. folder',
+  )
+  .option('-o, --output <filename>', 'Output filename')
+  .action(async (option) => {
+    handleSdkRes(
+      await sdk.management.authz.whatCanTargetAccessWithRelation(
+        option.target,
+        option.relationDefinition,
+        option.namespace,
+      ),
+      option.output,
+    );
   });
 
 // fga
@@ -1006,6 +1184,34 @@ program
         },
       ]),
     );
+  });
+
+program
+  .command('fga-save-resources-details')
+  .description('Save resource details defined in the given file')
+  .argument('<filename>', 'Resources details JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const details = JSON.parse(content);
+    if (!details) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.saveResourcesDetails(details));
+  });
+
+program
+  .command('fga-load-resources-details')
+  .description('Load resource details for the given identifiers defined in the given file')
+  .argument('<filename>', 'Resource identifiers JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const ids = JSON.parse(content);
+    if (!ids) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.loadResourcesDetails(ids));
   });
 
 program.parse();

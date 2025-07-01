@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "start": "ts-node --esm src/index.ts",
+    "start": "npx tsx src/index.ts",
     "generateCerts": "test -f ./server.key && test -f ./server.crt || openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=US/ST=California/L=San Francisco/O=Descope/CN=localhost' -keyout ./server.key -out ./server.crt"
   },
   "author": "descope",
@@ -31,6 +31,6 @@
     "@types/express": "^4.17.13",
     "dotenv": "^16.4.5",
     "rollup-plugin-delete": "^2.0.0",
-    "ts-node": "^10.8.2"
+    "tsx": "^4.20.3"
   }
 }

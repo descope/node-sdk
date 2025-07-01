@@ -547,6 +547,7 @@ describe('Management User', () => {
         picture: 'pic',
         verifiedEmail: true,
         verifiedPhone: false,
+        scim: true,
         ssoAppIds: ['sso1', 'sso2'],
       });
 
@@ -561,6 +562,7 @@ describe('Management User', () => {
           verifiedEmail: true,
           verifiedPhone: false,
           ssoAppIds: ['sso1', 'sso2'],
+          scim: true,
         },
         { token: 'key' },
       );
@@ -1776,6 +1778,53 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.user.generateEmbeddedLink,
         { loginId: 'some-id', customClaims: { k1: 'v1' } },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('generateSignUpEmbeddedLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        token: 'myToken',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<GenerateEmbeddedLinkResponse> =
+        await management.user.generateSignUpEmbeddedLink(
+          'some-id',
+          { name: 'John Doe' },
+          true,
+          true,
+          { mfa: true },
+          12,
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.generateSignUpEmbeddedLink,
+        {
+          loginId: 'some-id',
+          user: { name: 'John Doe' },
+          emailVerified: true,
+          phoneVerified: true,
+          loginOptions: { mfa: true },
+          timeout: 12,
+        },
         { token: 'key' },
       );
 

@@ -1,6 +1,7 @@
 import WithFGA from './fga';
 import apiPaths from './paths';
 import { mockCoreSdk, mockHttpClient } from './testutils';
+import { FGAResourceIdentifier, FGAResourceDetails } from './types';
 
 const emptySuccessResponse = {
   code: 200,
@@ -93,6 +94,16 @@ describe('Management FGA', () => {
     });
   });
 
+  describe('deleteAllRelations', () => {
+    it('should delete all relations', async () => {
+      const response = await WithFGA(mockCoreSdk).deleteAllRelations();
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.fga.relations, {
+        token: undefined,
+      });
+      expect(response).toEqual(emptySuccessResponse);
+    });
+  });
+
   describe('check', () => {
     it('should check the relations', async () => {
       const relations = [relation1, relation2];
@@ -117,6 +128,63 @@ describe('Management FGA', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+  });
+
+  describe('loadResourcesDetails', () => {
+    it('should load resource details on success', async () => {
+      const ids: FGAResourceIdentifier[] = [{ resourceId: 'r1', resourceType: 'type1' }];
+      const mockDetails: FGAResourceDetails[] = [
+        { resourceId: 'r1', resourceType: 'type1', displayName: 'Name1' },
+      ];
+      const httpResponse = {
+        ok: true,
+        json: () => ({ resourcesDetails: mockDetails }),
+        clone: () => ({ json: () => Promise.resolve({ resourcesDetails: mockDetails }) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      const response = await WithFGA(mockCoreSdk).loadResourcesDetails(ids);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.fga.resourcesLoad,
+        { resourceIdentifiers: ids },
+        { token: undefined },
+      );
+      expect(response).toEqual({
+        code: 200,
+        data: mockDetails,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should throw an error on failure', async () => {
+      const ids: FGAResourceIdentifier[] = [{ resourceId: 'r1', resourceType: 'type1' }];
+      const httpResponse = { ok: false, status: 400 };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      await expect(WithFGA(mockCoreSdk).loadResourcesDetails(ids)).rejects.toThrow();
+    });
+  });
+
+  describe('saveResourcesDetails', () => {
+    it('should save resource details on success', async () => {
+      const details: FGAResourceDetails[] = [
+        { resourceId: 'r1', resourceType: 'type1', displayName: 'Name1' },
+      ];
+      const response = await WithFGA(mockCoreSdk).saveResourcesDetails(details);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.fga.resourcesSave,
+        { resourcesDetails: details },
+        { token: undefined },
+      );
+      expect(response).toEqual(emptySuccessResponse);
+    });
+
+    it('should throw an error on failure', async () => {
+      const details = [{ resourceId: 'r1', resourceType: 'type1', displayName: 'Name1' }];
+      const httpResponse = { ok: false, status: 400 };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      await expect(WithFGA(mockCoreSdk).saveResourcesDetails(details)).rejects.toThrow();
     });
   });
 });

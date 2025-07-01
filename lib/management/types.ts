@@ -131,8 +131,16 @@ export type RoleMappings = RoleMapping[];
 export type AttributeMapping = {
   name?: string;
   email?: string;
+  username?: string;
   phoneNumber?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
   group?: string;
+  customAttributes?: Record<string, string>;
 };
 
 /** UpdateJWT response with a new JWT value with the added custom claims */
@@ -151,6 +159,8 @@ export type Tenant = {
   customAttributes?: Record<string, string | number | boolean | string[]>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
+  enforceSSO?: boolean;
+  disabled?: boolean;
 };
 
 /** Represents settings of a tenant in a project. It has an id, a name and an array of
@@ -250,6 +260,7 @@ export type Role = {
   permissionNames: string[];
   createdTime: number;
   tenantId?: string;
+  default?: boolean;
 };
 
 /** Search roles based on the parameters */
@@ -258,6 +269,7 @@ export type RoleSearchOptions = {
   roleNames?: string[];
   roleNameLike?: string; // Search roles where name contains this - case insensitive
   permissionNames?: string[];
+  includeProjectRoles?: boolean; // Include project roles in the search
 };
 
 /** Represents a group in a project. It has an id and display name and a list of group members. */
@@ -357,6 +369,7 @@ export type User = {
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
+  status?: UserStatus; // the status of the user (enabled, disabled, invited)
 };
 
 // The kind of prehashed password to set for a user (only one should be set)
@@ -409,7 +422,6 @@ export type UserMapping = {
   email: string;
   username: string;
   phoneNumber: string;
-  group: string;
 };
 
 export type RoleItem = {
@@ -449,6 +461,7 @@ export type SSOSAMLSettingsResponse = {
   spCertificate: string;
   attributeMapping: AttributeMapping;
   groupsMapping: RoleMappings;
+  defaultSSORoles: string[];
   redirectUrl: string;
 };
 
@@ -456,20 +469,22 @@ export type SSOSettings = {
   tenant: Tenant;
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
+  ssoId?: string;
 };
 
 export type OIDCAttributeMapping = {
   loginId?: string;
   name?: string;
+  email?: string;
+  username?: string;
+  phoneNumber?: string;
   givenName?: string;
   middleName?: string;
   familyName?: string;
-  email?: string;
-  verifiedEmail?: string;
-  username?: string;
-  phoneNumber?: string;
-  verifiedPhone?: string;
   picture?: string;
+  verifiedEmail?: string;
+  verifiedPhone?: string;
+  customAttributes?: Record<string, string>;
 };
 
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
@@ -498,6 +513,7 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -508,6 +524,7 @@ export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  defaultSSORoles?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -661,6 +678,10 @@ export type AuthzUserQuery = {
   customAttributes?: Record<string, any>;
 };
 
+export type AuthzResource = {
+  resource: string;
+};
+
 /**
  * AuthzRelation defines a relation between resource and target
  */
@@ -791,14 +812,27 @@ export type CheckResponseRelation = {
   tuple: FGARelation;
 };
 
+export interface FGAResourceIdentifier {
+  resourceId: string;
+  resourceType: string;
+}
+
+export interface FGAResourceDetails {
+  resourceId: string;
+  resourceType: string;
+  displayName: string;
+}
+
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
   jwt?: string;
+  refreshDuration?: number;
 };
 
 export type MgmtSignUpOptions = {
   // we can replace this with partial `SignUpOptions` from core-js-sdk once its exported
   customClaims?: Record<string, any>;
+  refreshDuration?: number;
 };
 
 export interface UserOptions {
@@ -823,4 +857,142 @@ export type MgmtUserOptions = Omit<
   'roles' | 'userTenants' | 'customAttributes' | 'picture' | 'additionalLoginIds' | 'displayName'
 > & {
   name?: string;
+};
+
+export type InboundApplicationScope = {
+  name: string;
+  description: string;
+  values?: string[];
+  optional?: boolean;
+};
+
+/**
+ * Represents an inbound application request in a project.
+ * This type is used to create a new inbound application in a project.
+ */
+export type InboundApplicationOptions = {
+  name: string;
+  description?: string;
+  logo?: string;
+  loginPageUrl?: string;
+  approvedCallbackUrls?: string[];
+  permissionsScopes: InboundApplicationScope[];
+  attributesScopes?: InboundApplicationScope[];
+};
+
+/**
+ * Represents an inbound application in a project.
+ */
+export type InboundApplication = InboundApplicationOptions & {
+  id: string;
+  clientId: string;
+};
+
+export type InboundApplicationSecretResponse = {
+  cleartext: string;
+};
+
+export type CreateInboundApplicationResponse = {
+  id: string;
+  clientId: string;
+} & InboundApplicationSecretResponse;
+
+/**
+ * Represents an inbound application consent for a single application
+ * for a specific user within the project.
+ */
+export type InboundApplicationConsent = {
+  id: string;
+  appId: string;
+  userId: string;
+  scopes: string[];
+  grantedBy: string;
+  createdTime: number;
+};
+
+export type InboundApplicationConsentSearchOptions = {
+  appId?: string;
+  userId?: string;
+  consentId?: string;
+  page?: number;
+};
+
+export type InboundApplicationConsentDeleteOptions = {
+  consentIds?: string[];
+  appId?: string;
+  userIds?: string[];
+};
+
+export type PromptType = 'none' | 'login' | 'consent' | 'select_account';
+export type AccessType = 'offline' | 'online';
+
+export type OutboundApplication = {
+  id: string;
+  name: string;
+  description?: string;
+  clientId?: string;
+  logo?: string;
+  discoveryUrl?: string;
+  authorizationUrl?: string;
+  authorizationUrlParams?: URLParam[];
+  tokenUrl?: string;
+  tokenUrlParams?: URLParam[];
+  revocationUrl?: string;
+  defaultScopes?: string[];
+  defaultRedirectUrl?: string;
+  callbackDomain?: string;
+  pkce?: boolean;
+  accessType?: AccessType;
+  prompt?: Array<PromptType>;
+};
+
+// Example for URLParam type (adjust as needed)
+export type URLParam = {
+  key: string;
+  value: string;
+};
+
+export type FetchOutboundAppTokenOptions = {
+  refreshToken?: boolean;
+  forceRefresh?: boolean;
+};
+
+export type OutboundAppToken = {
+  token: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  tokenType?: string;
+  scopes?: string[];
+};
+
+export type FetchOutboundAppUserTokenRequest = {
+  appId: string;
+  userId: string;
+  scopes: string[];
+  options?: FetchOutboundAppTokenOptions;
+  tenantId?: string;
+};
+
+export type OutboundAppTokenResponse = {
+  token: OutboundAppToken;
+};
+
+export type FetchLatestOutboundAppUserTokenRequest = {
+  appId: string;
+  userId: string;
+  tenantId?: string;
+  options?: FetchOutboundAppTokenOptions;
+};
+
+export type FetchOutboundAppTenantTokenRequest = {
+  appId: string;
+  tenantId: string;
+  scopes: string[];
+  options?: FetchOutboundAppTokenOptions;
+};
+
+export type FetchLatestOutboundAppTenantTokenRequest = {
+  appId: string;
+  tenantId: string;
+  options?: FetchOutboundAppTokenOptions;
 };

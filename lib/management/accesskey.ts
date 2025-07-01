@@ -17,7 +17,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param name Access key name
    * @param expireTime When the access key expires. Keep at 0 to make it indefinite.
    * @param roles Optional roles in the project. Does not apply for multi-tenants
-   * @param keyTenants Optional associated tenants for this key and its roles for each.
+   * @param tenants Optional associated tenants for this key and its roles for each.
    * @param userId Optional bind this access key to a specific user.
    * @param customClaims Optional map of claims and their values that will be present in the JWT.
    * @param description Optional free text description
@@ -28,7 +28,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     name: string,
     expireTime: number,
     roles?: string[],
-    keyTenants?: AssociatedTenant[],
+    tenants?: AssociatedTenant[],
     userId?: string,
     customClaims?: Record<string, any>,
     description?: string,
@@ -41,7 +41,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
           name,
           expireTime,
           roleNames: roles,
-          keyTenants,
+          keyTenants: tenants,
           userId,
           customClaims,
           description,
@@ -78,13 +78,33 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param id Access key ID to load
    * @param name The updated access key name
    * @param description Optional updated access key description
+   * @param roles Optional roles in the project. Does not apply for multi-tenants
+   * @param tenants Optional associated tenants for this key and its roles for each.
+   * @param customClaims Optional map of claims and their values that will be present in the JWT.
+   * @param permittedIps Optional list of IP addresses or CIDR ranges that are allowed to use this access key.
    * @returns The updated access key
    */
-  update: (id: string, name: string, description?: string): Promise<SdkResponse<AccessKey>> =>
+  update: (
+    id: string,
+    name: string,
+    description?: string,
+    roles?: string[],
+    tenants?: AssociatedTenant[],
+    customClaims?: Record<string, any>,
+    permittedIps?: string[],
+  ): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
       sdk.httpClient.post(
         apiPaths.accessKey.update,
-        { id, name, description },
+        {
+          id,
+          name,
+          description,
+          roleNames: roles,
+          keyTenants: tenants,
+          customClaims,
+          permittedIps,
+        },
         { token: managementKey },
       ),
       (data) => data.key,

@@ -3,6 +3,8 @@ import { CoreSdk } from '../types';
 import apiPaths from './paths';
 import { MgmtLoginOptions, MgmtSignUpOptions, MgmtUserOptions, UpdateJWTResponse } from './types';
 
+type AnonymousJWTResponse = Omit<JWTResponse, 'user' | 'firstSeen'>;
+
 const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   update: (
     jwt: string,
@@ -22,11 +24,25 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
     validateConsent: boolean,
     customClaims?: Record<string, any>,
     selectedTenant?: string,
+    refreshDuration?: number,
   ): Promise<SdkResponse<UpdateJWTResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.jwt.impersonate,
-        { impersonatorId, loginId, validateConsent, customClaims, selectedTenant },
+        { impersonatorId, loginId, validateConsent, customClaims, selectedTenant, refreshDuration },
+        { token: managementKey },
+      ),
+    ),
+  stopImpersonation: (
+    jwt: string,
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
+    refreshDuration?: number,
+  ): Promise<SdkResponse<UpdateJWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.stopImpersonation,
+        { jwt, customClaims, selectedTenant, refreshDuration },
         { token: managementKey },
       ),
     ),
@@ -59,6 +75,18 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.jwt.signUpOrIn,
         { loginId, user, ...signUpOptions },
+        { token: managementKey },
+      ),
+    ),
+  anonymous: (
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
+    refreshDuration?: number,
+  ): Promise<SdkResponse<AnonymousJWTResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.anonymous,
+        { customClaims, selectedTenant, refreshDuration },
         { token: managementKey },
       ),
     ),

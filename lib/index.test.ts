@@ -7,6 +7,7 @@ import {
   authorizedTenantsClaimName,
   permissionsClaimName,
   rolesClaimName,
+  sessionTokenCookieName,
 } from './constants';
 
 let validToken: string;
@@ -181,7 +182,50 @@ describe('sdk', () => {
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
 
-      await expect(sdk.refreshSession(validToken)).resolves.toHaveProperty('jwt', validToken);
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
+      expect(res.cookies).toStrictEqual([]);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return only cookies when refresh call returns it', async () => {
+      const expectedCookies = [
+        `${sessionTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+        `${refreshTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+      ];
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: '', refreshJwt: null, cookies: expectedCookies },
+      } as unknown as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.cookies).toBe(expectedCookies);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return refrehs in cookie when refresh call returns it', async () => {
+      const expectedCookies = [
+        `${refreshTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+      ];
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: null, cookies: expectedCookies },
+      } as unknown as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.cookies).toBe(expectedCookies);
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should fail when refresh returns an error', async () => {
@@ -235,10 +279,19 @@ describe('sdk', () => {
         ok: true,
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
-      await expect(sdk.validateAndRefreshSession('', validToken)).resolves.toHaveProperty(
-        'jwt',
-        validToken,
-      );
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should refresh session and return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should return the session token when it is valid', async () => {

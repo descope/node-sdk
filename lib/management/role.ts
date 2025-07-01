@@ -13,11 +13,12 @@ const withRole = (sdk: CoreSdk, managementKey?: string) => ({
     description?: string,
     permissionNames?: string[],
     tenantId?: string,
+    defaultRole?: boolean,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.role.create,
-        { name, description, permissionNames, tenantId },
+        { name, description, permissionNames, tenantId, default: defaultRole },
         { token: managementKey },
       ),
     ),
@@ -27,11 +28,12 @@ const withRole = (sdk: CoreSdk, managementKey?: string) => ({
     description?: string,
     permissionNames?: string[],
     tenantId?: string,
+    defaultRole?: boolean,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.role.update,
-        { name, newName, description, permissionNames, tenantId },
+        { name, newName, description, permissionNames, tenantId, default: defaultRole },
         { token: managementKey },
       ),
     ),

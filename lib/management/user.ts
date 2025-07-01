@@ -43,6 +43,7 @@ type SearchRequest = {
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
   loginIds?: string[];
+  userIds?: string[];
   fromCreatedTime?: number; // Search users created after this time (epoch in milliseconds)
   toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
   fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
@@ -410,6 +411,9 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     }
     if (options.ssoAppIds !== undefined) {
       body.ssoAppIds = options.ssoAppIds;
+    }
+    if (options.scim !== undefined) {
+      body.scim = options.scim;
     }
 
     return transformResponse<SingleUserResponse, UserResponse>(
@@ -911,11 +915,36 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     generateEmbeddedLink: (
       loginId: string,
       customClaims?: Record<string, any>,
+      timeout?: number,
     ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
       transformResponse<GenerateEmbeddedLinkResponse>(
         sdk.httpClient.post(
           apiPaths.user.generateEmbeddedLink,
-          { loginId, customClaims },
+          { loginId, customClaims, timeout },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+
+    generateSignUpEmbeddedLink: (
+      loginId: string,
+      user?: {
+        name?: string;
+        givenName?: string;
+        middleName?: string;
+        familyName?: string;
+        phone?: string;
+        email?: string;
+      },
+      emailVerified?: boolean,
+      phoneVerified?: boolean,
+      loginOptions?: LoginOptions,
+      timeout?: number,
+    ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
+      transformResponse<GenerateEmbeddedLinkResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.generateSignUpEmbeddedLink,
+          { loginId, user, emailVerified, phoneVerified, loginOptions, timeout },
           { token: managementKey },
         ),
         (data) => data,
@@ -1034,6 +1063,7 @@ export interface PatchUserOptions {
   middleName?: string;
   familyName?: string;
   ssoAppIds?: string[];
+  scim?: boolean;
 }
 
 export default withUser;

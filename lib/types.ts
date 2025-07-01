@@ -17,6 +17,10 @@ export interface AuthenticationInfo {
   cookies?: string[];
 }
 
+export interface RefreshAuthenticationInfo extends AuthenticationInfo {
+  refreshJwt?: string;
+}
+
 /** Descope core SDK type */
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
