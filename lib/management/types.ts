@@ -156,7 +156,7 @@ export type Tenant = {
   name: string;
   selfProvisioningDomains: string[];
   createdTime: number;
-  customAttributes?: Record<string, string | number | boolean>;
+  customAttributes?: Record<string, string | number | boolean | string[]>;
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
   enforceSSO?: boolean;
@@ -349,7 +349,7 @@ export type GenerateEmbeddedLinkResponse = {
   token: string;
 };
 
-export type AttributesTypes = string | boolean | number;
+export type AttributesTypes = string | boolean | number | string[];
 
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
