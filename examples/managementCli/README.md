@@ -101,6 +101,35 @@ $ npm run start -- tenant-delete <tenant-id>
 # Load all tenants
 $ npm run start -- tenant-all
 
+## Outbound application
+
+# Create outbound application
+$ npm run start -- outbound-application-create <name>
+
+# Update outbound application
+$ npm run start -- outbound-application-update <id> <name>
+
+# Load outbound application
+$ npm run start -- outbound-application-load <id>
+
+# Load all outbound applications
+$ npm run start -- outbound-application-load-all
+
+# Delete outbound application
+$ npm run start -- outbound-application-delete <id>
+
+# Fetch outbound application token
+$ npm run start -- outbound-application-fetch-token <app-id> <user-id>
+
+# Fetch outbound application token by scopes
+$ npm run start -- outbound-application-fetch-token-by-scopes <app-id> <user-id> <scopes>
+
+# Fetch tenant token
+$ npm run start -- outbound-application-fetch-tenant-token <app-id> <tenant-id>
+
+# Fetch tenant token by scopes
+$ npm run start -- outbound-application-fetch-tenant-token-by-scopes <app-id> <tenant-id> <scopes>
+
 ## SSO application
 
 # Create a OIDC sso application

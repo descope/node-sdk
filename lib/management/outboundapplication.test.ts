@@ -34,11 +34,15 @@ const mockAllOutboundApplicationsResponse = {
 };
 
 const mockOutboundAppToken: OutboundAppToken = {
-  token: 'mock-access-token',
+  id: 'mock-token-id',
+  appId: 'mock-app-id',
+  userId: 'mock-user-id',
+  accessToken: 'mock-access-token',
   refreshToken: 'mock-refresh-token',
-  expiresIn: 3600,
-  tokenType: 'Bearer',
+  hasRefreshToken: true,
+  accessTokenExpiry: 3600,
   scopes: ['read', 'write'],
+  grantedBy: 'mock-granted-by',
 };
 
 const mockFetchTokenResponse = {
