@@ -578,6 +578,99 @@ program
     handleSdkRes(await sdk.management.inboundApplication.deleteConsents({ appId }));
   });
 
+// *** Outbound application commands ***
+
+// outbound-application-create
+program
+  .command('outbound-application-create')
+  .description('Create a new outbound application')
+  .argument('<name>', 'Outbound application name')
+  .action(async (name) => {
+    handleSdkRes(await sdk.management.outboundApplication.createApplication({ name }));
+  });
+
+// outbound-application-update
+program
+  .command('outbound-application-update')
+  .description('Update an outbound application')
+  .argument('<id>', 'Outbound application ID')
+  .argument('<name>', 'Outbound application name')
+  .action(async (id, name) => {
+    handleSdkRes(await sdk.management.outboundApplication.updateApplication({ id, name }));
+  });
+
+// outbound-application-load
+program
+  .command('outbound-application-load')
+  .description('Load outbound application by id')
+  .argument('<id>', 'Outbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.outboundApplication.loadApplication(id));
+  });
+
+// outbound-application-load-all
+program
+  .command('outbound-application-load-all')
+  .description('Load all outbound applications')
+  .action(async () => {
+    handleSdkRes(await sdk.management.outboundApplication.loadAllApplications());
+  });
+
+// outbound-application-delete
+program
+  .command('outbound-application-delete')
+  .description('Delete an outbound application')
+  .argument('<id>', 'Outbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.outboundApplication.deleteApplication(id));
+  });
+
+// outbound-application-fetch-token
+program
+  .command('outbound-application-fetch-token')
+  .description('Fetch token for an outbound application')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<user-id>', 'User ID')
+  .action(async (appId, userId) => {
+    handleSdkRes(await sdk.management.outboundApplication.fetchToken(appId, userId));
+  });
+
+// outbound-application-fetch-token-by-scopes
+program
+  .command('outbound-application-fetch-token-by-scopes')
+  .description('Fetch token by scopes for an outbound application')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<user-id>', 'User ID')
+  .argument('<scopes>', 'Scopes to fetch token for', (val) => val?.split(','))
+  .action(async (appId, userId, scopes) => {
+    handleSdkRes(
+      await sdk.management.outboundApplication.fetchTokenByScopes(appId, userId, scopes),
+    );
+  });
+
+// outbound-application-fetch-tenant-token
+program
+  .command('outbound-application-fetch-tenant-token')
+  .description('Fetch token for an outbound application for a tenant')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<tenant-id>', 'Tenant ID')
+  .action(async (appId, tenantId) => {
+    handleSdkRes(await sdk.management.outboundApplication.fetchTenantToken(appId, tenantId));
+  });
+
+// outbound-application-fetch-tenant-token-by-scopes
+program
+  .command('outbound-application-fetch-tenant-token-by-scopes')
+  .description('Fetch token by scopes for an outbound application for a tenant')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<tenant-id>', 'Tenant ID')
+  .argument('<scopes>', 'Scopes to fetch token for', (val) => val?.split(','))
+  .action(async (appId, tenantId, scopes) => {
+    handleSdkRes(
+      await sdk.management.outboundApplication.fetchTenantTokenByScopes(appId, tenantId, scopes),
+    );
+  });
+
 // *** SSO application commands ***
 
 // sso-application-create-oidc

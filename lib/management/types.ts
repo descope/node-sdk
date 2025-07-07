@@ -958,11 +958,16 @@ export type FetchOutboundAppTokenOptions = {
 };
 
 export type OutboundAppToken = {
-  token: string;
+  id: string;
+  appId: string;
+  userId: string;
+  tenantId?: string;
+  accessToken: string;
+  accessTokenExpiry?: number;
   refreshToken?: string;
-  expiresIn?: number;
-  tokenType?: string;
+  hasRefreshToken?: boolean;
   scopes?: string[];
+  grantedBy?: string;
 };
 
 export type FetchOutboundAppUserTokenRequest = {
