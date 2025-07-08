@@ -243,7 +243,7 @@ describe('Management OutboundApplication', () => {
           'app123',
           'user456',
           ['read', 'write'],
-          { refreshToken: true },
+          { withRefreshToken: true, forceRefresh: true },
           'tenant789',
         );
 
@@ -253,7 +253,7 @@ describe('Management OutboundApplication', () => {
           appId: 'app123',
           userId: 'user456',
           scopes: ['read', 'write'],
-          options: { refreshToken: true },
+          options: { withRefreshToken: true, forceRefresh: true },
           tenantId: 'tenant789',
         },
         { token: 'key' },
@@ -393,7 +393,7 @@ describe('Management OutboundApplication', () => {
           'app123',
           'tenant789',
           ['read', 'write'],
-          { refreshToken: true },
+          { withRefreshToken: true, forceRefresh: true },
         );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -402,7 +402,7 @@ describe('Management OutboundApplication', () => {
           appId: 'app123',
           tenantId: 'tenant789',
           scopes: ['read', 'write'],
-          options: { refreshToken: true },
+          options: { withRefreshToken: true, forceRefresh: true },
         },
         { token: 'key' },
       );

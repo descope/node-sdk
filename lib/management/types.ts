@@ -953,7 +953,7 @@ export type URLParam = {
 };
 
 export type FetchOutboundAppTokenOptions = {
-  refreshToken?: boolean;
+  withRefreshToken?: boolean;
   forceRefresh?: boolean;
 };
 
