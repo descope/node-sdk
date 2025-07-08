@@ -1103,7 +1103,7 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
-Generate a JWT for a user, simulating a signin request.
+Generate a JWT for a user, simulating a sign in request.
 
 ```typescript
 const res = await descopeClient.management.jwt.signIn('dummy');
