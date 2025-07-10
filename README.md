@@ -1103,7 +1103,7 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
-Generate a JWT for a user, simulating a signin request.
+Generate a JWT for a user, simulating a sign in request.
 
 ```typescript
 const res = await descopeClient.management.jwt.signIn('dummy');
@@ -1300,7 +1300,7 @@ const userToken = await descopeClient.management.outboundApplication.fetchTokenB
   'my-app-id',
   'user-id',
   ['read', 'write'],
-  { refreshToken: true },
+  { withRefreshToken: false },
   'tenant-id'
 );
 
@@ -1309,7 +1309,7 @@ const latestUserToken = await descopeClient.management.outboundApplication.fetch
   'my-app-id',
   'user-id',
   'tenant-id',
-  { forceRefresh: true }
+  { forceRefresh: false }
 );
 
 // Fetch tenant token with specific scopes
@@ -1317,14 +1317,14 @@ const tenantToken = await descopeClient.management.outboundApplication.fetchTena
   'my-app-id',
   'tenant-id',
   ['read', 'write'],
-  { refreshToken: true }
+  { withRefreshToken: false }
 );
 
 // Fetch latest tenant token
 const latestTenantToken = await descopeClient.management.outboundApplication.fetchTenantToken(
   'my-app-id',
   'tenant-id',
-  { forceRefresh: true }
+  { forceRefresh: false }
 );
 ```
 
