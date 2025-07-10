@@ -60,6 +60,9 @@ $ npm run start -- test-user-create <login-id> --email <my@domain.com> --name=<s
 
 ## Projects	##
 
+# List all projects
+$ npm run start -- list-projects
+
 # Update project name
 $ npm run start -- project-update-name <project-name>
 
