@@ -549,7 +549,7 @@ export type UserFailedResponse = {
   user: UserResponse;
 };
 
-export type InviteBatchResponse = {
+export type CreateOrInviteBatchResponse = {
   createdUsers: UserResponse[];
   failedUsers: UserFailedResponse[];
   additionalErrors: Record<string, string>;

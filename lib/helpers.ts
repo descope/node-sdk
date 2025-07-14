@@ -25,7 +25,6 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
   return match ? match[1] : null;
 };
 
-// eslint-disable-next-line import/prefer-default-export
 /**
  * Add cookie generation to core-js functions.
  * @param fn the function we are wrapping

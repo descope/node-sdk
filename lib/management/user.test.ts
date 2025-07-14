@@ -8,7 +8,7 @@ import {
   GenerateEnchantedLinkForTestResponse,
   ProviderTokenResponse,
   GenerateEmbeddedLinkResponse,
-  InviteBatchResponse,
+  CreateOrInviteBatchResponse,
   UserPasswordHashed,
 } from './types';
 
@@ -385,7 +385,7 @@ describe('Management User', () => {
         },
       };
 
-      const resp: SdkResponse<InviteBatchResponse> = await management.user.inviteBatch(
+      const resp: SdkResponse<CreateOrInviteBatchResponse> = await management.user.inviteBatch(
         [
           { loginId: 'one', roles: ['r1'], email: 'one@one', password: 'clear', seed: 'aaa' },
           { loginId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
@@ -424,6 +424,74 @@ describe('Management User', () => {
           invite: true,
           inviteUrl: 'https://invite.me',
           sendMail: true,
+        },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockMgmtInviteBatchResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('create batch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const hashed: UserPasswordHashed = {
+        firebase: {
+          hash: 'h',
+          salt: 's',
+          saltSeparator: 'ss',
+          signerKey: 'sk',
+          memory: 14,
+          rounds: 8,
+        },
+      };
+
+      const resp: SdkResponse<CreateOrInviteBatchResponse> = await management.user.createBatch([
+        { loginId: 'one', roles: ['r1'], email: 'one@one', password: 'clear', seed: 'aaa' },
+        { loginId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.createBatch,
+        {
+          users: [
+            {
+              loginId: 'one',
+              roleNames: ['r1'],
+              email: 'one@one',
+              password: 'clear',
+              seed: 'aaa',
+            },
+            {
+              loginId: 'two',
+              roleNames: ['r1'],
+              email: 'two@two',
+              hashedPassword: {
+                firebase: {
+                  hash: 'h',
+                  salt: 's',
+                  saltSeparator: 'ss',
+                  signerKey: 'sk',
+                  memory: 14,
+                  rounds: 8,
+                },
+              },
+            },
+          ],
         },
         { token: 'key' },
       );

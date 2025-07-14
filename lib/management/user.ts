@@ -15,13 +15,14 @@ import {
   AttributesTypes,
   UserStatus,
   User,
-  InviteBatchResponse,
+  CreateOrInviteBatchResponse,
   TemplateOptions,
   ProviderTokenOptions,
   UserOptions,
 } from './types';
 import { CoreSdk, DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
+import { transformUsersForBatch } from './helpers';
 
 type SearchSort = {
   field: string;
@@ -443,25 +444,29 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       sendSMS?: boolean, // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions,
       templateId?: string,
-    ): Promise<SdkResponse<InviteBatchResponse>> =>
-      transformResponse<InviteBatchResponse, InviteBatchResponse>(
+    ): Promise<SdkResponse<CreateOrInviteBatchResponse>> =>
+      transformResponse<CreateOrInviteBatchResponse, CreateOrInviteBatchResponse>(
         sdk.httpClient.post(
           apiPaths.user.createBatch,
           {
-            users: users.map((u) => {
-              const res = {
-                ...u,
-                roleNames: u.roles,
-              };
-              delete res.roles;
-              return res;
-            }),
+            users: transformUsersForBatch(users),
             invite: true,
             inviteUrl,
             sendMail,
             sendSMS,
             templateOptions,
             templateId,
+          },
+          { token: managementKey },
+        ),
+        (data) => data,
+      ),
+    createBatch: (users: User[]): Promise<SdkResponse<CreateOrInviteBatchResponse>> =>
+      transformResponse<CreateOrInviteBatchResponse, CreateOrInviteBatchResponse>(
+        sdk.httpClient.post(
+          apiPaths.user.createBatch,
+          {
+            users: transformUsersForBatch(users),
           },
           { token: managementKey },
         ),
