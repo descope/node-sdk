@@ -717,7 +717,7 @@ await descopeClient.management.user.invite('desmond@descope.com', {
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information. You can also set
 // a cleartext password or import a prehashed one from another service.
-// Note: this function will send an invitation to each user in the `users` array. If you want to create users without sending invitations, use `createBatch` instead.
+// Note: This function will send an invitation to each user in the `users` array. If you want to create users without sending invitations, use `createBatch` instead.
 await descopeClient.management.user.inviteBatch(
   [
     {
