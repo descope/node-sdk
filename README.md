@@ -738,9 +738,10 @@ await descopeClient.management.user.inviteBatch(
   false,
 );
 
-// You can also create a batch of users without sending invitations.
+// Create a batch of users.
 // This is useful when you want to create users programmatically without triggering the invitation flow.
 // You can set a cleartext password or import a prehashed one from another service.
+// Note: This function will NOT send an invitation to the created users. If invitations are required use `inviteBatch` instead.
 await descopeClient.management.user.createBatch([
   {
     loginId: 'desmond@descope.com',
