@@ -273,6 +273,14 @@ program
     handleSdkRes(await sdk.management.project.updateName(name));
   });
 
+// list-projects
+program
+  .command('list-projects')
+  .description('List projects')
+  .action(async () => {
+    handleSdkRes(await sdk.management.project.listProjects());
+  });
+
 // project-update-tags
 program
   .command('project-update-tags')
