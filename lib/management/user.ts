@@ -49,8 +49,8 @@ type SearchRequest = {
   toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
   fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
   toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
-  tenantRoleIds?: Record<string, string[]>;
-  tenantRoleNames?: Record<string, string[]>;
+  tenantRoleIds?: Record<string, string[]>; // Search users based on tenants and role IDs
+  tenantRoleNames?: Record<string, string[]>; // Search users based on tenants and role names
 };
 
 type SingleUserResponse = {
