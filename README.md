@@ -717,6 +717,7 @@ await descopeClient.management.user.invite('desmond@descope.com', {
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information. You can also set
 // a cleartext password or import a prehashed one from another service.
+// Note: This function will send an invitation to each user in the `users` array. If you want to create users without sending invitations, use `createBatch` instead.
 await descopeClient.management.user.inviteBatch(
   [
     {
@@ -736,6 +737,25 @@ await descopeClient.management.user.inviteBatch(
   true,
   false,
 );
+
+// Create a batch of users.
+// This is useful when you want to create users programmatically without triggering the invitation flow.
+// You can set a cleartext password or import a prehashed one from another service.
+// Note: This function will NOT send an invitation to the created users. If invitations are required use `inviteBatch` instead.
+await descopeClient.management.user.createBatch([
+  {
+    loginId: 'desmond@descope.com',
+    email: 'desmond@descope.com',
+    phone: '+123456789123',
+    displayName: 'Desmond Copeland',
+    userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+    hashedPassword: {
+      bcrypt: {
+        hash: '$2a$...',
+      },
+    },
+  },
+]);
 
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.user.update('desmond@descope.com', {
