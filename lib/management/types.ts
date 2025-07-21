@@ -1001,3 +1001,8 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
   tenantId: string;
   options?: FetchOutboundAppTokenOptions;
 };
+
+export type ManagementFlowOptions = {
+  input?: Record<string, any>;
+  preview?: boolean;
+};

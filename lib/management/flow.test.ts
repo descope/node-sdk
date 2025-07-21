@@ -173,6 +173,65 @@ describe('Management flow', () => {
       });
     });
   });
+
+  describe('run', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const resp: SdkResponse<FlowResponse> = await management.flow.run(id);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.flow.run,
+        { flowId: id, options: undefined },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockFlowResponse,
+      });
+    });
+
+    it('should send the correct request with options and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const options = { input: { userId: '123' }, preview: true };
+      const resp: SdkResponse<FlowResponse> = await management.flow.run(id, options);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.flow.run,
+        { flowId: id, options },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockFlowResponse,
+      });
+    });
+  });
 });
 
 describe('Management theme', () => {
