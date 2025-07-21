@@ -1103,17 +1103,18 @@ updatedRes.data.screens.forEach((screen) => {
   // do something
 });
 
-// Run a flow by id
+// Run a management Flow
+// Note: Flow must be a management flow, not an interactive flow
 const runRes = await descopeClient.management.flow.run('management-flow-id');
-console.log('flow run result', runRes.data);
+console.log('flow result', runRes.data);
 
-// Run a flow with input data and options
+// Run a management Flow with input
 const runWithInputRes = await descopeClient.management.flow.run('management-flow-id', {
   input: {
     key1: 'value1',
   },
 });
-console.log('flow run with input result', runWithInputRes.data);
+console.log('flow with input result', runWithInputRes.data);
 
 // Export the current theme of the project
 const res = descopeClient.management.theme.export();
