@@ -43,6 +43,10 @@ const mockFlowResponse: FlowResponse = {
   screens: [mockScreen],
 };
 
+const mockRunFlowResponse = {
+  output: { result: 'success' },
+};
+
 const mockTheme: Theme = {
   id: 'mockTheme',
   cssTemplate: {},
@@ -178,16 +182,16 @@ describe('Management flow', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
-        json: () => mockFlowResponse,
+        json: () => mockRunFlowResponse,
         clone: () => ({
-          json: () => Promise.resolve(mockFlowResponse),
+          json: () => Promise.resolve(mockRunFlowResponse),
         }),
         status: 200,
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const id = 'flow-id';
-      const resp: SdkResponse<FlowResponse> = await management.flow.run(id);
+      const resp = await management.flow.run(id);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.flow.run,
@@ -199,16 +203,16 @@ describe('Management flow', () => {
         code: 200,
         ok: true,
         response: httpResponse,
-        data: mockFlowResponse,
+        data: mockRunFlowResponse.output,
       });
     });
 
     it('should send the correct request with options and receive correct response', async () => {
       const httpResponse = {
         ok: true,
-        json: () => mockFlowResponse,
+        json: () => mockRunFlowResponse,
         clone: () => ({
-          json: () => Promise.resolve(mockFlowResponse),
+          json: () => Promise.resolve(mockRunFlowResponse),
         }),
         status: 200,
       };
@@ -216,7 +220,7 @@ describe('Management flow', () => {
 
       const id = 'flow-id';
       const options = { input: { userId: '123' }, preview: true };
-      const resp: SdkResponse<FlowResponse> = await management.flow.run(id, options);
+      const resp = await management.flow.run(id, options);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.flow.run,
@@ -228,7 +232,7 @@ describe('Management flow', () => {
         code: 200,
         ok: true,
         response: httpResponse,
-        data: mockFlowResponse,
+        data: mockRunFlowResponse.output,
       });
     });
   });

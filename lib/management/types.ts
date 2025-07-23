@@ -320,6 +320,10 @@ export type FlowResponse = {
   screens: Screen[];
 };
 
+export type RunManagementFlowResponse = {
+  output: Record<string, any>;
+};
+
 export type Theme = {
   id: string;
   cssTemplate?: any;
