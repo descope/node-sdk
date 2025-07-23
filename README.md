@@ -1116,7 +1116,6 @@ const runWithInputRes = await descopeClient.management.flow.run('management-flow
   },
 });
 console.log('flow with input result', runWithInputRes.data); // The result data will contain the flow's output, which is configured in the 'End' step of the flow
-```
 
 // Export the current theme of the project
 const res = descopeClient.management.theme.export();
@@ -1125,7 +1124,6 @@ console.log(res.data.theme);
 // Import the given theme to the project
 const updatedRes = descopeClient.management.theme.import(theme);
 console.log(updatedRes.data.theme);
-
 ```
 
 ### Manage JWTs
