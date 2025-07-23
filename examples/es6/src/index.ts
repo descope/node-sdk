@@ -22,7 +22,7 @@ const options = {
 const clientAuth = {
   auth: DescopeClient({
     projectId: process.env.DESCOPE_PROJECT_ID || '',
-    baseUrl: process.env.DESCOPE_API_BASE_URL,
+    baseUrl: process.env.DESCOPE_BASE_URL,
     logger: console,
   }),
 };

@@ -1,7 +1,14 @@
 import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { FlowResponse, FlowsResponse, Screen, Flow } from './types';
+import {
+  FlowResponse,
+  FlowsResponse,
+  Screen,
+  Flow,
+  ManagementFlowOptions,
+  RunManagementFlowResponse,
+} from './types';
 
 const WithFlow = (sdk: CoreSdk, managementKey?: string) => ({
   list: (): Promise<SdkResponse<FlowsResponse>> =>
@@ -21,6 +28,14 @@ const WithFlow = (sdk: CoreSdk, managementKey?: string) => ({
         { flowId, flow, screens },
         { token: managementKey },
       ),
+    ),
+  run: (
+    flowId: string,
+    options?: ManagementFlowOptions,
+  ): Promise<SdkResponse<RunManagementFlowResponse['output']>> =>
+    transformResponse(
+      sdk.httpClient.post(apiPaths.flow.run, { flowId, options }, { token: managementKey }),
+      (data) => (data as RunManagementFlowResponse)?.output,
     ),
 });
 

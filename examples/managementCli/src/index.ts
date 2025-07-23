@@ -24,7 +24,7 @@ function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
 
 const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
 const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
-const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
+const DESCOPE_BASE_URL = (process.env.DESCOPE_BASE_URL as string) || undefined;
 
 if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
   console.error('Missing DESCOPE_PROJECT_ID or DESCOPE_MANAGEMENT_KEY environment variables');
@@ -33,7 +33,7 @@ if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
 
 const sdk = DescopeClient({
   projectId: DESCOPE_PROJECT_ID,
-  baseUrl: DESCOPE_API_BASE_URL,
+  baseUrl: DESCOPE_BASE_URL,
   managementKey: DESCOPE_MANAGEMENT_KEY,
   logger: console,
 });
@@ -949,6 +949,34 @@ program
       return;
     }
     handleSdkRes(await sdk.management.flow.import(flowId, flow, screens));
+  });
+
+// flow-run
+program
+  .command('flow-run')
+  .description('Run a flow')
+  .argument('<flow-id>', 'Flow ID')
+  .option('-i, --input <input>', 'Input object as JSON string')
+  .action(async (flowId, options) => {
+    let input = {};
+
+    if (options.input) {
+      try {
+        input = JSON.parse(options.input);
+      } catch (error) {
+        console.error(
+          'Invalid JSON input:',
+          error instanceof Error ? error.message : String(error),
+        );
+        return;
+      }
+    }
+
+    handleSdkRes(
+      await sdk.management.flow.run(flowId, {
+        input,
+      }),
+    );
   });
 
 // *** Theme commands ***
