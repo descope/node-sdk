@@ -1126,7 +1126,7 @@ console.log(res.data.theme);
 const updatedRes = descopeClient.management.theme.import(theme);
 console.log(updatedRes.data.theme);
 
-````
+```
 
 ### Manage JWTs
 
@@ -1137,7 +1137,7 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
   customKey1: 'custom-value1',
   customKey2: 'custom-value2',
 });
-````
+```
 
 Generate a JWT for a user, simulating a sign in request.
 
