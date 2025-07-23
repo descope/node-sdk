@@ -43,6 +43,10 @@ const mockFlowResponse: FlowResponse = {
   screens: [mockScreen],
 };
 
+const mockRunFlowResponse = {
+  output: { result: 'success' },
+};
+
 const mockTheme: Theme = {
   id: 'mockTheme',
   cssTemplate: {},
@@ -170,6 +174,65 @@ describe('Management flow', () => {
         ok: true,
         response: httpResponse,
         data: mockFlowResponse,
+      });
+    });
+  });
+
+  describe('run', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRunFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRunFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const resp = await management.flow.run(id);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.flow.run,
+        { flowId: id, options: undefined },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockRunFlowResponse.output,
+      });
+    });
+
+    it('should send the correct request with options and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRunFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRunFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const options = { input: { userId: '123' }, preview: true };
+      const resp = await management.flow.run(id, options);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.flow.run,
+        { flowId: id, options },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockRunFlowResponse.output,
       });
     });
   });

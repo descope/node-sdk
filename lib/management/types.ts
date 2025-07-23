@@ -320,6 +320,10 @@ export type FlowResponse = {
   screens: Screen[];
 };
 
+export type RunManagementFlowResponse = {
+  output: Record<string, any>;
+};
+
 export type Theme = {
   id: string;
   cssTemplate?: any;
@@ -1000,4 +1004,9 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
   appId: string;
   tenantId: string;
   options?: FetchOutboundAppTokenOptions;
+};
+
+export type ManagementFlowOptions = {
+  input?: Record<string, any>;
+  preview?: boolean;
 };

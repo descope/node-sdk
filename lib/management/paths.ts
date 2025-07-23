@@ -148,6 +148,7 @@ export default {
     delete: '/v1/mgmt/flow/delete',
     export: '/v1/mgmt/flow/export',
     import: '/v1/mgmt/flow/import',
+    run: '/v1/mgmt/flow/run',
   },
   theme: {
     export: '/v1/mgmt/theme/export',
