@@ -262,6 +262,20 @@ program
     );
   });
 
+// batch-user-create
+program
+  .command('batch-user-create')
+  .description('Create multiple users from a JSON file')
+  .argument('<file>', 'Path to the JSON file containing user data')
+  .action(async (file) => {
+    try {
+      const users = JSON.parse(readFileSync(file, 'utf-8'));
+      handleSdkRes(await sdk.management.user.createBatch(users));
+    } catch (error) {
+      console.error('Error reading or parsing file:', error);
+    }
+  });
+
 // *** Project commands ***
 
 // project-update-name
