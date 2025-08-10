@@ -46,6 +46,18 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
       'x-descope-sdk-node-version': process?.versions?.node || '',
       'x-descope-sdk-version': BUILD_VERSION,
     },
+    hooks: {
+      ...config.hooks,
+      beforeRequest: [
+        (requestConfig) => {
+          if (managementKey) {
+            // eslint-disable-next-line no-param-reassign
+            requestConfig.token = managementKey;
+          }
+          return requestConfig;
+        },
+      ].concat(config.hooks?.beforeRequest || []),
+    },
   });
 
   const { projectId, logger } = config;
