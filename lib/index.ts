@@ -51,9 +51,11 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
       ...config.hooks,
       beforeRequest: [
         (requestConfig) => {
-          if (!requestConfig.token && authManagementKey) {
+          if (authManagementKey) {
             // eslint-disable-next-line no-param-reassign
-            requestConfig.token = authManagementKey;
+            requestConfig.token = !requestConfig.token
+              ? authManagementKey
+              : `${requestConfig.token}:${authManagementKey}`;
           }
 
           return requestConfig;

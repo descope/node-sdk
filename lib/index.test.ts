@@ -538,6 +538,117 @@ describe('sdk', () => {
         }),
       );
     });
+
+    it('should add auth management key to request when there is no token', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+      });
+
+      expect(createCoreJs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hooks: expect.objectContaining({
+            beforeRequest: expect.any(Array),
+          }),
+        }),
+      );
+
+      // Get the hooks that were passed
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Test the first hook (our auth management key hook)
+      const requestConfig = { url: 'test' };
+      const result = beforeRequestHooks[0](requestConfig);
+
+      expect(result.token).toBe('auth-management-key-123');
+    });
+    it('should add auth management key to request when there is token', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+      });
+
+      // Get the hooks that were passed
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Test the first hook with existing token
+      const requestConfig = { url: 'test', token: 'existing-token' };
+      const result = beforeRequestHooks[0](requestConfig);
+
+      expect(result.token).toBe('existing-token:auth-management-key-123');
+    });
+    it('should merge before request hooks if they are defined', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+      const existingHook = jest.fn((config) => ({ ...config, customField: 'test' }));
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+        hooks: {
+          beforeRequest: [existingHook],
+        },
+      });
+
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Should have 2 hooks: our auth management hook + the existing hook
+      expect(beforeRequestHooks).toHaveLength(2);
+
+      // Test that both hooks are executed
+      const requestConfig = { url: 'test' };
+      const afterFirstHook = beforeRequestHooks[0](requestConfig);
+      const afterSecondHook = beforeRequestHooks[1](afterFirstHook);
+
+      expect(afterFirstHook.token).toBe('auth-management-key-123');
+      expect(afterSecondHook.customField).toBe('test');
+      expect(existingHook).toHaveBeenCalledWith(afterFirstHook);
+    });
   });
 
   describe('public key', () => {
