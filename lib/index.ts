@@ -34,9 +34,11 @@ type JWTResponseWithCookies = CoreJWTResponse & {
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
   authManagementKey?: string;
+  authManagementKey?: string;
   publicKey?: string;
 };
 
+const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
 const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
   const coreSdk = createSdk({
     fetch,
