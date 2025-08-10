@@ -33,10 +33,11 @@ type JWTResponseWithCookies = CoreJWTResponse & {
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
+  authManagementKey?: string;
   publicKey?: string;
 };
 
-const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
+const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
   const coreSdk = createSdk({
     fetch,
     ...config,
@@ -50,10 +51,11 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
       ...config.hooks,
       beforeRequest: [
         (requestConfig) => {
-          if (managementKey) {
+          if (!requestConfig.token && authManagementKey) {
             // eslint-disable-next-line no-param-reassign
-            requestConfig.token = managementKey;
+            requestConfig.token = authManagementKey;
           }
+
           return requestConfig;
         },
       ].concat(config.hooks?.beforeRequest || []),
