@@ -81,6 +81,54 @@ If you wish to run any of our code samples and play with them, check out our [Co
 
 If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` you created under the setup of [Management Functions](#management-functions).
 
+## Authentication Management Key
+
+The `authManagementKey` is an alternative to the `managementKey` that provides a way to perform management operations while maintaining separation between authentication and management clients.
+
+### Key Differences
+
+- **Purpose**: Use `authManagementKey` for authentication-related management operations, while `managementKey` is for general management operations
+- **Client Separation**: You can have one client for management operations and another for authentication operations
+- **Mutual Exclusivity**: You cannot pass both `authManagementKey` and `managementKey` together - choose one based on your use case
+
+### Usage Examples
+
+**Using authManagementKey for authentication operations:**
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const authClient = DescopeClient({
+  projectId: 'my-project-ID',
+  authManagementKey: 'auth-management-key',
+});
+
+// This client can be used for authentication-related management operations
+```
+
+**Separate clients for different operations:**
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+// Client for general management operations
+const managementClient = DescopeClient({
+  projectId: 'my-project-ID',
+  managementKey: 'management-key',
+});
+
+// Client for authentication operations
+const authClient = DescopeClient({
+  projectId: 'my-project-ID',
+  authManagementKey: 'auth-management-key',
+});
+
+// Use managementClient for user management, tenant management, etc.
+// Use authClient for authentication-related operations
+```
+
+**Note**: Create your authentication management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys), similar to how you create a regular management key.
+
 ---
 
 ## Error Handling
