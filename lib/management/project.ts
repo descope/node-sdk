@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import {
   CloneProjectResponse,
@@ -15,20 +14,16 @@ type ListProjectsResponse = {
   projects: Project[];
 };
 
-const withProject = (sdk: CoreSdk, managementKey?: string) => ({
+const withProject = (httpClient: HttpClient) => ({
   /**
    * Update the current project name.
    * @param name The new name of the project
    */
   updateName: (name: string): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.project.updateName,
-        {
-          name,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.project.updateName, {
+        name,
+      }),
     ),
 
   /**
@@ -37,13 +32,9 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    */
   updateTags: (tags: string[]): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.project.updateTags,
-        {
-          tags,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.project.updateTags, {
+        tags,
+      }),
     ),
   /**
    * Clone the current project, including its settings and configurations.
@@ -60,15 +51,11 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
     tags?: string[],
   ): Promise<SdkResponse<CloneProjectResponse>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.project.clone,
-        {
-          name,
-          environment,
-          tags,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.project.clone, {
+        name,
+        environment,
+        tags,
+      }),
     ),
 
   /**
@@ -77,13 +64,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    */
   listProjects: async (): Promise<SdkResponse<Project[]>> =>
     transformResponse<ListProjectsResponse, Project[]>(
-      sdk.httpClient.post(
-        apiPaths.project.projectsList,
-        {},
-        {
-          token: managementKey,
-        },
-      ),
+      httpClient.post(apiPaths.project.projectsList, {}),
       (data) =>
         data.projects.map(({ id, name, environment, tags }) => ({
           id,
@@ -111,9 +92,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns An `ExportSnapshotResponse` object containing the exported JSON files.
    */
   exportSnapshot: (): Promise<SdkResponse<ExportSnapshotResponse>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.project.exportSnapshot, {}, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.project.exportSnapshot, {})),
 
   /**
    * Imports a snapshot of all settings and configurations into a project, overriding any
@@ -137,9 +116,7 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
    * found at https://github.com/descope/descopecli
    */
   importSnapshot: (request: ImportSnapshotRequest): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.project.importSnapshot, request, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.project.importSnapshot, request)),
 
   /**
    * Validates a snapshot by performing an import dry run and reporting any validation
@@ -163,31 +140,22 @@ const withProject = (sdk: CoreSdk, managementKey?: string) => ({
   validateSnapshot: (
     request: ValidateSnapshotRequest,
   ): Promise<SdkResponse<ValidateSnapshotResponse>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.project.validateSnapshot, request, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.project.validateSnapshot, request)),
 
   /**
    * @deprecated Use exportSnapshot instead
    */
   export: (): Promise<SdkResponse<Record<string, any>>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.project.exportSnapshot, {}, { token: managementKey }),
-      (data) => data.files,
-    ),
+    transformResponse(httpClient.post(apiPaths.project.exportSnapshot, {}), (data) => data.files),
 
   /**
    * @deprecated Use importSnapshot instead
    */
   import: (files: Record<string, any>): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.project.importSnapshot,
-        {
-          files,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.project.importSnapshot, {
+        files,
+      }),
     ),
 });
 

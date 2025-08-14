@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { CreatedAccessKeyResponse, AccessKey } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockAccessKeyResponse = {
   id: 'ak1',
@@ -23,7 +23,7 @@ const mockMgmtAccessKeysResponse = {
 describe('Management Access Keys', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -53,20 +53,16 @@ describe('Management Access Keys', () => {
         ['10.0.0.1', '192.168.1.0/24'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.create,
-        {
-          name: 'foo',
-          expireTime: 123456789,
-          roleNames: ['r1', 'r2'],
-          keyTenants: null,
-          userId: 'uid',
-          customClaims: { k1: 'v1' },
-          description: 'hey',
-          permittedIps: ['10.0.0.1', '192.168.1.0/24'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.create, {
+        name: 'foo',
+        expireTime: 123456789,
+        roleNames: ['r1', 'r2'],
+        keyTenants: null,
+        userId: 'uid',
+        customClaims: { k1: 'v1' },
+        description: 'hey',
+        permittedIps: ['10.0.0.1', '192.168.1.0/24'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -93,7 +89,6 @@ describe('Management Access Keys', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.accessKey.load, {
         queryParams: { id: 'id' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -119,11 +114,9 @@ describe('Management Access Keys', () => {
 
       const resp: SdkResponse<AccessKey[]> = await management.accessKey.searchAll(['t1']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.search,
-        { tenantIds: ['t1'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.search, {
+        tenantIds: ['t1'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -156,19 +149,15 @@ describe('Management Access Keys', () => {
         ['1.2.3.4'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.update,
-        {
-          id: 'id',
-          name: 'name',
-          description: 'description',
-          roleNames: ['r1', 'r2'],
-          keyTenants: undefined,
-          customClaims: { k1: 'v1' },
-          permittedIps: ['1.2.3.4'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.update, {
+        id: 'id',
+        name: 'name',
+        description: 'description',
+        roleNames: ['r1', 'r2'],
+        keyTenants: undefined,
+        customClaims: { k1: 'v1' },
+        permittedIps: ['1.2.3.4'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -193,11 +182,7 @@ describe('Management Access Keys', () => {
 
       const resp: SdkResponse<AccessKey> = await management.accessKey.deactivate('id');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.deactivate,
-        { id: 'id' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.deactivate, { id: 'id' });
 
       expect(resp).toEqual({
         code: 200,
@@ -222,11 +207,7 @@ describe('Management Access Keys', () => {
 
       const resp: SdkResponse<AccessKey> = await management.accessKey.activate('id');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.activate,
-        { id: 'id' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.activate, { id: 'id' });
 
       expect(resp).toEqual({
         code: 200,
@@ -251,11 +232,7 @@ describe('Management Access Keys', () => {
 
       const resp: SdkResponse<AccessKey> = await management.accessKey.delete('id');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.accessKey.delete,
-        { id: 'id' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.delete, { id: 'id' });
 
       expect(resp).toEqual({
         code: 200,

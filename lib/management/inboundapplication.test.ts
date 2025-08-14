@@ -7,9 +7,9 @@ import {
   InboundApplicationConsent,
   InboundApplicationSecretResponse,
 } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockInboundApplicationCreateResponse = {
   id: 'foo',
@@ -70,7 +70,7 @@ const mockInboundApplicationConsentsResponse = {
 describe('Management InboundApplication', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('createInboundApplication', () => {
@@ -98,21 +98,17 @@ describe('Management InboundApplication', () => {
           description: 'test',
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplication.create,
-        {
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          permissionsScopes: [
-            {
-              name: 'scope1',
-              description: 'scope1 description',
-            },
-          ],
-          description: 'test',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.create, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        permissionsScopes: [
+          {
+            name: 'scope1',
+            description: 'scope1 description',
+          },
+        ],
+        description: 'test',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -145,19 +141,15 @@ describe('Management InboundApplication', () => {
         loginPageUrl: 'http://dummy.com',
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplication.update,
-        {
-          id: 'app1',
-          name: 'name',
-          permissionsScopes: [],
-          logo: 'logo',
-          description: 'desc',
-          approvedCallbackUrls: ['test.com'],
-          loginPageUrl: 'http://dummy.com',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.update, {
+        id: 'app1',
+        name: 'name',
+        permissionsScopes: [],
+        logo: 'logo',
+        description: 'desc',
+        approvedCallbackUrls: ['test.com'],
+        loginPageUrl: 'http://dummy.com',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -188,17 +180,13 @@ describe('Management InboundApplication', () => {
         permissionsScopes: [],
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplication.patch,
-        {
-          id: 'app1',
-          permissionsScopes: [],
-          logo: 'logo',
-          description: 'desc',
-          loginPageUrl: 'http://dummy.com',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.patch, {
+        id: 'app1',
+        permissionsScopes: [],
+        logo: 'logo',
+        description: 'desc',
+        loginPageUrl: 'http://dummy.com',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -223,11 +211,9 @@ describe('Management InboundApplication', () => {
 
       const resp = await management.inboundApplication.deleteApplication('app1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplication.delete,
-        { id: 'app1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.delete, {
+        id: 'app1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -255,7 +241,6 @@ describe('Management InboundApplication', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.inboundApplication.load, {
         queryParams: { id: mockInboundApplications[0].id },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -286,7 +271,6 @@ describe('Management InboundApplication', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.inboundApplication.secret, {
         queryParams: { id: mockInboundApplications[0].id },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -314,11 +298,9 @@ describe('Management InboundApplication', () => {
 
       const resp = await management.inboundApplication.rotateApplicationSecret('app1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplication.rotate,
-        { id: 'app1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.rotate, {
+        id: 'app1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -344,9 +326,7 @@ describe('Management InboundApplication', () => {
       const resp: SdkResponse<InboundApplication[]> =
         await management.inboundApplication.loadAllApplications();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.inboundApplication.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.inboundApplication.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -377,18 +357,12 @@ describe('Management InboundApplication', () => {
           page: 1,
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplicationConsents.search,
-        {
-          appId: 'app1',
-          userId: 'user1',
-          consentId: 'consent1',
-          page: 1,
-        },
-        {
-          token: 'key',
-        },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplicationConsents.search, {
+        appId: 'app1',
+        userId: 'user1',
+        consentId: 'consent1',
+        page: 1,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -418,17 +392,11 @@ describe('Management InboundApplication', () => {
           consentIds: ['consent1'],
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.inboundApplicationConsents.delete,
-        {
-          appId: 'app1',
-          userIds: ['user1'],
-          consentIds: ['consent1'],
-        },
-        {
-          token: 'key',
-        },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplicationConsents.delete, {
+        appId: 'app1',
+        userIds: ['user1'],
+        consentIds: ['consent1'],
+      });
 
       expect(resp).toEqual({
         code: 200,

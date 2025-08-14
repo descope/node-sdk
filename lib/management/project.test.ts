@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import {
   ExportSnapshotResponse,
   ImportSnapshotRequest,
@@ -10,7 +10,7 @@ import {
   ValidateSnapshotResponse,
 } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockMgmtListProjectsResponse = {
   projects: [
@@ -36,7 +36,7 @@ const mockListProjectsResponse: Project[] = [
 describe('Management Project', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('updateName', () => {
@@ -54,11 +54,7 @@ describe('Management Project', () => {
       const name = 'new project name';
       const resp = await management.project.updateName(name);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.updateName,
-        { name },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.updateName, { name });
 
       expect(resp).toEqual({
         code: 200,
@@ -84,11 +80,7 @@ describe('Management Project', () => {
       const tags = ['tag1!', 'tag2'];
       const resp = await management.project.updateTags(tags);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.updateTags,
-        { tags },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.updateTags, { tags });
 
       expect(resp).toEqual({
         code: 200,
@@ -113,13 +105,7 @@ describe('Management Project', () => {
 
       const resp: SdkResponse<Project[]> = await management.project.listProjects();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.projectsList,
-        {},
-        {
-          token: 'key',
-        },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.projectsList, {});
       expect(resp).toEqual({
         code: 200,
         data: mockListProjectsResponse,
@@ -150,11 +136,11 @@ describe('Management Project', () => {
       const environment = 'production';
       const tags = ['tag1', 'tag2@'];
       const resp = await management.project.clone('name1', environment, tags);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.clone,
-        { name, environment, tags },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.clone, {
+        name,
+        environment,
+        tags,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -187,11 +173,7 @@ describe('Management Project', () => {
 
       const resp = await management.project.exportSnapshot();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.exportSnapshot,
-        {},
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.exportSnapshot, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -229,7 +211,6 @@ describe('Management Project', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.project.importSnapshot,
         importSnapshotRequest,
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -274,7 +255,6 @@ describe('Management Project', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.project.validateSnapshot,
         validateSnapshotRequest,
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -308,11 +288,7 @@ describe('Management Project', () => {
 
       const resp = await management.project.export();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.exportSnapshot,
-        {},
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.exportSnapshot, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -339,17 +315,13 @@ describe('Management Project', () => {
 
       const resp = await management.project.import({ 'foo/bar.json': { foo: 'bar' } });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.project.importSnapshot,
-        {
-          files: {
-            'foo/bar.json': {
-              foo: 'bar',
-            },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.project.importSnapshot, {
+        files: {
+          'foo/bar.json': {
+            foo: 'bar',
           },
         },
-        { token: 'key' },
-      );
+      });
 
       expect(resp).toEqual({
         code: 200,
