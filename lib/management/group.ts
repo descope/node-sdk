@@ -1,18 +1,15 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import { Group } from './types';
 
-const withGroup = (sdk: CoreSdk, managementKey?: string) => ({
+const withGroup = (httpClient: HttpClient) => ({
   /**
    * Load all groups for a specific tenant id.
    * @param tenantId Tenant ID to load groups from.
    * @returns Group[] list of groups
    */
   loadAllGroups: (tenantId: string): Promise<SdkResponse<Group[]>> =>
-    transformResponse<Group[]>(
-      sdk.httpClient.post(apiPaths.group.loadAllGroups, { tenantId }, { token: managementKey }),
-    ),
+    transformResponse<Group[]>(httpClient.post(apiPaths.group.loadAllGroups, { tenantId })),
 
   /**
    * Load all groups for the provided user IDs or login IDs.
@@ -27,11 +24,7 @@ const withGroup = (sdk: CoreSdk, managementKey?: string) => ({
     loginIds: string[],
   ): Promise<SdkResponse<Group[]>> =>
     transformResponse<Group[]>(
-      sdk.httpClient.post(
-        apiPaths.group.loadAllGroupsForMember,
-        { tenantId, loginIds, userIds },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.group.loadAllGroupsForMember, { tenantId, loginIds, userIds }),
     ),
 
   /**
@@ -42,11 +35,7 @@ const withGroup = (sdk: CoreSdk, managementKey?: string) => ({
    */
   loadAllGroupMembers: (tenantId: string, groupId: string): Promise<SdkResponse<Group[]>> =>
     transformResponse<Group[]>(
-      sdk.httpClient.post(
-        apiPaths.group.loadAllGroupMembers,
-        { tenantId, groupId },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.group.loadAllGroupMembers, { tenantId, groupId }),
     ),
 });
 

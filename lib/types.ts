@@ -24,5 +24,4 @@ export interface RefreshAuthenticationInfo extends AuthenticationInfo {
 /** Descope core SDK type */
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
-export type CoreSdk = ReturnType<CreateCoreSdk>;
 export type DeliveryMethodForTestUser = DeliveryMethod | 'Embedded';

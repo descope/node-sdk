@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { Permission } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockPermissions = [
   { name: 'name', description: 'description', systemDefault: true },
@@ -19,7 +19,7 @@ const mockAllPermissionsResponse = {
 describe('Management Permission', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -35,11 +35,10 @@ describe('Management Permission', () => {
 
       const resp = await management.permission.create('name', 'description');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.permission.create,
-        { name: 'name', description: 'description' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.permission.create, {
+        name: 'name',
+        description: 'description',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -62,11 +61,11 @@ describe('Management Permission', () => {
 
       const resp = await management.permission.update('name', 'newName', 'description');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.permission.update,
-        { name: 'name', newName: 'newName', description: 'description' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.permission.update, {
+        name: 'name',
+        newName: 'newName',
+        description: 'description',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -89,11 +88,9 @@ describe('Management Permission', () => {
 
       const resp = await management.permission.delete('name');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.permission.delete,
-        { name: 'name' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.permission.delete, {
+        name: 'name',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -117,9 +114,7 @@ describe('Management Permission', () => {
 
       const resp: SdkResponse<Permission[]> = await management.permission.loadAll();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.permission.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.permission.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,

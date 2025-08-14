@@ -3,7 +3,6 @@ import DescopeClient, { SdkResponse } from '@descope/node-sdk';
 import { config } from 'dotenv';
 import { writeFileSync, readFileSync } from 'fs';
 import { Command } from 'commander';
-import { UserResponse } from '@descope/core-js-sdk';
 
 config();
 

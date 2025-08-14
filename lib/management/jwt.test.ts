@@ -2,9 +2,9 @@ import { JWTResponse, SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { UpdateJWTResponse } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockJWTResponse = {
   jwt: 'foo',
@@ -13,7 +13,7 @@ const mockJWTResponse = {
 describe('Management JWT', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('update', () => {
@@ -36,11 +36,11 @@ describe('Management JWT', () => {
         4,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.update,
-        { jwt: 'jwt', customClaims: { foo: 'bar' }, refreshDuration: 4 },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.update, {
+        jwt: 'jwt',
+        customClaims: { foo: 'bar' },
+        refreshDuration: 4,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -71,17 +71,13 @@ describe('Management JWT', () => {
         't1',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.impersonate,
-        {
-          impersonatorId: 'imp1',
-          loginId: 'imp2',
-          validateConsent: true,
-          customClaims: { k1: 'v1' },
-          selectedTenant: 't1',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.impersonate, {
+        impersonatorId: 'imp1',
+        loginId: 'imp2',
+        validateConsent: true,
+        customClaims: { k1: 'v1' },
+        selectedTenant: 't1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -111,16 +107,12 @@ describe('Management JWT', () => {
         32,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.stopImpersonation,
-        {
-          jwt: 'jwt',
-          customClaims: { k1: 'v1' },
-          selectedTenant: 't1',
-          refreshDuration: 32,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.stopImpersonation, {
+        jwt: 'jwt',
+        customClaims: { k1: 'v1' },
+        selectedTenant: 't1',
+        refreshDuration: 32,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -147,11 +139,10 @@ describe('Management JWT', () => {
         customClaims: { k1: 'v1' },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.signIn,
-        { loginId: 'user-id-1', customClaims: { k1: 'v1' } },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.signIn, {
+        loginId: 'user-id-1',
+        customClaims: { k1: 'v1' },
+      });
 
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
     });
@@ -180,18 +171,14 @@ describe('Management JWT', () => {
         },
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.signUp,
-        {
-          loginId: 'user-id-1',
-          user: {
-            email: 'test@example.com',
-            name: 'lorem ipsum',
-          },
-          customClaims: { k1: 'v1' },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.signUp, {
+        loginId: 'user-id-1',
+        user: {
+          email: 'test@example.com',
+          name: 'lorem ipsum',
         },
-        { token: 'key' },
-      );
+        customClaims: { k1: 'v1' },
+      });
 
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
     });
@@ -220,18 +207,14 @@ describe('Management JWT', () => {
         },
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.signUpOrIn,
-        {
-          loginId: 'user-id-1',
-          user: {
-            email: 'test@example.com',
-            name: 'lorem ipsum',
-          },
-          customClaims: { k1: 'v1' },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.signUpOrIn, {
+        loginId: 'user-id-1',
+        user: {
+          email: 'test@example.com',
+          name: 'lorem ipsum',
         },
-        { token: 'key' },
-      );
+        customClaims: { k1: 'v1' },
+      });
 
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
     });
@@ -251,11 +234,10 @@ describe('Management JWT', () => {
 
       const resp: SdkResponse<JWTResponse> = await management.jwt.anonymous({ k1: 'v1' }, 't1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.jwt.anonymous,
-        { customClaims: { k1: 'v1' }, selectedTenant: 't1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.anonymous, {
+        customClaims: { k1: 'v1' },
+        selectedTenant: 't1',
+      });
 
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
     });
