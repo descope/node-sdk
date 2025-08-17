@@ -5,22 +5,27 @@ const mockHttpClient = {
   patch: jest.fn(),
   put: jest.fn(),
   delete: jest.fn(),
-  reset: () =>
-    ['get', 'post', 'patch', 'put', 'delete'].forEach((key) =>
-      mockHttpClient[key].mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ body: 'body' }),
-        clone: () => ({
-          json: () => Promise.resolve({ body: 'body' }),
-        }),
-        status: 200,
-      }),
-    ),
+  buildUrl(path, queryParams) {
+    return path + (queryParams ? `?${new URLSearchParams(queryParams).toString()}` : '');
+  },
 };
-mockHttpClient.reset();
 
-export { mockHttpClient };
+const resetMockHttpClient = () =>
+  ['get', 'post', 'patch', 'put', 'delete'].forEach((key) =>
+    mockHttpClient[key].mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ body: 'body' }),
+      clone: () => ({
+        json: () => Promise.resolve({ body: 'body' }),
+      }),
+      status: 200,
+    }),
+  );
 
-export const mockCoreSdk = {
+resetMockHttpClient();
+
+const mockCoreSdk = {
   httpClient: mockHttpClient,
 } as any;
+
+export { resetMockHttpClient, mockHttpClient, mockCoreSdk };

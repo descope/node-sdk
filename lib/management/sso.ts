@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import {
   RoleMappings,
@@ -38,15 +37,14 @@ function transformAllSettingsResponse(data) {
   return res;
 }
 
-const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
+const withSSOSettings = (httpClient: HttpClient) => ({
   /**
    * @deprecated  Use loadSettings instead
    */
   getSettings: (tenantId: string): Promise<SdkResponse<SSOSettingsResponse>> =>
     transformResponse<SSOSettingsResponse>(
-      sdk.httpClient.get(apiPaths.sso.settings, {
+      httpClient.get(apiPaths.sso.settings, {
         queryParams: { tenantId },
-        token: managementKey,
       }),
       (data) => data,
     ),
@@ -56,18 +54,17 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     displayName: string,
   ): Promise<SdkResponse<SSOSettings>> =>
     transformResponse<SSOSettings>(
-      sdk.httpClient.post(
-        apiPaths.sso.settingsNew,
-        { tenantId, ...(ssoId ? { ssoId } : {}), displayName },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.settingsNew, {
+        tenantId,
+        ...(ssoId ? { ssoId } : {}),
+        displayName,
+      }),
       (data) => transformSettingsResponse(data),
     ),
   deleteSettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.delete(apiPaths.sso.settings, {
+      httpClient.delete(apiPaths.sso.settings, {
         queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
-        token: managementKey,
       }),
     ),
   /**
@@ -82,11 +79,14 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     domains: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.settings,
-        { tenantId, idpURL, entityId, idpCert, redirectURL, domains },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.settings, {
+        tenantId,
+        idpURL,
+        entityId,
+        idpCert,
+        redirectURL,
+        domains,
+      }),
     ),
   /**
    * @deprecated  Use configureSAMLByMetadata instead
@@ -98,11 +98,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     domains: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.metadata,
-        { tenantId, idpMetadataURL, redirectURL, domains },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.metadata, { tenantId, idpMetadataURL, redirectURL, domains }),
     ),
   /**
    * @deprecated  Use configureSAMLSettings, configureSAMLByMetadata or configureOIDCSettings instead
@@ -113,11 +109,7 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     attributeMapping?: AttributeMapping,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.mapping,
-        { tenantId, roleMappings, attributeMapping },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.mapping, { tenantId, roleMappings, attributeMapping }),
     ),
   configureOIDCSettings: (
     tenantId: string,
@@ -128,16 +120,12 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     const readySettings = { ...settings, userAttrMapping: settings.attributeMapping };
     delete readySettings.attributeMapping;
     return transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.oidc.configure,
-        {
-          tenantId,
-          settings: readySettings,
-          domains,
-          ...(ssoId ? { ssoId } : {}),
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.oidc.configure, {
+        tenantId,
+        settings: readySettings,
+        domains,
+        ...(ssoId ? { ssoId } : {}),
+      }),
     );
   },
   configureSAMLSettings: (
@@ -148,11 +136,13 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     ssoId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.saml.configure,
-        { tenantId, settings, redirectUrl, domains, ...(ssoId ? { ssoId } : {}) },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.saml.configure, {
+        tenantId,
+        settings,
+        redirectUrl,
+        domains,
+        ...(ssoId ? { ssoId } : {}),
+      }),
     ),
   configureSAMLByMetadata: (
     tenantId: string,
@@ -162,25 +152,25 @@ const withSSOSettings = (sdk: CoreSdk, managementKey?: string) => ({
     ssoId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.sso.saml.metadata,
-        { tenantId, settings, redirectUrl, domains, ...(ssoId ? { ssoId } : {}) },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.sso.saml.metadata, {
+        tenantId,
+        settings,
+        redirectUrl,
+        domains,
+        ...(ssoId ? { ssoId } : {}),
+      }),
     ),
   loadSettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<SSOSettings>> =>
     transformResponse<SSOSettings>(
-      sdk.httpClient.get(apiPaths.sso.settingsv2, {
+      httpClient.get(apiPaths.sso.settingsv2, {
         queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
-        token: managementKey,
       }),
       (data) => transformSettingsResponse(data),
     ),
   loadAllSettings: (tenantId: string): Promise<SdkResponse<SSOSettings[]>> =>
     transformResponse<SSOSettings[]>(
-      sdk.httpClient.get(apiPaths.sso.settingsAllV2, {
+      httpClient.get(apiPaths.sso.settingsAllV2, {
         queryParams: { tenantId },
-        token: managementKey,
       }),
       (data) => transformAllSettingsResponse(data),
     ),

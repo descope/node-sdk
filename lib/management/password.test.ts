@@ -2,9 +2,9 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { PasswordSettings } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockPasswordSettings: PasswordSettings = {
   enabled: true,
@@ -24,7 +24,7 @@ const mockPasswordSettings: PasswordSettings = {
 describe('Management Password', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('getSettings', () => {
@@ -43,7 +43,6 @@ describe('Management Password', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.password.settings, {
         queryParams: { tenantId: 'test' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -72,13 +71,10 @@ describe('Management Password', () => {
         mockPasswordSettings,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.password.settings,
-        { ...mockPasswordSettings, tenantId: 'test' },
-        {
-          token: 'key',
-        },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.password.settings, {
+        ...mockPasswordSettings,
+        tenantId: 'test',
+      });
 
       expect(resp).toEqual({
         code: 200,

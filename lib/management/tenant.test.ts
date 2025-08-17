@@ -7,9 +7,9 @@ import {
   Tenant,
   TenantSettings,
 } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockTenantCreateResponse = {
   tenantId: 'foo',
@@ -42,7 +42,7 @@ const mockAllTenantsResponse = {
 describe('Management Tenant', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -65,17 +65,13 @@ describe('Management Tenant', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.create,
-        {
-          name: 'name',
-          selfProvisioningDomains: ['d1'],
-          customAttributes: { customAttr: 'value' },
-          enforceSSO: true,
-          disabled: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -107,18 +103,14 @@ describe('Management Tenant', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.create,
-        {
-          id: 't1',
-          name: 'name',
-          selfProvisioningDomains: ['d1'],
-          customAttributes: { customAttr: 'value' },
-          enforceSSO: true,
-          disabled: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        id: 't1',
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -150,18 +142,14 @@ describe('Management Tenant', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.update,
-        {
-          id: 't1',
-          name: 'name',
-          selfProvisioningDomains: ['d1'],
-          customAttributes: { customAttr: 'value' },
-          enforceSSO: true,
-          disabled: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.update, {
+        id: 't1',
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -186,11 +174,10 @@ describe('Management Tenant', () => {
 
       const resp = await management.tenant.delete('t1', true);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.delete,
-        { id: 't1', cascade: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.delete, {
+        id: 't1',
+        cascade: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -217,7 +204,6 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.load, {
         queryParams: { id: mockTenants[0].id },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -243,9 +229,7 @@ describe('Management Tenant', () => {
 
       const resp: SdkResponse<Tenant[]> = await management.tenant.loadAll();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -272,7 +256,6 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.settings, {
         queryParams: { id: 'test' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -304,9 +287,7 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.settings,
         { ...mockSettings, tenantId: 'test' },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({
@@ -338,9 +319,7 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.generateSSOConfigurationLink,
         { tenantId: 'test', expireTime: 60 * 60 * 24 },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({
@@ -382,9 +361,7 @@ describe('Management Tenant', () => {
           email: 'some-email@aa.com',
           templateId: 'some-template-id',
         },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({

@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import { AccessKey, AssociatedTenant, CreatedAccessKeyResponse } from './types';
 
@@ -11,7 +10,7 @@ type MultipleKeysResponse = {
   keys: AccessKey[];
 };
 
-const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
+const withAccessKey = (httpClient: HttpClient) => ({
   /**
    * Create a new access key for a project.
    * @param name Access key name
@@ -35,20 +34,16 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     permittedIps?: string[],
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.accessKey.create,
-        {
-          name,
-          expireTime,
-          roleNames: roles,
-          keyTenants: tenants,
-          userId,
-          customClaims,
-          description,
-          permittedIps,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.accessKey.create, {
+        name,
+        expireTime,
+        roleNames: roles,
+        keyTenants: tenants,
+        userId,
+        customClaims,
+        description,
+        permittedIps,
+      }),
     ),
   /**
    * Load an access key.
@@ -57,9 +52,8 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    */
   load: (id: string): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
-      sdk.httpClient.get(apiPaths.accessKey.load, {
+      httpClient.get(apiPaths.accessKey.load, {
         queryParams: { id },
-        token: managementKey,
       }),
       (data) => data.key,
     ),
@@ -70,7 +64,7 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    */
   searchAll: (tenantIds?: string[]): Promise<SdkResponse<AccessKey[]>> =>
     transformResponse<MultipleKeysResponse, AccessKey[]>(
-      sdk.httpClient.post(apiPaths.accessKey.search, { tenantIds }, { token: managementKey }),
+      httpClient.post(apiPaths.accessKey.search, { tenantIds }),
       (data) => data.keys,
     ),
   /**
@@ -94,19 +88,15 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
     permittedIps?: string[],
   ): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
-      sdk.httpClient.post(
-        apiPaths.accessKey.update,
-        {
-          id,
-          name,
-          description,
-          roleNames: roles,
-          keyTenants: tenants,
-          customClaims,
-          permittedIps,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.accessKey.update, {
+        id,
+        name,
+        description,
+        roleNames: roles,
+        keyTenants: tenants,
+        customClaims,
+        permittedIps,
+      }),
       (data) => data.key,
     ),
   /**
@@ -115,25 +105,19 @@ const withAccessKey = (sdk: CoreSdk, managementKey?: string) => ({
    * @param id Access key ID to deactivate
    */
   deactivate: (id: string): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.accessKey.deactivate, { id }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.accessKey.deactivate, { id })),
   /**
    * Activate an access key. Only deactivated access keys can be activated again.
    * @param id Access key ID to activate
    */
   activate: (id: string): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.accessKey.activate, { id }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.accessKey.activate, { id })),
   /**
    * Delete an access key. IMPORTANT: This cannot be undone. Use carefully.
    * @param id Access key ID to delete
    */
   delete: (id: string): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.accessKey.delete, { id }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.accessKey.delete, { id })),
 });
 
 export default withAccessKey;

@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import {
   AuthzSchema,
   AuthzRelation,
@@ -10,7 +10,7 @@ import {
   AuthzResource,
 } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockLoadSchema = {
   name: 'mock',
@@ -57,7 +57,7 @@ const mockModified = {
 describe('Management Authz', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('loadSchema', () => {
@@ -74,11 +74,7 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<AuthzSchema> = await management.authz.loadSchema();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.schemaLoad,
-        {},
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.schemaLoad, {});
       expect(resp).toEqual({
         code: 200,
         data: mockLoadSchema,
@@ -102,11 +98,10 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.saveSchema(mockLoadSchema, true);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.schemaSave,
-        { schema: mockLoadSchema, upgrade: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.schemaSave, {
+        schema: mockLoadSchema,
+        upgrade: true,
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -130,11 +125,7 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.deleteSchema();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.schemaDelete,
-        {},
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.schemaDelete, {});
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -160,11 +151,9 @@ describe('Management Authz', () => {
         mockLoadSchema.namespaces[0],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.nsSave,
-        { namespace: mockLoadSchema.namespaces[0] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.nsSave, {
+        namespace: mockLoadSchema.namespaces[0],
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -188,11 +177,10 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.deleteNamespace('doc');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.nsDelete,
-        { name: 'doc', schemaName: undefined },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.nsDelete, {
+        name: 'doc',
+        schemaName: undefined,
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -219,14 +207,10 @@ describe('Management Authz', () => {
         'owner',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.rdSave,
-        {
-          relationDefinition: mockLoadSchema.namespaces[0].relationDefinitions[0],
-          namespace: 'owner',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.rdSave, {
+        relationDefinition: mockLoadSchema.namespaces[0].relationDefinitions[0],
+        namespace: 'owner',
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -253,11 +237,11 @@ describe('Management Authz', () => {
         'doc',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.rdDelete,
-        { name: 'owner', namespace: 'doc', schemaName: undefined },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.rdDelete, {
+        name: 'owner',
+        namespace: 'doc',
+        schemaName: undefined,
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -281,13 +265,9 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.createRelations([mockRelation]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.reCreate,
-        {
-          relations: [mockRelation],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.reCreate, {
+        relations: [mockRelation],
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -311,11 +291,9 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.deleteRelationsForResources(['x']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.reDeleteResources,
-        { resources: ['x'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.reDeleteResources, {
+        resources: ['x'],
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -344,7 +322,6 @@ describe('Management Authz', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.reDeleteResourceRelationsForResources,
         { resources: ['x'] },
-        { token: 'key' },
       );
       expect(resp).toEqual({
         code: 200,
@@ -369,11 +346,9 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.deleteRelationsForIds(['x']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.reDeleteResources,
-        { resources: ['x'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.reDeleteResources, {
+        resources: ['x'],
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -397,11 +372,9 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<never> = await management.authz.deleteRelations([mockRelation]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.reDelete,
-        { relations: [mockRelation] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.reDelete, {
+        relations: [mockRelation],
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},
@@ -430,7 +403,6 @@ describe('Management Authz', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.authz.hasRelations,
         mockRelationsQueryResponse,
-        { token: 'key' },
       );
       expect(resp).toEqual({
         code: 200,
@@ -456,11 +428,11 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<string[]> = await management.authz.whoCanAccess('r', 'owner', 'doc');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.who,
-        { resource: 'r', relationDefinition: 'owner', namespace: 'doc' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.who, {
+        resource: 'r',
+        relationDefinition: 'owner',
+        namespace: 'doc',
+      });
       expect(resp).toEqual({
         code: 200,
         data: ['u1'],
@@ -487,11 +459,10 @@ describe('Management Authz', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.resource,
-        { resource: 'r', ignoreTargetSetRelations: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.resource, {
+        resource: 'r',
+        ignoreTargetSetRelations: true,
+      });
       expect(resp).toEqual({
         code: 200,
         data: [mockRelation],
@@ -518,11 +489,10 @@ describe('Management Authz', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.targets,
-        { targets: ['t'], includeTargetSetRelations: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targets, {
+        targets: ['t'],
+        includeTargetSetRelations: true,
+      });
       expect(resp).toEqual({
         code: 200,
         data: [mockRelation],
@@ -546,11 +516,7 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<AuthzRelation[]> = await management.authz.whatCanTargetAccess('t');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.targetAll,
-        { target: 't' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targetAll, { target: 't' });
       expect(resp).toEqual({
         code: 200,
         data: [mockRelation],
@@ -579,15 +545,11 @@ describe('Management Authz', () => {
           mockRelation.namespace,
         );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.targetWithRelation,
-        {
-          target: mockRelation.target,
-          relationDefinition: mockRelation.relationDefinition,
-          namespace: mockRelation.namespace,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targetWithRelation, {
+        target: mockRelation.target,
+        relationDefinition: mockRelation.relationDefinition,
+        namespace: mockRelation.namespace,
+      });
       expect(resp).toEqual({
         code: 200,
         data: [{ resource: 'roadmap.ppt' }],
@@ -611,11 +573,7 @@ describe('Management Authz', () => {
 
       const resp: SdkResponse<AuthzModified> = await management.authz.getModified(undefined);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.getModified,
-        { since: 0 },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.getModified, { since: 0 });
       expect(resp).toEqual({
         code: 200,
         data: mockModified,

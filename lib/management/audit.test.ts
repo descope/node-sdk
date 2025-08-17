@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { AuditRecord } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockMgmtAuditRecord = {
   projectId: 'p1',
@@ -25,7 +25,7 @@ const mockMgmtAuditSearchResponse = {
 describe('Management Audit', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('search', () => {
@@ -42,11 +42,9 @@ describe('Management Audit', () => {
 
       const resp: SdkResponse<AuditRecord[]> = await management.audit.search({ loginIds: ['id1'] });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.audit.search,
-        { externalIds: ['id1'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.audit.search, {
+        externalIds: ['id1'],
+      });
       const res = {
         ...mockMgmtAuditRecord,
         loginIds: mockMgmtAuditRecord.externalIds,
@@ -83,18 +81,14 @@ describe('Management Audit', () => {
         data: { a: 'b' },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.audit.createEvent,
-        {
-          userId: 'userId',
-          type: 'info',
-          action: 'action',
-          actorId: 'actorId',
-          tenantId: 'tenantId',
-          data: { a: 'b' },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.audit.createEvent, {
+        userId: 'userId',
+        type: 'info',
+        action: 'action',
+        actorId: 'actorId',
+        tenantId: 'tenantId',
+        data: { a: 'b' },
+      });
       expect(resp).toEqual({
         code: 200,
         data: {},

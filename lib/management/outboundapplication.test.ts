@@ -2,9 +2,9 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { OutboundApplication, OutboundAppToken } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockOutboundApplicationResponse = {
   app: {
@@ -52,7 +52,7 @@ const mockFetchTokenResponse = {
 describe('Management OutboundApplication', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('createOutboundApplication', () => {
@@ -74,15 +74,11 @@ describe('Management OutboundApplication', () => {
           clientSecret: 'shhh..',
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.create,
-        {
-          name: 'name',
-          description: 'test',
-          clientSecret: 'shhh..',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.create, {
+        name: 'name',
+        description: 'test',
+        clientSecret: 'shhh..',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -113,19 +109,15 @@ describe('Management OutboundApplication', () => {
         clientSecret: 'shhh..',
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.update,
-        {
-          app: {
-            id: 'app1',
-            name: 'name',
-            logo: 'logo',
-            description: 'desc',
-            clientSecret: 'shhh..',
-          },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.update, {
+        app: {
+          id: 'app1',
+          name: 'name',
+          logo: 'logo',
+          description: 'desc',
+          clientSecret: 'shhh..',
         },
-        { token: 'key' },
-      );
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -150,11 +142,9 @@ describe('Management OutboundApplication', () => {
 
       const resp = await management.outboundApplication.deleteApplication('app1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.delete,
-        { id: 'app1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.delete, {
+        id: 'app1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -184,9 +174,6 @@ describe('Management OutboundApplication', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         `${apiPaths.outboundApplication.load}/${mockOutboundApplicationResponse.app.id}`,
-        {
-          token: 'key',
-        },
       );
 
       expect(resp).toEqual({
@@ -213,9 +200,7 @@ describe('Management OutboundApplication', () => {
       const resp: SdkResponse<OutboundApplication[]> =
         await management.outboundApplication.loadAllApplications();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.outboundApplication.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.outboundApplication.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -256,7 +241,6 @@ describe('Management OutboundApplication', () => {
           options: { withRefreshToken: true, forceRefresh: true },
           tenantId: 'tenant789',
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -290,7 +274,6 @@ describe('Management OutboundApplication', () => {
           options: undefined,
           tenantId: undefined,
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -321,16 +304,12 @@ describe('Management OutboundApplication', () => {
         { forceRefresh: true },
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchToken,
-        {
-          appId: 'app123',
-          userId: 'user456',
-          tenantId: 'tenant789',
-          options: { forceRefresh: true },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.fetchToken, {
+        appId: 'app123',
+        userId: 'user456',
+        tenantId: 'tenant789',
+        options: { forceRefresh: true },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -356,16 +335,12 @@ describe('Management OutboundApplication', () => {
         'user456',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.outboundApplication.fetchToken,
-        {
-          appId: 'app123',
-          userId: 'user456',
-          tenantId: undefined,
-          options: undefined,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.fetchToken, {
+        appId: 'app123',
+        userId: 'user456',
+        tenantId: undefined,
+        options: undefined,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -404,7 +379,6 @@ describe('Management OutboundApplication', () => {
           scopes: ['read', 'write'],
           options: { withRefreshToken: true, forceRefresh: true },
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -439,7 +413,6 @@ describe('Management OutboundApplication', () => {
           scopes: ['read'],
           options: undefined,
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -475,7 +448,6 @@ describe('Management OutboundApplication', () => {
           tenantId: 'tenant789',
           options: { forceRefresh: true },
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({
@@ -507,7 +479,6 @@ describe('Management OutboundApplication', () => {
           tenantId: 'tenant789',
           options: undefined,
         },
-        { token: 'key' },
       );
 
       expect(resp).toEqual({

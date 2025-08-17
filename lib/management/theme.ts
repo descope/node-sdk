@@ -1,15 +1,12 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import { Theme, ThemeResponse } from './types';
 
-const WithTheme = (sdk: CoreSdk, managementKey?: string) => ({
+const WithTheme = (httpClient: HttpClient) => ({
   export: (): Promise<SdkResponse<ThemeResponse>> =>
-    transformResponse(sdk.httpClient.post(apiPaths.theme.export, {}, { token: managementKey })),
+    transformResponse(httpClient.post(apiPaths.theme.export, {})),
   import: (theme: Theme): Promise<SdkResponse<ThemeResponse>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.theme.import, { theme }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.theme.import, { theme })),
 });
 
 export default WithTheme;

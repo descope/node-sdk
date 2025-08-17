@@ -1,6 +1,6 @@
 import WithFGA from './fga';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { FGAResourceIdentifier, FGAResourceDetails } from './types';
 
 const emptySuccessResponse = {
@@ -43,27 +43,21 @@ const mockCheckResponse = {
 describe('Management FGA', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
   describe('saveSchema', () => {
     it('should save the schema', async () => {
       const schema = { dsl: 'schema' };
-      const response = await WithFGA(mockCoreSdk).saveSchema(schema);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema, {
-        token: undefined,
-      });
+      const response = await WithFGA(mockHttpClient).saveSchema(schema);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
       expect(response).toEqual(emptySuccessResponse);
     });
   });
 
   describe('deleteSchema', () => {
     it('should delete the schema', async () => {
-      const response = await WithFGA(mockCoreSdk).deleteSchema();
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.authz.schemaDelete,
-        {},
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).deleteSchema();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.schemaDelete, {});
       expect(response).toEqual(emptySuccessResponse);
     });
   });
@@ -71,12 +65,10 @@ describe('Management FGA', () => {
   describe('createRelations', () => {
     it('should create the relations', async () => {
       const relations = [relation1];
-      const response = await WithFGA(mockCoreSdk).createRelations(relations);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.fga.relations,
-        { tuples: relations },
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).createRelations(relations);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.relations, {
+        tuples: relations,
+      });
       expect(response).toEqual(emptySuccessResponse);
     });
   });
@@ -84,22 +76,18 @@ describe('Management FGA', () => {
   describe('deleteRelations', () => {
     it('should delete the relations', async () => {
       const relations = [relation1];
-      const response = await WithFGA(mockCoreSdk).deleteRelations(relations);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.fga.deleteRelations,
-        { tuples: relations },
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).deleteRelations(relations);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.deleteRelations, {
+        tuples: relations,
+      });
       expect(response).toEqual(emptySuccessResponse);
     });
   });
 
   describe('deleteAllRelations', () => {
     it('should delete all relations', async () => {
-      const response = await WithFGA(mockCoreSdk).deleteAllRelations();
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.fga.relations, {
-        token: undefined,
-      });
+      const response = await WithFGA(mockHttpClient).deleteAllRelations();
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.fga.relations);
       expect(response).toEqual(emptySuccessResponse);
     });
   });
@@ -116,12 +104,8 @@ describe('Management FGA', () => {
         status: 200,
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
-      const response = await WithFGA(mockCoreSdk).check(relations);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.fga.check,
-        { tuples: relations },
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).check(relations);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.check, { tuples: relations });
       expect(response).toEqual({
         code: 200,
         data: mockCheckResponseRelations,
@@ -144,12 +128,10 @@ describe('Management FGA', () => {
         status: 200,
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
-      const response = await WithFGA(mockCoreSdk).loadResourcesDetails(ids);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.fga.resourcesLoad,
-        { resourceIdentifiers: ids },
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).loadResourcesDetails(ids);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.resourcesLoad, {
+        resourceIdentifiers: ids,
+      });
       expect(response).toEqual({
         code: 200,
         data: mockDetails,
@@ -162,7 +144,7 @@ describe('Management FGA', () => {
       const ids: FGAResourceIdentifier[] = [{ resourceId: 'r1', resourceType: 'type1' }];
       const httpResponse = { ok: false, status: 400 };
       mockHttpClient.post.mockResolvedValue(httpResponse);
-      await expect(WithFGA(mockCoreSdk).loadResourcesDetails(ids)).rejects.toThrow();
+      await expect(WithFGA(mockHttpClient).loadResourcesDetails(ids)).rejects.toThrow();
     });
   });
 
@@ -171,12 +153,10 @@ describe('Management FGA', () => {
       const details: FGAResourceDetails[] = [
         { resourceId: 'r1', resourceType: 'type1', displayName: 'Name1' },
       ];
-      const response = await WithFGA(mockCoreSdk).saveResourcesDetails(details);
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.fga.resourcesSave,
-        { resourcesDetails: details },
-        { token: undefined },
-      );
+      const response = await WithFGA(mockHttpClient).saveResourcesDetails(details);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.resourcesSave, {
+        resourcesDetails: details,
+      });
       expect(response).toEqual(emptySuccessResponse);
     });
 
@@ -184,7 +164,7 @@ describe('Management FGA', () => {
       const details = [{ resourceId: 'r1', resourceType: 'type1', displayName: 'Name1' }];
       const httpResponse = { ok: false, status: 400 };
       mockHttpClient.post.mockResolvedValue(httpResponse);
-      await expect(WithFGA(mockCoreSdk).saveResourcesDetails(details)).rejects.toThrow();
+      await expect(WithFGA(mockHttpClient).saveResourcesDetails(details)).rejects.toThrow();
     });
   });
 });

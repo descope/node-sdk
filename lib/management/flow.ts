@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import {
   FlowResponse,
@@ -10,31 +9,21 @@ import {
   RunManagementFlowResponse,
 } from './types';
 
-const WithFlow = (sdk: CoreSdk, managementKey?: string) => ({
+const WithFlow = (httpClient: HttpClient) => ({
   list: (): Promise<SdkResponse<FlowsResponse>> =>
-    transformResponse(sdk.httpClient.post(apiPaths.flow.list, {}, { token: managementKey })),
+    transformResponse(httpClient.post(apiPaths.flow.list, {})),
   delete: (flowIds: string[]): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.flow.delete, { ids: flowIds }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.flow.delete, { ids: flowIds })),
   export: (flowId: string): Promise<SdkResponse<FlowResponse>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.flow.export, { flowId }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.flow.export, { flowId })),
   import: (flowId: string, flow: Flow, screens?: Screen[]): Promise<SdkResponse<FlowResponse>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.flow.import,
-        { flowId, flow, screens },
-        { token: managementKey },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.flow.import, { flowId, flow, screens })),
   run: (
     flowId: string,
     options?: ManagementFlowOptions,
   ): Promise<SdkResponse<RunManagementFlowResponse['output']>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.flow.run, { flowId, options }, { token: managementKey }),
+      httpClient.post(apiPaths.flow.run, { flowId, options }),
       (data) => (data as RunManagementFlowResponse)?.output,
     ),
 });
