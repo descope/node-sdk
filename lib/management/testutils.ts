@@ -1,5 +1,3 @@
-import { HttpClient } from '@descope/core-js-sdk';
-
 /* istanbul ignore file */
 const mockHttpClient = {
   get: jest.fn(),
@@ -8,11 +6,11 @@ const mockHttpClient = {
   put: jest.fn(),
   delete: jest.fn(),
   buildUrl(path, queryParams) {
-    return path + (queryParams ? '?' + new URLSearchParams(queryParams).toString() : '');
+    return path + (queryParams ? `?${new URLSearchParams(queryParams).toString()}` : '');
   },
 };
 
-export const resetMockHttpClient = () =>
+const resetMockHttpClient = () =>
   ['get', 'post', 'patch', 'put', 'delete'].forEach((key) =>
     mockHttpClient[key].mockResolvedValue({
       ok: true,
@@ -25,8 +23,9 @@ export const resetMockHttpClient = () =>
   );
 
 resetMockHttpClient();
-export { mockHttpClient };
 
-export const mockCoreSdk = {
+const mockCoreSdk = {
   httpClient: mockHttpClient,
 } as any;
+
+export { resetMockHttpClient, mockHttpClient, mockCoreSdk };

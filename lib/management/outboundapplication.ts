@@ -17,7 +17,7 @@ type MultipleOutboundApplicationResponse = {
 
 type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-const withOutboundApplication = (httpClient: HttpClient, managementKey?: string) => ({
+const withOutboundApplication = (httpClient: HttpClient) => ({
   createApplication: (
     app: WithOptional<OutboundApplication, 'id'> & { clientSecret?: string },
   ): Promise<SdkResponse<OutboundApplication>> =>
