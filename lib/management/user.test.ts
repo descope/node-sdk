@@ -906,8 +906,8 @@ describe('Management User', () => {
         fromModifiedTime: now,
         toModifiedTime: now,
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
-        tenantRoleIds: { tenant1: ['roleA', 'roleB'] },
-        tenantRoleNames: { tenant2: ['admin', 'user'] },
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -967,8 +967,8 @@ describe('Management User', () => {
         fromModifiedTime: now,
         toModifiedTime: now,
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
-        tenantRoleIds: { tenant1: ['roleA', 'roleB'] },
-        tenantRoleNames: { tenant2: ['admin', 'user'] },
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
