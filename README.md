@@ -827,6 +827,8 @@ await descopeClient.management.user.patch('desmond@descope.com', options);
 
 // User deletion cannot be undone. Use carefully.
 await descopeClient.management.user.delete('desmond@descope.com');
+// Delete a batch of users. This requires Descope user IDs.
+await descopeClient.management.user.deleteBatch(['<user-ID-1>', '<user-ID-2>']);
 
 // Load specific user
 const userRes = await descopeClient.management.user.load('desmond@descope.com');
