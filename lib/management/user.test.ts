@@ -666,6 +666,35 @@ describe('Management User', () => {
     });
   });
 
+  describe('deleteBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.deleteBatch(['a', 'b']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.deleteBatch,
+        { userIds: ['a', 'b'] },
+        { token: 'key' },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('deleteByUserId', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
