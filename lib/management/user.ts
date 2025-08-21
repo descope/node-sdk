@@ -29,6 +29,11 @@ type SearchSort = {
   desc?: boolean;
 };
 
+type RolesList = {
+  values: string[];
+  and?: boolean;
+};
+
 type SearchRequest = {
   page?: number;
   limit?: number;
@@ -49,8 +54,8 @@ type SearchRequest = {
   toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
   fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
   toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
-  tenantRoleIds?: Record<string, string[]>; // Search users based on tenants and role IDs
-  tenantRoleNames?: Record<string, string[]>; // Search users based on tenants and role names
+  tenantRoleIds?: Record<string, RolesList>; // Search users based on tenants and role IDs
+  tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
 };
 
 type SingleUserResponse = {
@@ -60,17 +65,6 @@ type SingleUserResponse = {
 type MultipleUsersResponse = {
   users: UserResponse[];
 };
-
-function mapToValuesObject(
-  input: Record<string, string[]> | undefined,
-): Record<string, { values: string[] }> | undefined {
-  if (!input || Object.keys(input).length === 0) {
-    return undefined;
-  }
-  return Object.fromEntries(
-    Object.entries(input).map(([key, value]) => [key, { values: value }]),
-  ) as Record<string, { values: string[] }>;
-}
 
 const withUser = (sdk: CoreSdk, managementKey?: string) => {
   /* Create User */
@@ -609,8 +603,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             testUsersOnly: true,
             roleNames: searchReq.roles,
             roles: undefined,
-            tenantRoleIds: mapToValuesObject(searchReq.tenantRoleIds),
-            tenantRoleNames: mapToValuesObject(searchReq.tenantRoleNames),
           },
           { token: managementKey },
         ),
@@ -624,8 +616,6 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             ...searchReq,
             roleNames: searchReq.roles,
             roles: undefined,
-            tenantRoleIds: mapToValuesObject(searchReq.tenantRoleIds),
-            tenantRoleNames: mapToValuesObject(searchReq.tenantRoleNames),
           },
           { token: managementKey },
         ),
