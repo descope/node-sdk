@@ -479,6 +479,10 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
         ),
         (data) => data,
       ),
+    deleteBatch: (userIds: string[]): Promise<SdkResponse<never>> =>
+      transformResponse(
+        sdk.httpClient.post(apiPaths.user.deleteBatch, { userIds }, { token: managementKey }),
+      ),
     update,
     patch,
     /**

@@ -7,6 +7,7 @@ export default {
     update: '/v1/mgmt/user/update',
     patch: '/v1/mgmt/user/patch',
     delete: '/v1/mgmt/user/delete',
+    deleteBatch: '/v1/mgmt/user/delete/batch',
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     logout: '/v1/mgmt/user/logout',
