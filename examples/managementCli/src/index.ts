@@ -1367,12 +1367,7 @@ program
   .argument('<expiration>', 'The expiration time of the token')
   .action(async (issuer, subject, audience, expiration) => {
     handleSdkRes(
-      await sdk.management.jwt.generateClientAssertionJwt({
-        issuer,
-        subject,
-        audience,
-        expiration,
-      }),
+      await sdk.management.jwt.generateClientAssertionJwt(issuer, subject, audience, expiration),
     );
   });
 
