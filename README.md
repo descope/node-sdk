@@ -1205,6 +1205,18 @@ Generate a JWT for a user, simulating a signup or in request.
 const res = await descopeClient.management.jwt.signUpOrIn('dummy');
 ```
 
+Generate a client assertion JWT for OAuth flows.
+
+```typescript
+const clientAssertionRes = await descopeClient.management.jwt.generateClientAssertionJwt(
+  'https://example.com/issuer', // issuer
+  'client-id-123', // subject
+  'https://example.com/token', // audience
+  1756323989, // The time at which the token will expire, represented as the number of seconds since the Unix epoch
+);
+// clientAssertionRes.data.jwt contains the client assertion JWT
+```
+
 ### Impersonate
 
 You can impersonate to another user

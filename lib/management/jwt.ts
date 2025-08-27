@@ -1,7 +1,13 @@
 import { JWTResponse, SdkResponse, transformResponse } from '@descope/core-js-sdk';
 import { CoreSdk } from '../types';
 import apiPaths from './paths';
-import { MgmtLoginOptions, MgmtSignUpOptions, MgmtUserOptions, UpdateJWTResponse } from './types';
+import {
+  MgmtLoginOptions,
+  MgmtSignUpOptions,
+  MgmtUserOptions,
+  UpdateJWTResponse,
+  ClientAssertionResponse,
+} from './types';
 
 type AnonymousJWTResponse = Omit<JWTResponse, 'user' | 'firstSeen'>;
 
@@ -87,6 +93,19 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
       sdk.httpClient.post(
         apiPaths.jwt.anonymous,
         { customClaims, selectedTenant, refreshDuration },
+        { token: managementKey },
+      ),
+    ),
+  generateClientAssertionJwt: (
+    issuer?: string,
+    subject?: string,
+    audience?: string,
+    expiration?: number,
+  ): Promise<SdkResponse<ClientAssertionResponse>> =>
+    transformResponse(
+      sdk.httpClient.post(
+        apiPaths.jwt.clientAssertion,
+        { issuer, subject, audience, expiration },
         { token: managementKey },
       ),
     ),

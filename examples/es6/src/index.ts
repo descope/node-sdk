@@ -27,6 +27,15 @@ const clientAuth = {
   }),
 };
 
+const clientManagement = {
+  mgmt: DescopeClient({
+    projectId: process.env.DESCOPE_PROJECT_ID || '',
+    baseUrl: process.env.DESCOPE_BASE_URL,
+    managementKey: process.env.DESCOPE_MANAGEMENT_KEY || '',
+    logger: console,
+  }),
+};
+
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cookies = parseCookies(req);
@@ -345,6 +354,22 @@ app.post('/refresh', authMiddleware, async (req: Request, res: Response) => {
       res.set('Set-Cookie', out.cookies);
     }
     res.status(200).send(out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
+app.post('/v1/mgmt/token/clientassertion', async (req: Request, res: Response) => {
+  try {
+    const { issuer, subject, audience, expiration } = req.body;
+    const out = await clientManagement.mgmt.management.jwt.generateClientAssertionJwt(
+      issuer as string,
+      subject as string,
+      audience as string,
+      expiration as number,
+    );
+    returnOK(res, out);
   } catch (error) {
     console.log(error);
     res.sendStatus(401);
