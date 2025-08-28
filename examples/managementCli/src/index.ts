@@ -1363,11 +1363,16 @@ program
   .description('Generate a client assertion JWT')
   .argument('<issuer>', 'The issuer of the token')
   .argument('<subject>', 'The subject of the token')
-  .argument('<audience>', 'The audience of the token')
-  .argument('<expiration>', 'The expiration time of the token')
-  .action(async (issuer, subject, audience, expiration) => {
+  .argument('<audience>', 'The audience of the token (list)')
+  .argument('<expiresIn>', 'The expiration time of the token (in seconds)')
+  .action(async (issuer, subject, audience, expiresIn) => {
     handleSdkRes(
-      await sdk.management.jwt.generateClientAssertionJwt(issuer, subject, audience, expiration),
+      await sdk.management.jwt.generateClientAssertionJwt(
+        issuer,
+        subject,
+        audience.split(','),
+        expiresIn,
+      ),
     );
   });
 

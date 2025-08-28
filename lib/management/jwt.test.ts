@@ -277,8 +277,8 @@ describe('Management JWT', () => {
         await management.jwt.generateClientAssertionJwt(
           'https://example.com/issuer',
           'https://example.com/subject',
-          'https://example.com/token',
-          1756323989,
+          ['https://example.com/token'],
+          300,
         );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -286,8 +286,8 @@ describe('Management JWT', () => {
         {
           issuer: 'https://example.com/issuer',
           subject: 'https://example.com/subject',
-          audience: 'https://example.com/token',
-          expiration: 1756323989,
+          audience: ['https://example.com/token'],
+          expiresIn: 300,
         },
         { token: 'key' },
       );

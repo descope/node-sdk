@@ -1211,8 +1211,8 @@ Generate a client assertion JWT for OAuth flows.
 const clientAssertionRes = await descopeClient.management.jwt.generateClientAssertionJwt(
   'https://example.com/issuer', // issuer
   'client-id-123', // subject
-  'https://example.com/token', // audience
-  1756323989, // The time at which the token will expire, represented as the number of seconds since the Unix epoch
+  ['https://example.com/token'], // audience
+  300, // expiresIn - number of seconds the token will will be valid for
 );
 // clientAssertionRes.data.jwt contains the client assertion JWT
 ```

@@ -99,13 +99,13 @@ const withJWT = (sdk: CoreSdk, managementKey?: string) => ({
   generateClientAssertionJwt: (
     issuer?: string,
     subject?: string,
-    audience?: string,
-    expiration?: number,
+    audience?: string[],
+    expiresIn?: number,
   ): Promise<SdkResponse<ClientAssertionResponse>> =>
     transformResponse(
       sdk.httpClient.post(
         apiPaths.jwt.clientAssertion,
-        { issuer, subject, audience, expiration },
+        { issuer, subject, audience, expiresIn },
         { token: managementKey },
       ),
     ),
