@@ -148,6 +148,11 @@ export type UpdateJWTResponse = {
   jwt: string;
 };
 
+/** Client assertion JWT response for OAuth flows */
+export type ClientAssertionResponse = {
+  jwt: string;
+};
+
 /** Represents a tenant in a project. It has an id, a name and an array of
  * self provisioning domains used to associate users with that tenant.
  */

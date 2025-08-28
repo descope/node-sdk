@@ -127,6 +127,7 @@ export default {
     signUp: '/v1/mgmt/auth/signup',
     signUpOrIn: '/v1/mgmt/auth/signup-in',
     anonymous: '/v1/mgmt/auth/anonymous',
+    clientAssertion: '/v1/mgmt/token/clientassertion',
   },
   password: {
     settings: '/v1/mgmt/password/settings',
