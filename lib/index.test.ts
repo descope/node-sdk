@@ -251,6 +251,31 @@ describe('sdk', () => {
     });
   });
 
+  describe('refresh', () => {
+    it('should call coreSdk.refresh with the correct arguments', async () => {
+      jest.resetModules();
+      const refresh = jest.fn();
+      jest.doMock('@descope/core-js-sdk', () => {
+        const actual = jest.requireActual('@descope/core-js-sdk');
+        return {
+          ...actual,
+          __esModule: true,
+          wrapWith: (sdkInstance: object) => sdkInstance,
+          default: (...args: any[]) => ({ ...actual.default(...args), refresh }),
+        };
+      });
+
+      const createNodeSdk = require('.').default; // eslint-disable-line
+      const sdkInstance = createNodeSdk({ projectId: 'project-id' });
+
+      const token = 'test-token';
+      const externalToken = 'external-token';
+      await sdkInstance.refresh(token, externalToken);
+
+      expect(refresh).toHaveBeenCalledWith(token, undefined, externalToken);
+    });
+  });
+
   describe('validateAndRefreshSession', () => {
     it('should throw an error when both session or refresh tokens are empty', async () => {
       await expect(sdk.validateAndRefreshSession('', '')).rejects.toThrow(
