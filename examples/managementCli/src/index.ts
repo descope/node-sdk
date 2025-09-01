@@ -1371,7 +1371,7 @@ program
         issuer,
         subject,
         audience.split(','),
-        expiresIn,
+        Number(expiresIn),
       ),
     );
   });
