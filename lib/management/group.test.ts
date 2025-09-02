@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { Group } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockGroups = [
   { id: 'id1', display: 'display1', members: [] },
@@ -15,7 +15,7 @@ const mockGroups = [
 describe('Management group', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('loadAllGroups', () => {
@@ -33,11 +33,7 @@ describe('Management group', () => {
       const tenantId = 'tenant-id';
       const resp: SdkResponse<Group[]> = await management.group.loadAllGroups(tenantId);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.group.loadAllGroups,
-        { tenantId },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.group.loadAllGroups, { tenantId });
 
       expect(resp).toEqual({
         code: 200,
@@ -69,11 +65,11 @@ describe('Management group', () => {
         loginIds,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.group.loadAllGroupsForMember,
-        { tenantId, userIds, loginIds },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.group.loadAllGroupsForMember, {
+        tenantId,
+        userIds,
+        loginIds,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -103,11 +99,10 @@ describe('Management group', () => {
         groupId,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.group.loadAllGroupMembers,
-        { tenantId, groupId },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.group.loadAllGroupMembers, {
+        tenantId,
+        groupId,
+      });
 
       expect(resp).toEqual({
         code: 200,

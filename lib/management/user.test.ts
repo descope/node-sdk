@@ -1,7 +1,7 @@
 import { LoginOptions, SdkResponse, UserResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import {
   GenerateOTPForTestResponse,
   GenerateMagicLinkForTestResponse,
@@ -12,7 +12,7 @@ import {
   UserPasswordHashed,
 } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockUserResponse = {
   name: 'foo',
@@ -39,7 +39,7 @@ const mockMgmtInviteBatchResponse = {
 describe('Management User', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -71,20 +71,16 @@ describe('Management User', () => {
         ['id-1', 'id-2'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          phone: null,
-          displayName: null,
-          roleNames: ['r1', 'r2'],
-          userTenants: null,
-          customAttributes: { a: 'a', b: 1, c: true },
-          additionalLoginIds: ['id-1', 'id-2'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        phone: null,
+        displayName: null,
+        roleNames: ['r1', 'r2'],
+        userTenants: null,
+        customAttributes: { a: 'a', b: 1, c: true },
+        additionalLoginIds: ['id-1', 'id-2'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -118,21 +114,17 @@ describe('Management User', () => {
         false,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          phone: null,
-          displayName: null,
-          roleNames: ['r1', 'r2'],
-          userTenants: null,
-          customAttributes: { a: 'a', b: 1, c: true },
-          verifiedEmail: true,
-          verifiedPhone: false,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        phone: null,
+        displayName: null,
+        roleNames: ['r1', 'r2'],
+        userTenants: null,
+        customAttributes: { a: 'a', b: 1, c: true },
+        verifiedEmail: true,
+        verifiedPhone: false,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -160,17 +152,13 @@ describe('Management User', () => {
         additionalLoginIds: ['id-1', 'id-2'],
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          roleNames: ['r1', 'r2'],
-          customAttributes: { a: 'a', b: 1, c: true },
-          additionalLoginIds: ['id-1', 'id-2'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        roleNames: ['r1', 'r2'],
+        customAttributes: { a: 'a', b: 1, c: true },
+        additionalLoginIds: ['id-1', 'id-2'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -203,20 +191,16 @@ describe('Management User', () => {
         { a: 'a', b: 1, c: true },
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.createTestUser,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          phone: null,
-          displayName: null,
-          roleNames: ['r1', 'r2'],
-          test: true,
-          userTenants: null,
-          customAttributes: { a: 'a', b: 1, c: true },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createTestUser, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        phone: null,
+        displayName: null,
+        roleNames: ['r1', 'r2'],
+        test: true,
+        userTenants: null,
+        customAttributes: { a: 'a', b: 1, c: true },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -243,17 +227,13 @@ describe('Management User', () => {
         customAttributes: { a: 'a', b: 1, c: true },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.createTestUser,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          roleNames: ['r1', 'r2'],
-          test: true,
-          customAttributes: { a: 'a', b: 1, c: true },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createTestUser, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        roleNames: ['r1', 'r2'],
+        test: true,
+        customAttributes: { a: 'a', b: 1, c: true },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -291,24 +271,20 @@ describe('Management User', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          phone: null,
-          displayName: null,
-          roleNames: ['r1', 'r2'],
-          invite: true,
-          userTenants: null,
-          customAttributes: { a: 'a', b: 1, c: true },
-          verifiedEmail: false,
-          verifiedPhone: false,
-          inviteUrl: 'https://invite.me',
-          sendMail: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        phone: null,
+        displayName: null,
+        roleNames: ['r1', 'r2'],
+        invite: true,
+        userTenants: null,
+        customAttributes: { a: 'a', b: 1, c: true },
+        verifiedEmail: false,
+        verifiedPhone: false,
+        inviteUrl: 'https://invite.me',
+        sendMail: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -338,20 +314,16 @@ describe('Management User', () => {
         templateOptions: { k1: 'v1' },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.create,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          roleNames: ['r1', 'r2'],
-          invite: true,
-          customAttributes: { a: 'a', b: 1, c: true },
-          inviteUrl: 'https://invite.me',
-          sendMail: true,
-          templateOptions: { k1: 'v1' },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        roleNames: ['r1', 'r2'],
+        invite: true,
+        customAttributes: { a: 'a', b: 1, c: true },
+        inviteUrl: 'https://invite.me',
+        sendMail: true,
+        templateOptions: { k1: 'v1' },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -394,39 +366,35 @@ describe('Management User', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.createBatch,
-        {
-          users: [
-            {
-              loginId: 'one',
-              roleNames: ['r1'],
-              email: 'one@one',
-              password: 'clear',
-              seed: 'aaa',
-            },
-            {
-              loginId: 'two',
-              roleNames: ['r1'],
-              email: 'two@two',
-              hashedPassword: {
-                firebase: {
-                  hash: 'h',
-                  salt: 's',
-                  saltSeparator: 'ss',
-                  signerKey: 'sk',
-                  memory: 14,
-                  rounds: 8,
-                },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [
+          {
+            loginId: 'one',
+            roleNames: ['r1'],
+            email: 'one@one',
+            password: 'clear',
+            seed: 'aaa',
+          },
+          {
+            loginId: 'two',
+            roleNames: ['r1'],
+            email: 'two@two',
+            hashedPassword: {
+              firebase: {
+                hash: 'h',
+                salt: 's',
+                saltSeparator: 'ss',
+                signerKey: 'sk',
+                memory: 14,
+                rounds: 8,
               },
             },
-          ],
-          invite: true,
-          inviteUrl: 'https://invite.me',
-          sendMail: true,
-        },
-        { token: 'key' },
-      );
+          },
+        ],
+        invite: true,
+        inviteUrl: 'https://invite.me',
+        sendMail: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -465,36 +433,32 @@ describe('Management User', () => {
         { loginId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.createBatch,
-        {
-          users: [
-            {
-              loginId: 'one',
-              roleNames: ['r1'],
-              email: 'one@one',
-              password: 'clear',
-              seed: 'aaa',
-            },
-            {
-              loginId: 'two',
-              roleNames: ['r1'],
-              email: 'two@two',
-              hashedPassword: {
-                firebase: {
-                  hash: 'h',
-                  salt: 's',
-                  saltSeparator: 'ss',
-                  signerKey: 'sk',
-                  memory: 14,
-                  rounds: 8,
-                },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [
+          {
+            loginId: 'one',
+            roleNames: ['r1'],
+            email: 'one@one',
+            password: 'clear',
+            seed: 'aaa',
+          },
+          {
+            loginId: 'two',
+            roleNames: ['r1'],
+            email: 'two@two',
+            hashedPassword: {
+              firebase: {
+                hash: 'h',
+                salt: 's',
+                saltSeparator: 'ss',
+                signerKey: 'sk',
+                memory: 14,
+                rounds: 8,
               },
             },
-          ],
-        },
-        { token: 'key' },
-      );
+          },
+        ],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -519,11 +483,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.update('loginId', 'a@b.c');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.update,
-        { loginId: 'loginId', email: 'a@b.c' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.update, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -548,11 +511,10 @@ describe('Management User', () => {
         email: 'a@b.c',
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.update,
-        { loginId: 'loginId', email: 'a@b.c' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.update, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -585,19 +547,15 @@ describe('Management User', () => {
         roles: ['r1', 'r2'],
       });
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        apiPaths.user.patch,
-        {
-          loginId: 'loginId',
-          email: 'a@b.c',
-          phone: '+11111111',
-          givenName: 'name1',
-          middleName: 'name2',
-          familyName: 'name3',
-          roleNames: ['r1', 'r2'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patch, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        phone: '+11111111',
+        givenName: 'name1',
+        middleName: 'name2',
+        familyName: 'name3',
+        roleNames: ['r1', 'r2'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -619,21 +577,17 @@ describe('Management User', () => {
         ssoAppIds: ['sso1', 'sso2'],
       });
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        apiPaths.user.patch,
-        {
-          loginId: 'loginId',
-          displayName: 'name',
-          userTenants: [{ tenantId: 't1', roleNames: ['r1'] }],
-          customAttributes: { a: 'a', b: 1, c: true },
-          picture: 'pic',
-          verifiedEmail: true,
-          verifiedPhone: false,
-          ssoAppIds: ['sso1', 'sso2'],
-          scim: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patch, {
+        loginId: 'loginId',
+        displayName: 'name',
+        userTenants: [{ tenantId: 't1', roleNames: ['r1'] }],
+        customAttributes: { a: 'a', b: 1, c: true },
+        picture: 'pic',
+        verifiedEmail: true,
+        verifiedPhone: false,
+        ssoAppIds: ['sso1', 'sso2'],
+        scim: true,
+      });
     });
   });
 
@@ -651,11 +605,9 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.delete('loginId');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.delete,
-        { loginId: 'loginId' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.delete, {
+        loginId: 'loginId',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -680,11 +632,9 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.deleteBatch(['a', 'b']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.deleteBatch,
-        { userIds: ['a', 'b'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.deleteBatch, {
+        userIds: ['a', 'b'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -709,11 +659,7 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.deleteByUserId('userId');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.delete,
-        { userId: 'userId' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.delete, { userId: 'userId' });
 
       expect(resp).toEqual({
         code: 200,
@@ -738,11 +684,9 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.logoutUser('loginId');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.logout,
-        { loginId: 'loginId' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.logout, {
+        loginId: 'loginId',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -765,11 +709,7 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.logoutUserByUserId('userId');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.logout,
-        { userId: 'userId' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.logout, { userId: 'userId' });
 
       expect(resp).toEqual({
         code: 200,
@@ -794,9 +734,7 @@ describe('Management User', () => {
 
       const resp: SdkResponse<never> = await management.user.deleteAllTestUsers();
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.user.deleteAllTestUsers, {
-        token: 'key',
-      });
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.user.deleteAllTestUsers);
 
       expect(resp).toEqual({
         code: 200,
@@ -823,7 +761,6 @@ describe('Management User', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.load, {
         queryParams: { loginId: 'loginId' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -851,7 +788,6 @@ describe('Management User', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.load, {
         queryParams: { userId: 'userId' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -888,18 +824,14 @@ describe('Management User', () => {
         ['+11111111'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.search,
-        {
-          tenantIds: ['t1'],
-          roleNames: ['r1'],
-          limit: 100,
-          statuses: ['enabled'],
-          emails: ['a@b.com'],
-          phones: ['+11111111'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
+        tenantIds: ['t1'],
+        roleNames: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -939,28 +871,24 @@ describe('Management User', () => {
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.searchTestUsers,
-        {
-          tenantIds: ['t1'],
-          roleNames: ['r1'],
-          limit: 100,
-          statuses: ['enabled'],
-          emails: ['a@b.com'],
-          phones: ['+11111111'],
-          text: 'some text',
-          fromCreatedTime: now,
-          toCreatedTime: now,
-          fromModifiedTime: now,
-          toModifiedTime: now,
-          withTestUser: true,
-          testUsersOnly: true,
-          sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
-          tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
-          tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.searchTestUsers, {
+        tenantIds: ['t1'],
+        roleNames: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        withTestUser: true,
+        testUsersOnly: true,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1000,26 +928,22 @@ describe('Management User', () => {
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.search,
-        {
-          tenantIds: ['t1'],
-          roleNames: ['r1'],
-          limit: 100,
-          statuses: ['enabled'],
-          emails: ['a@b.com'],
-          phones: ['+11111111'],
-          text: 'some text',
-          fromCreatedTime: now,
-          toCreatedTime: now,
-          fromModifiedTime: now,
-          toModifiedTime: now,
-          sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
-          tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
-          tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
+        tenantIds: ['t1'],
+        roleNames: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1055,7 +979,6 @@ describe('Management User', () => {
           withRefreshToken: 'false',
           forceRefresh: 'false',
         },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -1090,7 +1013,6 @@ describe('Management User', () => {
           withRefreshToken: 'true',
           forceRefresh: 'true',
         },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -1116,11 +1038,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.activate('lid');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateStatus,
-        { loginId: 'lid', status: 'enabled' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateStatus, {
+        loginId: 'lid',
+        status: 'enabled',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1145,11 +1066,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.deactivate('lid');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateStatus,
-        { loginId: 'lid', status: 'disabled' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateStatus, {
+        loginId: 'lid',
+        status: 'disabled',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1174,11 +1094,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.updateLoginId('lid', 'a@b.c');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateLoginId,
-        { loginId: 'lid', newLoginId: 'a@b.c' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateLoginId, {
+        loginId: 'lid',
+        newLoginId: 'a@b.c',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1207,11 +1126,11 @@ describe('Management User', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateEmail,
-        { loginId: 'lid', email: 'a@b.c', verified: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateEmail, {
+        loginId: 'lid',
+        email: 'a@b.c',
+        verified: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1240,11 +1159,11 @@ describe('Management User', () => {
         true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updatePhone,
-        { loginId: 'lid', phone: '1234', verified: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updatePhone, {
+        loginId: 'lid',
+        phone: '1234',
+        verified: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1269,11 +1188,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.updateDisplayName('lid', 'foo');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateDisplayName,
-        { loginId: 'lid', displayName: 'foo' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateDisplayName, {
+        loginId: 'lid',
+        displayName: 'foo',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1298,11 +1216,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.updatePicture('lid', 'foo');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updatePicture,
-        { loginId: 'lid', picture: 'foo' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updatePicture, {
+        loginId: 'lid',
+        picture: 'foo',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1331,11 +1248,11 @@ describe('Management User', () => {
         'bar',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.updateCustomAttribute,
-        { loginId: 'lid', attributeKey: 'foo', attributeValue: 'bar' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateCustomAttribute, {
+        loginId: 'lid',
+        attributeKey: 'foo',
+        attributeValue: 'bar',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1360,11 +1277,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.setRoles('lid', ['foo', 'bar']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.setRole,
-        { loginId: 'lid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setRole, {
+        loginId: 'lid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1389,11 +1305,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.addRoles('lid', ['foo', 'bar']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.addRole,
-        { loginId: 'lid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.addRole, {
+        loginId: 'lid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1421,11 +1336,10 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeRole,
-        { loginId: 'lid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeRole, {
+        loginId: 'lid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1453,11 +1367,10 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.setSSOApps,
-        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setSSOApps, {
+        loginId: 'lid',
+        ssoAppIds: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1485,11 +1398,10 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.addSSOApps,
-        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.addSSOApps, {
+        loginId: 'lid',
+        ssoAppIds: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1517,11 +1429,10 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeSSOApps,
-        { loginId: 'lid', ssoAppIds: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeSSOApps, {
+        loginId: 'lid',
+        ssoAppIds: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1546,11 +1457,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.addTenant('lid', 'tid');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.addTenant,
-        { loginId: 'lid', tenantId: 'tid' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.addTenant, {
+        loginId: 'lid',
+        tenantId: 'tid',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1575,11 +1485,10 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.removeTenant('lid', 'tid');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeTenant,
-        { loginId: 'lid', tenantId: 'tid' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeTenant, {
+        loginId: 'lid',
+        tenantId: 'tid',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1607,11 +1516,11 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.setRole,
-        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setRole, {
+        loginId: 'lid',
+        tenantId: 'tid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1639,11 +1548,11 @@ describe('Management User', () => {
         'bar',
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.addRole,
-        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.addRole, {
+        loginId: 'lid',
+        tenantId: 'tid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1672,11 +1581,11 @@ describe('Management User', () => {
         ['foo', 'bar'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeRole,
-        { loginId: 'lid', tenantId: 'tid', roleNames: ['foo', 'bar'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeRole, {
+        loginId: 'lid',
+        tenantId: 'tid',
+        roleNames: ['foo', 'bar'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1706,11 +1615,11 @@ describe('Management User', () => {
       const resp: SdkResponse<GenerateOTPForTestResponse> =
         await management.user.generateOTPForTestUser('sms', 'some-id', loginOptions);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateOTPForTest,
-        { loginId: 'some-id', deliveryMethod: 'sms', loginOptions },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateOTPForTest, {
+        loginId: 'some-id',
+        deliveryMethod: 'sms',
+        loginOptions,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1738,11 +1647,11 @@ describe('Management User', () => {
       const resp: SdkResponse<GenerateOTPForTestResponse> =
         await management.user.generateOTPForTestUser('voice', 'some-id', loginOptions);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateOTPForTest,
-        { loginId: 'some-id', deliveryMethod: 'voice', loginOptions },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateOTPForTest, {
+        loginId: 'some-id',
+        deliveryMethod: 'voice',
+        loginOptions,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1770,11 +1679,11 @@ describe('Management User', () => {
       const resp: SdkResponse<GenerateOTPForTestResponse> =
         await management.user.generateOTPForTestUser('Embedded', 'some-id', loginOptions);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateOTPForTest,
-        { loginId: 'some-id', deliveryMethod: 'Embedded', loginOptions },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateOTPForTest, {
+        loginId: 'some-id',
+        deliveryMethod: 'Embedded',
+        loginOptions,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1809,11 +1718,12 @@ describe('Management User', () => {
           loginOptions,
         );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateMagicLinkForTest,
-        { loginId: 'some-id', deliveryMethod: 'email', URI: 'some-uri', loginOptions },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateMagicLinkForTest, {
+        loginId: 'some-id',
+        deliveryMethod: 'email',
+        URI: 'some-uri',
+        loginOptions,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1847,11 +1757,11 @@ describe('Management User', () => {
       const resp: SdkResponse<GenerateEnchantedLinkForTestResponse> =
         await management.user.generateEnchantedLinkForTestUser('some-id', 'some-uri', loginOptions);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateEnchantedLinkForTest,
-        { loginId: 'some-id', URI: 'some-uri', loginOptions },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateEnchantedLinkForTest, {
+        loginId: 'some-id',
+        URI: 'some-uri',
+        loginOptions,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1880,11 +1790,10 @@ describe('Management User', () => {
       const resp: SdkResponse<GenerateEmbeddedLinkResponse> =
         await management.user.generateEmbeddedLink('some-id', { k1: 'v1' });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateEmbeddedLink,
-        { loginId: 'some-id', customClaims: { k1: 'v1' } },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateEmbeddedLink, {
+        loginId: 'some-id',
+        customClaims: { k1: 'v1' },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1920,18 +1829,14 @@ describe('Management User', () => {
           12,
         );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.generateSignUpEmbeddedLink,
-        {
-          loginId: 'some-id',
-          user: { name: 'John Doe' },
-          emailVerified: true,
-          phoneVerified: true,
-          loginOptions: { mfa: true },
-          timeout: 12,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.generateSignUpEmbeddedLink, {
+        loginId: 'some-id',
+        user: { name: 'John Doe' },
+        emailVerified: true,
+        phoneVerified: true,
+        loginOptions: { mfa: true },
+        timeout: 12,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1958,11 +1863,10 @@ describe('Management User', () => {
       const password = 'some-password';
       const resp = await management.user.setPassword(loginId, password);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.setPassword,
-        { loginId, password },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setPassword, {
+        loginId,
+        password,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -1988,11 +1892,10 @@ describe('Management User', () => {
     const password = 'some-password';
     const resp = await management.user.setTemporaryPassword(loginId, password);
 
-    expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.user.setTemporaryPassword,
-      { loginId, password },
-      { token: 'key' },
-    );
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setTemporaryPassword, {
+      loginId,
+      password,
+    });
 
     expect(resp).toEqual({
       code: 200,
@@ -2017,11 +1920,10 @@ describe('Management User', () => {
     const password = 'some-password';
     const resp = await management.user.setActivePassword(loginId, password);
 
-    expect(mockHttpClient.post).toHaveBeenCalledWith(
-      apiPaths.user.setActivePassword,
-      { loginId, password },
-      { token: 'key' },
-    );
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.setActivePassword, {
+      loginId,
+      password,
+    });
 
     expect(resp).toEqual({
       code: 200,
@@ -2046,11 +1948,7 @@ describe('Management User', () => {
       const loginId = 'some-id';
       const resp = await management.user.expirePassword(loginId);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.expirePassword,
-        { loginId },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.expirePassword, { loginId });
 
       expect(resp).toEqual({
         code: 200,
@@ -2076,11 +1974,9 @@ describe('Management User', () => {
       const loginId = 'some-id';
       const resp = await management.user.removeAllPasskeys(loginId);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeAllPasskeys,
-        { loginId },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeAllPasskeys, {
+        loginId,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -2106,11 +2002,7 @@ describe('Management User', () => {
       const loginId = 'some-id';
       const resp = await management.user.removeTOTPSeed(loginId);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.user.removeTOTPSeed,
-        { loginId },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeTOTPSeed, { loginId });
 
       expect(resp).toEqual({
         code: 200,
@@ -2152,9 +2044,7 @@ describe('Management User', () => {
       const userIds = ['some-id-1', 'some-id-2'];
       const resp = await management.user.history(userIds);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.history, userIds, {
-        token: 'key',
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.history, userIds);
 
       expect(resp).toEqual({
         code: 200,
