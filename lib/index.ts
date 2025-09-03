@@ -22,7 +22,7 @@ import {
   withCookie,
 } from './helpers';
 import withManagement from './management';
-import { AuthenticationInfo, RefreshAuthenticationInfo } from './types';
+import { AuthenticationInfo, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -162,13 +162,10 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * @param jwt the JWT string to parse and validate
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
-    async validateJwt(
-      jwt: string,
-      audience?: string | string[],
-    ): Promise<AuthenticationInfo> {
+    async validateJwt(jwt: string, options?: VerifyOptions): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
       const verifyOptions: Record<string, unknown> = { clockTolerance: 5 };
-      if (audience) verifyOptions.audience = audience;
+      if (options?.aud) verifyOptions.audience = options.aud;
       const res = await jwtVerify(jwt, sdk.getKey, verifyOptions);
       const token = res.payload;
 
@@ -194,12 +191,12 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      */
     async validateSession(
       sessionToken: string,
-      audience?: string | string[],
+      options?: VerifyOptions,
     ): Promise<AuthenticationInfo> {
       if (!sessionToken) throw Error('session token is required for validation');
 
       try {
-        const token = await sdk.validateJwt(sessionToken, audience);
+  const token = await sdk.validateJwt(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -215,7 +212,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      */
     async refreshSession(
       refreshToken: string,
-      audience?: string | string[],
+      options?: VerifyOptions,
     ): Promise<RefreshAuthenticationInfo> {
       if (!refreshToken) throw Error('refresh token is required to refresh a session');
 
@@ -229,7 +226,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
               (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
               sessionTokenCookieName,
             ) || jwtResp.data?.sessionJwt;
-          const token = await sdk.validateJwt(seesionJwt, audience);
+          const token = await sdk.validateJwt(seesionJwt, options);
           // add cookies to the token response if they exist
           token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
           if (jwtResp.data?.refreshJwt) {
@@ -256,19 +253,19 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     async validateAndRefreshSession(
       sessionToken?: string,
       refreshToken?: string,
-      audience?: string | string[],
+      options?: VerifyOptions,
     ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {
-        const token = await sdk.validateSession(sessionToken, audience);
+  const token = await sdk.validateSession(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
       }
 
-      return sdk.refreshSession(refreshToken, audience);
+  return sdk.refreshSession(refreshToken, options);
     },
 
     /**
@@ -469,3 +466,4 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
+export type { VerifyOptions } from './types';
