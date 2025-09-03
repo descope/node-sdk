@@ -5,7 +5,6 @@ import createSdk, {
   JWTResponse as CoreJWTResponse,
   wrapWith,
   createHttpClient,
-  CreateHttpClientConfig,
   RequestConfig,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
@@ -163,9 +162,14 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * @param jwt the JWT string to parse and validate
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
-    async validateJwt(jwt: string): Promise<AuthenticationInfo> {
+    async validateJwt(
+      jwt: string,
+      audience?: string | string[],
+    ): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(jwt, sdk.getKey, { clockTolerance: 5 });
+      const verifyOptions: Record<string, unknown> = { clockTolerance: 5 };
+      if (audience) verifyOptions.audience = audience;
+      const res = await jwtVerify(jwt, sdk.getKey, verifyOptions);
       const token = res.payload;
 
       if (token) {
@@ -188,11 +192,14 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * @param sessionToken session JWT to validate
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async validateSession(sessionToken: string): Promise<AuthenticationInfo> {
+    async validateSession(
+      sessionToken: string,
+      audience?: string | string[],
+    ): Promise<AuthenticationInfo> {
       if (!sessionToken) throw Error('session token is required for validation');
 
       try {
-        const token = await sdk.validateJwt(sessionToken);
+        const token = await sdk.validateJwt(sessionToken, audience);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -206,7 +213,10 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * @param refreshToken refresh JWT to refresh the session with
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async refreshSession(refreshToken: string): Promise<RefreshAuthenticationInfo> {
+    async refreshSession(
+      refreshToken: string,
+      audience?: string | string[],
+    ): Promise<RefreshAuthenticationInfo> {
       if (!refreshToken) throw Error('refresh token is required to refresh a session');
 
       try {
@@ -219,7 +229,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
               (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
               sessionTokenCookieName,
             ) || jwtResp.data?.sessionJwt;
-          const token = await sdk.validateJwt(seesionJwt);
+          const token = await sdk.validateJwt(seesionJwt, audience);
           // add cookies to the token response if they exist
           token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
           if (jwtResp.data?.refreshJwt) {
@@ -246,18 +256,19 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     async validateAndRefreshSession(
       sessionToken?: string,
       refreshToken?: string,
+      audience?: string | string[],
     ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {
-        const token = await sdk.validateSession(sessionToken);
+        const token = await sdk.validateSession(sessionToken, audience);
         return token;
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
       }
 
-      return sdk.refreshSession(refreshToken);
+      return sdk.refreshSession(refreshToken, audience);
     },
 
     /**
