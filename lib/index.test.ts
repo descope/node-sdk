@@ -120,6 +120,15 @@ describe('sdk', () => {
     });
   });
 
+  describe('audience validation (red)', () => {
+    it('should reject when audience is required but missing in token', async () => {
+      // Calling with an audience should enforce aud claim; current implementation ignores it.
+      await expect((sdk as any).validateSession(validToken, 'expected-aud')).rejects.toThrow(
+        'session validation failed',
+      );
+    });
+  });
+
   describe('getKey', () => {
     it('should throw an error when key does not exist', async () => {
       await expect(sdk.getKey({ kid: 'unknown-key' } as JWTHeaderParameters)).rejects.toThrow(
