@@ -15,6 +15,10 @@ let validTokenIssuerURL: string;
 let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
+// Audience-specific tokens
+let tokenAudA: string;
+let tokenAudB: string;
+let expiredTokenAudA: string;
 let permAuthInfo: AuthenticationInfo;
 let permTenantAuthInfo: AuthenticationInfo;
 
@@ -44,6 +48,21 @@ describe('sdk', () => {
       .setIssuer('project-id')
       .setExpirationTime(1981398111)
       .sign(privateKey);
+    // Valid tokens with audience claims
+    tokenAudA = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-a')
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    tokenAudB = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-b')
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
     validTokenIssuerURL = await new SignJWT({})
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
@@ -58,6 +77,13 @@ describe('sdk', () => {
       .sign(privateKey);
     expiredToken = await new SignJWT({})
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt(1181398100)
+      .setIssuer('project-id')
+      .setExpirationTime(1181398111)
+      .sign(privateKey);
+    expiredTokenAudA = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-a')
       .setIssuedAt(1181398100)
       .setIssuer('project-id')
       .setExpirationTime(1181398111)
@@ -125,6 +151,55 @@ describe('sdk', () => {
       // Calling with an audience should enforce aud claim; current implementation ignores it.
       await expect((sdk as any).validateSession(validToken, 'expected-aud')).rejects.toThrow(
         'session validation failed',
+      );
+    });
+
+    it('should reject when audience mismatches in token for validateSession', async () => {
+      await expect((sdk as any).validateSession(tokenAudA, 'aud-b')).rejects.toThrow(
+        'session validation failed',
+      );
+    });
+
+    it('should accept when audience matches in token for validateSession', async () => {
+      // This may pass before implementation but documents expected behavior post-change
+      await expect((sdk as any).validateSession(tokenAudA, 'aud-a')).resolves.toHaveProperty(
+        'jwt',
+        tokenAudA,
+      );
+    });
+
+    it('should reject when audience mismatches in validateJwt', async () => {
+      await expect((sdk as any).validateJwt(tokenAudB, 'aud-a')).rejects.toBeTruthy();
+    });
+
+    it('should reject when refreshSession returns session with mismatched audience', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<JWTResponse>);
+
+      await expect((sdk as any).refreshSession(validToken, 'aud-a')).rejects.toThrow(
+        'refresh token validation failed',
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should reject when validateAndRefreshSession refreshes to mismatched audience', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(
+        (sdk as any).validateAndRefreshSession(expiredTokenAudA, validToken, 'aud-a'),
+      ).rejects.toThrow('refresh token validation failed');
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should accept when any of audiences matches (array)', async () => {
+      await expect((sdk as any).validateSession(tokenAudA, ['nope', 'aud-a'])).resolves.toHaveProperty(
+        'jwt',
+        tokenAudA,
       );
     });
   });
