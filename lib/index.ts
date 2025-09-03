@@ -5,7 +5,6 @@ import createSdk, {
   JWTResponse as CoreJWTResponse,
   wrapWith,
   createHttpClient,
-  CreateHttpClientConfig,
   RequestConfig,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';

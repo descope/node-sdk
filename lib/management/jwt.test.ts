@@ -1,7 +1,7 @@
 import { JWTResponse, SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { UpdateJWTResponse } from './types';
+import { UpdateJWTResponse, ClientAssertionResponse } from './types';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
 
 const management = withManagement(mockHttpClient);
@@ -240,6 +240,42 @@ describe('Management JWT', () => {
       });
 
       expect(resp).toEqual({ code: 200, data: mockJWTResponse, ok: true, response: httpResponse });
+    });
+  });
+
+  describe('generateClientAssertionJwt', () => {
+    it('should send the correct generateClientAssertionJwt request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockJWTResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockJWTResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<ClientAssertionResponse> =
+        await management.jwt.generateClientAssertionJwt(
+          'https://example.com/issuer',
+          'https://example.com/subject',
+          ['https://example.com/token'],
+          300,
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.clientAssertion, {
+        issuer: 'https://example.com/issuer',
+        subject: 'https://example.com/subject',
+        audience: ['https://example.com/token'],
+        expiresIn: 300,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockJWTResponse,
+        ok: true,
+        response: httpResponse,
+      });
     });
   });
 });
