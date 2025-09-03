@@ -277,6 +277,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     async exchangeAccessKey(
       accessKey: string,
       loginOptions?: AccessKeyLoginOptions,
+      options?: VerifyOptions,
     ): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty');
 
@@ -300,7 +301,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
       }
 
       try {
-        const token = await sdk.validateJwt(sessionJwt);
+        const token = await sdk.validateJwt(sessionJwt, options);
         return token;
       } catch (error) {
         logger?.error('failed to parse jwt from access key', error);

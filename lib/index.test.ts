@@ -442,6 +442,29 @@ describe('sdk', () => {
       await expect(sdk.exchangeAccessKey('key', loginOptions)).resolves.toMatchObject(expected);
       expect(spyExchange).toHaveBeenCalledWith('key', loginOptions);
     });
+
+    it('should enforce audience on exchangeAccessKey when provided (match)', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudA },
+      } as SdkResponse<ExchangeAccessKeyResponse>);
+      await expect(sdk.exchangeAccessKey('key', undefined, { aud: 'aud-a' })).resolves.toHaveProperty(
+        'jwt',
+        tokenAudA,
+      );
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
+    });
+
+    it('should fail exchangeAccessKey when audience mismatches', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<ExchangeAccessKeyResponse>);
+      await expect(sdk.exchangeAccessKey('key', undefined, { aud: 'aud-a' })).rejects.toThrow(
+        'could not exchange access key - failed to validate jwt',
+      );
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
+    });
   });
 
   describe('validatePermissionsRoles', () => {
