@@ -9,6 +9,7 @@ import {
   rolesClaimName,
   sessionTokenCookieName,
 } from './constants';
+import { getCookieValue } from './helpers';
 
 let validToken: string;
 let validTokenIssuerURL: string;
@@ -711,6 +712,17 @@ describe('sdk', () => {
 
       // ensure that /keys is not called
       expect(newSdk.httpClient.get).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('utils', () => {
+    it('should get cookie value', () => {
+      const cookie =
+        'DS=s1.s2.s3; Path=/; Domain=api.descope.com; Expires=Tue, 02 Sep 2025 15:29:32 GMT; Max-Age=3599; HttpOnly; Secure; SameSite=None, DSR=r1.r2.r3; Path=/; Expires=Tue, 02 Sep 2025 15:29:32 GMT; Max-Age=3599; HttpOnly; Secure; SameSite=None, DSTEST=c1; path=/; expires=Tue, 02-Sep-25 14:59:32 GMT; domain=.descope.com; HttpOnly; Secure; SameSite=None';
+      expect(getCookieValue(cookie, 'DS')).toBe('s1.s2.s3');
+      expect(getCookieValue(cookie, 'DSR')).toBe('r1.r2.r3');
+      expect(getCookieValue(cookie, 'DSTEST')).toBe('c1');
+      expect(getCookieValue(cookie, 'UNKNOWN')).toBeNull();
     });
   });
 });
