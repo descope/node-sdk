@@ -224,12 +224,12 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
         const jwtResp = await sdk.refresh(refreshToken);
         if (jwtResp.ok) {
           // if refresh was successful, validate the new session JWT
-          const seesionJwt =
+          const sessionJwt =
             getCookieValue(
               (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
               sessionTokenCookieName,
             ) || jwtResp.data?.sessionJwt;
-          const token = await sdk.validateJwt(seesionJwt, options);
+          const token = await sdk.validateJwt(sessionJwt, options);
           // add cookies to the token response if they exist
           token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
           if (jwtResp.data?.refreshJwt) {
