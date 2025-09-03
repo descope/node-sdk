@@ -146,7 +146,7 @@ describe('sdk', () => {
     });
   });
 
-  describe('audience validation (red)', () => {
+  describe('audience validation', () => {
     it('should reject when audience is required but missing in token', async () => {
       // Calling with an audience should enforce aud claim; current implementation ignores it.
       await expect(
