@@ -5,7 +5,6 @@ import createSdk, {
   JWTResponse as CoreJWTResponse,
   wrapWith,
   createHttpClient,
-  CreateHttpClientConfig,
   RequestConfig,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
@@ -135,7 +134,8 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     ...coreSdk,
 
     // Overrides core-sdk refresh, because the core-sdk exposes queryParams, which is for internal use only
-    refresh: async (token?: string) => coreSdk.refresh(token),
+    refresh: async (token?: string, externalToken?: string) =>
+      coreSdk.refresh(token, undefined, externalToken),
 
     /**
      * Provides various APIs for managing a Descope project programmatically. A management key must
@@ -202,7 +202,9 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     },
 
     /**
-     * Refresh the session using a refresh token
+     * Refresh the session using a refresh token.
+     * For session migration, use {@link sdk.refresh}.
+     *
      * @param refreshToken refresh JWT to refresh the session with
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
