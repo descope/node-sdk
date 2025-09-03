@@ -509,9 +509,11 @@ describe('sdk', () => {
     it('should add descope headers to request', async () => {
       jest.resetModules();
       const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
       jest.doMock('@descope/core-js-sdk', () => ({
         __esModule: true,
         default: createCoreJs,
+        createHttpClient,
         wrapWith: (sdkInstance: object) => sdkInstance,
         addHooksToConfig: (config, hooks) => {
           // eslint-disable-next-line no-param-reassign
@@ -542,10 +544,12 @@ describe('sdk', () => {
     it('should add auth management key to request when there is no token', async () => {
       jest.resetModules();
       const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
 
       jest.doMock('@descope/core-js-sdk', () => ({
         __esModule: true,
         default: createCoreJs,
+        createHttpClient,
         wrapWith: (sdkInstance: object) => sdkInstance,
         addHooksToConfig: (config, hooks) => {
           // eslint-disable-next-line no-param-reassign
@@ -581,10 +585,12 @@ describe('sdk', () => {
     it('should add auth management key to request when there is token', async () => {
       jest.resetModules();
       const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
 
       jest.doMock('@descope/core-js-sdk', () => ({
         __esModule: true,
         default: createCoreJs,
+        createHttpClient,
         wrapWith: (sdkInstance: object) => sdkInstance,
         addHooksToConfig: (config, hooks) => {
           // eslint-disable-next-line no-param-reassign
@@ -612,11 +618,13 @@ describe('sdk', () => {
     it('should merge before request hooks if they are defined', async () => {
       jest.resetModules();
       const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
       const existingHook = jest.fn((config) => ({ ...config, customField: 'test' }));
 
       jest.doMock('@descope/core-js-sdk', () => ({
         __esModule: true,
         default: createCoreJs,
+        createHttpClient,
         wrapWith: (sdkInstance: object) => sdkInstance,
         addHooksToConfig: (config, hooks) => {
           // eslint-disable-next-line no-param-reassign

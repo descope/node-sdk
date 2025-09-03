@@ -1,4 +1,5 @@
 import {
+  HttpClient,
   SdkResponse,
   transformResponse,
   UserHistoryResponse,
@@ -20,7 +21,7 @@ import {
   ProviderTokenOptions,
   UserOptions,
 } from './types';
-import { CoreSdk, DeliveryMethodForTestUser } from '../types';
+import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
 import { transformUsersForBatch } from './helpers';
 
@@ -66,7 +67,7 @@ type MultipleUsersResponse = {
   users: UserResponse[];
 };
 
-const withUser = (sdk: CoreSdk, managementKey?: string) => {
+const withUser = (httpClient: HttpClient) => {
   /* Create User */
   function create(loginId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
   function create(
@@ -130,7 +131,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             roles: undefined,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.create, body, { token: managementKey }),
+      httpClient.post(apiPaths.user.create, body),
       (data) => data.user,
     );
   }
@@ -204,7 +205,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             test: true,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.createTestUser, body, { token: managementKey }),
+      httpClient.post(apiPaths.user.createTestUser, body),
       (data) => data.user,
     );
   }
@@ -296,7 +297,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             invite: true,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.create, body, { token: managementKey }),
+      httpClient.post(apiPaths.user.create, body),
       (data) => data.user,
     );
   }
@@ -365,7 +366,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
             roles: undefined,
           };
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.post(apiPaths.user.update, body, { token: managementKey }),
+      httpClient.post(apiPaths.user.update, body),
       (data) => data.user,
     );
   }
@@ -425,7 +426,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
     }
 
     return transformResponse<SingleUserResponse, UserResponse>(
-      sdk.httpClient.patch(apiPaths.user.patch, body, { token: managementKey }),
+      httpClient.patch(apiPaths.user.patch, body),
       (data) => data.user,
     );
   }
@@ -453,36 +454,26 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       templateId?: string,
     ): Promise<SdkResponse<CreateOrInviteBatchResponse>> =>
       transformResponse<CreateOrInviteBatchResponse, CreateOrInviteBatchResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.createBatch,
-          {
-            users: transformUsersForBatch(users),
-            invite: true,
-            inviteUrl,
-            sendMail,
-            sendSMS,
-            templateOptions,
-            templateId,
-          },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.createBatch, {
+          users: transformUsersForBatch(users),
+          invite: true,
+          inviteUrl,
+          sendMail,
+          sendSMS,
+          templateOptions,
+          templateId,
+        }),
         (data) => data,
       ),
     createBatch: (users: User[]): Promise<SdkResponse<CreateOrInviteBatchResponse>> =>
       transformResponse<CreateOrInviteBatchResponse, CreateOrInviteBatchResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.createBatch,
-          {
-            users: transformUsersForBatch(users),
-          },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.createBatch, {
+          users: transformUsersForBatch(users),
+        }),
         (data) => data,
       ),
     deleteBatch: (userIds: string[]): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(apiPaths.user.deleteBatch, { userIds }, { token: managementKey }),
-      ),
+      transformResponse(httpClient.post(apiPaths.user.deleteBatch, { userIds })),
     update,
     patch,
     /**
@@ -490,30 +481,23 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * @param loginId The login ID of the user
      */
     delete: (loginId: string): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(apiPaths.user.delete, { loginId }, { token: managementKey }),
-      ),
+      transformResponse(httpClient.post(apiPaths.user.delete, { loginId })),
     /**
      * Delete an existing user by User ID.
      * @param userId The user ID can be found in the Subject (`sub`) claim
      * in the user's JWT.
      */
     deleteByUserId: (userId: string): Promise<SdkResponse<UserResponse>> =>
-      transformResponse(
-        sdk.httpClient.post(apiPaths.user.delete, { userId }, { token: managementKey }),
-      ),
+      transformResponse(httpClient.post(apiPaths.user.delete, { userId })),
     /**
      * Delete all test users in the project.
      */
     deleteAllTestUsers: (): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.delete(apiPaths.user.deleteAllTestUsers, { token: managementKey }),
-      ),
+      transformResponse(httpClient.delete(apiPaths.user.deleteAllTestUsers)),
     load: (loginId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.get(apiPaths.user.load, {
+        httpClient.get(apiPaths.user.load, {
           queryParams: { loginId },
-          token: managementKey,
         }),
         (data) => data.user,
       ),
@@ -525,9 +509,8 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     loadByUserId: (userId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.get(apiPaths.user.load, {
+        httpClient.get(apiPaths.user.load, {
           queryParams: { userId },
-          token: managementKey,
         }),
         (data) => data.user,
       ),
@@ -537,9 +520,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * @returns The UserResponse if found, throws otherwise.
      */
     logoutUser: (loginId: string): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(apiPaths.user.logout, { loginId }, { token: managementKey }),
-      ),
+      transformResponse(httpClient.post(apiPaths.user.logout, { loginId })),
     /**
      * Logout a user from all devices by user ID. The ID can be found
      * on the user's JWT.
@@ -547,9 +528,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      * @returns The UserResponse if found, throws otherwise.
      */
     logoutUserByUserId: (userId: string): Promise<SdkResponse<never>> =>
-      transformResponse(
-        sdk.httpClient.post(apiPaths.user.logout, { userId }, { token: managementKey }),
-      ),
+      transformResponse(httpClient.post(apiPaths.user.logout, { userId })),
     /**
      * Search all users. Results can be filtered according to tenants and/or
      * roles, and also paginated used the limit and page parameters.
@@ -575,50 +554,38 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       phones?: string[],
     ): Promise<SdkResponse<UserResponse[]>> =>
       transformResponse<MultipleUsersResponse, UserResponse[]>(
-        sdk.httpClient.post(
-          apiPaths.user.search,
-          {
-            tenantIds,
-            roleNames: roles,
-            limit,
-            page,
-            testUsersOnly,
-            withTestUser,
-            customAttributes,
-            statuses,
-            emails,
-            phones,
-          },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.search, {
+          tenantIds,
+          roleNames: roles,
+          limit,
+          page,
+          testUsersOnly,
+          withTestUser,
+          customAttributes,
+          statuses,
+          emails,
+          phones,
+        }),
         (data) => data.users,
       ),
     searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
       transformResponse<MultipleUsersResponse, UserResponse[]>(
-        sdk.httpClient.post(
-          apiPaths.user.searchTestUsers,
-          {
-            ...searchReq,
-            withTestUser: true,
-            testUsersOnly: true,
-            roleNames: searchReq.roles,
-            roles: undefined,
-          },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.searchTestUsers, {
+          ...searchReq,
+          withTestUser: true,
+          testUsersOnly: true,
+          roleNames: searchReq.roles,
+          roles: undefined,
+        }),
         (data) => data.users,
       ),
     search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
       transformResponse<MultipleUsersResponse, UserResponse[]>(
-        sdk.httpClient.post(
-          apiPaths.user.search,
-          {
-            ...searchReq,
-            roleNames: searchReq.roles,
-            roles: undefined,
-          },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.search, {
+          ...searchReq,
+          roleNames: searchReq.roles,
+          roles: undefined,
+        }),
         (data) => data.users,
       ),
     /**
@@ -638,42 +605,29 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       providerTokenOptions?: ProviderTokenOptions,
     ): Promise<SdkResponse<ProviderTokenResponse>> =>
       transformResponse<ProviderTokenResponse>(
-        sdk.httpClient.get(apiPaths.user.getProviderToken, {
+        httpClient.get(apiPaths.user.getProviderToken, {
           queryParams: {
             loginId,
             provider,
             withRefreshToken: providerTokenOptions?.withRefreshToken ? 'true' : 'false',
             forceRefresh: providerTokenOptions?.forceRefresh ? 'true' : 'false',
           },
-          token: managementKey,
         }),
         (data) => data,
       ),
     activate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateStatus,
-          { loginId, status: 'enabled' },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateStatus, { loginId, status: 'enabled' }),
         (data) => data.user,
       ),
     deactivate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateStatus,
-          { loginId, status: 'disabled' },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateStatus, { loginId, status: 'disabled' }),
         (data) => data.user,
       ),
     updateLoginId: (loginId: string, newLoginId?: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateLoginId,
-          { loginId, newLoginId },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateLoginId, { loginId, newLoginId }),
         (data) => data.user,
       ),
     updateEmail: (
@@ -682,11 +636,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       isVerified: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateEmail,
-          { loginId, email, verified: isVerified },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateEmail, { loginId, email, verified: isVerified }),
         (data) => data.user,
       ),
     updatePhone: (
@@ -695,11 +645,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       isVerified: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updatePhone,
-          { loginId, phone, verified: isVerified },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updatePhone, { loginId, phone, verified: isVerified }),
         (data) => data.user,
       ),
     updateDisplayName: (
@@ -710,20 +656,18 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       familyName?: string,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateDisplayName,
-          { loginId, displayName, givenName, middleName, familyName },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateDisplayName, {
+          loginId,
+          displayName,
+          givenName,
+          middleName,
+          familyName,
+        }),
         (data) => data.user,
       ),
     updatePicture: (loginId: string, picture: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updatePicture,
-          { loginId, picture },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updatePicture, { loginId, picture }),
         (data) => data.user,
       ),
     updateCustomAttribute: (
@@ -732,56 +676,36 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       attributeValue: AttributesTypes,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.updateCustomAttribute,
-          { loginId, attributeKey, attributeValue },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.updateCustomAttribute, {
+          loginId,
+          attributeKey,
+          attributeValue,
+        }),
         (data) => data.user,
       ),
     setRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.setRole,
-          { loginId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setRole, { loginId, roleNames: roles }),
         (data) => data.user,
       ),
     addRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.addRole,
-          { loginId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.addRole, { loginId, roleNames: roles }),
         (data) => data.user,
       ),
     removeRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.removeRole,
-          { loginId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.removeRole, { loginId, roleNames: roles }),
         (data) => data.user,
       ),
     addTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.addTenant,
-          { loginId, tenantId },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.addTenant, { loginId, tenantId }),
         (data) => data.user,
       ),
     removeTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.removeTenant,
-          { loginId, tenantId },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.removeTenant, { loginId, tenantId }),
         (data) => data.user,
       ),
     setTenantRoles: (
@@ -790,11 +714,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.setRole,
-          { loginId, tenantId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setRole, { loginId, tenantId, roleNames: roles }),
         (data) => data.user,
       ),
     addTenantRoles: (
@@ -803,11 +723,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.addRole,
-          { loginId, tenantId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.addRole, { loginId, tenantId, roleNames: roles }),
         (data) => data.user,
       ),
     removeTenantRoles: (
@@ -816,38 +732,22 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.removeRole,
-          { loginId, tenantId, roleNames: roles },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.removeRole, { loginId, tenantId, roleNames: roles }),
         (data) => data.user,
       ),
     addSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.addSSOApps,
-          { loginId, ssoAppIds },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.addSSOApps, { loginId, ssoAppIds }),
         (data) => data.user,
       ),
     setSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.setSSOApps,
-          { loginId, ssoAppIds },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setSSOApps, { loginId, ssoAppIds }),
         (data) => data.user,
       ),
     removeSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.removeSSOApps,
-          { loginId, ssoAppIds },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.removeSSOApps, { loginId, ssoAppIds }),
         (data) => data.user,
       ),
 
@@ -868,11 +768,11 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       loginOptions?: LoginOptions,
     ): Promise<SdkResponse<GenerateOTPForTestResponse>> =>
       transformResponse<GenerateOTPForTestResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.generateOTPForTest,
-          { deliveryMethod, loginId, loginOptions },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.generateOTPForTest, {
+          deliveryMethod,
+          loginId,
+          loginOptions,
+        }),
         (data) => data,
       ),
 
@@ -895,11 +795,12 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       loginOptions?: LoginOptions,
     ): Promise<SdkResponse<GenerateMagicLinkForTestResponse>> =>
       transformResponse<GenerateMagicLinkForTestResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.generateMagicLinkForTest,
-          { deliveryMethod, loginId, URI: uri, loginOptions },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.generateMagicLinkForTest, {
+          deliveryMethod,
+          loginId,
+          URI: uri,
+          loginOptions,
+        }),
         (data) => data,
       ),
 
@@ -920,11 +821,11 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       loginOptions?: LoginOptions,
     ): Promise<SdkResponse<GenerateEnchantedLinkForTestResponse>> =>
       transformResponse<GenerateEnchantedLinkForTestResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.generateEnchantedLinkForTest,
-          { loginId, URI: uri, loginOptions },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.generateEnchantedLinkForTest, {
+          loginId,
+          URI: uri,
+          loginOptions,
+        }),
         (data) => data,
       ),
 
@@ -934,11 +835,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       timeout?: number,
     ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
       transformResponse<GenerateEmbeddedLinkResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.generateEmbeddedLink,
-          { loginId, customClaims, timeout },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.generateEmbeddedLink, { loginId, customClaims, timeout }),
         (data) => data,
       ),
 
@@ -958,11 +855,14 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
       timeout?: number,
     ): Promise<SdkResponse<GenerateEmbeddedLinkResponse>> =>
       transformResponse<GenerateEmbeddedLinkResponse>(
-        sdk.httpClient.post(
-          apiPaths.user.generateSignUpEmbeddedLink,
-          { loginId, user, emailVerified, phoneVerified, loginOptions, timeout },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.generateSignUpEmbeddedLink, {
+          loginId,
+          user,
+          emailVerified,
+          phoneVerified,
+          loginOptions,
+          timeout,
+        }),
         (data) => data,
       ),
 
@@ -976,11 +876,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     setTemporaryPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(
-          apiPaths.user.setTemporaryPassword,
-          { loginId, password },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setTemporaryPassword, { loginId, password }),
         (data) => data,
       ),
 
@@ -991,11 +887,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     setActivePassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(
-          apiPaths.user.setActivePassword,
-          { loginId, password },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setActivePassword, { loginId, password }),
         (data) => data,
       ),
 
@@ -1009,11 +901,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     setPassword: (loginId: string, password: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(
-          apiPaths.user.setPassword,
-          { loginId, password },
-          { token: managementKey },
-        ),
+        httpClient.post(apiPaths.user.setPassword, { loginId, password }),
         (data) => data,
       ),
 
@@ -1025,7 +913,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     expirePassword: (loginId: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(apiPaths.user.expirePassword, { loginId }, { token: managementKey }),
+        httpClient.post(apiPaths.user.expirePassword, { loginId }),
         (data) => data,
       ),
 
@@ -1037,7 +925,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     removeAllPasskeys: (loginId: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(apiPaths.user.removeAllPasskeys, { loginId }, { token: managementKey }),
+        httpClient.post(apiPaths.user.removeAllPasskeys, { loginId }),
         (data) => data,
       ),
 
@@ -1049,7 +937,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     removeTOTPSeed: (loginId: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        sdk.httpClient.post(apiPaths.user.removeTOTPSeed, { loginId }, { token: managementKey }),
+        httpClient.post(apiPaths.user.removeTOTPSeed, { loginId }),
         (data) => data,
       ),
 
@@ -1059,7 +947,7 @@ const withUser = (sdk: CoreSdk, managementKey?: string) => {
      */
     history: (userIds: string[]): Promise<SdkResponse<UserHistoryResponse[]>> =>
       transformResponse<UserHistoryResponse[]>(
-        sdk.httpClient.post(apiPaths.user.history, userIds, { token: managementKey }),
+        httpClient.post(apiPaths.user.history, userIds),
         (data) => data,
       ),
   };

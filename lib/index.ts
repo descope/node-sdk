@@ -4,6 +4,8 @@ import createSdk, {
   SdkResponse,
   JWTResponse as CoreJWTResponse,
   wrapWith,
+  createHttpClient,
+  RequestConfig,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
@@ -38,19 +40,24 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
 };
 
 const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
-  const coreSdk = createSdk({
+  const nodeHeaders = {
+    'x-descope-sdk-name': 'nodejs',
+    'x-descope-sdk-node-version': process?.versions?.node || '',
+    'x-descope-sdk-version': BUILD_VERSION,
+  };
+
+  const authSdkConfig = {
     fetch,
     ...config,
     baseHeaders: {
       ...config.baseHeaders,
-      'x-descope-sdk-name': 'nodejs',
-      'x-descope-sdk-node-version': process?.versions?.node || '',
-      'x-descope-sdk-version': BUILD_VERSION,
+      ...nodeHeaders,
     },
     hooks: {
       ...config.hooks,
       beforeRequest: [
-        (requestConfig) => {
+        // auth requests append the auth management key if provided
+        (requestConfig: RequestConfig) => {
           if (authManagementKey) {
             // eslint-disable-next-line no-param-reassign
             requestConfig.token = !requestConfig.token
@@ -62,7 +69,8 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
         },
       ].concat(config.hooks?.beforeRequest || []),
     },
-  });
+  };
+  const coreSdk = createSdk(authSdkConfig);
 
   const { projectId, logger } = config;
 
@@ -98,7 +106,29 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     );
   };
 
-  const management = withManagement(coreSdk, managementKey);
+  const mgmtSdkConfig = {
+    fetch,
+    ...config,
+    baseConfig: {
+      baseHeaders: {
+        ...config.baseHeaders,
+        ...nodeHeaders,
+      },
+    },
+    hooks: {
+      ...config.hooks,
+      beforeRequest: [
+        // management requests always use the management key as the token
+        (requestConfig: RequestConfig) => {
+          // eslint-disable-next-line no-param-reassign
+          requestConfig.token = managementKey;
+          return requestConfig;
+        },
+      ].concat(config.hooks?.beforeRequest || []),
+    },
+  };
+  const mgmtHttpClient = createHttpClient(mgmtSdkConfig);
+  const management = withManagement(mgmtHttpClient);
 
   const sdk = {
     ...coreSdk,
