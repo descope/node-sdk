@@ -21,7 +21,7 @@ const generateCookie = (name: string, value: string, options?: Record<string, st
  * @returns the value of the given cookie
  */
 export const getCookieValue = (cookie: string | null | undefined, name: string) => {
-  const match = cookie?.match(RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  const match = cookie?.match(RegExp(`(?:^|[;,]\\s*)${name}=([^;]*)`));
   return match ? match[1] : null;
 };
 
