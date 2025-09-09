@@ -161,13 +161,13 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     /**
      * Validate the given JWT with the right key and make sure the issuer is correct
      * @param jwt the JWT string to parse and validate
-     * @param options optional verification options (e.g., { aud })
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
     async validateJwt(jwt: string, options?: VerifyOptions): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
       const verifyOptions: Record<string, unknown> = { clockTolerance: 5 };
-      if (options?.aud) verifyOptions.audience = options.aud;
+      if (options?.audience) verifyOptions.audience = options.audience;
       const res = await jwtVerify(jwt, sdk.getKey, verifyOptions);
       const token = res.payload;
 
@@ -189,7 +189,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     /**
      * Validate an active session
      * @param sessionToken session JWT to validate
-     * @param options optional verification options (e.g., { aud })
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateSession(
@@ -213,7 +213,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * For session migration, use {@link sdk.refresh}.
      *
      * @param refreshToken refresh JWT to refresh the session with
-     * @param options optional verification options for the new session (e.g., { aud })
+     * @param options optional verification options for the new session (e.g., { audience })
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async refreshSession(
@@ -254,7 +254,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
-     * @param options optional verification options (e.g., { aud }) used on validation and post-refresh
+     * @param options optional verification options (e.g., { audience }) used on validation and post-refresh
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
@@ -279,7 +279,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
      * @param loginOptions Optional advanced controls over login parameters
-     * @param options optional verification options for the returned session (e.g., { aud })
+     * @param options optional verification options for the returned session (e.g., { audience })
      * @returns AuthenticationInfo with session JWT data
      */
     async exchangeAccessKey(

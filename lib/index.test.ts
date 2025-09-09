@@ -151,12 +151,12 @@ describe('sdk', () => {
     it('should reject when audience is required but missing in token', async () => {
       // Calling with an audience should enforce aud claim; current implementation ignores it.
       await expect(
-        (sdk as any).validateSession(validToken, { aud: 'expected-aud' }),
+        (sdk as any).validateSession(validToken, { audience: 'expected-aud' }),
       ).rejects.toThrow('session validation failed');
     });
 
     it('should reject when audience mismatches in token for validateSession', async () => {
-      await expect((sdk as any).validateSession(tokenAudA, { aud: 'aud-b' })).rejects.toThrow(
+      await expect((sdk as any).validateSession(tokenAudA, { audience: 'aud-b' })).rejects.toThrow(
         'session validation failed',
       );
     });
@@ -164,12 +164,12 @@ describe('sdk', () => {
     it('should accept when audience matches in token for validateSession', async () => {
       // This may pass before implementation but documents expected behavior post-change
       await expect(
-        (sdk as any).validateSession(tokenAudA, { aud: 'aud-a' }),
+        (sdk as any).validateSession(tokenAudA, { audience: 'aud-a' }),
       ).resolves.toHaveProperty('jwt', tokenAudA);
     });
 
     it('should reject when audience mismatches in validateJwt', async () => {
-      await expect((sdk as any).validateJwt(tokenAudB, { aud: 'aud-a' })).rejects.toBeTruthy();
+      await expect((sdk as any).validateJwt(tokenAudB, { audience: 'aud-a' })).rejects.toBeTruthy();
     });
 
     it('should reject when refreshSession returns session with mismatched audience', async () => {
@@ -178,7 +178,7 @@ describe('sdk', () => {
         data: { sessionJwt: tokenAudB },
       } as SdkResponse<JWTResponse>);
 
-      await expect((sdk as any).refreshSession(validToken, { aud: 'aud-a' })).rejects.toThrow(
+      await expect((sdk as any).refreshSession(validToken, { audience: 'aud-a' })).rejects.toThrow(
         'refresh token validation failed',
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
@@ -191,14 +191,14 @@ describe('sdk', () => {
       } as SdkResponse<JWTResponse>);
 
       await expect(
-        (sdk as any).validateAndRefreshSession(expiredTokenAudA, validToken, { aud: 'aud-a' }),
+        (sdk as any).validateAndRefreshSession(expiredTokenAudA, validToken, { audience: 'aud-a' }),
       ).rejects.toThrow('refresh token validation failed');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
 
     it('should accept when any of audiences matches (array)', async () => {
       await expect(
-        (sdk as any).validateSession(tokenAudA, { aud: ['nope', 'aud-a'] }),
+        (sdk as any).validateSession(tokenAudA, { audience: ['nope', 'aud-a'] }),
       ).resolves.toHaveProperty('jwt', tokenAudA);
     });
   });
@@ -473,7 +473,7 @@ describe('sdk', () => {
         data: { sessionJwt: tokenAudA },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(
-        sdk.exchangeAccessKey('key', undefined, { aud: 'aud-a' }),
+        sdk.exchangeAccessKey('key', undefined, { audience: 'aud-a' }),
       ).resolves.toHaveProperty('jwt', tokenAudA);
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
@@ -483,7 +483,7 @@ describe('sdk', () => {
         ok: true,
         data: { sessionJwt: tokenAudB },
       } as SdkResponse<ExchangeAccessKeyResponse>);
-      await expect(sdk.exchangeAccessKey('key', undefined, { aud: 'aud-a' })).rejects.toThrow(
+      await expect(sdk.exchangeAccessKey('key', undefined, { audience: 'aud-a' })).rejects.toThrow(
         'could not exchange access key - failed to validate jwt',
       );
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);

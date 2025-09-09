@@ -23,7 +23,7 @@ export interface RefreshAuthenticationInfo extends AuthenticationInfo {
 
 /** Options for token verification (extensible). For now only audience. */
 export interface VerifyOptions {
-  aud?: string | string[];
+  audience?: string | string[];
 }
 
 /** Descope core SDK type */

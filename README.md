@@ -442,24 +442,26 @@ const refreshed = await descopeClient.refreshSession('refreshToken');
 // have the session validated and automatically refreshed when expired
 const combined = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
 
-// Optional: Validate audience (aud) for backend-only flows
+// Optional: Validate audience  for backend-only flows
 // Provide VerifyOptions with the expected audience(s)
-const withAud = await descopeClient.validateSession('sessionToken', { aud: 'my-audience' });
-const withAudArray = await descopeClient.validateSession('sessionToken', { aud: ['a', 'b'] });
+const withAud = await descopeClient.validateSession('sessionToken', { audience: 'my-audience' });
+const withAudArray = await descopeClient.validateSession('sessionToken', { audience: ['a', 'b'] });
 
 // Audience is enforced for session JWTs only (including after refresh)
-const refreshedWithAud = await descopeClient.refreshSession('refreshToken', { aud: 'api' });
+const refreshedWithAud = await descopeClient.refreshSession('refreshToken', { audience: 'api' });
 const combinedWithAud = await descopeClient.validateAndRefreshSession(
   'sessionToken',
   'refreshToken',
-  { aud: 'api' },
+  { audience: 'api' },
 );
 ```
 
 For access keys, you can also validate the returned session against an audience:
 
 ```typescript
-const authInfo = await descopeClient.exchangeAccessKey('access_key', undefined, { aud: 'api' });
+const authInfo = await descopeClient.exchangeAccessKey('access_key', undefined, {
+  audience: 'api',
+});
 ```
 
 Choose the right session validation and refresh combination that suits your needs.
