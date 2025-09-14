@@ -22,7 +22,7 @@ import {
   withCookie,
 } from './helpers';
 import withManagement from './management';
-import { AuthenticationInfo, RefreshAuthenticationInfo } from './types';
+import { AuthenticationInfo, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -161,11 +161,14 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     /**
      * Validate the given JWT with the right key and make sure the issuer is correct
      * @param jwt the JWT string to parse and validate
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
-    async validateJwt(jwt: string): Promise<AuthenticationInfo> {
+    async validateJwt(jwt: string, options?: VerifyOptions): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(jwt, sdk.getKey, { clockTolerance: 5 });
+      const verifyOptions: Record<string, unknown> = { clockTolerance: 5 };
+      if (options?.audience) verifyOptions.audience = options.audience;
+      const res = await jwtVerify(jwt, sdk.getKey, verifyOptions);
       const token = res.payload;
 
       if (token) {
@@ -186,13 +189,17 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     /**
      * Validate an active session
      * @param sessionToken session JWT to validate
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async validateSession(sessionToken: string): Promise<AuthenticationInfo> {
+    async validateSession(
+      sessionToken: string,
+      options?: VerifyOptions,
+    ): Promise<AuthenticationInfo> {
       if (!sessionToken) throw Error('session token is required for validation');
 
       try {
-        const token = await sdk.validateJwt(sessionToken);
+        const token = await sdk.validateJwt(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -206,9 +213,13 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * For session migration, use {@link sdk.refresh}.
      *
      * @param refreshToken refresh JWT to refresh the session with
+     * @param options optional verification options for the new session (e.g., { audience })
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async refreshSession(refreshToken: string): Promise<RefreshAuthenticationInfo> {
+    async refreshSession(
+      refreshToken: string,
+      options?: VerifyOptions,
+    ): Promise<RefreshAuthenticationInfo> {
       if (!refreshToken) throw Error('refresh token is required to refresh a session');
 
       try {
@@ -216,12 +227,12 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
         const jwtResp = await sdk.refresh(refreshToken);
         if (jwtResp.ok) {
           // if refresh was successful, validate the new session JWT
-          const seesionJwt =
+          const sessionJwt =
             getCookieValue(
               (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
               sessionTokenCookieName,
             ) || jwtResp.data?.sessionJwt;
-          const token = await sdk.validateJwt(seesionJwt);
+          const token = await sdk.validateJwt(sessionJwt, options);
           // add cookies to the token response if they exist
           token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
           if (jwtResp.data?.refreshJwt) {
@@ -243,34 +254,38 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
      * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
+     * @param options optional verification options (e.g., { audience }) used on validation and post-refresh
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
       sessionToken?: string,
       refreshToken?: string,
+      options?: VerifyOptions,
     ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {
-        const token = await sdk.validateSession(sessionToken);
+        const token = await sdk.validateSession(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
       }
 
-      return sdk.refreshSession(refreshToken);
+      return sdk.refreshSession(refreshToken, options);
     },
 
     /**
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
      * @param loginOptions Optional advanced controls over login parameters
+     * @param options optional verification options for the returned session (e.g., { audience })
      * @returns AuthenticationInfo with session JWT data
      */
     async exchangeAccessKey(
       accessKey: string,
       loginOptions?: AccessKeyLoginOptions,
+      options?: VerifyOptions,
     ): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty');
 
@@ -294,7 +309,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
       }
 
       try {
-        const token = await sdk.validateJwt(sessionJwt);
+        const token = await sdk.validateJwt(sessionJwt, options);
         return token;
       } catch (error) {
         logger?.error('failed to parse jwt from access key', error);
@@ -460,3 +475,4 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
+export type { VerifyOptions } from './types';
