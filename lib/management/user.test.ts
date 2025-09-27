@@ -575,6 +575,7 @@ describe('Management User', () => {
         verifiedPhone: false,
         scim: true,
         ssoAppIds: ['sso1', 'sso2'],
+        status: 'invited',
       });
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patch, {
@@ -587,6 +588,7 @@ describe('Management User', () => {
         verifiedPhone: false,
         ssoAppIds: ['sso1', 'sso2'],
         scim: true,
+        status: 'invited',
       });
     });
   });

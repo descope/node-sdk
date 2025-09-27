@@ -424,6 +424,9 @@ const withUser = (httpClient: HttpClient) => {
     if (options.scim !== undefined) {
       body.scim = options.scim;
     }
+    if (options.status !== undefined) {
+      body.status = options.status;
+    }
 
     return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.patch(apiPaths.user.patch, body),
@@ -968,6 +971,7 @@ export interface PatchUserOptions {
   familyName?: string;
   ssoAppIds?: string[];
   scim?: boolean;
+  status?: UserStatus;
 }
 
 export default withUser;
