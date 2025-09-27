@@ -17,6 +17,7 @@ import {
   UserStatus,
   User,
   CreateOrInviteBatchResponse,
+  PatchUserBatchResponse,
   TemplateOptions,
   ProviderTokenOptions,
   UserOptions,
@@ -373,11 +374,11 @@ const withUser = (httpClient: HttpClient) => {
   /* Update User End */
 
   /**
-   * Patches an existing user.
+   * Helper function to build patch request body from options
    * @param loginId The login ID of the user
-   * @param options The fields to update. Only the provided ones will be updated.
+   * @param options The fields to update
    */
-  function patch(loginId: string, options: PatchUserOptions): Promise<SdkResponse<UserResponse>> {
+  function buildPatchRequestBody(loginId: string, options: PatchUserOptions): any {
     const body = {
       loginId,
     } as any;
@@ -428,9 +429,37 @@ const withUser = (httpClient: HttpClient) => {
       body.status = options.status;
     }
 
+    return body;
+  }
+
+  /**
+   * Patches an existing user.
+   * @param loginId The login ID of the user
+   * @param options The fields to update. Only the provided ones will be updated.
+   */
+  function patch(loginId: string, options: PatchUserOptions): Promise<SdkResponse<UserResponse>> {
+    const body = buildPatchRequestBody(loginId, options);
+
     return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.patch(apiPaths.user.patch, body),
       (data) => data.user,
+    );
+  }
+
+  /**
+   * Patches multiple users in batch.
+   * @param users Array of patch requests, each containing loginId and the fields to update
+   */
+  function patchBatch(
+    users: Array<{ loginId: string } & PatchUserOptions>,
+  ): Promise<SdkResponse<PatchUserBatchResponse>> {
+    const body = {
+      users: users.map((user) => buildPatchRequestBody(user.loginId, user)),
+    };
+
+    return transformResponse<PatchUserBatchResponse, PatchUserBatchResponse>(
+      httpClient.patch(apiPaths.user.patchBatch, body),
+      (data) => data,
     );
   }
 
@@ -479,6 +508,7 @@ const withUser = (httpClient: HttpClient) => {
       transformResponse(httpClient.post(apiPaths.user.deleteBatch, { userIds })),
     update,
     patch,
+    patchBatch,
     /**
      * Delete an existing user.
      * @param loginId The login ID of the user

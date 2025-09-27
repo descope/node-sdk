@@ -9,6 +9,7 @@ import {
   ProviderTokenResponse,
   GenerateEmbeddedLinkResponse,
   CreateOrInviteBatchResponse,
+  PatchUserBatchResponse,
   UserPasswordHashed,
 } from './types';
 
@@ -34,6 +35,17 @@ const mockMgmtInviteBatchResponse = {
       user: { loginId: 'two', email: 'two@two' },
     },
   ],
+};
+
+const mockMgmtPatchBatchResponse = {
+  patchedUsers: [{ loginId: 'user1', email: 'user1@example.com' }],
+  failedUsers: [
+    {
+      failure: 'user not found',
+      user: { loginId: 'user2', email: 'user2@example.com' },
+    },
+  ],
+  additionalErrors: { user3: 'invalid email format' },
 };
 
 describe('Management User', () => {
@@ -589,6 +601,119 @@ describe('Management User', () => {
         ssoAppIds: ['sso1', 'sso2'],
         scim: true,
         status: 'invited',
+      });
+    });
+  });
+
+  describe('patchBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtPatchBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtPatchBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+      const resp: SdkResponse<PatchUserBatchResponse> = await management.user.patchBatch([
+        {
+          loginId: 'user1',
+          email: 'user1@example.com',
+          displayName: 'User One',
+          roles: ['role1'],
+        },
+        {
+          loginId: 'user2',
+          phone: '+1234567890',
+          verifiedPhone: true,
+          customAttributes: { department: 'engineering' },
+        },
+        {
+          loginId: 'user3',
+          status: 'disabled',
+        },
+      ]);
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patchBatch, {
+        users: [
+          {
+            loginId: 'user1',
+            email: 'user1@example.com',
+            displayName: 'User One',
+            roleNames: ['role1'],
+          },
+          {
+            loginId: 'user2',
+            phone: '+1234567890',
+            verifiedPhone: true,
+            customAttributes: { department: 'engineering' },
+          },
+          {
+            loginId: 'user3',
+            status: 'disabled',
+          },
+        ],
+      });
+      expect(resp).toEqual({
+        code: 200,
+        data: mockMgmtPatchBatchResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should handle empty user array', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ patchedUsers: [], failedUsers: [], additionalErrors: {} }),
+        clone: () => ({
+          json: () => Promise.resolve({ patchedUsers: [], failedUsers: [], additionalErrors: {} }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+      const resp: SdkResponse<PatchUserBatchResponse> = await management.user.patchBatch([]);
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patchBatch, {
+        users: [],
+      });
+      expect(resp).toEqual({
+        code: 200,
+        data: { patchedUsers: [], failedUsers: [], additionalErrors: {} },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should only include defined fields in patch request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtPatchBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtPatchBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+      await management.user.patchBatch([
+        {
+          loginId: 'user1',
+          email: 'user1@example.com',
+          phone: undefined,
+          displayName: 'Updated Name',
+          roles: undefined,
+          verifiedEmail: true,
+          verifiedPhone: undefined,
+        },
+      ]);
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patchBatch, {
+        users: [
+          {
+            loginId: 'user1',
+            email: 'user1@example.com',
+            displayName: 'Updated Name',
+            verifiedEmail: true,
+          },
+        ],
       });
     });
   });

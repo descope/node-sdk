@@ -6,6 +6,7 @@ export default {
     createBatch: '/v1/mgmt/user/create/batch',
     update: '/v1/mgmt/user/update',
     patch: '/v1/mgmt/user/patch',
+    patchBatch: '/v1/mgmt/user/patch/batch',
     delete: '/v1/mgmt/user/delete',
     deleteBatch: '/v1/mgmt/user/delete/batch',
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
