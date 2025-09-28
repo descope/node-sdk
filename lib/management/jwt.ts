@@ -78,9 +78,16 @@ const withJWT = (httpClient: HttpClient) => ({
     subject: string,
     audience: string[],
     expiresIn: number,
+    flattenAudience?: boolean,
   ): Promise<SdkResponse<ClientAssertionResponse>> =>
     transformResponse(
-      httpClient.post(apiPaths.jwt.clientAssertion, { issuer, subject, audience, expiresIn }),
+      httpClient.post(apiPaths.jwt.clientAssertion, {
+        issuer,
+        subject,
+        audience,
+        expiresIn,
+        flattenAudience,
+      }),
     ),
 });
 
