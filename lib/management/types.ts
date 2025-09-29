@@ -360,6 +360,8 @@ export type GenerateEmbeddedLinkResponse = {
 
 export type AttributesTypes = string | boolean | number | string[];
 
+export type SearchAttributesTypes = string | boolean | number | string[] | null;
+
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
 export type User = {

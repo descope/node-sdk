@@ -14,6 +14,7 @@ import {
   GenerateOTPForTestResponse,
   GenerateEmbeddedLinkResponse,
   AttributesTypes,
+  SearchAttributesTypes,
   UserStatus,
   User,
   CreateOrInviteBatchResponse,
@@ -46,7 +47,7 @@ type SearchRequest = {
   statuses?: UserStatus[];
   roles?: string[];
   tenantIds?: string[];
-  customAttributes?: Record<string, AttributesTypes>;
+  customAttributes?: Record<string, SearchAttributesTypes>;
   withTestUser?: boolean;
   testUsersOnly?: boolean;
   ssoAppIds?: string[];
