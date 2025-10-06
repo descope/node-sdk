@@ -278,4 +278,42 @@ describe('Management JWT', () => {
       });
     });
   });
+
+  describe('generateClientAssertionJwtWithFlattenedAudience', () => {
+    it('should send the correct generateClientAssertionJwt request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockJWTResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockJWTResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<ClientAssertionResponse> =
+        await management.jwt.generateClientAssertionJwt(
+          'https://example.com/issuer',
+          'https://example.com/subject',
+          ['https://example.com/token'],
+          300,
+          true,
+        );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.clientAssertion, {
+        issuer: 'https://example.com/issuer',
+        subject: 'https://example.com/subject',
+        audience: ['https://example.com/token'],
+        expiresIn: 300,
+        flattenAudience: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockJWTResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });
