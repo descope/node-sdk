@@ -7,6 +7,7 @@ interface Token {
   sub?: string;
   exp?: number;
   iss?: string;
+  scopes?: string[];
   [claim: string]: unknown;
 }
 
@@ -19,6 +20,11 @@ export interface AuthenticationInfo {
 
 export interface RefreshAuthenticationInfo extends AuthenticationInfo {
   refreshJwt?: string;
+}
+
+/** Options for token verification (extensible). For now only audience. */
+export interface VerifyOptions {
+  audience?: string | string[];
 }
 
 /** Descope core SDK type */
