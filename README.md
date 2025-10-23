@@ -1235,6 +1235,7 @@ const clientAssertionRes = await descopeClient.management.jwt.generateClientAsse
   ['https://example.com/token'], // audience
   300, // expiresIn - number of seconds the token will will be valid for
   false, // Optional. flattenAudience - set the audience claim as one string instead of array of strings (for case only one audience value has given)
+  'RS256', // Optional. algorithm - set the signing algorithm, value should be one of 'RS256', 'RS384', 'ES384' (default is RS256)
 );
 // clientAssertionRes.data.jwt contains the client assertion JWT
 ```
