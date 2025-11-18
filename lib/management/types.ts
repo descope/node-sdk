@@ -1021,4 +1021,5 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
 export type ManagementFlowOptions = {
   input?: Record<string, any>;
   preview?: boolean;
+  tenant?: string;
 };
