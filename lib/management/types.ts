@@ -492,10 +492,16 @@ export type OIDCAttributeMapping = {
   middleName?: string;
   familyName?: string;
   picture?: string;
+  group?: string;
   verifiedEmail?: string;
   verifiedPhone?: string;
   customAttributes?: Record<string, string>;
 };
+
+export type OIDCRoleMapping = Array<{
+  roleName: string;
+  groups: string[];
+}>;
 
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
 
@@ -515,6 +521,7 @@ export type SSOOIDCSettings = {
   prompt?: Prompt[];
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
+  roleMappings?: OIDCRoleMapping;
 };
 
 export type SSOSAMLSettings = {
