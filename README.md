@@ -857,8 +857,8 @@ const userRes = await descopeClient.management.user.load('desmond@descope.com');
 // If needed, users can be loaded using the user ID as well
 const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
 
-// loadUsers - load users by their user id, optionally you can deicde if to return invalid users
-const usersRes = await descopeClient.management.user.loadUsers({ userIds: ['<user-ID>'] });
+// loadUsers - load users by their user id, optionally you can decide if to return invalid users
+const usersRes = await descopeClient.management.user.loadUsers(['<user-ID>']);
 usersRes.data.forEach((user) => {
   // do something
 });
