@@ -12,6 +12,7 @@ export default {
     deleteAllTestUsers: '/v1/mgmt/user/test/delete/all',
     load: '/v1/mgmt/user',
     logout: '/v1/mgmt/user/logout',
+    loadUsers: '/v1/mgmt/users/load',
     search: '/v2/mgmt/user/search',
     searchTestUsers: '/v2/mgmt/user/search/test',
     getProviderToken: '/v1/mgmt/user/provider/token',

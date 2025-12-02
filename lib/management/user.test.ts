@@ -926,6 +926,37 @@ describe('Management User', () => {
     });
   });
 
+  describe('loadUsers', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse[]> = await management.user.loadUsers(
+        ['uid1', 'uid2'],
+        true,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.loadUsers, {
+        userIds: ['uid1', 'uid2'],
+        includeInvalidUsers: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('searchAll', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
