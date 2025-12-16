@@ -358,7 +358,7 @@ export type GenerateEmbeddedLinkResponse = {
   token: string;
 };
 
-export type AttributesTypes = string | boolean | number | string[];
+export type AttributesTypes = string | boolean | number | string[] | null;
 
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
