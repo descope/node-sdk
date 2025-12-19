@@ -7,6 +7,7 @@ interface Token {
   sub?: string;
   exp?: number;
   iss?: string;
+  scopes?: string[];
   [claim: string]: unknown;
 }
 
