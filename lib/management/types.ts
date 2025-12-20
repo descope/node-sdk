@@ -378,7 +378,7 @@ export type User = {
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
-  status?: UserStatus; // the status of the user (enabled, disabled, invited)
+  status?: UserStatus; // the status of the user (enabled, disabled, invited, expired)
   createdTime?: number; // the time the user was created in seconds since epoch
 };
 
@@ -625,7 +625,7 @@ export type AuditRecord = {
   data: Record<string, any>;
 };
 
-export type UserStatus = 'enabled' | 'disabled' | 'invited';
+export type UserStatus = 'enabled' | 'disabled' | 'invited' | 'expired';
 
 export type AuthzNodeExpressionType =
   | 'self' // direct relation expression
