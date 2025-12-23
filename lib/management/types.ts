@@ -473,8 +473,8 @@ export type SSOSAMLSettingsResponse = {
   groupsMapping: RoleMappings;
   defaultSSORoles: string[];
   redirectUrl: string;
-  providerID: string;
-  scimProviderID: string;
+  providerID?: string;
+  scimProviderID?: string;
 };
 
 export type SSOSettings = {
@@ -524,8 +524,8 @@ export type SSOOIDCSettings = {
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
   roleMappings?: OIDCRoleMapping;
-  providerID: string;
-  scimProviderID: string;
+  providerID?: string;
+  scimProviderID?: string;
 };
 
 export type SSOSAMLSettings = {

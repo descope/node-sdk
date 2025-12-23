@@ -548,9 +548,13 @@ describe('Management SSO', () => {
           userAttrMapping: {
             name: 'uan',
           },
+          providerID: 'pidoidc',
+          scimProviderID: 'scimidoidc',
         },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
+          providerID: 'pidsaml',
+          scimProviderID: 'scimidsaml',
         },
       };
       const httpResponse = {
@@ -583,9 +587,13 @@ describe('Management SSO', () => {
             attributeMapping: {
               name: 'uan',
             },
+            providerID: 'pidoidc',
+            scimProviderID: 'scimidoidc',
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
+            providerID: 'pidsaml',
+            scimProviderID: 'scimidsaml',
           },
         },
       });
