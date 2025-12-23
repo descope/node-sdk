@@ -1022,3 +1022,52 @@ export type ManagementFlowOptions = {
   input?: Record<string, any>;
   preview?: boolean;
 };
+
+/** Descoper role types */
+export type DescoperRole = 'admin' | 'developer' | 'support' | 'auditor';
+
+/** Descoper attributes */
+export type DescoperAttributes = {
+  displayName?: string;
+  email?: string;
+  phone?: string;
+};
+
+/** Descoper tag role assignment */
+export type DescoperTagRole = {
+  tags?: string[];
+  role?: DescoperRole;
+};
+
+/** Descoper project role assignment */
+export type DescoperProjectRole = {
+  projectIds?: string[];
+  role?: DescoperRole;
+};
+
+/** Descoper RBAC configuration */
+export type DescoperRBAC = {
+  isCompanyAdmin?: boolean;
+  tags?: DescoperTagRole[];
+  projects?: DescoperProjectRole[];
+};
+
+/** Descoper user object */
+export type Descoper = {
+  id?: string;
+  loginIds?: string[];
+  attributes?: DescoperAttributes;
+  rbac?: DescoperRBAC;
+  status?: string;
+};
+
+/** Descoper creation request */
+export type DescoperCreate = {
+  loginId?: string;
+  attributes?: DescoperAttributes;
+  sendInvite?: boolean;
+  rbac?: DescoperRBAC;
+};
+
+/** Descoper load/list options */
+export type DescoperLoadOptions = Record<string, never>;
