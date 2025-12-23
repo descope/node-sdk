@@ -358,7 +358,7 @@ export type GenerateEmbeddedLinkResponse = {
   token: string;
 };
 
-export type AttributesTypes = string | boolean | number | string[];
+export type AttributesTypes = string | boolean | number | string[] | null;
 
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
@@ -378,7 +378,7 @@ export type User = {
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
-  status?: UserStatus; // the status of the user (enabled, disabled, invited)
+  status?: UserStatus; // the status of the user (enabled, disabled, invited, expired)
   createdTime?: number; // the time the user was created in seconds since epoch
 };
 
@@ -492,10 +492,16 @@ export type OIDCAttributeMapping = {
   middleName?: string;
   familyName?: string;
   picture?: string;
+  group?: string;
   verifiedEmail?: string;
   verifiedPhone?: string;
   customAttributes?: Record<string, string>;
 };
+
+export type OIDCRoleMapping = Array<{
+  roleName: string;
+  groups: string[];
+}>;
 
 export type Prompt = 'none' | 'login' | 'consent' | 'select_account';
 
@@ -515,6 +521,7 @@ export type SSOOIDCSettings = {
   prompt?: Prompt[];
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
+  roleMappings?: OIDCRoleMapping;
 };
 
 export type SSOSAMLSettings = {
@@ -618,7 +625,7 @@ export type AuditRecord = {
   data: Record<string, any>;
 };
 
-export type UserStatus = 'enabled' | 'disabled' | 'invited';
+export type UserStatus = 'enabled' | 'disabled' | 'invited' | 'expired';
 
 export type AuthzNodeExpressionType =
   | 'self' // direct relation expression
@@ -1021,6 +1028,7 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
 export type ManagementFlowOptions = {
   input?: Record<string, any>;
   preview?: boolean;
+  tenant?: string;
 };
 
 export type DescoperRole = 'admin' | 'developer' | 'support' | 'auditor';

@@ -212,7 +212,7 @@ describe('Management flow', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const id = 'flow-id';
-      const options = { input: { userId: '123' }, preview: true };
+      const options = { input: { userId: '123' }, preview: true, tenant: 'tenant-1' };
       const resp = await management.flow.run(id, options);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.run, { flowId: id, options });

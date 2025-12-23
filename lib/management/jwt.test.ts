@@ -298,6 +298,7 @@ describe('Management JWT', () => {
           ['https://example.com/token'],
           300,
           true,
+          'ES384',
         );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwt.clientAssertion, {
@@ -306,6 +307,7 @@ describe('Management JWT', () => {
         audience: ['https://example.com/token'],
         expiresIn: 300,
         flattenAudience: true,
+        algorithm: 'ES384',
       });
 
       expect(resp).toEqual({

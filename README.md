@@ -857,6 +857,12 @@ const userRes = await descopeClient.management.user.load('desmond@descope.com');
 // If needed, users can be loaded using the user ID as well
 const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
 
+// loadUsers - load users by their user id, optionally you can decide if to return invalid users
+const usersRes = await descopeClient.management.user.loadUsers(['<user-ID>']);
+usersRes.data.forEach((user) => {
+  // do something
+});
+
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
 const usersRes = await descopeClient.management.user.search({ tenantIds: ['tenant-ID'] });
@@ -1235,6 +1241,7 @@ const clientAssertionRes = await descopeClient.management.jwt.generateClientAsse
   ['https://example.com/token'], // audience
   300, // expiresIn - number of seconds the token will will be valid for
   false, // Optional. flattenAudience - set the audience claim as one string instead of array of strings (for case only one audience value has given)
+  'RS256', // Optional. algorithm - set the signing algorithm, value should be one of 'RS256', 'RS384', 'ES384' (default is RS256)
 );
 // clientAssertionRes.data.jwt contains the client assertion JWT
 ```

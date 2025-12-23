@@ -563,6 +563,23 @@ const withUser = (httpClient: HttpClient) => {
     logoutUserByUserId: (userId: string): Promise<SdkResponse<never>> =>
       transformResponse(httpClient.post(apiPaths.user.logout, { userId })),
     /**
+     * loadUsers by their user IDs.
+     * @param userIds list of user IDs to load
+     * @param includeInvalidUsers optionally include disabled/expired users in the response
+     * @returns An array of UserResponse found by the query
+     */
+    loadUsers: (
+      userIds: string[],
+      includeInvalidUsers?: boolean,
+    ): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        httpClient.post(apiPaths.user.loadUsers, {
+          userIds,
+          includeInvalidUsers,
+        }),
+        (data) => data.users,
+      ),
+    /**
      * Search all users. Results can be filtered according to tenants and/or
      * roles, and also paginated used the limit and page parameters.
      * @deprecated Use search instead
