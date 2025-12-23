@@ -5,7 +5,7 @@ import {
   DescoperAttributes,
   DescoperCreate,
   DescoperRBAC,
-  DescoperLoadOptions,
+  DescoperListOptions,
 } from './types';
 
 type DescoperCreateResponse = {
@@ -81,7 +81,7 @@ const withDescoper = (httpClient: HttpClient) => ({
    * @returns List of descopers and total count
    */
   loadAll: (
-    options?: DescoperLoadOptions,
+    options?: DescoperListOptions,
   ): Promise<SdkResponse<{ descopers: Descoper[]; total: number }>> =>
     transformResponse<DescoperListResponse, { descopers: Descoper[]; total: number }>(
       httpClient.post(apiPaths.descoper.list, { options }),
