@@ -19,6 +19,7 @@ const withTenant = (httpClient: HttpClient) => ({
     customAttributes?: Record<string, AttributesTypes>,
     enforceSSO?: boolean,
     disabled?: boolean,
+    parent?: string,
   ): Promise<SdkResponse<CreateTenantResponse>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -27,6 +28,7 @@ const withTenant = (httpClient: HttpClient) => ({
         customAttributes,
         enforceSSO,
         disabled,
+        parent,
       }),
     ),
   createWithId: (
@@ -36,6 +38,7 @@ const withTenant = (httpClient: HttpClient) => ({
     customAttributes?: Record<string, AttributesTypes>,
     enforceSSO?: boolean,
     disabled?: boolean,
+    parent?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -45,6 +48,7 @@ const withTenant = (httpClient: HttpClient) => ({
         customAttributes,
         enforceSSO,
         disabled,
+        parent,
       }),
     ),
   update: (
@@ -84,6 +88,7 @@ const withTenant = (httpClient: HttpClient) => ({
     names?: string[],
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    parentTenantId?: string,
   ): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
       httpClient.post(apiPaths.tenant.searchAll, {
@@ -91,6 +96,7 @@ const withTenant = (httpClient: HttpClient) => ({
         tenantNames: names,
         tenantSelfProvisioningDomains: selfProvisioningDomains,
         customAttributes,
+        parentTenantId,
       }),
       (data) => data.tenants,
     ),
