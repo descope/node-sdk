@@ -1075,3 +1075,53 @@ export type DescoperCreate = {
 };
 
 export type DescoperListOptions = {}; // no options supported
+
+export type MgmtKeyStatus = 'active' | 'inactive';
+
+export type MgmtKeyReBac = {
+  companyRoles?: string[];
+  projectRoles?: MgmtKeyProjectRole[];
+  tagRoles?: MgmtKeyTagRole[];
+};
+
+export type MgmtKeyTagRole = {
+  tags: string[];
+  roles: string[];
+};
+
+export type MgmtKeyProjectRole = {
+  projectIds: string[];
+  roles: string[];
+};
+
+export type MgmtKey = {
+  id: string;
+  name: string;
+  description?: string;
+  status: MgmtKeyStatus;
+  createdTime: number;
+  expireTime: number;
+  permittedIps?: string[];
+  reBac?: MgmtKeyReBac;
+  version?: number;
+  authzVersion?: number;
+};
+
+export type MgmtKeyCreateResponse = {
+  key: MgmtKey;
+  cleartext: string;
+};
+
+export type MgmtKeyUpdateResponse = {
+  key: MgmtKey;
+};
+
+export type MgmtKeyGetResponse = {
+  key: MgmtKey;
+};
+
+export type MgmtKeySearchResponse = {
+  keys: MgmtKey[];
+};
+
+export type MgmtKeySearchOptions = {};

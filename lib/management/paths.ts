@@ -202,4 +202,11 @@ export default {
     delete: '/v1/mgmt/descoper',
     list: '/v1/mgmt/descoper/list',
   },
+  managementKey: {
+    create: '/v1/mgmt/managementkey',
+    update: '/v1/mgmt/managementkey',
+    load: '/v1/mgmt/managementkey',
+    delete: '/v1/mgmt/managementkey/delete',
+    search: '/v1/mgmt/managementkey/search',
+  },
 };
