@@ -13,10 +13,10 @@ import apiPaths from './paths';
 const withManagementKey = (httpClient: HttpClient) => ({
   create: (
     name: string,
+    reBac: MgmtKeyReBac,
     description?: string,
     expiresIn?: number,
     permittedIps?: string[],
-    reBac?: MgmtKeyReBac,
   ): Promise<SdkResponse<MgmtKeyCreateResponse>> =>
     transformResponse(
       httpClient.put(apiPaths.managementKey.create, {
@@ -31,9 +31,9 @@ const withManagementKey = (httpClient: HttpClient) => ({
   update: (
     id: string,
     name: string,
-    description?: string,
+    description: string,
+    status: MgmtKeyStatus,
     permittedIps?: string[],
-    status?: MgmtKeyStatus,
   ): Promise<SdkResponse<MgmtKeyUpdateResponse>> =>
     transformResponse(
       httpClient.patch(apiPaths.managementKey.update, {

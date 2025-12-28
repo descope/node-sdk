@@ -45,10 +45,10 @@ describe('Management Management Keys', () => {
 
       const resp: SdkResponse<MgmtKeyCreateResponse> = await management.managementKey.create(
         'test-key',
+        { companyRoles: ['role1'] },
         'desc',
         456,
         ['1.2.3.4'],
-        { companyRoles: ['role1'] },
       );
 
       expect(mockHttpClient.put).toHaveBeenCalledWith(apiPaths.managementKey.create, {
@@ -78,8 +78,8 @@ describe('Management Management Keys', () => {
         'mk1',
         'updated-key',
         'updated-desc',
-        ['1.1.1.1'],
         'inactive',
+        ['1.1.1.1'],
       );
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.managementKey.update, {
