@@ -3,7 +3,6 @@ import {
   MgmtKeyCreateResponse,
   MgmtKeyGetResponse,
   MgmtKeyReBac,
-  MgmtKeySearchOptions,
   MgmtKeySearchResponse,
   MgmtKeyStatus,
   MgmtKeyUpdateResponse,
@@ -51,8 +50,8 @@ const withManagementKey = (httpClient: HttpClient) => ({
   load: (id: string): Promise<SdkResponse<MgmtKeyGetResponse>> =>
     transformResponse(httpClient.get(apiPaths.managementKey.load, { queryParams: { id } })),
 
-  search: (options?: MgmtKeySearchOptions): Promise<SdkResponse<MgmtKeySearchResponse>> =>
-    transformResponse(httpClient.get(apiPaths.managementKey.search, { queryParams: options })),
+  search: (): Promise<SdkResponse<MgmtKeySearchResponse>> =>
+    transformResponse(httpClient.get(apiPaths.managementKey.search)),
 });
 
 export default withManagementKey;

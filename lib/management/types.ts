@@ -1123,5 +1123,3 @@ export type MgmtKeyGetResponse = {
 export type MgmtKeySearchResponse = {
   keys: MgmtKey[];
 };
-
-export type MgmtKeySearchOptions = {};
