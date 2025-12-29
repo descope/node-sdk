@@ -195,4 +195,18 @@ export default {
     resourcesLoad: '/v1/mgmt/fga/resources/load',
     resourcesSave: '/v1/mgmt/fga/resources/save',
   },
+  descoper: {
+    create: '/v1/mgmt/descoper',
+    update: '/v1/mgmt/descoper',
+    get: '/v1/mgmt/descoper',
+    delete: '/v1/mgmt/descoper',
+    list: '/v1/mgmt/descoper/list',
+  },
+  managementKey: {
+    create: '/v1/mgmt/managementkey',
+    update: '/v1/mgmt/managementkey',
+    load: '/v1/mgmt/managementkey',
+    delete: '/v1/mgmt/managementkey/delete',
+    search: '/v1/mgmt/managementkey/search',
+  },
 };

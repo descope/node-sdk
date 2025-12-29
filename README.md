@@ -76,6 +76,8 @@ Then, you can use that to work with the following functions:
 13. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
 14. [Manage Project](#manage-project)
 15. [Manage SSO applications](#manage-sso-applications)
+16. [Manage Management Keys](#manage-management-keys)
+17. [Manage Descopers](#manage-descopers)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1533,6 +1535,101 @@ const consentsRes = await descopeClient.management.inboundApplication.searchCons
 await descopeClient.management.inboundApplication.deleteConsents({
   userIds: ['user'],
 });
+```
+
+### Manage Management Keys
+
+You can create, update, delete, load, or search management keys:
+
+```typescript
+// Create a new management key.
+// The name is required, other fields are optional.
+// expiresIn is the expiration time in seconds (0 for no expiration).
+// permittedIps is an optional list of IP addresses or CIDR ranges that are allowed to use this key.
+// reBac specifies the role-based access control configuration for the key.
+const createRes = await descopeClient.management.managementKey.create(
+  'my-key-name',
+  'Optional description',
+  3600, // expires in 1 hour
+  ['10.0.0.1/24'], // optional permitted IPs
+  { companyRoles: ['Admin'] }, // optional reBac configuration
+);
+console.log('Created key:', createRes.data.key);
+console.log('Key secret (save this!):', createRes.data.cleartext);
+
+// Load a management key by ID
+const loadRes = await descopeClient.management.managementKey.load('key-id');
+console.log('Loaded key:', loadRes.data.key);
+
+// Search all management keys
+const searchRes = await descopeClient.management.managementKey.search();
+searchRes.data.keys.forEach((key) => {
+  // do something
+});
+
+// Update an existing management key.
+// IMPORTANT: All parameters will override whatever values are currently set in the existing key.
+await descopeClient.management.managementKey.update(
+  'key-id',
+  'updated-key-name',
+  'Updated description',
+  ['1.2.3.4'], // updated permitted IPs
+  'active', // status: 'active' or 'inactive'
+);
+
+// Delete management keys by IDs.
+// IMPORTANT: This action is irreversible. Use carefully.
+await descopeClient.management.managementKey.delete(['key-id-1', 'key-id-2']);
+```
+
+### Manage Descopers
+
+You can create, update, delete, or load descopers (Descope console users):
+
+```typescript
+// Create descopers. Each descoper must have a loginId.
+// Optionally set attributes (displayName, email, phone) and RBAC configuration.
+// sendInvite can be set to true to send an invitation email.
+await descopeClient.management.descoper.create([
+  {
+    loginId: 'user@example.com',
+    attributes: {
+      displayName: 'Test User',
+      email: 'user@example.com',
+      phone: '+1234567890',
+    },
+    sendInvite: true,
+    rbac: {
+      // exactly one of isCompanyAdmin, projects or tags
+      projects: [
+        {
+          projectIds: ['project-id-1'],
+          role: 'admin', // 'admin' | 'developer' | 'support' | 'auditor'
+        },
+      ],
+    },
+  },
+]);
+
+// Load a specific descoper by ID
+const descoperRes = await descopeClient.management.descoper.load('descoper-id');
+console.log('Loaded descoper:', descoperRes.data);
+
+// Load all descopers
+const descopersRes = await descopeClient.management.descoper.loadAll();
+descopersRes.data.descopers.forEach((descoper) => {
+  // do something
+});
+
+// Update a descoper's attributes and/or RBAC configuration
+await descopeClient.management.descoper.update(
+  'descoper-id',
+  { displayName: 'Updated Name' }, // attributes (optional)
+  { isCompanyAdmin: true }, // rbac (optional)
+);
+
+// Descoper deletion cannot be undone. Use carefully.
+await descopeClient.management.descoper.delete('descoper-id');
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests

@@ -1034,3 +1034,78 @@ export type ManagementFlowOptions = {
   preview?: boolean;
   tenant?: string;
 };
+
+export type DescoperRole = 'admin' | 'developer' | 'support' | 'auditor';
+
+export type DescoperAttributes = {
+  displayName?: string;
+  email?: string;
+  phone?: string;
+};
+
+export type DescoperTagRole = {
+  tags?: string[];
+  role?: DescoperRole;
+};
+
+export type DescoperProjectRole = {
+  projectIds?: string[];
+  role?: DescoperRole;
+};
+
+export type DescoperRBAC = {
+  isCompanyAdmin?: boolean;
+  tags?: DescoperTagRole[];
+  projects?: DescoperProjectRole[];
+};
+
+export type Descoper = {
+  id?: string;
+  loginIds?: string[];
+  attributes?: DescoperAttributes;
+  rbac?: DescoperRBAC;
+  status?: string;
+};
+
+export type DescoperCreate = {
+  loginId?: string;
+  attributes?: DescoperAttributes;
+  sendInvite?: boolean;
+  rbac?: DescoperRBAC;
+};
+
+export type MgmtKeyStatus = 'active' | 'inactive';
+
+export type MgmtKeyReBac = {
+  companyRoles?: string[];
+  projectRoles?: MgmtKeyProjectRole[];
+  tagRoles?: MgmtKeyTagRole[];
+};
+
+export type MgmtKeyTagRole = {
+  tags: string[];
+  roles: string[];
+};
+
+export type MgmtKeyProjectRole = {
+  projectIds: string[];
+  roles: string[];
+};
+
+export type MgmtKey = {
+  id: string;
+  name: string;
+  description?: string;
+  status: MgmtKeyStatus;
+  createdTime: number;
+  expireTime: number;
+  permittedIps?: string[];
+  reBac?: MgmtKeyReBac;
+  version?: number;
+  authzVersion?: number;
+};
+
+export type MgmtKeyCreateResponse = {
+  key: MgmtKey;
+  cleartext: string;
+};
