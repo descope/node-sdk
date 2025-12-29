@@ -1111,15 +1111,3 @@ export type MgmtKeyCreateResponse = {
   key: MgmtKey;
   cleartext: string;
 };
-
-export type MgmtKeyUpdateResponse = {
-  key: MgmtKey;
-};
-
-export type MgmtKeyGetResponse = {
-  key: MgmtKey;
-};
-
-export type MgmtKeySearchResponse = {
-  keys: MgmtKey[];
-};

@@ -1,13 +1,6 @@
 import { HttpClient, SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import {
-  MgmtKeyCreateResponse,
-  MgmtKeyGetResponse,
-  MgmtKeyReBac,
-  MgmtKeySearchResponse,
-  MgmtKeyStatus,
-  MgmtKeyUpdateResponse,
-} from './types';
 import apiPaths from './paths';
+import { MgmtKey, MgmtKeyCreateResponse, MgmtKeyReBac, MgmtKeyStatus } from './types';
 
 const withManagementKey = (httpClient: HttpClient) => ({
   create: (
@@ -33,7 +26,7 @@ const withManagementKey = (httpClient: HttpClient) => ({
     description: string,
     status: MgmtKeyStatus,
     permittedIps?: string[],
-  ): Promise<SdkResponse<MgmtKeyUpdateResponse>> =>
+  ): Promise<SdkResponse<MgmtKey>> =>
     transformResponse(
       httpClient.patch(apiPaths.managementKey.update, {
         id,
@@ -42,16 +35,20 @@ const withManagementKey = (httpClient: HttpClient) => ({
         permittedIps,
         status,
       }),
+      (data) => data.key,
     ),
 
   delete: (ids: string[]): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.managementKey.delete, { ids })),
 
-  load: (id: string): Promise<SdkResponse<MgmtKeyGetResponse>> =>
-    transformResponse(httpClient.get(apiPaths.managementKey.load, { queryParams: { id } })),
+  load: (id: string): Promise<SdkResponse<MgmtKey>> =>
+    transformResponse(
+      httpClient.get(apiPaths.managementKey.load, { queryParams: { id } }),
+      (data) => data.key,
+    ),
 
-  search: (): Promise<SdkResponse<MgmtKeySearchResponse>> =>
-    transformResponse(httpClient.get(apiPaths.managementKey.search)),
+  search: (): Promise<SdkResponse<MgmtKey[]>> =>
+    transformResponse(httpClient.get(apiPaths.managementKey.search), (data) => data.keys),
 });
 
 export default withManagementKey;

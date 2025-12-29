@@ -89,7 +89,7 @@ describe('Management Management Keys', () => {
         permittedIps: ['1.1.1.1'],
         status: 'inactive',
       });
-      expect(resp.data.key).toEqual(mockMgmtKey);
+      expect(resp.data).toEqual(mockMgmtKey);
     });
   });
 
@@ -130,7 +130,7 @@ describe('Management Management Keys', () => {
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.managementKey.load, {
         queryParams: { id: 'mk1' },
       });
-      expect(resp.data.key).toEqual(mockMgmtKey);
+      expect(resp.data).toEqual(mockMgmtKey);
     });
   });
 
@@ -146,12 +146,10 @@ describe('Management Management Keys', () => {
       };
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
-      const resp = await management.managementKey.search({});
+      const resp = await management.managementKey.search();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.managementKey.search, {
-        queryParams: {},
-      });
-      expect(resp.data.keys).toEqual([mockMgmtKey]);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.managementKey.search);
+      expect(resp.data).toEqual([mockMgmtKey]);
     });
   });
 });
