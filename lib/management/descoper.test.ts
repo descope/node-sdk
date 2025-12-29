@@ -298,7 +298,7 @@ describe('Management Descoper', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<{ descopers: Descoper[]; total: number }> =
-        await management.descoper.loadAll();
+        await management.descoper.list();
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.descoper.list, {
         options: undefined,
@@ -323,13 +323,10 @@ describe('Management Descoper', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const options = {};
       const resp: SdkResponse<{ descopers: Descoper[]; total: number }> =
-        await management.descoper.loadAll(options);
+        await management.descoper.list();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.descoper.list, {
-        options,
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.descoper.list);
 
       expect(resp).toEqual({
         code: 200,

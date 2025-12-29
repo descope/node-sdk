@@ -32,13 +32,11 @@ const withDescoper = (httpClient: HttpClient) => ({
    * @param descopers Array of descoper creation objects
    * @returns The newly created descopers and total count
    */
-  create: (
-    descopers: DescoperCreate[],
-  ): Promise<SdkResponse<{ descopers: Descoper[]; total: number }>> =>
-    transformResponse<DescoperCreateResponse, { descopers: Descoper[]; total: number }>(
-      httpClient.put(apiPaths.descoper.create, { descopers }),
-      (data) => ({ descopers: data.descopers, total: data.total }),
-    ),
+  create: (descopers: DescoperCreate[]): Promise<SdkResponse<DescoperCreateResponse>> =>
+    transformResponse(httpClient.put(apiPaths.descoper.create, { descopers }), (data) => ({
+      descopers: data.descopers,
+      total: data.total,
+    })),
 
   /**
    * Update an existing descoper's attributes and/or RBAC
@@ -77,16 +75,13 @@ const withDescoper = (httpClient: HttpClient) => ({
 
   /**
    * List all descopers
-   * @param options Optional load options
    * @returns List of descopers and total count
    */
-  loadAll: (
-    options?: DescoperListOptions,
-  ): Promise<SdkResponse<{ descopers: Descoper[]; total: number }>> =>
-    transformResponse<DescoperListResponse, { descopers: Descoper[]; total: number }>(
-      httpClient.post(apiPaths.descoper.list, { options }),
-      (data) => ({ descopers: data.descopers, total: data.total }),
-    ),
+  list: (): Promise<SdkResponse<DescoperListResponse>> =>
+    transformResponse(httpClient.post(apiPaths.descoper.list), (data) => ({
+      descopers: data.descopers,
+      total: data.total,
+    })),
 });
 
 export default withDescoper;
