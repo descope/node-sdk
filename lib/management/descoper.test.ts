@@ -300,9 +300,7 @@ describe('Management Descoper', () => {
       const resp: SdkResponse<{ descopers: Descoper[]; total: number }> =
         await management.descoper.list();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.descoper.list, {
-        options: undefined,
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.descoper.list);
 
       expect(resp).toEqual({
         code: 200,
