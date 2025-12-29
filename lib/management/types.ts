@@ -1074,8 +1074,6 @@ export type DescoperCreate = {
   rbac?: DescoperRBAC;
 };
 
-export type DescoperListOptions = {}; // no options supported
-
 export type MgmtKeyStatus = 'active' | 'inactive';
 
 export type MgmtKeyReBac = {

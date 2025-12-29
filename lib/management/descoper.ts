@@ -1,12 +1,6 @@
 import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
-import {
-  Descoper,
-  DescoperAttributes,
-  DescoperCreate,
-  DescoperRBAC,
-  DescoperListOptions,
-} from './types';
+import { Descoper, DescoperAttributes, DescoperCreate, DescoperRBAC } from './types';
 
 type DescoperCreateResponse = {
   descopers: Descoper[];
