@@ -1453,6 +1453,21 @@ const latestTenantToken = await descopeClient.management.outboundApplication.fet
   'tenant-id',
   { forceRefresh: false }
 );
+
+// Delete user tokens by appId and/or userId
+// At least one of appId or userId should be provided
+// Token deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteUserTokens('my-app-id', 'user-id');
+
+// Delete all tokens for a specific app
+await descopeClient.management.outboundApplication.deleteUserTokens('my-app-id');
+
+// Delete all tokens for a specific user
+await descopeClient.management.outboundApplication.deleteUserTokens(undefined, 'user-id');
+
+// Delete a specific token by its ID
+// Token deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteTokenById('token-id');
 ```
 
 ### Manage Inbound Applications

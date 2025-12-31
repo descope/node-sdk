@@ -489,4 +489,120 @@ describe('Management OutboundApplication', () => {
       });
     });
   });
+
+  describe('deleteUserTokens', () => {
+    it('should send the correct request with both appId and userId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.deleteUserTokens('app123', 'user456');
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.deleteUserTokens,
+        {
+          queryParams: { appId: 'app123', userId: 'user456' },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should work with only appId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.deleteUserTokens('app123');
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.deleteUserTokens,
+        {
+          queryParams: { appId: 'app123', userId: undefined },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should work with only userId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.deleteUserTokens(undefined, 'user456');
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.deleteUserTokens,
+        {
+          queryParams: { appId: undefined, userId: 'user456' },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteTokenById', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.deleteTokenById('token123');
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.deleteTokenById,
+        {
+          queryParams: { id: 'token123' },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });
