@@ -108,6 +108,18 @@ const withOutboundApplication = (httpClient: HttpClient) => ({
       }),
       (data) => data.token,
     ),
+  deleteUserTokens: (appId?: string, userId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.delete(apiPaths.outboundApplication.deleteUserTokens, {
+        queryParams: { appId, userId },
+      }),
+    ),
+  deleteTokenById: (id: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.delete(apiPaths.outboundApplication.deleteTokenById, {
+        queryParams: { id },
+      }),
+    ),
 });
 
 export default withOutboundApplication;

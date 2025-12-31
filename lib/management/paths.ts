@@ -105,6 +105,8 @@ export default {
     fetchTokenByScopes: '/v1/mgmt/outbound/app/user/token',
     fetchTenantToken: '/v1/mgmt/outbound/app/tenant/token/latest',
     fetchTenantTokenByScopes: '/v1/mgmt/outbound/app/tenant/token',
+    deleteUserTokens: '/v1/mgmt/outbound/user/tokens',
+    deleteTokenById: '/v1/mgmt/outbound/token',
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',
