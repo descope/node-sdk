@@ -684,18 +684,30 @@ const withUser = (httpClient: HttpClient) => {
       loginId: string,
       email: string,
       isVerified: boolean,
+      failOnConflict?: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.updateEmail, { loginId, email, verified: isVerified }),
+        httpClient.post(apiPaths.user.updateEmail, {
+          loginId,
+          email,
+          verified: isVerified,
+          failOnConflict,
+        }),
         (data) => data.user,
       ),
     updatePhone: (
       loginId: string,
       phone: string,
       isVerified: boolean,
+      failOnConflict?: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.updatePhone, { loginId, phone, verified: isVerified }),
+        httpClient.post(apiPaths.user.updatePhone, {
+          loginId,
+          phone,
+          verified: isVerified,
+          failOnConflict,
+        }),
         (data) => data.user,
       ),
     updateDisplayName: (
