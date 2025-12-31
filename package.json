@@ -59,7 +59,7 @@
     "@commitlint/config-conventional": "^20.2.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.0",
     "@rollup/plugin-typescript": "^9.0.0",
     "@size-limit/preset-small-lib": "^12.0.0",
