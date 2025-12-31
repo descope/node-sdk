@@ -1,1 +1,2 @@
 npm run format-lint
+npx --no -- commitlint --edit ${1}
