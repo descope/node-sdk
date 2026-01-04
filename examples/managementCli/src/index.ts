@@ -23,7 +23,7 @@ function handleSdkRes(res: SdkResponse<any>, responseFile?: string) {
 
 const DESCOPE_PROJECT_ID = process.env.DESCOPE_PROJECT_ID as string;
 const DESCOPE_MANAGEMENT_KEY = process.env.DESCOPE_MANAGEMENT_KEY as string;
-const DESCOPE_API_BASE_URL = (process.env.DESCOPE_API_BASE_URL as string) || undefined;
+const DESCOPE_BASE_URL = (process.env.DESCOPE_BASE_URL as string) || undefined;
 
 if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
   console.error('Missing DESCOPE_PROJECT_ID or DESCOPE_MANAGEMENT_KEY environment variables');
@@ -32,7 +32,7 @@ if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
 
 const sdk = DescopeClient({
   projectId: DESCOPE_PROJECT_ID,
-  baseUrl: DESCOPE_API_BASE_URL,
+  baseUrl: DESCOPE_BASE_URL,
   managementKey: DESCOPE_MANAGEMENT_KEY,
   logger: console,
 });
@@ -261,6 +261,20 @@ program
     );
   });
 
+// batch-user-create
+program
+  .command('batch-user-create')
+  .description('Create multiple users from a JSON file')
+  .argument('<file>', 'Path to the JSON file containing user data')
+  .action(async (file) => {
+    try {
+      const users = JSON.parse(readFileSync(file, 'utf-8'));
+      handleSdkRes(await sdk.management.user.createBatch(users));
+    } catch (error) {
+      console.error('Error reading or parsing file:', error);
+    }
+  });
+
 // *** Project commands ***
 
 // project-update-name
@@ -270,6 +284,14 @@ program
   .argument('<name>', 'Project name')
   .action(async (name) => {
     handleSdkRes(await sdk.management.project.updateName(name));
+  });
+
+// list-projects
+program
+  .command('list-projects')
+  .description('List projects')
+  .action(async () => {
+    handleSdkRes(await sdk.management.project.listProjects());
   });
 
 // project-update-tags
@@ -446,6 +468,228 @@ program
   .argument('<tenant-id>', 'Tenant ID')
   .action(async (tenantId) => {
     handleSdkRes(await sdk.management.password.getSettings(tenantId));
+  });
+
+// *** Inbound application commands ***
+
+// inbound-application-create
+program
+  .command('inbound-application-create')
+  .description('Create a new inbound application')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (name, permissionsScopes) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.createApplication({
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-update
+program
+  .command('inbound-application-update')
+  .description('Update an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .argument('<permission-scope-items>', 'Inbound application permission scopes', (val) =>
+    val?.split(','),
+  )
+  .action(async (id, name, permissionsScopes) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.updateApplication({
+        id,
+        name,
+        permissionsScopes: JSON.parse(permissionsScopes)?.map((permissionsScope: any) => {
+          return {
+            name: permissionsScope.name,
+            description: permissionsScope.description,
+            values: permissionsScope.values,
+            optional: permissionsScope.optional,
+          };
+        }),
+      }),
+    );
+  });
+
+// inbound-application-patch
+program
+  .command('inbound-application-patch')
+  .description('Patch an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .argument('<name>', 'Inbound application name')
+  .action(async (id, name) => {
+    handleSdkRes(
+      await sdk.management.inboundApplication.patchApplication({
+        id,
+        name,
+      }),
+    );
+  });
+
+// inbound-application-delete
+program
+  .command('inbound-application-delete')
+  .description('Delete an inbound application')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteApplication(id));
+  });
+
+// inbound-application-load
+program
+  .command('inbound-application-load')
+  .description('Load inbound application by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.loadApplication(id));
+  });
+
+// inbound-application-load-all
+program
+  .command('inbound-application-load-all')
+  .description('Load all inbound applications')
+  .action(async () => {
+    handleSdkRes(await sdk.management.inboundApplication.loadAllApplications());
+  });
+
+// inbound-application-secret
+program
+  .command('inbound-application-secret')
+  .description('Get inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.getApplicationSecret(id));
+  });
+
+// inbound-application-rotate-secret
+program
+  .command('inbound-application-rotate-secret')
+  .description('Rotate inbound application secret by id')
+  .argument('<id>', 'Inbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.inboundApplication.rotateApplicationSecret(id));
+  });
+
+// inbound-application-consent-search
+program
+  .command('inbound-application-consent-search')
+  .description('Search inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId) => {
+    handleSdkRes(await sdk.management.inboundApplication.searchConsents({ appId }));
+  });
+
+// inbound-application-consent-delete
+program
+  .command('inbound-application-consent-delete')
+  .description('Delete inbound application consents')
+  .argument('<appId>', 'Inbound application ID')
+  .action(async (appId) => {
+    handleSdkRes(await sdk.management.inboundApplication.deleteConsents({ appId }));
+  });
+
+// *** Outbound application commands ***
+
+// outbound-application-create
+program
+  .command('outbound-application-create')
+  .description('Create a new outbound application')
+  .argument('<name>', 'Outbound application name')
+  .action(async (name) => {
+    handleSdkRes(await sdk.management.outboundApplication.createApplication({ name }));
+  });
+
+// outbound-application-update
+program
+  .command('outbound-application-update')
+  .description('Update an outbound application')
+  .argument('<id>', 'Outbound application ID')
+  .argument('<name>', 'Outbound application name')
+  .action(async (id, name) => {
+    handleSdkRes(await sdk.management.outboundApplication.updateApplication({ id, name }));
+  });
+
+// outbound-application-load
+program
+  .command('outbound-application-load')
+  .description('Load outbound application by id')
+  .argument('<id>', 'Outbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.outboundApplication.loadApplication(id));
+  });
+
+// outbound-application-load-all
+program
+  .command('outbound-application-load-all')
+  .description('Load all outbound applications')
+  .action(async () => {
+    handleSdkRes(await sdk.management.outboundApplication.loadAllApplications());
+  });
+
+// outbound-application-delete
+program
+  .command('outbound-application-delete')
+  .description('Delete an outbound application')
+  .argument('<id>', 'Outbound application ID')
+  .action(async (id) => {
+    handleSdkRes(await sdk.management.outboundApplication.deleteApplication(id));
+  });
+
+// outbound-application-fetch-token
+program
+  .command('outbound-application-fetch-token')
+  .description('Fetch token for an outbound application')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<user-id>', 'User ID')
+  .action(async (appId, userId) => {
+    handleSdkRes(await sdk.management.outboundApplication.fetchToken(appId, userId));
+  });
+
+// outbound-application-fetch-token-by-scopes
+program
+  .command('outbound-application-fetch-token-by-scopes')
+  .description('Fetch token by scopes for an outbound application')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<user-id>', 'User ID')
+  .argument('<scopes>', 'Scopes to fetch token for', (val) => val?.split(','))
+  .action(async (appId, userId, scopes) => {
+    handleSdkRes(
+      await sdk.management.outboundApplication.fetchTokenByScopes(appId, userId, scopes),
+    );
+  });
+
+// outbound-application-fetch-tenant-token
+program
+  .command('outbound-application-fetch-tenant-token')
+  .description('Fetch token for an outbound application for a tenant')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<tenant-id>', 'Tenant ID')
+  .action(async (appId, tenantId) => {
+    handleSdkRes(await sdk.management.outboundApplication.fetchTenantToken(appId, tenantId));
+  });
+
+// outbound-application-fetch-tenant-token-by-scopes
+program
+  .command('outbound-application-fetch-tenant-token-by-scopes')
+  .description('Fetch token by scopes for an outbound application for a tenant')
+  .argument('<app-id>', 'Outbound application ID')
+  .argument('<tenant-id>', 'Tenant ID')
+  .argument('<scopes>', 'Scopes to fetch token for', (val) => val?.split(','))
+  .action(async (appId, tenantId, scopes) => {
+    handleSdkRes(
+      await sdk.management.outboundApplication.fetchTenantTokenByScopes(appId, tenantId, scopes),
+    );
   });
 
 // *** SSO application commands ***
@@ -718,6 +962,34 @@ program
       return;
     }
     handleSdkRes(await sdk.management.flow.import(flowId, flow, screens));
+  });
+
+// flow-run
+program
+  .command('flow-run')
+  .description('Run a flow')
+  .argument('<flow-id>', 'Flow ID')
+  .option('-i, --input <input>', 'Input object as JSON string')
+  .action(async (flowId, options) => {
+    let input = {};
+
+    if (options.input) {
+      try {
+        input = JSON.parse(options.input);
+      } catch (error) {
+        console.error(
+          'Invalid JSON input:',
+          error instanceof Error ? error.message : String(error),
+        );
+        return;
+      }
+    }
+
+    handleSdkRes(
+      await sdk.management.flow.run(flowId, {
+        input,
+      }),
+    );
   });
 
 // *** Theme commands ***
@@ -1053,6 +1325,53 @@ program
           targetType: option.targetType,
         },
       ]),
+    );
+  });
+
+program
+  .command('fga-save-resources-details')
+  .description('Save resource details defined in the given file')
+  .argument('<filename>', 'Resources details JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const details = JSON.parse(content);
+    if (!details) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.saveResourcesDetails(details));
+  });
+
+program
+  .command('fga-load-resources-details')
+  .description('Load resource details for the given identifiers defined in the given file')
+  .argument('<filename>', 'Resource identifiers JSON array filename')
+  .action(async (filename) => {
+    const content = readFileSync(filename, 'utf8');
+    const ids = JSON.parse(content);
+    if (!ids) {
+      console.error('Invalid file content');
+      return;
+    }
+    handleSdkRes(await sdk.management.fga.loadResourcesDetails(ids));
+  });
+
+// generate-client-assertion-jwt
+program
+  .command('generate-client-assertion-jwt')
+  .description('Generate a client assertion JWT')
+  .argument('<issuer>', 'The issuer of the token')
+  .argument('<subject>', 'The subject of the token')
+  .argument('<audience>', 'The audience of the token (list)')
+  .argument('<expiresIn>', 'The expiration time of the token (in seconds)')
+  .action(async (issuer, subject, audience, expiresIn) => {
+    handleSdkRes(
+      await sdk.management.jwt.generateClientAssertionJwt(
+        issuer,
+        subject,
+        audience.split(','),
+        Number(expiresIn),
+      ),
     );
   });
 

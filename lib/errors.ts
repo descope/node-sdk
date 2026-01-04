@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 /** Common Error Codes */
 export default {
   badRequest: 'E011001',

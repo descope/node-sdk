@@ -7,9 +7,9 @@ import {
   Tenant,
   TenantSettings,
 } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockTenantCreateResponse = {
   tenantId: 'foo',
@@ -42,7 +42,7 @@ const mockAllTenantsResponse = {
 describe('Management Tenant', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -57,15 +57,58 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create('name', [
-        'd1',
-      ]);
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.create,
-        { name: 'name', selfProvisioningDomains: ['d1'] },
-        { token: 'key' },
+      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create(
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
       );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenantCreateResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request with parent parameter', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockTenantCreateResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockTenantCreateResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.create(
+        'child-tenant',
+        ['child.example.com'],
+        { type: 'department' },
+        false,
+        false,
+        'parent-tenant-id',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        name: 'child-tenant',
+        selfProvisioningDomains: ['child.example.com'],
+        customAttributes: { type: 'department' },
+        enforceSSO: false,
+        disabled: false,
+        parent: 'parent-tenant-id',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -92,13 +135,58 @@ describe('Management Tenant', () => {
         't1',
         'name',
         ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.create,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
-        { token: 'key' },
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        id: 't1',
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request with parent parameter', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CreateTenantResponse> = await management.tenant.createWithId(
+        'custom-child-id',
+        'child-tenant',
+        ['child.example.com'],
+        { type: 'department' },
+        false,
+        false,
+        'parent-tenant-id',
       );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
+        id: 'custom-child-id',
+        name: 'child-tenant',
+        selfProvisioningDomains: ['child.example.com'],
+        customAttributes: { type: 'department' },
+        enforceSSO: false,
+        disabled: false,
+        parent: 'parent-tenant-id',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -121,13 +209,23 @@ describe('Management Tenant', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.tenant.update('t1', 'name', ['d1']);
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.update,
-        { id: 't1', name: 'name', selfProvisioningDomains: ['d1'] },
-        { token: 'key' },
+      const resp = await management.tenant.update(
+        't1',
+        'name',
+        ['d1'],
+        { customAttr: 'value' },
+        true,
+        true,
       );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.update, {
+        id: 't1',
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        enforceSSO: true,
+        disabled: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -152,11 +250,10 @@ describe('Management Tenant', () => {
 
       const resp = await management.tenant.delete('t1', true);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.tenant.delete,
-        { id: 't1', cascade: true },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.delete, {
+        id: 't1',
+        cascade: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -183,7 +280,6 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.load, {
         queryParams: { id: mockTenants[0].id },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -209,8 +305,76 @@ describe('Management Tenant', () => {
 
       const resp: SdkResponse<Tenant[]> = await management.tenant.loadAll();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.loadAll, {
-        token: 'key',
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.loadAll, {});
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenants,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('searchAll', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockAllTenantsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockAllTenantsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Tenant[]> = await management.tenant.searchAll(
+        ['t1', 't2'],
+        ['name1'],
+        ['domain1.com'],
+        { customAttr: 'value' },
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.searchAll, {
+        tenantIds: ['t1', 't2'],
+        tenantNames: ['name1'],
+        tenantSelfProvisioningDomains: ['domain1.com'],
+        customAttributes: { customAttr: 'value' },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockTenants,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send the correct request with parentTenantId parameter', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockAllTenantsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockAllTenantsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Tenant[]> = await management.tenant.searchAll(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'parent-tenant-id',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.searchAll, {
+        tenantIds: undefined,
+        tenantNames: undefined,
+        tenantSelfProvisioningDomains: undefined,
+        customAttributes: undefined,
+        parentTenantId: 'parent-tenant-id',
       });
 
       expect(resp).toEqual({
@@ -238,7 +402,6 @@ describe('Management Tenant', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.tenant.settings, {
         queryParams: { id: 'test' },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -270,9 +433,7 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.settings,
         { ...mockSettings, tenantId: 'test' },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({
@@ -304,9 +465,7 @@ describe('Management Tenant', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.tenant.generateSSOConfigurationLink,
         { tenantId: 'test', expireTime: 60 * 60 * 24 },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({
@@ -348,9 +507,7 @@ describe('Management Tenant', () => {
           email: 'some-email@aa.com',
           templateId: 'some-template-id',
         },
-        {
-          token: 'key',
-        },
+        {},
       );
 
       expect(resp).toEqual({

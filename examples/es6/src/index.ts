@@ -22,7 +22,7 @@ const options = {
 const clientAuth = {
   auth: DescopeClient({
     projectId: process.env.DESCOPE_PROJECT_ID || '',
-    baseUrl: process.env.DESCOPE_API_BASE_URL,
+    baseUrl: process.env.DESCOPE_BASE_URL,
     logger: console,
   }),
 };
@@ -337,10 +337,24 @@ app.post('/api/private', authMiddleware, (_unused: Request, res: Response) => {
   res.sendStatus(200);
 });
 
+app.post('/refresh', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const cookies = parseCookies(req);
+    const out = await clientAuth.auth.refreshSession(cookies[DescopeClient.RefreshTokenCookieName]);
+    if (out?.cookies) {
+      res.set('Set-Cookie', out.cookies);
+    }
+    res.status(200).send(out);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(401);
+  }
+});
+
 app.post('/logout', authMiddleware, async (req: Request, res: Response) => {
   try {
     const cookies = parseCookies(req);
-    const out = await clientAuth.auth.logout(cookies.DS);
+    const out = await clientAuth.auth.logout(cookies[DescopeClient.SessionTokenCookieName]);
     returnCookies(res, out);
   } catch (error) {
     console.log(error);

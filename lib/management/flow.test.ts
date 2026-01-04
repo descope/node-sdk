@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import {
   FlowResponse,
   FlowsResponse,
@@ -12,7 +12,7 @@ import {
   FlowMetadata,
 } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockFlow: Flow = {
   dsl: {},
@@ -43,6 +43,10 @@ const mockFlowResponse: FlowResponse = {
   screens: [mockScreen],
 };
 
+const mockRunFlowResponse = {
+  output: { result: 'success' },
+};
+
 const mockTheme: Theme = {
   id: 'mockTheme',
   cssTemplate: {},
@@ -55,7 +59,7 @@ const mockThemeResponse: ThemeResponse = {
 describe('Management flow', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('list', () => {
@@ -72,7 +76,7 @@ describe('Management flow', () => {
 
       const resp: SdkResponse<FlowsResponse> = await management.flow.list();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.list, {}, { token: 'key' });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.list, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -97,11 +101,9 @@ describe('Management flow', () => {
 
       const resp: SdkResponse<FlowsResponse> = await management.flow.delete(['flow-1', 'flow-2']);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.flow.delete,
-        { ids: ['flow-1', 'flow-2'] },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.delete, {
+        ids: ['flow-1', 'flow-2'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -127,11 +129,7 @@ describe('Management flow', () => {
       const id = 'flow-id';
       const resp: SdkResponse<FlowResponse> = await management.flow.export(id);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.flow.export,
-        { flowId: id },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.export, { flowId: id });
 
       expect(resp).toEqual({
         code: 200,
@@ -159,11 +157,11 @@ describe('Management flow', () => {
         mockScreen,
       ]);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.flow.import,
-        { flowId: id, screens: [mockScreen], flow: mockFlow },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.import, {
+        flowId: id,
+        screens: [mockScreen],
+        flow: mockFlow,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -173,12 +171,66 @@ describe('Management flow', () => {
       });
     });
   });
+
+  describe('run', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRunFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRunFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const resp = await management.flow.run(id);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.run, {
+        flowId: id,
+        options: undefined,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockRunFlowResponse.output,
+      });
+    });
+
+    it('should send the correct request with options and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRunFlowResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRunFlowResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const id = 'flow-id';
+      const options = { input: { userId: '123' }, preview: true, tenant: 'tenant-1' };
+      const resp = await management.flow.run(id, options);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.flow.run, { flowId: id, options });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockRunFlowResponse.output,
+      });
+    });
+  });
 });
 
 describe('Management theme', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('export', () => {
@@ -195,7 +247,7 @@ describe('Management theme', () => {
 
       const resp: SdkResponse<ThemeResponse> = await management.theme.export();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.theme.export, {}, { token: 'key' });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.theme.export, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -220,11 +272,7 @@ describe('Management theme', () => {
 
       const resp: SdkResponse<ThemeResponse> = await management.theme.import(mockTheme);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.theme.import,
-        { theme: mockTheme },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.theme.import, { theme: mockTheme });
 
       expect(resp).toEqual({
         code: 200,

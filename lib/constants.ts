@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 /** Refresh JWT cookie name */
 export const refreshTokenCookieName = 'DSR';
 /** Session JWT cookie name */

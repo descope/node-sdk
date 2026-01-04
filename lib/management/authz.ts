@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import {
   AuthzSchema,
@@ -11,7 +10,7 @@ import {
   AuthzResource,
 } from './types';
 
-const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
+const WithAuthz = (httpClient: HttpClient) => ({
   /**
    * Save (create or update) the given schema.
    * In case of update, will update only given namespaces and will not delete namespaces unless upgrade flag is true.
@@ -22,28 +21,21 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   saveSchema: (schema: AuthzSchema, upgrade: boolean): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.schemaSave, { schema, upgrade }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.schemaSave, { schema, upgrade })),
   /**
    * Delete the schema for the project which will also delete all relations.
    *
    * @returns standard success or failure response
    */
   deleteSchema: (): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.schemaDelete, {}, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.schemaDelete, {})),
   /**
    * Load the schema for the project.
    *
    * @returns the schema associated with the project
    */
   loadSchema: (): Promise<SdkResponse<AuthzSchema>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.schemaLoad, {}, { token: managementKey }),
-      (data) => data.schema,
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.schemaLoad, {}), (data) => data.schema),
   /**
    * Save (create or update) the given namespace.
    * Will not delete relation definitions not mentioned in the namespace.
@@ -58,13 +50,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     oldName?: string,
     schemaName?: string,
   ): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.nsSave,
-        { namespace, oldName, schemaName },
-        { token: managementKey },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.nsSave, { namespace, oldName, schemaName })),
   /**
    * Delete the given namespace.
    * Will also delete the relevant relations.
@@ -74,9 +60,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   deleteNamespace: (name: string, schemaName?: string): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.nsDelete, { name, schemaName }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.nsDelete, { name, schemaName })),
   /**
    * Save (create or update) the given relation definition.
    *
@@ -93,11 +77,12 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     schemaName?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.rdSave,
-        { relationDefinition, namespace, oldName, schemaName },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.rdSave, {
+        relationDefinition,
+        namespace,
+        oldName,
+        schemaName,
+      }),
     ),
   /**
    * Delete the given relation definition.
@@ -113,13 +98,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     namespace: string,
     schemaName?: string,
   ): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.rdDelete,
-        { name, namespace, schemaName },
-        { token: managementKey },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.rdDelete, { name, namespace, schemaName })),
   /**
    * Create the given relations.
    *
@@ -127,9 +106,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   createRelations: (relations: AuthzRelation[]): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.reCreate, { relations }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.reCreate, { relations })),
   /**
    * Delete the given relations.
    *
@@ -137,9 +114,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   deleteRelations: (relations: AuthzRelation[]): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.authz.reDelete, { relations }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.reDelete, { relations })),
   /**
    * @deprecated use `deleteRelationsForIds` instead for better clarity
    *
@@ -149,13 +124,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   deleteRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.reDeleteResources,
-        { resources },
-        { token: managementKey },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.reDeleteResources, { resources })),
   /**
    *
    * Delete any relations with matching resourceIds
@@ -165,11 +134,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    */
   deleteResourceRelationsForResources: (resources: string[]): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.reDeleteResourceRelationsForResources,
-        { resources },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.reDeleteResourceRelationsForResources, { resources }),
     ),
   /**
    * Delete any relations with matching resourceIds OR targetIds
@@ -178,13 +143,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    * @returns standard success or failure response
    */
   deleteRelationsForIds: (ids: string[]): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.reDeleteResources,
-        { resources: ids },
-        { token: managementKey },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.authz.reDeleteResources, { resources: ids })),
   /**
    * Query relations to see what relations exists.
    *
@@ -195,11 +154,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     relationQueries: AuthzRelationQuery[],
   ): Promise<SdkResponse<AuthzRelationQuery[]>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.hasRelations,
-        { relationQueries },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.hasRelations, { relationQueries }),
       (data) => data.relationQueries,
     ),
   /**
@@ -216,11 +171,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     namespace: string,
   ): Promise<SdkResponse<string[]>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.who,
-        { resource, relationDefinition, namespace },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.who, { resource, relationDefinition, namespace }),
       (data) => data.targets,
     ),
   /**
@@ -235,11 +186,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     ignoreTargetSetRelations = false,
   ): Promise<SdkResponse<AuthzRelation[]>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.resource,
-        { resource, ignoreTargetSetRelations },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.resource, { resource, ignoreTargetSetRelations }),
       (data) => data.relations,
     ),
   /**
@@ -254,11 +201,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     includeTargetSetRelations = false,
   ): Promise<SdkResponse<AuthzRelation[]>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.targets,
-        { targets, includeTargetSetRelations },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.targets, { targets, includeTargetSetRelations }),
       (data) => data.relations,
     ),
   /**
@@ -269,7 +212,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    */
   whatCanTargetAccess: (target: string): Promise<SdkResponse<AuthzRelation[]>> =>
     transformResponse(
-      sdk.httpClient.post(apiPaths.authz.targetAll, { target }, { token: managementKey }),
+      httpClient.post(apiPaths.authz.targetAll, { target }),
       (data) => data.relations,
     ),
 
@@ -287,11 +230,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
     namespace: string,
   ): Promise<SdkResponse<AuthzResource[]>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.targetWithRelation,
-        { target, relationDefinition, namespace },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.targetWithRelation, { target, relationDefinition, namespace }),
       (data) => data.resources.map((resource: string) => ({ resource })),
     ),
 
@@ -303,11 +242,7 @@ const WithAuthz = (sdk: CoreSdk, managementKey?: string) => ({
    */
   getModified: (since: Date): Promise<SdkResponse<AuthzModified>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.authz.getModified,
-        { since: since ? since.getTime() : 0 },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.authz.getModified, { since: since ? since.getTime() : 0 }),
       (data) => data as AuthzModified,
     ),
 });

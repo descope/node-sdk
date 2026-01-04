@@ -76,10 +76,60 @@ Then, you can use that to work with the following functions:
 13. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
 14. [Manage Project](#manage-project)
 15. [Manage SSO applications](#manage-sso-applications)
+16. [Manage Management Keys](#manage-management-keys)
+17. [Manage Descopers](#manage-descopers)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
 If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` you created under the setup of [Management Functions](#management-functions).
+
+## Authentication Management Key
+
+The `authManagementKey` is an alternative to the `managementKey` that provides a way to perform management operations while maintaining separation between authentication and management clients.
+
+### Key Differences
+
+- **Purpose**: Use `authManagementKey` for authentication-related management operations, while `managementKey` is for general management operations
+- **Client Separation**: You can have one client for management operations and another for authentication operations
+- **Mutual Exclusivity**: You cannot pass both `authManagementKey` and `managementKey` together - choose one based on your use case
+
+### Usage Examples
+
+**Using authManagementKey for authentication operations:**
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+const authClient = DescopeClient({
+  projectId: 'my-project-ID',
+  authManagementKey: 'auth-management-key',
+});
+
+// This client can be used for authentication-related management operations
+```
+
+**Separate clients for different operations:**
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+// Client for general management operations
+const managementClient = DescopeClient({
+  projectId: 'my-project-ID',
+  managementKey: 'management-key',
+});
+
+// Client for authentication operations
+const authClient = DescopeClient({
+  projectId: 'my-project-ID',
+  authManagementKey: 'auth-management-key',
+});
+
+// Use managementClient for user management, tenant management, etc.
+// Use authClient for authentication-related operations
+```
+
+**Note**: Create your authentication management key in the [Descope Console](https://app.descope.com/settings/company/managementkeys), similar to how you create a regular management key.
 
 ---
 
@@ -388,11 +438,32 @@ the session and refresh tokens with every request, and they are validated using 
 const authInfo = await descopeClient.validateSession('sessionToken');
 
 // If validateSession throws an exception, you will need to refresh the session using
-const authInfo = await descopeClient.refreshSession('refreshToken');
+const refreshed = await descopeClient.refreshSession('refreshToken');
 
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
-const authInfo = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
+const combined = await descopeClient.validateAndRefreshSession('sessionToken', 'refreshToken');
+
+// Optional: Validate audience  for backend-only flows
+// Provide VerifyOptions with the expected audience(s)
+const withAud = await descopeClient.validateSession('sessionToken', { audience: 'my-audience' });
+const withAudArray = await descopeClient.validateSession('sessionToken', { audience: ['a', 'b'] });
+
+// Audience is enforced for session JWTs only (including after refresh)
+const refreshedWithAud = await descopeClient.refreshSession('refreshToken', { audience: 'api' });
+const combinedWithAud = await descopeClient.validateAndRefreshSession(
+  'sessionToken',
+  'refreshToken',
+  { audience: 'api' },
+);
+```
+
+For access keys, you can also validate the returned session against an audience:
+
+```typescript
+const authInfo = await descopeClient.exchangeAccessKey('access_key', undefined, {
+  audience: 'api',
+});
 ```
 
 Choose the right session validation and refresh combination that suits your needs.
@@ -405,6 +476,8 @@ The implementation can defer according to your implementation. See our [examples
 
 If Roles & Permissions are used, validate them immediately after validating the session. See the [next section](#roles--permission-validation)
 for more information.
+
+Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
 
 #### Session Validation Using Middleware
 
@@ -634,13 +707,13 @@ await descopeClient.management.password.configureSettings('my-tenant-id', {
 You can create, update, delete or load SSO applications:
 
 ```typescript
-// Create OIDC sso application
+// Create OIDC SSO application
 await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Create SAML sso application
+// Create SAML SSO application
 await descopeClient.management.ssoApplication.createSamlApplication({
   name: 'My SAML app name',
   loginPageUrl: 'http://dummy.com/login',
@@ -648,7 +721,7 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   metadataUrl: 'http://dummy.com/metadata',
 });
 
-// Update OIDC sso application.
+// Update OIDC SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateOidcApplication({
   id: 'my-app-id',
@@ -656,7 +729,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   loginPageUrl: 'http://dummy.com/login',
 });
 
-// Update SAML sso application.
+// Update SAML SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateSamlApplication({
   id: 'my-app-id',
@@ -669,13 +742,13 @@ await descopeClient.management.ssoApplication.updateSamlApplication({
   certificate: 'certificate',
 });
 
-// Tenant deletion cannot be undone. Use carefully.
+// SSO application deletion cannot be undone. Use carefully.
 await descopeClient.management.ssoApplication.delete('my-app-id');
 
-// Load sso application by id
+// Load SSO application by id
 const app = await descopeClient.management.ssoApplication.load('my-app-id');
 
-// Load all sso applications
+// Load all SSO applications
 const appsRes = await descopeClient.management.ssoApplication.loadAll();
 appsRes.data.forEach((app) => {
   // do something
@@ -715,6 +788,7 @@ await descopeClient.management.user.invite('desmond@descope.com', {
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address / phone number is provided in the information. You can also set
 // a cleartext password or import a prehashed one from another service.
+// Note: This function will send an invitation to each user in the `users` array. If you want to create users without sending invitations, use `createBatch` instead.
 await descopeClient.management.user.inviteBatch(
   [
     {
@@ -734,6 +808,25 @@ await descopeClient.management.user.inviteBatch(
   true,
   false,
 );
+
+// Create a batch of users.
+// This is useful when you want to create users programmatically without triggering the invitation flow.
+// You can set a cleartext password or import a prehashed one from another service.
+// Note: This function will NOT send an invitation to the created users. If invitations are required use `inviteBatch` instead.
+await descopeClient.management.user.createBatch([
+  {
+    loginId: 'desmond@descope.com',
+    email: 'desmond@descope.com',
+    phone: '+123456789123',
+    displayName: 'Desmond Copeland',
+    userTenants: [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+    hashedPassword: {
+      bcrypt: {
+        hash: '$2a$...',
+      },
+    },
+  },
+]);
 
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.user.update('desmond@descope.com', {
@@ -757,12 +850,20 @@ await descopeClient.management.user.patch('desmond@descope.com', options);
 
 // User deletion cannot be undone. Use carefully.
 await descopeClient.management.user.delete('desmond@descope.com');
+// Delete a batch of users. This requires Descope user IDs.
+await descopeClient.management.user.deleteBatch(['<user-ID-1>', '<user-ID-2>']);
 
 // Load specific user
 const userRes = await descopeClient.management.user.load('desmond@descope.com');
 
 // If needed, users can be loaded using the user ID as well
 const userRes = await descopeClient.management.user.loadByUserId('<user-ID>');
+
+// loadUsers - load users by their user id, optionally you can decide if to return invalid users
+const usersRes = await descopeClient.management.user.loadUsers(['<user-ID>']);
+usersRes.data.forEach((user) => {
+  // do something
+});
 
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
@@ -833,7 +934,7 @@ You can also import previously exported snapshots into the same project or a dif
 
 ```typescript
 const validateReq = {
-  files: exportRes.files,
+  files: exportRes.data.files,
 };
 
 // Validate that an exported snapshot can be imported into the current project
@@ -844,7 +945,7 @@ if (!validateRes.ok) {
 
 // Import the previously exported snapshot into the current project
 const importReq = {
-  files: exportRes.files,
+  files: exportRes.data.files,
 };
 
 await descopeClient.management.project.importSnapshot(files);
@@ -1081,6 +1182,20 @@ updatedRes.data.screens.forEach((screen) => {
   // do something
 });
 
+// Run a management Flow
+// Note: Flow must be a management flow, not an interactive flow
+const runRes = await descopeClient.management.flow.run('management-flow-id');
+console.log('flow result', runRes.data); // The result data will contain the flow's output, which is configured in the 'End' step of the flow
+
+// Run a management Flow with input
+// Note: Flow must be a management flow, not an interactive flow
+const runWithInputRes = await descopeClient.management.flow.run('management-flow-id', {
+  input: {
+    key1: 'value1',
+  },
+});
+console.log('flow with input result', runWithInputRes.data); // The result data will contain the flow's output, which is configured in the 'End' step of the flow
+
 // Export the current theme of the project
 const res = descopeClient.management.theme.export();
 console.log(res.data.theme);
@@ -1101,6 +1216,38 @@ const updatedJWTRes = await descopeClient.management.jwt.update('original-jwt', 
 });
 ```
 
+Generate a JWT for a user, simulating a sign in request.
+
+```typescript
+const res = await descopeClient.management.jwt.signIn('dummy');
+```
+
+Generate a JWT for a user, simulating a signup request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUp('dummy');
+```
+
+Generate a JWT for a user, simulating a signup or in request.
+
+```typescript
+const res = await descopeClient.management.jwt.signUpOrIn('dummy');
+```
+
+Generate a client assertion JWT for OAuth flows.
+
+```typescript
+const clientAssertionRes = await descopeClient.management.jwt.generateClientAssertionJwt(
+  'https://example.com/issuer', // issuer
+  'client-id-123', // subject
+  ['https://example.com/token'], // audience
+  300, // expiresIn - number of seconds the token will will be valid for
+  false, // Optional. flattenAudience - set the audience claim as one string instead of array of strings (for case only one audience value has given)
+  'RS256', // Optional. algorithm - set the signing algorithm, value should be one of 'RS256', 'RS384', 'ES384' (default is RS256)
+);
+// clientAssertionRes.data.jwt contains the client assertion JWT
+```
+
 ### Impersonate
 
 You can impersonate to another user
@@ -1112,6 +1259,16 @@ const updatedJWTRes = await descopeClient.management.jwt.impersonate(
   'impersonator-id',
   'login-id',
   true,
+  { k1: 'v1' },
+  't1',
+);
+```
+
+Once impersonation is done, you can call `stopImpersonation`, and get back a jwt of hte the actor
+
+```typescript
+const updatedJWTRes = await descopeClient.management.jwt.impersonate(
+  '<jwt string>',
   { k1: 'v1' },
   't1',
 );
@@ -1229,6 +1386,265 @@ const relations = await descopeClient.management.fga.check([
     targetType: 'user',
   },
 ]);
+```
+
+### Manage Outbound Applications
+
+You can create, update, delete or load outbound applications:
+
+```typescript
+// Create an outbound application.
+const { id } =
+  await descopeClient.management.outboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    ...
+  });
+
+// Update an outbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.outboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  ...
+});
+
+// delete an outbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteApplication('my-app-id');
+
+// Load an outbound application by id
+const app = await descopeClient.management.outboundApplication.loadApplication('my-app-id');
+
+// Load all outbound applications
+const appsRes = await descopeClient.management.outboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Fetch user token with specific scopes
+const userToken = await descopeClient.management.outboundApplication.fetchTokenByScopes(
+  'my-app-id',
+  'user-id',
+  ['read', 'write'],
+  { withRefreshToken: false },
+  'tenant-id'
+);
+
+// Fetch latest user token
+const latestUserToken = await descopeClient.management.outboundApplication.fetchToken(
+  'my-app-id',
+  'user-id',
+  'tenant-id',
+  { forceRefresh: false }
+);
+
+// Fetch tenant token with specific scopes
+const tenantToken = await descopeClient.management.outboundApplication.fetchTenantTokenByScopes(
+  'my-app-id',
+  'tenant-id',
+  ['read', 'write'],
+  { withRefreshToken: false }
+);
+
+// Fetch latest tenant token
+const latestTenantToken = await descopeClient.management.outboundApplication.fetchTenantToken(
+  'my-app-id',
+  'tenant-id',
+  { forceRefresh: false }
+);
+
+// Delete user tokens by appId and/or userId
+// At least one of appId or userId should be provided
+// Token deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteUserTokens('my-app-id', 'user-id');
+
+// Delete all tokens for a specific app
+await descopeClient.management.outboundApplication.deleteUserTokens('my-app-id');
+
+// Delete all tokens for a specific user
+await descopeClient.management.outboundApplication.deleteUserTokens(undefined, 'user-id');
+
+// Delete a specific token by its ID
+// Token deletion cannot be undone. Use carefully.
+await descopeClient.management.outboundApplication.deleteTokenById('token-id');
+```
+
+### Manage Inbound Applications
+
+You can create, update, delete or load inbound applications:
+
+```typescript
+// Create an inbound application.
+const { id, cleartext: secret } =
+  await descopeClient.management.inboundApplication.createApplication({
+    name: 'my new app',
+    description: 'my desc',
+    logo: 'data:image/png;..',
+    approvedCallbackUrls: ['dummy.com'],
+    permissionsScopes: [
+      {
+        name: 'read_support',
+        description: 'read for support',
+        values: ['Support'],
+      },
+    ],
+    attributesScopes: [
+      {
+        name: 'read_email',
+        description: 'read user email',
+        values: ['email'],
+      },
+    ],
+    loginPageUrl: 'http://dummy.com/login',
+  });
+
+// Update an inbound application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.inboundApplication.updateApplication({
+  id: 'my-app-id',
+  name: 'my updated app',
+  loginPageUrl: 'http://dummy.com/login',
+  approvedCallbackUrls: ['dummy.com', 'myawesomedomain.com'],
+});
+
+// Patch an inbound application.
+// patch will not override all fields, but update only what given.
+await descopeClient.management.inboundApplication.patchApplication({
+  id: 'my-app-id',
+  name: 'my updated app name',
+  description: 'my new description',
+});
+
+// delete an inbound application by id.
+// inbound application deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteApplication('my-app-id');
+
+// Load an inbound application by id
+const app = await descopeClient.management.inboundApplication.loadApplication('my-app-id');
+
+// Load all inbound applications
+const appsRes = await descopeClient.management.inboundApplication.loadAllApplications();
+appsRes.data.forEach((app) => {
+  // do something
+});
+
+// Get an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
+  'my-app-id',
+);
+
+// Rotate an inbound application secret by application id.
+const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
+  'my-app-id',
+);
+
+// Search in all consents. search consents by the given app id and offset to the third page.
+const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
+  appId: 'my-app',
+  page: 2,
+});
+
+// Delete consents. delete all user consents, application consents or specific consents by id.
+// inbound application consents deletion cannot be undone. Use carefully.
+await descopeClient.management.inboundApplication.deleteConsents({
+  userIds: ['user'],
+});
+```
+
+### Manage Management Keys
+
+You can create, update, delete, load, or search management keys:
+
+```typescript
+// Create a new management key.
+// The name is required, other fields are optional.
+// expiresIn is the expiration time in seconds (0 for no expiration).
+// permittedIps is an optional list of IP addresses or CIDR ranges that are allowed to use this key.
+// reBac specifies the role-based access control configuration for the key.
+const createRes = await descopeClient.management.managementKey.create(
+  'my-key-name',
+  'Optional description',
+  3600, // expires in 1 hour
+  ['10.0.0.1/24'], // optional permitted IPs
+  { companyRoles: ['Admin'] }, // optional reBac configuration
+);
+console.log('Created key:', createRes.data.key);
+console.log('Key secret (save this!):', createRes.data.cleartext);
+
+// Load a management key by ID
+const loadRes = await descopeClient.management.managementKey.load('key-id');
+console.log('Loaded key:', loadRes.data.key);
+
+// Search all management keys
+const searchRes = await descopeClient.management.managementKey.search();
+searchRes.data.keys.forEach((key) => {
+  // do something
+});
+
+// Update an existing management key.
+// IMPORTANT: All parameters will override whatever values are currently set in the existing key.
+await descopeClient.management.managementKey.update(
+  'key-id',
+  'updated-key-name',
+  'Updated description',
+  ['1.2.3.4'], // updated permitted IPs
+  'active', // status: 'active' or 'inactive'
+);
+
+// Delete management keys by IDs.
+// IMPORTANT: This action is irreversible. Use carefully.
+await descopeClient.management.managementKey.delete(['key-id-1', 'key-id-2']);
+```
+
+### Manage Descopers
+
+You can create, update, delete, or load descopers (Descope console users):
+
+```typescript
+// Create descopers. Each descoper must have a loginId.
+// Optionally set attributes (displayName, email, phone) and RBAC configuration.
+// sendInvite can be set to true to send an invitation email.
+await descopeClient.management.descoper.create([
+  {
+    loginId: 'user@example.com',
+    attributes: {
+      displayName: 'Test User',
+      email: 'user@example.com',
+      phone: '+1234567890',
+    },
+    sendInvite: true,
+    rbac: {
+      // exactly one of isCompanyAdmin, projects or tags
+      projects: [
+        {
+          projectIds: ['project-id-1'],
+          role: 'admin', // 'admin' | 'developer' | 'support' | 'auditor'
+        },
+      ],
+    },
+  },
+]);
+
+// Load a specific descoper by ID
+const descoperRes = await descopeClient.management.descoper.load('descoper-id');
+console.log('Loaded descoper:', descoperRes.data);
+
+// Load all descopers
+const descopersRes = await descopeClient.management.descoper.loadAll();
+descopersRes.data.descopers.forEach((descoper) => {
+  // do something
+});
+
+// Update a descoper's attributes and/or RBAC configuration
+await descopeClient.management.descoper.update(
+  'descoper-id',
+  { displayName: 'Updated Name' }, // attributes (optional)
+  { isCompanyAdmin: true }, // rbac (optional)
+);
+
+// Descoper deletion cannot be undone. Use carefully.
+await descopeClient.management.descoper.delete('descoper-id');
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests

@@ -2,9 +2,9 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { CreateSSOApplicationResponse, SSOApplication } from './types';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockSSOApplicationCreateResponse = {
   id: 'foo',
@@ -73,7 +73,7 @@ const mockAllSSOApplicationsResponse = {
 describe('Management SSOApplication', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('createOidcApplication', () => {
@@ -95,19 +95,15 @@ describe('Management SSOApplication', () => {
           forceAuthentication: true,
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.oidcCreate,
-        {
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          id: undefined,
-          description: undefined,
-          enabled: true,
-          logo: undefined,
-          forceAuthentication: true,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        id: undefined,
+        description: undefined,
+        enabled: true,
+        logo: undefined,
+        forceAuthentication: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -141,31 +137,27 @@ describe('Management SSOApplication', () => {
           logoutRedirectUrl: 'http://dummy.com/logout',
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.samlCreate,
-        {
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          id: undefined,
-          description: undefined,
-          logo: undefined,
-          enabled: true,
-          useMetadataInfo: true,
-          metadataUrl: 'http://dummy.com/metadata',
-          entityId: undefined,
-          acsUrl: undefined,
-          certificate: undefined,
-          attributeMapping: undefined,
-          groupsMapping: undefined,
-          acsAllowedCallbacks: undefined,
-          subjectNameIdType: undefined,
-          subjectNameIdFormat: undefined,
-          defaultRelayState: 'rs',
-          forceAuthentication: true,
-          logoutRedirectUrl: 'http://dummy.com/logout',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        id: undefined,
+        description: undefined,
+        logo: undefined,
+        enabled: true,
+        useMetadataInfo: true,
+        metadataUrl: 'http://dummy.com/metadata',
+        entityId: undefined,
+        acsUrl: undefined,
+        certificate: undefined,
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        acsAllowedCallbacks: undefined,
+        subjectNameIdType: undefined,
+        subjectNameIdFormat: undefined,
+        defaultRelayState: 'rs',
+        forceAuthentication: true,
+        logoutRedirectUrl: 'http://dummy.com/logout',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -195,28 +187,24 @@ describe('Management SSOApplication', () => {
           metadataUrl: 'http://dummy.com/metadata',
         });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.samlCreate,
-        {
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          id: undefined,
-          description: undefined,
-          logo: undefined,
-          enabled: false,
-          useMetadataInfo: true,
-          metadataUrl: 'http://dummy.com/metadata',
-          entityId: undefined,
-          acsUrl: undefined,
-          certificate: undefined,
-          attributeMapping: undefined,
-          groupsMapping: undefined,
-          acsAllowedCallbacks: undefined,
-          subjectNameIdType: undefined,
-          subjectNameIdFormat: undefined,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        id: undefined,
+        description: undefined,
+        logo: undefined,
+        enabled: false,
+        useMetadataInfo: true,
+        metadataUrl: 'http://dummy.com/metadata',
+        entityId: undefined,
+        acsUrl: undefined,
+        certificate: undefined,
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        acsAllowedCallbacks: undefined,
+        subjectNameIdType: undefined,
+        subjectNameIdFormat: undefined,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -246,19 +234,15 @@ describe('Management SSOApplication', () => {
         enabled: false,
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.oidcUpdate,
-        {
-          id: 'app1',
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          description: undefined,
-          enabled: false,
-          logo: undefined,
-          forceAuthentication: undefined,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcUpdate, {
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        description: undefined,
+        enabled: false,
+        logo: undefined,
+        forceAuthentication: undefined,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -290,31 +274,27 @@ describe('Management SSOApplication', () => {
         entityId: 'ent1234',
       });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.samlUpdate,
-        {
-          id: 'app1',
-          name: 'name',
-          loginPageUrl: 'http://dummy.com',
-          description: undefined,
-          logo: undefined,
-          enabled: true,
-          useMetadataInfo: false,
-          metadataUrl: undefined,
-          entityId: 'ent1234',
-          acsUrl: undefined,
-          certificate: undefined,
-          attributeMapping: undefined,
-          groupsMapping: undefined,
-          acsAllowedCallbacks: undefined,
-          subjectNameIdType: undefined,
-          subjectNameIdFormat: undefined,
-          defaultRelayState: undefined,
-          forceAuthentication: undefined,
-          logoutRedirectUrl: undefined,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlUpdate, {
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        description: undefined,
+        logo: undefined,
+        enabled: true,
+        useMetadataInfo: false,
+        metadataUrl: undefined,
+        entityId: 'ent1234',
+        acsUrl: undefined,
+        certificate: undefined,
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        acsAllowedCallbacks: undefined,
+        subjectNameIdType: undefined,
+        subjectNameIdFormat: undefined,
+        defaultRelayState: undefined,
+        forceAuthentication: undefined,
+        logoutRedirectUrl: undefined,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -339,11 +319,9 @@ describe('Management SSOApplication', () => {
 
       const resp = await management.ssoApplication.delete('app1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.ssoApplication.delete,
-        { id: 'app1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.delete, {
+        id: 'app1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -372,7 +350,6 @@ describe('Management SSOApplication', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.ssoApplication.load, {
         queryParams: { id: mockSSOApplications[0].id },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -398,9 +375,7 @@ describe('Management SSOApplication', () => {
 
       const resp: SdkResponse<SSOApplication[]> = await management.ssoApplication.loadAll();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.ssoApplication.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.ssoApplication.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,

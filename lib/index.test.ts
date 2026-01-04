@@ -7,13 +7,19 @@ import {
   authorizedTenantsClaimName,
   permissionsClaimName,
   rolesClaimName,
+  sessionTokenCookieName,
 } from './constants';
+import { getCookieValue } from './helpers';
 
 let validToken: string;
 let validTokenIssuerURL: string;
 let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
+// Audience-specific tokens
+let tokenAudA: string;
+let tokenAudB: string;
+let expiredTokenAudA: string;
 let permAuthInfo: AuthenticationInfo;
 let permTenantAuthInfo: AuthenticationInfo;
 
@@ -43,6 +49,21 @@ describe('sdk', () => {
       .setIssuer('project-id')
       .setExpirationTime(1981398111)
       .sign(privateKey);
+    // Valid tokens with audience claims
+    tokenAudA = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-a')
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    tokenAudB = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-b')
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
     validTokenIssuerURL = await new SignJWT({})
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
@@ -57,6 +78,13 @@ describe('sdk', () => {
       .sign(privateKey);
     expiredToken = await new SignJWT({})
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt(1181398100)
+      .setIssuer('project-id')
+      .setExpirationTime(1181398111)
+      .sign(privateKey);
+    expiredTokenAudA = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setAudience('aud-a')
       .setIssuedAt(1181398100)
       .setIssuer('project-id')
       .setExpirationTime(1181398111)
@@ -116,6 +144,62 @@ describe('sdk', () => {
       await expect(sdk.validateJwt(expiredToken)).rejects.toThrow(
         '"exp" claim timestamp check failed',
       );
+    });
+  });
+
+  describe('audience validation', () => {
+    it('should reject when audience is required but missing in token', async () => {
+      // Calling with an audience should enforce aud claim; current implementation ignores it.
+      await expect(
+        (sdk as any).validateSession(validToken, { audience: 'expected-aud' }),
+      ).rejects.toThrow('session validation failed');
+    });
+
+    it('should reject when audience mismatches in token for validateSession', async () => {
+      await expect((sdk as any).validateSession(tokenAudA, { audience: 'aud-b' })).rejects.toThrow(
+        'session validation failed',
+      );
+    });
+
+    it('should accept when audience matches in token for validateSession', async () => {
+      // This may pass before implementation but documents expected behavior post-change
+      await expect(
+        (sdk as any).validateSession(tokenAudA, { audience: 'aud-a' }),
+      ).resolves.toHaveProperty('jwt', tokenAudA);
+    });
+
+    it('should reject when audience mismatches in validateJwt', async () => {
+      await expect((sdk as any).validateJwt(tokenAudB, { audience: 'aud-a' })).rejects.toBeTruthy();
+    });
+
+    it('should reject when refreshSession returns session with mismatched audience', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<JWTResponse>);
+
+      await expect((sdk as any).refreshSession(validToken, { audience: 'aud-a' })).rejects.toThrow(
+        'refresh token validation failed',
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should reject when validateAndRefreshSession refreshes to mismatched audience', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(
+        (sdk as any).validateAndRefreshSession(expiredTokenAudA, validToken, { audience: 'aud-a' }),
+      ).rejects.toThrow('refresh token validation failed');
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should accept when any of audiences matches (array)', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenAudA, { audience: ['nope', 'aud-a'] }),
+      ).resolves.toHaveProperty('jwt', tokenAudA);
     });
   });
 
@@ -181,7 +265,50 @@ describe('sdk', () => {
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
 
-      await expect(sdk.refreshSession(validToken)).resolves.toHaveProperty('jwt', validToken);
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
+      expect(res.cookies).toStrictEqual([]);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return only cookies when refresh call returns it', async () => {
+      const expectedCookies = [
+        `${sessionTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+        `${refreshTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+      ];
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: '', refreshJwt: null, cookies: expectedCookies },
+      } as unknown as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.cookies).toBe(expectedCookies);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should return refrehs in cookie when refresh call returns it', async () => {
+      const expectedCookies = [
+        `${refreshTokenCookieName}=${validToken}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+      ];
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: null, cookies: expectedCookies },
+      } as unknown as SdkResponse<JWTResponse>);
+
+      const res = await sdk.refreshSession(validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.cookies).toBe(expectedCookies);
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should fail when refresh returns an error', async () => {
@@ -204,6 +331,31 @@ describe('sdk', () => {
         'refresh token validation failed',
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+  });
+
+  describe('refresh', () => {
+    it('should call coreSdk.refresh with the correct arguments', async () => {
+      jest.resetModules();
+      const refresh = jest.fn();
+      jest.doMock('@descope/core-js-sdk', () => {
+        const actual = jest.requireActual('@descope/core-js-sdk');
+        return {
+          ...actual,
+          __esModule: true,
+          wrapWith: (sdkInstance: object) => sdkInstance,
+          default: (...args: any[]) => ({ ...actual.default(...args), refresh }),
+        };
+      });
+
+      const createNodeSdk = require('.').default; // eslint-disable-line
+      const sdkInstance = createNodeSdk({ projectId: 'project-id' });
+
+      const token = 'test-token';
+      const externalToken = 'external-token';
+      await sdkInstance.refresh(token, externalToken);
+
+      expect(refresh).toHaveBeenCalledWith(token, undefined, externalToken);
     });
   });
 
@@ -235,10 +387,19 @@ describe('sdk', () => {
         ok: true,
         data: { sessionJwt: validToken },
       } as SdkResponse<JWTResponse>);
-      await expect(sdk.validateAndRefreshSession('', validToken)).resolves.toHaveProperty(
-        'jwt',
-        validToken,
-      );
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBeFalsy();
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+    it('should refresh session and return refresh jwt when refresh call returns it', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: validToken, refreshJwt: 'refresh-jwt' },
+      } as SdkResponse<JWTResponse>);
+      const res = await sdk.validateAndRefreshSession('', validToken);
+      expect(res.jwt).toBe(validToken);
+      expect(res.refreshJwt).toBe('refresh-jwt');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
     it('should return the session token when it is valid', async () => {
@@ -304,6 +465,28 @@ describe('sdk', () => {
       const loginOptions = { customClaims: { k1: 'v1' } };
       await expect(sdk.exchangeAccessKey('key', loginOptions)).resolves.toMatchObject(expected);
       expect(spyExchange).toHaveBeenCalledWith('key', loginOptions);
+    });
+
+    it('should enforce audience on exchangeAccessKey when provided (match)', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudA },
+      } as SdkResponse<ExchangeAccessKeyResponse>);
+      await expect(
+        sdk.exchangeAccessKey('key', undefined, { audience: 'aud-a' }),
+      ).resolves.toHaveProperty('jwt', tokenAudA);
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
+    });
+
+    it('should fail exchangeAccessKey when audience mismatches', async () => {
+      const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenAudB },
+      } as SdkResponse<ExchangeAccessKeyResponse>);
+      await expect(sdk.exchangeAccessKey('key', undefined, { audience: 'aud-a' })).rejects.toThrow(
+        'could not exchange access key - failed to validate jwt',
+      );
+      expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
   });
 
@@ -456,9 +639,11 @@ describe('sdk', () => {
     it('should add descope headers to request', async () => {
       jest.resetModules();
       const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
       jest.doMock('@descope/core-js-sdk', () => ({
         __esModule: true,
         default: createCoreJs,
+        createHttpClient,
         wrapWith: (sdkInstance: object) => sdkInstance,
         addHooksToConfig: (config, hooks) => {
           // eslint-disable-next-line no-param-reassign
@@ -484,6 +669,123 @@ describe('sdk', () => {
           },
         }),
       );
+    });
+
+    it('should add auth management key to request when there is no token', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        createHttpClient,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+      });
+
+      expect(createCoreJs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hooks: expect.objectContaining({
+            beforeRequest: expect.any(Array),
+          }),
+        }),
+      );
+
+      // Get the hooks that were passed
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Test the first hook (our auth management key hook)
+      const requestConfig = { url: 'test' };
+      const result = beforeRequestHooks[0](requestConfig);
+
+      expect(result.token).toBe('auth-management-key-123');
+    });
+    it('should add auth management key to request when there is token', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        createHttpClient,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+      });
+
+      // Get the hooks that were passed
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Test the first hook with existing token
+      const requestConfig = { url: 'test', token: 'existing-token' };
+      const result = beforeRequestHooks[0](requestConfig);
+
+      expect(result.token).toBe('existing-token:auth-management-key-123');
+    });
+    it('should merge before request hooks if they are defined', async () => {
+      jest.resetModules();
+      const createCoreJs = jest.fn();
+      const createHttpClient = jest.fn();
+      const existingHook = jest.fn((config) => ({ ...config, customField: 'test' }));
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        createHttpClient,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        authManagementKey: 'auth-management-key-123',
+        hooks: {
+          beforeRequest: [existingHook],
+        },
+      });
+
+      const config = createCoreJs.mock.calls[0][0];
+      const beforeRequestHooks = config.hooks.beforeRequest;
+
+      // Should have 2 hooks: our auth management hook + the existing hook
+      expect(beforeRequestHooks).toHaveLength(2);
+
+      // Test that both hooks are executed
+      const requestConfig = { url: 'test' };
+      const afterFirstHook = beforeRequestHooks[0](requestConfig);
+      const afterSecondHook = beforeRequestHooks[1](afterFirstHook);
+
+      expect(afterFirstHook.token).toBe('auth-management-key-123');
+      expect(afterSecondHook.customField).toBe('test');
+      expect(existingHook).toHaveBeenCalledWith(afterFirstHook);
     });
   });
 
@@ -514,6 +816,17 @@ describe('sdk', () => {
 
       // ensure that /keys is not called
       expect(newSdk.httpClient.get).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('utils', () => {
+    it('should get cookie value', () => {
+      const cookie =
+        'DS=s1.s2.s3; Path=/; Domain=api.descope.com; Expires=Tue, 02 Sep 2025 15:29:32 GMT; Max-Age=3599; HttpOnly; Secure; SameSite=None, DSR=r1.r2.r3; Path=/; Expires=Tue, 02 Sep 2025 15:29:32 GMT; Max-Age=3599; HttpOnly; Secure; SameSite=None, DSTEST=c1; path=/; expires=Tue, 02-Sep-25 14:59:32 GMT; domain=.descope.com; HttpOnly; Secure; SameSite=None';
+      expect(getCookieValue(cookie, 'DS')).toBe('s1.s2.s3');
+      expect(getCookieValue(cookie, 'DSR')).toBe('r1.r2.r3');
+      expect(getCookieValue(cookie, 'DSTEST')).toBe('c1');
+      expect(getCookieValue(cookie, 'UNKNOWN')).toBeNull();
     });
   });
 });

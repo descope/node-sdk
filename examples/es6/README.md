@@ -32,7 +32,7 @@ npm run generateCerts
 ```
 # .env
 DESCOPE_PROJECT_ID=<Descope project ID>
-DESCOPE_API_BASE_URL=<Descope API base URL> # optional, Descope will use the default URL if not provided
+DESCOPE_BASE_URL=<Descope API base URL> # optional, Descope will use the default URL if not provided
 PORT=8082 # optional, default is 443
 ```
 
