@@ -17,8 +17,16 @@ export interface AuthenticationInfo {
   cookies?: string[];
 }
 
+export interface RefreshAuthenticationInfo extends AuthenticationInfo {
+  refreshJwt?: string;
+}
+
+/** Options for token verification (extensible). For now only audience. */
+export interface VerifyOptions {
+  audience?: string | string[];
+}
+
 /** Descope core SDK type */
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
-export type CoreSdk = ReturnType<CreateCoreSdk>;
 export type DeliveryMethodForTestUser = DeliveryMethod | 'Embedded';

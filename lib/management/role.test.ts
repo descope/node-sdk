@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { Role, RoleSearchOptions } from './types';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 const mockRoles = [
   {
@@ -35,7 +35,7 @@ const mockAllRolesResponse = {
 describe('Management Role', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('create', () => {
@@ -49,13 +49,15 @@ describe('Management Role', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.role.create('name', 'description', ['p1', 'p2'], 't1');
+      const resp = await management.role.create('name', 'description', ['p1', 'p2'], 't1', true);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.role.create,
-        { name: 'name', description: 'description', permissionNames: ['p1', 'p2'], tenantId: 't1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.create, {
+        name: 'name',
+        description: 'description',
+        permissionNames: ['p1', 'p2'],
+        tenantId: 't1',
+        default: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -82,19 +84,17 @@ describe('Management Role', () => {
         'description',
         ['p1', 'p2'],
         't1',
+        true,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.role.update,
-        {
-          name: 'name',
-          tenantId: 't1',
-          newName: 'newName',
-          description: 'description',
-          permissionNames: ['p1', 'p2'],
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.update, {
+        name: 'name',
+        tenantId: 't1',
+        newName: 'newName',
+        description: 'description',
+        permissionNames: ['p1', 'p2'],
+        default: true,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -117,11 +117,10 @@ describe('Management Role', () => {
 
       const resp = await management.role.delete('name', 't1');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.role.delete,
-        { name: 'name', tenantId: 't1' },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.delete, {
+        name: 'name',
+        tenantId: 't1',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -145,9 +144,7 @@ describe('Management Role', () => {
 
       const resp: SdkResponse<Role[]> = await management.role.loadAll();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.role.loadAll, {
-        token: 'key',
-      });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.role.loadAll, {});
 
       expect(resp).toEqual({
         code: 200,
@@ -177,9 +174,7 @@ describe('Management Role', () => {
       };
       const resp: SdkResponse<Role[]> = await management.role.search(req);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.search, req, {
-        token: 'key',
-      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.role.search, req, {});
 
       expect(resp).toEqual({
         code: 200,

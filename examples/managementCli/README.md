@@ -60,6 +60,9 @@ $ npm run start -- test-user-create <login-id> --email <my@domain.com> --name=<s
 
 ## Projects	##
 
+# List all projects
+$ npm run start -- list-projects
+
 # Update project name
 $ npm run start -- project-update-name <project-name>
 
@@ -100,6 +103,35 @@ $ npm run start -- tenant-delete <tenant-id>
 
 # Load all tenants
 $ npm run start -- tenant-all
+
+## Outbound application
+
+# Create outbound application
+$ npm run start -- outbound-application-create <name>
+
+# Update outbound application
+$ npm run start -- outbound-application-update <id> <name>
+
+# Load outbound application
+$ npm run start -- outbound-application-load <id>
+
+# Load all outbound applications
+$ npm run start -- outbound-application-load-all
+
+# Delete outbound application
+$ npm run start -- outbound-application-delete <id>
+
+# Fetch outbound application token
+$ npm run start -- outbound-application-fetch-token <app-id> <user-id>
+
+# Fetch outbound application token by scopes
+$ npm run start -- outbound-application-fetch-token-by-scopes <app-id> <user-id> <scopes>
+
+# Fetch tenant token
+$ npm run start -- outbound-application-fetch-tenant-token <app-id> <tenant-id>
+
+# Fetch tenant token by scopes
+$ npm run start -- outbound-application-fetch-tenant-token-by-scopes <app-id> <tenant-id> <scopes>
 
 ## SSO application
 
@@ -202,4 +234,9 @@ $ npm run start -- fga-check-relations <relations-file-path>
 
 # Check an FGA relation
 $ npm run start -- fga-check [--resource <resource>] [--resource-type <resource-type>] [--relation <relation>] [--target <target>] [--target-type <target-type>]
+
+# Save FGA Resources Details
+$ npm run start -- fga-save-resources-details <resources-details-json-array-file-path>
+# Load FGA Resources Details
+$ npm run start -- fga-load-resources-details <resource-identifiers-json-array-file-path>
 ```

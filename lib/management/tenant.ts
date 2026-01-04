@@ -1,5 +1,4 @@
-import { SdkResponse, transformResponse } from '@descope/core-js-sdk';
-import { CoreSdk } from '../types';
+import { SdkResponse, transformResponse, HttpClient } from '@descope/core-js-sdk';
 import apiPaths from './paths';
 import {
   CreateTenantResponse,
@@ -13,62 +12,75 @@ type MultipleTenantResponse = {
   tenants: Tenant[];
 };
 
-const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
+const withTenant = (httpClient: HttpClient) => ({
   create: (
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
+    parent?: string,
   ): Promise<SdkResponse<CreateTenantResponse>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.tenant.create,
-        { name, selfProvisioningDomains, customAttributes },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.tenant.create, {
+        name,
+        selfProvisioningDomains,
+        customAttributes,
+        enforceSSO,
+        disabled,
+        parent,
+      }),
     ),
   createWithId: (
     id: string,
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
+    parent?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.tenant.create,
-        { id, name, selfProvisioningDomains, customAttributes },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.tenant.create, {
+        id,
+        name,
+        selfProvisioningDomains,
+        customAttributes,
+        enforceSSO,
+        disabled,
+        parent,
+      }),
     ),
   update: (
     id: string,
     name: string,
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    enforceSSO?: boolean,
+    disabled?: boolean,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      sdk.httpClient.post(
-        apiPaths.tenant.update,
-        { id, name, selfProvisioningDomains, customAttributes },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.tenant.update, {
+        id,
+        name,
+        selfProvisioningDomains,
+        customAttributes,
+        enforceSSO,
+        disabled,
+      }),
     ),
   delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(apiPaths.tenant.delete, { id, cascade }, { token: managementKey }),
-    ),
+    transformResponse(httpClient.post(apiPaths.tenant.delete, { id, cascade })),
   load: (id: string): Promise<SdkResponse<Tenant>> =>
     transformResponse<Tenant, Tenant>(
-      sdk.httpClient.get(apiPaths.tenant.load, {
+      httpClient.get(apiPaths.tenant.load, {
         queryParams: { id },
-        token: managementKey,
       }),
       (data) => data,
     ),
   loadAll: (): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
-      sdk.httpClient.get(apiPaths.tenant.loadAll, {
-        token: managementKey,
-      }),
+      httpClient.get(apiPaths.tenant.loadAll, {}),
       (data) => data.tenants,
     ),
   searchAll: (
@@ -76,38 +88,27 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     names?: string[],
     selfProvisioningDomains?: string[],
     customAttributes?: Record<string, AttributesTypes>,
+    parentTenantId?: string,
   ): Promise<SdkResponse<Tenant[]>> =>
     transformResponse<MultipleTenantResponse, Tenant[]>(
-      sdk.httpClient.post(
-        apiPaths.tenant.searchAll,
-        {
-          tenantIds: ids,
-          tenantNames: names,
-          tenantSelfProvisioningDomains: selfProvisioningDomains,
-          customAttributes,
-        },
-        { token: managementKey },
-      ),
+      httpClient.post(apiPaths.tenant.searchAll, {
+        tenantIds: ids,
+        tenantNames: names,
+        tenantSelfProvisioningDomains: selfProvisioningDomains,
+        customAttributes,
+        parentTenantId,
+      }),
       (data) => data.tenants,
     ),
   getSettings: (tenantId: string): Promise<SdkResponse<TenantSettings>> =>
     transformResponse<TenantSettings, TenantSettings>(
-      sdk.httpClient.get(apiPaths.tenant.settings, {
+      httpClient.get(apiPaths.tenant.settings, {
         queryParams: { id: tenantId },
-        token: managementKey,
       }),
       (data) => data,
     ),
   configureSettings: (tenantId: string, settings: TenantSettings): Promise<SdkResponse<never>> =>
-    transformResponse(
-      sdk.httpClient.post(
-        apiPaths.tenant.settings,
-        { ...settings, tenantId },
-        {
-          token: managementKey,
-        },
-      ),
-    ),
+    transformResponse(httpClient.post(apiPaths.tenant.settings, { ...settings, tenantId }, {})),
   generateSSOConfigurationLink: (
     tenantId: string,
     expireDuration: number,
@@ -116,12 +117,10 @@ const withTenant = (sdk: CoreSdk, managementKey?: string) => ({
     templateId?: string,
   ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
     transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
-      sdk.httpClient.post(
+      httpClient.post(
         apiPaths.tenant.generateSSOConfigurationLink,
         { tenantId, expireTime: expireDuration, ssoId, email, templateId },
-        {
-          token: managementKey,
-        },
+        {},
       ),
       (data) => data,
     ),

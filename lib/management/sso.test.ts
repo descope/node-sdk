@@ -1,13 +1,13 @@
 import withManagement from '.';
 import apiPaths from './paths';
-import { mockCoreSdk, mockHttpClient } from './testutils';
+import { mockHttpClient, resetMockHttpClient } from './testutils';
 
-const management = withManagement(mockCoreSdk, 'key');
+const management = withManagement(mockHttpClient);
 
 describe('Management SSO', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    mockHttpClient.reset();
+    resetMockHttpClient();
   });
 
   describe('getSettings', () => {
@@ -33,7 +33,6 @@ describe('Management SSO', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.settings, {
         queryParams: { tenantId },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -62,7 +61,6 @@ describe('Management SSO', () => {
 
       expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.sso.settings, {
         queryParams: { tenantId },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -90,7 +88,6 @@ describe('Management SSO', () => {
 
       expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.sso.settings, {
         queryParams: { tenantId, ssoId },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -128,11 +125,14 @@ describe('Management SSO', () => {
         domains,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.settings,
-        { tenantId, idpURL, idpCert, entityId, redirectURL, domains },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.settings, {
+        tenantId,
+        idpURL,
+        idpCert,
+        entityId,
+        redirectURL,
+        domains,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -164,16 +164,12 @@ describe('Management SSO', () => {
         domains,
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.metadata,
-        {
-          tenantId,
-          idpMetadataURL,
-          domains,
-          redirectURL,
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.metadata, {
+        tenantId,
+        idpMetadataURL,
+        domains,
+        redirectURL,
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -200,15 +196,11 @@ describe('Management SSO', () => {
         { name: 'IDP_NAME', email: 'IDP_MAIL' },
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.mapping,
-        {
-          tenantId: 't1',
-          roleMappings: [{ groups: ['g1', 'g2'], roleName: 'role1' }],
-          attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.mapping, {
+        tenantId: 't1',
+        roleMappings: [{ groups: ['g1', 'g2'], roleName: 'role1' }],
+        attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -242,22 +234,18 @@ describe('Management SSO', () => {
         ['a.com', 'b.com'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.oidc.configure,
-        {
-          tenantId: 't1',
-          settings: {
-            clientId: 'cid',
-            name: 'cn',
-            userAttrMapping: {
-              email: 'em',
-            },
-            redirectUrl: 'http://redirect.com',
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.oidc.configure, {
+        tenantId: 't1',
+        settings: {
+          clientId: 'cid',
+          name: 'cn',
+          userAttrMapping: {
+            email: 'em',
           },
-          domains: ['a.com', 'b.com'],
+          redirectUrl: 'http://redirect.com',
         },
-        { token: 'key' },
-      );
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -290,23 +278,19 @@ describe('Management SSO', () => {
         'somessoid',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.oidc.configure,
-        {
-          tenantId: 't1',
-          ssoId: 'somessoid',
-          settings: {
-            clientId: 'cid',
-            name: 'cn',
-            userAttrMapping: {
-              email: 'em',
-            },
-            redirectUrl: 'http://redirect.com',
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.oidc.configure, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        settings: {
+          clientId: 'cid',
+          name: 'cn',
+          userAttrMapping: {
+            email: 'em',
           },
-          domains: ['a.com', 'b.com'],
+          redirectUrl: 'http://redirect.com',
         },
-        { token: 'key' },
-      );
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -341,23 +325,19 @@ describe('Management SSO', () => {
         ['a.com', 'b.com'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.saml.configure,
-        {
-          tenantId: 't1',
-          settings: {
-            idpUrl: 'https://idp.url',
-            entityId: 'eid',
-            idpCert: 'bsae64cert',
-            spACSUrl: 'https://spacs.url',
-            spEntityId: 'spentityid',
-            defaultSSORoles: ['aa', 'bb'],
-          },
-          redirectUrl: 'http://redirect.com',
-          domains: ['a.com', 'b.com'],
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.configure, {
+        tenantId: 't1',
+        settings: {
+          idpUrl: 'https://idp.url',
+          entityId: 'eid',
+          idpCert: 'bsae64cert',
+          spACSUrl: 'https://spacs.url',
+          spEntityId: 'spentityid',
+          defaultSSORoles: ['aa', 'bb'],
         },
-        { token: 'key' },
-      );
+        redirectUrl: 'http://redirect.com',
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -390,23 +370,19 @@ describe('Management SSO', () => {
         'somessoid',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.saml.configure,
-        {
-          tenantId: 't1',
-          ssoId: 'somessoid',
-          settings: {
-            idpUrl: 'https://idp.url',
-            entityId: 'eid',
-            idpCert: 'bsae64cert',
-            spACSUrl: 'https://spacs.url',
-            spEntityId: 'spentityid',
-          },
-          redirectUrl: 'http://redirect.com',
-          domains: ['a.com', 'b.com'],
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.configure, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        settings: {
+          idpUrl: 'https://idp.url',
+          entityId: 'eid',
+          idpCert: 'bsae64cert',
+          spACSUrl: 'https://spacs.url',
+          spEntityId: 'spentityid',
         },
-        { token: 'key' },
-      );
+        redirectUrl: 'http://redirect.com',
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -440,22 +416,18 @@ describe('Management SSO', () => {
         ['a.com', 'b.com'],
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.saml.metadata,
-        {
-          tenantId: 't1',
-          settings: {
-            idpMetadataUrl: 'https://metadata.com',
-            attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
-            spACSUrl: 'https://spacs.url',
-            spEntityId: 'spentityid',
-            defaultSSORoles: ['aa', 'bb'],
-          },
-          redirectUrl: 'http://redirect.com',
-          domains: ['a.com', 'b.com'],
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.metadata, {
+        tenantId: 't1',
+        settings: {
+          idpMetadataUrl: 'https://metadata.com',
+          attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
+          spACSUrl: 'https://spacs.url',
+          spEntityId: 'spentityid',
+          defaultSSORoles: ['aa', 'bb'],
         },
-        { token: 'key' },
-      );
+        redirectUrl: 'http://redirect.com',
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -487,22 +459,18 @@ describe('Management SSO', () => {
         'somessoid',
       );
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.saml.metadata,
-        {
-          tenantId: 't1',
-          ssoId: 'somessoid',
-          settings: {
-            idpMetadataUrl: 'https://metadata.com',
-            attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
-            spACSUrl: 'https://spacs.url',
-            spEntityId: 'spentityid',
-          },
-          redirectUrl: 'http://redirect.com',
-          domains: ['a.com', 'b.com'],
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.metadata, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        settings: {
+          idpMetadataUrl: 'https://metadata.com',
+          attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
+          spACSUrl: 'https://spacs.url',
+          spEntityId: 'spentityid',
         },
-        { token: 'key' },
-      );
+        redirectUrl: 'http://redirect.com',
+        domains: ['a.com', 'b.com'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -540,15 +508,11 @@ describe('Management SSO', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
       const resp = await management.sso.newSettings('t1', 'somessoid', 'somessodisplayname');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.sso.settingsNew,
-        {
-          tenantId: 't1',
-          ssoId: 'somessoid',
-          displayName: 'somessodisplayname',
-        },
-        { token: 'key' },
-      );
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.settingsNew, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        displayName: 'somessodisplayname',
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -584,9 +548,13 @@ describe('Management SSO', () => {
           userAttrMapping: {
             name: 'uan',
           },
+          providerID: 'pidoidc',
+          scimProviderID: 'scimidoidc',
         },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
+          providerID: 'pidsaml',
+          scimProviderID: 'scimidsaml',
         },
       };
       const httpResponse = {
@@ -604,7 +572,6 @@ describe('Management SSO', () => {
         queryParams: {
           tenantId: 't1',
         },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -620,9 +587,13 @@ describe('Management SSO', () => {
             attributeMapping: {
               name: 'uan',
             },
+            providerID: 'pidoidc',
+            scimProviderID: 'scimidoidc',
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
+            providerID: 'pidsaml',
+            scimProviderID: 'scimidsaml',
           },
         },
       });
@@ -659,7 +630,6 @@ describe('Management SSO', () => {
           tenantId: 't1',
           ssoId: 'somessoid',
         },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -720,7 +690,6 @@ describe('Management SSO', () => {
         queryParams: {
           tenantId: 't1',
         },
-        token: 'key',
       });
 
       expect(resp).toEqual({
@@ -770,7 +739,6 @@ describe('Management SSO', () => {
       queryParams: {
         tenantId: 't1',
       },
-      token: 'key',
     });
 
     expect(resp).toEqual({

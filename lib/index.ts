@@ -2,7 +2,10 @@ import createSdk, {
   AccessKeyLoginOptions,
   ExchangeAccessKeyResponse,
   SdkResponse,
+  JWTResponse as CoreJWTResponse,
   wrapWith,
+  createHttpClient,
+  RequestConfig,
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
@@ -12,30 +15,62 @@ import {
   sessionTokenCookieName,
 } from './constants';
 import fetch from './fetch-polyfill';
-import { getAuthorizationClaimItems, isUserAssociatedWithTenant, withCookie } from './helpers';
+import {
+  getAuthorizationClaimItems,
+  getCookieValue,
+  isUserAssociatedWithTenant,
+  withCookie,
+} from './helpers';
 import withManagement from './management';
-import { AuthenticationInfo } from './types';
+import { AuthenticationInfo, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
 
+// Extend the type wrapped by withCookie
+type JWTResponseWithCookies = CoreJWTResponse & {
+  cookies: string[];
+};
+
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
 type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
+  authManagementKey?: string;
   publicKey?: string;
 };
 
-const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
-  const coreSdk = createSdk({
+const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
+  const nodeHeaders = {
+    'x-descope-sdk-name': 'nodejs',
+    'x-descope-sdk-node-version': process?.versions?.node || '',
+    'x-descope-sdk-version': BUILD_VERSION,
+  };
+
+  const authSdkConfig = {
     fetch,
     ...config,
     baseHeaders: {
       ...config.baseHeaders,
-      'x-descope-sdk-name': 'nodejs',
-      'x-descope-sdk-node-version': process?.versions?.node || '',
-      'x-descope-sdk-version': BUILD_VERSION,
+      ...nodeHeaders,
     },
-  });
+    hooks: {
+      ...config.hooks,
+      beforeRequest: [
+        // auth requests append the auth management key if provided
+        (requestConfig: RequestConfig) => {
+          if (authManagementKey) {
+            // eslint-disable-next-line no-param-reassign
+            requestConfig.token = !requestConfig.token
+              ? authManagementKey
+              : `${requestConfig.token}:${authManagementKey}`;
+          }
+
+          return requestConfig;
+        },
+      ].concat(config.hooks?.beforeRequest || []),
+    },
+  };
+  const coreSdk = createSdk(authSdkConfig);
 
   const { projectId, logger } = config;
 
@@ -71,13 +106,36 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     );
   };
 
-  const management = withManagement(coreSdk, managementKey);
+  const mgmtSdkConfig = {
+    fetch,
+    ...config,
+    baseConfig: {
+      baseHeaders: {
+        ...config.baseHeaders,
+        ...nodeHeaders,
+      },
+    },
+    hooks: {
+      ...config.hooks,
+      beforeRequest: [
+        // management requests always use the management key as the token
+        (requestConfig: RequestConfig) => {
+          // eslint-disable-next-line no-param-reassign
+          requestConfig.token = managementKey;
+          return requestConfig;
+        },
+      ].concat(config.hooks?.beforeRequest || []),
+    },
+  };
+  const mgmtHttpClient = createHttpClient(mgmtSdkConfig);
+  const management = withManagement(mgmtHttpClient);
 
   const sdk = {
     ...coreSdk,
 
     // Overrides core-sdk refresh, because the core-sdk exposes queryParams, which is for internal use only
-    refresh: async (token?: string) => coreSdk.refresh(token),
+    refresh: async (token?: string, externalToken?: string) =>
+      coreSdk.refresh(token, undefined, externalToken),
 
     /**
      * Provides various APIs for managing a Descope project programmatically. A management key must
@@ -103,11 +161,14 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     /**
      * Validate the given JWT with the right key and make sure the issuer is correct
      * @param jwt the JWT string to parse and validate
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
-    async validateJwt(jwt: string): Promise<AuthenticationInfo> {
+    async validateJwt(jwt: string, options?: VerifyOptions): Promise<AuthenticationInfo> {
       // Do not hard-code the algo because library does not support `None` so all are valid
-      const res = await jwtVerify(jwt, sdk.getKey, { clockTolerance: 5 });
+      const verifyOptions: Record<string, unknown> = { clockTolerance: 5 };
+      if (options?.audience) verifyOptions.audience = options.audience;
+      const res = await jwtVerify(jwt, sdk.getKey, verifyOptions);
       const token = res.payload;
 
       if (token) {
@@ -128,13 +189,17 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     /**
      * Validate an active session
      * @param sessionToken session JWT to validate
+     * @param options optional verification options (e.g., { audience })
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async validateSession(sessionToken: string): Promise<AuthenticationInfo> {
+    async validateSession(
+      sessionToken: string,
+      options?: VerifyOptions,
+    ): Promise<AuthenticationInfo> {
       if (!sessionToken) throw Error('session token is required for validation');
 
       try {
-        const token = await sdk.validateJwt(sessionToken);
+        const token = await sdk.validateJwt(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -144,18 +209,36 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
     },
 
     /**
-     * Refresh the session using a refresh token
+     * Refresh the session using a refresh token.
+     * For session migration, use {@link sdk.refresh}.
+     *
      * @param refreshToken refresh JWT to refresh the session with
-     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     * @param options optional verification options for the new session (e.g., { audience })
+     * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
-    async refreshSession(refreshToken: string): Promise<AuthenticationInfo> {
+    async refreshSession(
+      refreshToken: string,
+      options?: VerifyOptions,
+    ): Promise<RefreshAuthenticationInfo> {
       if (!refreshToken) throw Error('refresh token is required to refresh a session');
 
       try {
         await sdk.validateJwt(refreshToken);
         const jwtResp = await sdk.refresh(refreshToken);
         if (jwtResp.ok) {
-          const token = await sdk.validateJwt(jwtResp.data?.sessionJwt);
+          // if refresh was successful, validate the new session JWT
+          const sessionJwt =
+            getCookieValue(
+              (jwtResp.data as JWTResponseWithCookies)?.cookies?.join(';'),
+              sessionTokenCookieName,
+            ) || jwtResp.data?.sessionJwt;
+          const token = await sdk.validateJwt(sessionJwt, options);
+          // add cookies to the token response if they exist
+          token.cookies = (jwtResp.data as JWTResponseWithCookies)?.cookies || [];
+          if (jwtResp.data?.refreshJwt) {
+            // if refresh returned a refresh JWT, add it to the response
+            (token as RefreshAuthenticationInfo).refreshJwt = jwtResp.data.refreshJwt;
+          }
           return token;
         }
         /* istanbul ignore next */
@@ -171,34 +254,38 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
      * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
-     * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
+     * @param options optional verification options (e.g., { audience }) used on validation and post-refresh
+     * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
       sessionToken?: string,
       refreshToken?: string,
-    ): Promise<AuthenticationInfo> {
+      options?: VerifyOptions,
+    ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
       try {
-        const token = await sdk.validateSession(sessionToken);
+        const token = await sdk.validateSession(sessionToken, options);
         return token;
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
       }
 
-      return sdk.refreshSession(refreshToken);
+      return sdk.refreshSession(refreshToken, options);
     },
 
     /**
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
      * @param loginOptions Optional advanced controls over login parameters
+     * @param options optional verification options for the returned session (e.g., { audience })
      * @returns AuthenticationInfo with session JWT data
      */
     async exchangeAccessKey(
       accessKey: string,
       loginOptions?: AccessKeyLoginOptions,
+      options?: VerifyOptions,
     ): Promise<AuthenticationInfo> {
       if (!accessKey) throw Error('access key must not be empty');
 
@@ -222,7 +309,7 @@ const nodeSdk = ({ managementKey, publicKey, ...config }: NodeSdkArgs) => {
       }
 
       try {
-        const token = await sdk.validateJwt(sessionJwt);
+        const token = await sdk.validateJwt(sessionJwt, options);
         return token;
       } catch (error) {
         logger?.error('failed to parse jwt from access key', error);
@@ -388,3 +475,4 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
+export type { VerifyOptions } from './types';
