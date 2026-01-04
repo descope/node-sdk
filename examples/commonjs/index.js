@@ -250,6 +250,9 @@ const getMethodAndLoginId = (req) => {
       deliveryMethod: DescopeClient.DeliveryMethods.whatsapp,
     };
   }
+  if (req.body.im) {
+    return { loginId: req.body.im, deliveryMethod: DescopeClient.DeliveryMethods.im };
+  }
   return { loginId: '', deliveryMethod: DescopeClient.DeliveryMethods.email };
 };
 

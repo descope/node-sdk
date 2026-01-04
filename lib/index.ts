@@ -431,6 +431,7 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
       'otp.verify.sms',
       'otp.verify.voice',
       'otp.verify.whatsapp',
+      'otp.verify.im',
       'magicLink.verify',
       'enchantedLink.signUp',
       'enchantedLink.signIn',
