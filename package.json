@@ -1,6 +1,6 @@
 {
   "name": "@descope/node-sdk",
-  "version": "1.7.21",
+  "version": "1.8.0",
   "description": "Node.js library used to integrate with Descope",
   "typings": "./dist/index.d.ts",
   "main": "dist/cjs/index.cjs.js",
@@ -31,9 +31,9 @@
     "build": "rimraf dist && rollup -c",
     "prepare": "husky install",
     "quick": "npm i && npm run build && cd examples/es6/ && npm i && npm run generateCerts && npm start",
-    "format": "prettier . --write --ignore-path .gitignore",
-    "format-check": "prettier . --check --ignore-path .gitignore",
-    "format-lint": "pretty-quick --staged --ignore-path .gitignore && lint-staged",
+    "format": "prettier . --write",
+    "format-check": "prettier . --check",
+    "format-lint": "pretty-quick --staged && lint-staged",
     "size": "npm run build && size-limit",
     "lint": "eslint lib/**/*.ts --fix",
     "leaks": "bash ./scripts/gitleaks/gitleaks.sh",
@@ -102,7 +102,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@descope/core-js-sdk": "2.54.0",
+    "@descope/core-js-sdk": "2.56.1",
     "cross-fetch": "^4.0.0",
     "jose": "5.2.2",
     "tslib": "^2.0.0"
