@@ -5,7 +5,7 @@ for a backend written in Node.js. You can read more on the [Descope Website](htt
 
 ## Requirements
 
-The SDK supports Node version 16 and above.
+The SDK supports Node version 12 and above.
 
 ## Installing the SDK
 
@@ -1530,14 +1530,12 @@ appsRes.data.forEach((app) => {
 });
 
 // Get an inbound application secret by application id.
-const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
-  'my-app-id',
-);
+const { cleartext } =
+  await descopeClient.management.inboundApplication.getApplicationSecret('my-app-id');
 
 // Rotate an inbound application secret by application id.
-const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
-  'my-app-id',
-);
+const { cleartext } =
+  await descopeClient.management.inboundApplication.rotateApplicationSecret('my-app-id');
 
 // Search in all consents. search consents by the given app id and offset to the third page.
 const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
