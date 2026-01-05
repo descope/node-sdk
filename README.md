@@ -1388,6 +1388,30 @@ const relations = await descopeClient.management.fga.check([
 ]);
 ```
 
+Response times of repeated FGA `check` calls, especially in high volume scenarios, can be reduced to sub-millisecond scales by re-directing the calls to a Descope FGA Cache Proxy running in the same backend cluster as your application.
+
+After setting up the proxy server via the Descope provided Docker image, set the `fgaCacheUrl` parameter to be equal to the proxy URL to enable its use in the SDK, as shown in the example below:
+
+```typescript
+import DescopeClient from '@descope/node-sdk';
+
+// Initialize client with FGA cache URL
+const descopeClient = DescopeClient({
+  projectId: '<Project ID>',
+  managementKey: '<Management Key>',
+  fgaCacheUrl: 'https://10.0.0.4', // example FGA Cache Proxy URL, running inside the same backend cluster
+});
+```
+
+When the `fgaCacheUrl` is configured, the following FGA methods will automatically use the cache proxy instead of the default Descope API:
+
+- `saveSchema`
+- `createRelations`
+- `deleteRelations`
+- `check`
+
+Other FGA operations like `loadResourcesDetails` and `saveResourcesDetails` will continue to use the standard Descope API endpoints.
+
 ### Manage Outbound Applications
 
 You can create, update, delete or load outbound applications:
