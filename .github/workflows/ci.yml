@@ -129,3 +129,11 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.CI_NPM_READ_ORG }}
       - name: Testing
         run: npm test
+
+  ready:
+    name: 🚀 Ready
+    runs-on: ubuntu-latest
+    needs: [build, eslint, gitleaks, pr-title-check, unit-test, asd]
+    steps:
+      - name: Ready
+        run: echo "All checks passed and the PR is ready to be merged!"
