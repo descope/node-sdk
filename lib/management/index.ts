@@ -19,13 +19,7 @@ import withInboundApplication from './inboundapplication';
 import withOutboundApplication from './outboundapplication';
 import withDescoper from './descoper';
 import withManagementKey from './managementKey';
-
-type FGAConfig = {
-  fgaCacheUrl?: string;
-  managementKey?: string;
-  projectId: string;
-  headers: Record<string, string>;
-};
+import { FGAConfig } from './types';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
 const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({

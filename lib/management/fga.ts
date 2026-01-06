@@ -7,30 +7,37 @@ import {
   FGASchema,
   FGAResourceDetails,
   FGAResourceIdentifier,
+  FGAConfig,
 } from './types';
 
-type FGAConfig = {
-  fgaCacheUrl?: string;
-  managementKey?: string;
-  projectId: string;
-  headers: Record<string, string>;
-};
+const DEFAULT_CACHE_TIMEOUT_MS = 5000;
 
 const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
-  const postWithOptionalCache = async (path: string, body: any): Promise<Response> => {
+  const postWithOptionalCache = async (path: string, body: unknown): Promise<Response> => {
     if (config?.fgaCacheUrl && config.managementKey) {
       const url = `${config.fgaCacheUrl}${path}`;
 
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          ...config.headers,
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.projectId}:${config.managementKey}`,
-          'x-descope-project-id': config.projectId,
-        },
-        body: JSON.stringify(body),
-      });
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), DEFAULT_CACHE_TIMEOUT_MS);
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            ...config.headers,
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.projectId}:${config.managementKey}`,
+            'x-descope-project-id': config.projectId,
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        return response;
+      } catch {
+        return httpClient.post(path, body);
+      }
     }
     return httpClient.post(path, body);
   };

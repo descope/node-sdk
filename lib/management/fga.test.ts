@@ -303,5 +303,15 @@ describe('Management FGA', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
       expect(fetchMock).not.toHaveBeenCalled();
     });
+
+    it('should fallback to httpClient when cache URL fetch fails', async () => {
+      const schema = { dsl: 'model AuthZ 1.0' };
+      fetchMock.mockRejectedValue(new Error('Network error'));
+
+      await WithFGA(mockHttpClient, fgaConfig).saveSchema(schema);
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
+    });
   });
 });
