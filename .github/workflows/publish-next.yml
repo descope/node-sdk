@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  NODE_VERSION: 22.12
-
 jobs:
   publish:
     name: 📢 Publish Next
@@ -23,7 +20,7 @@ jobs:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: package.json
           registry-url: https://registry.npmjs.org/
       - name: Get Short SHA
         run: echo "SHORT_SHA=`echo ${{ github.sha }} | cut -c1-8`" >> $GITHUB_ENV
