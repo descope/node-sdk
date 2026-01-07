@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/descope/node-sdk/compare/v1.8.0...v1.9.0) (2026-01-07)
+
+
+### Features
+
+* **fga:** add fgacacheurl parameter for cache proxy support ([#642](https://github.com/descope/node-sdk/issues/642)) ([fae0133](https://github.com/descope/node-sdk/commit/fae01337c4075c95dc3f589dd77c4fbc043a1737))
+
+
+### Bug Fixes
+
+* support git commit -m with commitlint hook ([#640](https://github.com/descope/node-sdk/issues/640)) ([9624dde](https://github.com/descope/node-sdk/commit/9624ddeda6e5ba619f7dc09f8c57b83f704b28d3))
+
 ## [1.8.0](https://github.com/descope/node-sdk/compare/v1.7.7...v1.8.0) (2026-01-04)
 
 
