@@ -850,6 +850,18 @@ export interface FGAResourceDetails {
   displayName: string;
 }
 
+/**
+ * Configuration for FGA cache proxy support.
+ * When fgaCacheUrl is provided along with managementKey, certain FGA operations
+ * will be routed through the cache proxy for improved performance.
+ */
+export type FGAConfig = {
+  fgaCacheUrl?: string;
+  managementKey?: string;
+  projectId: string;
+  headers: Record<string, string>;
+};
+
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {
   jwt?: string;

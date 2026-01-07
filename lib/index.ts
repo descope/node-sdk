@@ -37,9 +37,16 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
   authManagementKey?: string;
   publicKey?: string;
+  fgaCacheUrl?: string;
 };
 
-const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
+const nodeSdk = ({
+  authManagementKey,
+  managementKey,
+  publicKey,
+  fgaCacheUrl,
+  ...config
+}: NodeSdkArgs) => {
   const nodeHeaders = {
     'x-descope-sdk-name': 'nodejs',
     'x-descope-sdk-node-version': process?.versions?.node || '',
@@ -128,7 +135,12 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     },
   };
   const mgmtHttpClient = createHttpClient(mgmtSdkConfig);
-  const management = withManagement(mgmtHttpClient);
+  const management = withManagement(mgmtHttpClient, {
+    fgaCacheUrl,
+    managementKey,
+    projectId,
+    headers: nodeHeaders,
+  });
 
   const sdk = {
     ...coreSdk,

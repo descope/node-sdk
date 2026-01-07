@@ -3,6 +3,8 @@ import apiPaths from './paths';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { FGAResourceIdentifier, FGAResourceDetails } from './types';
 
+jest.mock('../fetch-polyfill', () => jest.fn());
+
 const emptySuccessResponse = {
   code: 200,
   data: { body: 'body' },
@@ -41,6 +43,13 @@ const mockCheckResponse = {
 };
 
 describe('Management FGA', () => {
+  let fetchMock: jest.Mock;
+
+  beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    fetchMock = require('../fetch-polyfill') as jest.Mock;
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
     resetMockHttpClient();
@@ -165,6 +174,144 @@ describe('Management FGA', () => {
       const httpResponse = { ok: false, status: 400 };
       mockHttpClient.post.mockResolvedValue(httpResponse);
       await expect(WithFGA(mockHttpClient).saveResourcesDetails(details)).rejects.toThrow();
+    });
+  });
+
+  describe('FGA Cache URL support', () => {
+    const fgaCacheUrl = 'https://my-fga-cache.example.com';
+    const projectId = 'test-project-id';
+    const managementKey = 'test-management-key';
+    const headers = {
+      'x-descope-sdk-name': 'nodejs',
+      'x-descope-sdk-node-version': '18.0.0',
+      'x-descope-sdk-version': '1.0.0',
+    };
+
+    const fgaConfig = {
+      fgaCacheUrl,
+      managementKey,
+      projectId,
+      headers,
+    };
+
+    it('should use cache URL for saveSchema when configured', async () => {
+      const schema = { dsl: 'model AuthZ 1.0' };
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+        clone: () => ({ json: async () => ({}) }),
+        status: 200,
+      });
+
+      await WithFGA(mockHttpClient, fgaConfig).saveSchema(schema);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.fga.schema}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify(schema),
+        }),
+      );
+    });
+
+    it('should use cache URL for createRelations when configured', async () => {
+      const relations = [relation1];
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+        clone: () => ({ json: async () => ({}) }),
+        status: 200,
+      });
+
+      await WithFGA(mockHttpClient, fgaConfig).createRelations(relations);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.fga.relations}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify({ tuples: relations }),
+        }),
+      );
+    });
+
+    it('should use cache URL for deleteRelations when configured', async () => {
+      const relations = [relation1];
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+        clone: () => ({ json: async () => ({}) }),
+        status: 200,
+      });
+
+      await WithFGA(mockHttpClient, fgaConfig).deleteRelations(relations);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.fga.deleteRelations}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify({ tuples: relations }),
+        }),
+      );
+    });
+
+    it('should use cache URL for check when configured', async () => {
+      const relations = [relation1, relation2];
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({ tuples: mockCheckResponseRelations }),
+        clone: () => ({ json: async () => ({ tuples: mockCheckResponseRelations }) }),
+        status: 200,
+        headers: new Map(),
+      });
+
+      const result = await WithFGA(mockHttpClient, fgaConfig).check(relations);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.fga.check}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify({ tuples: relations }),
+        }),
+      );
+      expect(result.data).toEqual(mockCheckResponseRelations);
+    });
+
+    it('should use default httpClient when cache URL is not configured', async () => {
+      const schema = { dsl: 'model AuthZ 1.0' };
+      await WithFGA(mockHttpClient).saveSchema(schema);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('should fallback to httpClient when cache URL fetch fails', async () => {
+      const schema = { dsl: 'model AuthZ 1.0' };
+      fetchMock.mockRejectedValue(new Error('Network error'));
+
+      await WithFGA(mockHttpClient, fgaConfig).saveSchema(schema);
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
     });
   });
 });
