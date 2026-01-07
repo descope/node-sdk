@@ -5,7 +5,7 @@ for a backend written in Node.js. You can read more on the [Descope Website](htt
 
 ## Requirements
 
-The SDK supports Node version 14 and above.
+The SDK supports Node version 16 and above.
 
 ## Installing the SDK
 

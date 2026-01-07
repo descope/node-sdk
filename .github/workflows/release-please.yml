@@ -9,9 +9,6 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  NODE_VERSION: 16.14
-
 jobs:
   release-please:
     name: 📦 Release Please
@@ -37,7 +34,7 @@ jobs:
 
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: package.json
           registry-url: 'https://registry.npmjs.org/'
         if: ${{ steps.release.outputs.release_created }}
 
