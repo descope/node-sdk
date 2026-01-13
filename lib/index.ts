@@ -489,3 +489,4 @@ export type {
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo };
 export type { VerifyOptions } from './types';
+export * from './management/types';
