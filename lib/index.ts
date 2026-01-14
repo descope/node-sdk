@@ -487,6 +487,7 @@ export type {
   ResponseData,
   SdkResponse,
 } from '@descope/core-js-sdk';
-export type { AuthenticationInfo };
+export type { AuthenticationInfo, RefreshAuthenticationInfo };
 export type { VerifyOptions } from './types';
 export * from './management/types';
+export type { PatchUserOptions } from './management/user';
