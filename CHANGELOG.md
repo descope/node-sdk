@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/descope/node-sdk/compare/v1.9.0...v1.9.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* authzNode missing type ([#643](https://github.com/descope/node-sdk/issues/643)) ([aa69c35](https://github.com/descope/node-sdk/commit/aa69c3520872d75c46ffeb70429b1ad6afe6336a))
+
 ## [1.9.0](https://github.com/descope/node-sdk/compare/v1.8.0...v1.9.0) (2026-01-07)
 
 
