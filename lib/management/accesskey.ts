@@ -63,6 +63,9 @@ const withAccessKey = (httpClient: HttpClient) => ({
   /**
    * Search all access keys
    * @param tenantIds Optional tenant ID filter to apply on the search results
+   * @param boundUserId Optional user ID to which the access key is bound
+   * @param creatingUser Optional identifier of the user who created the access key
+   * @param customAttributes Optional custom attributes filter to apply on the search results
    * @returns An array of found access keys
    */
   searchAll: (
