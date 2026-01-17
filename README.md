@@ -968,6 +968,7 @@ await descopeClient.management.accessKey.create(
   123456789, // expiration time
   null,
   [{ tenantId: 'tenant-ID1', roleNames: ['role-name1'] }],
+  { attributeName: 'attributeValue' },
 );
 
 // Load specific user
