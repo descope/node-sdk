@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/descope/node-sdk/compare/v1.9.1...v1.10.0) (2026-01-18)
+
+
+### Features
+
+* access key custom attributes CRU ([#645](https://github.com/descope/node-sdk/issues/645)) ([145d363](https://github.com/descope/node-sdk/commit/145d3634ab3d60655bdb1124c60149bff5e514e9))
+
 ## [1.9.1](https://github.com/descope/node-sdk/compare/v1.9.0...v1.9.1) (2026-01-15)
 
 
