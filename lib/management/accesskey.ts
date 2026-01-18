@@ -21,6 +21,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
    * @param customClaims Optional map of claims and their values that will be present in the JWT.
    * @param description Optional free text description
    * @param permittedIps Optional list of IP addresses or CIDR ranges that are allowed to use this access key.
+   * @param customAttributes Optional map of custom attributes and their values to associate with this access key.
    * @returns A newly created key and its cleartext. Make sure to save the cleartext securely.
    */
   create: (
@@ -32,6 +33,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
     customClaims?: Record<string, any>,
     description?: string,
     permittedIps?: string[],
+    customAttributes?: Record<string, any>,
   ): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
     transformResponse(
       httpClient.post(apiPaths.accessKey.create, {
@@ -43,6 +45,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
         customClaims,
         description,
         permittedIps,
+        customAttributes,
       }),
     ),
   /**
@@ -60,11 +63,24 @@ const withAccessKey = (httpClient: HttpClient) => ({
   /**
    * Search all access keys
    * @param tenantIds Optional tenant ID filter to apply on the search results
+   * @param boundUserId Optional user ID to which the access key is bound
+   * @param creatingUser Optional identifier of the user who created the access key
+   * @param customAttributes Optional custom attributes filter to apply on the search results
    * @returns An array of found access keys
    */
-  searchAll: (tenantIds?: string[]): Promise<SdkResponse<AccessKey[]>> =>
+  searchAll: (
+    tenantIds?: string[],
+    boundUserId?: string,
+    creatingUser?: string,
+    customAttributes?: Record<string, any>,
+  ): Promise<SdkResponse<AccessKey[]>> =>
     transformResponse<MultipleKeysResponse, AccessKey[]>(
-      httpClient.post(apiPaths.accessKey.search, { tenantIds }),
+      httpClient.post(apiPaths.accessKey.search, {
+        tenantIds,
+        boundUserId,
+        creatingUser,
+        customAttributes,
+      }),
       (data) => data.keys,
     ),
   /**
@@ -76,6 +92,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
    * @param tenants Optional associated tenants for this key and its roles for each.
    * @param customClaims Optional map of claims and their values that will be present in the JWT.
    * @param permittedIps Optional list of IP addresses or CIDR ranges that are allowed to use this access key.
+   * @param customAttributes Optional map of custom attributes and their values to associate with this access key.
    * @returns The updated access key
    */
   update: (
@@ -86,6 +103,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
     tenants?: AssociatedTenant[],
     customClaims?: Record<string, any>,
     permittedIps?: string[],
+    customAttributes?: Record<string, any>,
   ): Promise<SdkResponse<AccessKey>> =>
     transformResponse<SingleKeyResponse, AccessKey>(
       httpClient.post(apiPaths.accessKey.update, {
@@ -96,6 +114,7 @@ const withAccessKey = (httpClient: HttpClient) => ({
         keyTenants: tenants,
         customClaims,
         permittedIps,
+        customAttributes,
       }),
       (data) => data.key,
     ),
