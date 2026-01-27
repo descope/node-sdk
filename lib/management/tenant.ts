@@ -20,6 +20,7 @@ const withTenant = (httpClient: HttpClient) => ({
     enforceSSO?: boolean,
     disabled?: boolean,
     parent?: string,
+    roleInheritance?: '' | 'none' | 'userOnly',
   ): Promise<SdkResponse<CreateTenantResponse>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -29,6 +30,7 @@ const withTenant = (httpClient: HttpClient) => ({
         enforceSSO,
         disabled,
         parent,
+        roleInheritance,
       }),
     ),
   createWithId: (
@@ -39,6 +41,7 @@ const withTenant = (httpClient: HttpClient) => ({
     enforceSSO?: boolean,
     disabled?: boolean,
     parent?: string,
+    roleInheritance?: '' | 'none' | 'userOnly',
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -49,6 +52,7 @@ const withTenant = (httpClient: HttpClient) => ({
         enforceSSO,
         disabled,
         parent,
+        roleInheritance,
       }),
     ),
   update: (
@@ -58,6 +62,7 @@ const withTenant = (httpClient: HttpClient) => ({
     customAttributes?: Record<string, AttributesTypes>,
     enforceSSO?: boolean,
     disabled?: boolean,
+    roleInheritance?: '' | 'none' | 'userOnly',
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.update, {
@@ -67,6 +72,7 @@ const withTenant = (httpClient: HttpClient) => ({
         customAttributes,
         enforceSSO,
         disabled,
+        roleInheritance,
       }),
     ),
   delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
