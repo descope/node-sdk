@@ -113,6 +113,8 @@ const nodeSdk = ({
     );
   };
 
+  let licenseType = '';
+
   const mgmtSdkConfig = {
     fetch,
     ...config,
@@ -129,12 +131,35 @@ const nodeSdk = ({
         (requestConfig: RequestConfig) => {
           // eslint-disable-next-line no-param-reassign
           requestConfig.token = managementKey;
+          if (licenseType) {
+            // eslint-disable-next-line no-param-reassign
+            requestConfig.headers = { ...requestConfig.headers, 'x-descope-license': licenseType };
+          }
           return requestConfig;
         },
       ].concat(config.hooks?.beforeRequest || []),
     },
   };
   const mgmtHttpClient = createHttpClient(mgmtSdkConfig);
+
+  const fetchLicense = async (): Promise<string> => {
+    try {
+      const resp = await mgmtHttpClient.get('v1/mgmt/license');
+      const data = await resp.json();
+      return data.licenseType || '';
+    } catch {
+      return '';
+    }
+  };
+
+  if (managementKey) {
+    fetchLicense()
+      .then((license) => {
+        licenseType = license;
+      })
+      .catch(() => {});
+  }
+
   const management = withManagement(mgmtHttpClient, {
     fgaCacheUrl,
     managementKey,
