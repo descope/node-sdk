@@ -1,5 +1,5 @@
 import type { SdkFnWrapper } from '@descope/core-js-sdk';
-import { authorizedTenantsClaimName, refreshTokenCookieName } from './constants';
+import { authorizedTenantsClaimName, refreshTokenCookieName, scopesClaimName } from './constants';
 import { AuthenticationInfo } from './types';
 
 /**
@@ -85,4 +85,36 @@ export function getAuthorizationClaimItems(
  */
 export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant: string): boolean {
   return !!authInfo.token[authorizedTenantsClaimName]?.[tenant];
+}
+
+/**
+ * Get the scopes from the JWT token
+ * @param authInfo The parsed authentication info from the JWT
+ * @returns the scopes from the top-level claim
+ */
+export function getScopes(authInfo: AuthenticationInfo): string[] {
+  const value = authInfo.token[scopesClaimName];
+  return Array.isArray(value) ? value : [];
+}
+
+/**
+ * Check if the user has all the required scopes
+ * @param authInfo The parsed authentication info from the JWT
+ * @param scopes list of scopes to check for
+ * @returns true if user has all required scopes, false otherwise
+ */
+export function hasScopes(authInfo: AuthenticationInfo, scopes: string[]): boolean {
+  const userScopes = getScopes(authInfo);
+  return scopes.every((scope) => userScopes.includes(scope));
+}
+
+/**
+ * Get the scopes that match the required scopes
+ * @param authInfo The parsed authentication info from the JWT
+ * @param scopes list of scopes to match against
+ * @returns array of scopes that match the required scopes
+ */
+export function getMatchedScopes(authInfo: AuthenticationInfo, scopes: string[]): string[] {
+  const userScopes = getScopes(authInfo);
+  return scopes.filter((scope) => userScopes.includes(scope));
 }

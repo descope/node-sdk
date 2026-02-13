@@ -12,6 +12,7 @@ import {
   permissionsClaimName,
   refreshTokenCookieName,
   rolesClaimName,
+  scopesClaimName,
   sessionTokenCookieName,
 } from './constants';
 import fetch from './fetch-polyfill';
@@ -20,6 +21,8 @@ import {
   getCookieValue,
   isUserAssociatedWithTenant,
   withCookie,
+  hasScopes,
+  getMatchedScopes,
 } from './helpers';
 import withManagement from './management';
 import { AuthenticationInfo, RefreshAuthenticationInfo, VerifyOptions } from './types';
@@ -434,6 +437,26 @@ const nodeSdk = ({
       const membership = getAuthorizationClaimItems(authInfo, rolesClaimName, tenant);
       return roles.filter((role) => membership.includes(role));
     },
+
+    /**
+     * Make sure that all given scopes exist on the parsed JWT top level claims
+     * @param authInfo JWT parsed info
+     * @param scopes list of scopes to make sure they exist on the JWT claims
+     * @returns true if all scopes exist, false otherwise
+     */
+    validateScopes(authInfo: AuthenticationInfo, scopes: string[]): boolean {
+      return hasScopes(authInfo, scopes);
+    },
+
+    /**
+     * Retrieves the scopes from JWT top level claims that match the specified scopes list
+     * @param authInfo JWT parsed info containing the scopes
+     * @param scopes List of scopes to match against the JWT claims
+     * @returns An array of scopes that are both in the JWT claims and the specified list. Returns an empty array if no matches are found
+     */
+    getMatchedScopes(authInfo: AuthenticationInfo, scopes: string[]): string[] {
+      return getMatchedScopes(authInfo, scopes);
+    },
   };
 
   return wrapWith(
@@ -477,6 +500,7 @@ const nodeSdk = ({
 
 nodeSdk.RefreshTokenCookieName = refreshTokenCookieName;
 nodeSdk.SessionTokenCookieName = sessionTokenCookieName;
+nodeSdk.ScopesClaimName = scopesClaimName;
 nodeSdk.DescopeErrors = descopeErrors;
 
 export default nodeSdk;
