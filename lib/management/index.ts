@@ -39,7 +39,7 @@ const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   flow: WithFlow(client),
   theme: WithTheme(client),
   audit: WithAudit(client),
-  authz: WithAuthz(client),
+  authz: WithAuthz(client, fgaConfig),
   fga: WithFGA(client, fgaConfig),
   descoper: withDescoper(client),
   managementKey: withManagementKey(client),

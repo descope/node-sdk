@@ -10,6 +10,8 @@ import {
   AuthzResource,
 } from './types';
 
+jest.mock('../fetch-polyfill', () => jest.fn());
+
 const management = withManagement(mockHttpClient);
 
 const mockLoadSchema = {
@@ -580,6 +582,155 @@ describe('Management Authz', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+  });
+
+  describe('Authz Cache URL support', () => {
+    let fetchMock: jest.Mock;
+
+    const fgaCacheUrl = 'https://my-fga-cache.example.com';
+    const projectId = 'test-project-id';
+    const managementKey = 'test-management-key';
+    const headers = {
+      'x-descope-sdk-name': 'nodejs',
+      'x-descope-sdk-node-version': '18.0.0',
+      'x-descope-sdk-version': '1.0.0',
+    };
+
+    const fgaConfig = {
+      fgaCacheUrl,
+      managementKey,
+      projectId,
+      headers,
+    };
+
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+      fetchMock = require('../fetch-polyfill') as jest.Mock;
+    });
+
+    it('should use cache URL for whoCanAccess when configured', async () => {
+      const targets = { targets: ['u1'] };
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => targets,
+        clone: () => ({ json: async () => targets }),
+        status: 200,
+      });
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whoCanAccess('r', 'owner', 'doc');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.authz.who}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify({ resource: 'r', relationDefinition: 'owner', namespace: 'doc' }),
+        }),
+      );
+      expect(resp.data).toEqual(['u1']);
+    });
+
+    it('should use cache URL for whatCanTargetAccess when configured', async () => {
+      const relationsResponse = { relations: [mockRelation] };
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => relationsResponse,
+        clone: () => ({ json: async () => relationsResponse }),
+        status: 200,
+      });
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whatCanTargetAccess('t');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${fgaCacheUrl}${apiPaths.authz.targetAll}`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${projectId}:${managementKey}`,
+            'x-descope-project-id': projectId,
+          }),
+          body: JSON.stringify({ target: 't' }),
+        }),
+      );
+      expect(resp.data).toEqual([mockRelation]);
+    });
+
+    it('should use default httpClient when cache URL is not configured', async () => {
+      const targets = { targets: ['u1'] };
+      const httpResponse = {
+        ok: true,
+        json: () => targets,
+        clone: () => ({
+          json: () => Promise.resolve(targets),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.authz.whoCanAccess('r', 'owner', 'doc');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.who, {
+        resource: 'r',
+        relationDefinition: 'owner',
+        namespace: 'doc',
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('should fallback to httpClient when cache URL fetch fails for whoCanAccess', async () => {
+      const targets = { targets: ['u1'] };
+      const httpResponse = {
+        ok: true,
+        json: () => targets,
+        clone: () => ({
+          json: () => Promise.resolve(targets),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      fetchMock.mockRejectedValue(new Error('Network error'));
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whoCanAccess('r', 'owner', 'doc');
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.who, {
+        resource: 'r',
+        relationDefinition: 'owner',
+        namespace: 'doc',
+      });
+      expect(resp.data).toEqual(['u1']);
+    });
+
+    it('should fallback to httpClient when cache URL fetch fails for whatCanTargetAccess', async () => {
+      const relationsResponse = { relations: [mockRelation] };
+      const httpResponse = {
+        ok: true,
+        json: () => relationsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(relationsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      fetchMock.mockRejectedValue(new Error('Network error'));
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whatCanTargetAccess('t');
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targetAll, {
+        target: 't',
+      });
+      expect(resp.data).toEqual([mockRelation]);
     });
   });
 });
