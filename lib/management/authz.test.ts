@@ -685,6 +685,54 @@ describe('Management Authz', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
+    it('should fallback to httpClient when cache returns non-OK response for whoCanAccess', async () => {
+      const targets = { targets: ['u1'] };
+      const httpResponse = {
+        ok: true,
+        json: () => targets,
+        clone: () => ({
+          json: () => Promise.resolve(targets),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      fetchMock.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whoCanAccess('r', 'owner', 'doc');
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.who, {
+        resource: 'r',
+        relationDefinition: 'owner',
+        namespace: 'doc',
+      });
+      expect(resp.data).toEqual(['u1']);
+    });
+
+    it('should fallback to httpClient when cache returns non-OK response for whatCanTargetAccess', async () => {
+      const relationsResponse = { relations: [mockRelation] };
+      const httpResponse = {
+        ok: true,
+        json: () => relationsResponse,
+        clone: () => ({
+          json: () => Promise.resolve(relationsResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      fetchMock.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+
+      const managementWithCache = withManagement(mockHttpClient, fgaConfig);
+      const resp = await managementWithCache.authz.whatCanTargetAccess('t');
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targetAll, {
+        target: 't',
+      });
+      expect(resp.data).toEqual([mockRelation]);
+    });
+
     it('should fallback to httpClient when cache URL fetch fails for whoCanAccess', async () => {
       const targets = { targets: ['u1'] };
       const httpResponse = {

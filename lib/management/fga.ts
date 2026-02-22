@@ -16,11 +16,10 @@ const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
   const postWithOptionalCache = async (path: string, body: unknown): Promise<Response> => {
     if (config?.fgaCacheUrl && config.managementKey) {
       const url = `${config.fgaCacheUrl}${path}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), DEFAULT_CACHE_TIMEOUT_MS);
 
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), DEFAULT_CACHE_TIMEOUT_MS);
-
         const response = await fetch(url, {
           method: 'POST',
           headers: {
@@ -33,10 +32,13 @@ const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
           signal: controller.signal,
         });
 
-        clearTimeout(timeoutId);
-        return response;
+        if (response.ok) {
+          return response;
+        }
       } catch {
-        return httpClient.post(path, body);
+        // Cache request failed (network error or timeout); fall back to origin
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
     return httpClient.post(path, body);
