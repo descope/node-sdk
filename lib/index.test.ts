@@ -13,7 +13,9 @@ import { getCookieValue } from './helpers';
 
 let validToken: string;
 let validTokenIssuerURL: string;
+let validTokenAIHIssuer: string;
 let invalidTokenIssuer: string;
+let invalidTokenAIHIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
 // Audience-specific tokens
@@ -70,10 +72,22 @@ describe('sdk', () => {
       .setIssuer('https://descope.com/bla/project-id')
       .setExpirationTime(1981398111)
       .sign(privateKey);
+    validTokenAIHIssuer = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://api.descope.com/v1/apps/agentic/project-id/resource-id-123')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
     invalidTokenIssuer = await new SignJWT({})
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
       .setIssuer('https://descope.com/bla/bla')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    invalidTokenAIHIssuer = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://api.descope.com/v1/apps/agentic/wrong-project/resource-id')
       .setExpirationTime(1981398111)
       .sign(privateKey);
     expiredToken = await new SignJWT({})
@@ -134,8 +148,24 @@ describe('sdk', () => {
       });
     });
 
+    it('should return the token payload when issuer is AIH format and valid', async () => {
+      const resp = await sdk.validateJwt(validTokenAIHIssuer);
+      expect(resp).toMatchObject({
+        token: {
+          exp: 1981398111,
+          iss: 'project-id',
+        },
+      });
+    });
+
     it('should reject with a proper error message when token issuer invalid', async () => {
       await expect(sdk.validateJwt(invalidTokenIssuer)).rejects.toThrow(
+        'unexpected "iss" claim value',
+      );
+    });
+
+    it('should reject with a proper error message when AIH token issuer invalid', async () => {
+      await expect(sdk.validateJwt(invalidTokenAIHIssuer)).rejects.toThrow(
         'unexpected "iss" claim value',
       );
     });
