@@ -110,7 +110,12 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     defaultSSORoles?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      httpClient.post(apiPaths.sso.mapping, { tenantId, roleMappings, attributeMapping, defaultSSORoles }),
+      httpClient.post(apiPaths.sso.mapping, {
+        tenantId,
+        roleMappings,
+        attributeMapping,
+        defaultSSORoles,
+      }),
     ),
   configureOIDCSettings: (
     tenantId: string,
