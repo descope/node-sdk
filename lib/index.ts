@@ -184,14 +184,42 @@ const nodeSdk = ({
       const token = res.payload;
 
       if (token) {
-        token.iss = token.iss?.split('/').pop(); // support both url and project id as issuer
-        if (token.iss !== projectId) {
-          // We must do the verification here, since issuer can be either project ID or URL
-          throw new errors.JWTClaimValidationFailed(
-            'unexpected "iss" claim value',
-            'iss',
-            'check_failed',
-          );
+        // Extract project ID from issuer claim
+        // Supports:
+        // 1. Direct project ID: "project-id"
+        // 2. Standard URL format: "https://api.descope.com/v1/{projectId}"
+        // 3. AIH format: "https://api.descope.com/v1/apps/agentic/{projectId}/{resourceId}"
+        const issuer = token.iss;
+        if (issuer) {
+          const parts = issuer.split('/');
+          let extractedProjectId: string;
+
+          if (parts.length === 1) {
+            // Case 1: Direct project ID
+            extractedProjectId = issuer;
+          } else {
+            // Cases 2 and 3: URL format
+            // Check if this is an AIH issuer (contains '/apps/agentic/')
+            const agenticIndex = parts.indexOf('agentic');
+            if (agenticIndex !== -1 && agenticIndex < parts.length - 1) {
+              // AIH format: project ID is right after 'agentic'
+              extractedProjectId = parts[agenticIndex + 1];
+            } else {
+              // Standard URL format: project ID is the last segment
+              extractedProjectId = parts[parts.length - 1];
+            }
+          }
+
+          token.iss = extractedProjectId;
+
+          if (token.iss !== projectId) {
+            // We must do the verification here, since issuer can be either project ID or URL
+            throw new errors.JWTClaimValidationFailed(
+              'unexpected "iss" claim value',
+              'iss',
+              'check_failed',
+            );
+          }
         }
       }
 
