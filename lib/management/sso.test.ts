@@ -194,12 +194,14 @@ describe('Management SSO', () => {
         't1',
         [{ groups: ['g1', 'g2'], roleName: 'role1' }],
         { name: 'IDP_NAME', email: 'IDP_MAIL' },
+        ['aa', 'bb'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.mapping, {
         tenantId: 't1',
         roleMappings: [{ groups: ['g1', 'g2'], roleName: 'role1' }],
         attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
+        defaultSSORoles: ['aa', 'bb'],
       });
 
       expect(resp).toEqual({
