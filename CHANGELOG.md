@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.10.0](https://github.com/descope/node-sdk/compare/v1.9.1...v1.10.0) (2026-02-26)
+
+
+### Features
+
+* access key custom attributes CRU ([#645](https://github.com/descope/node-sdk/issues/645)) ([145d363](https://github.com/descope/node-sdk/commit/145d3634ab3d60655bdb1124c60149bff5e514e9))
+* **authz:** route whoCanAccess and whatCanTargetAccess through FGA cache ([#658](https://github.com/descope/node-sdk/issues/658)) ([e7d0b2b](https://github.com/descope/node-sdk/commit/e7d0b2b62a6ac4403a23172b18b21b050dd0a4cf))
+* role inheritence config for sub tenants ([#648](https://github.com/descope/node-sdk/issues/648)) ([ae4d906](https://github.com/descope/node-sdk/commit/ae4d906df901bfe31808333c6131280c7efa3b91))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @descope/core-js-sdk to v2.56.2 ([#647](https://github.com/descope/node-sdk/issues/647)) ([7a2d6f3](https://github.com/descope/node-sdk/commit/7a2d6f3a299f2ea359a19a1b9df0c8df221d0694))
+* **deps:** update dependency @descope/core-js-sdk to v2.57.0 ([#650](https://github.com/descope/node-sdk/issues/650)) ([3b49073](https://github.com/descope/node-sdk/commit/3b4907321f9f8a29cc771338a1354b6b0a7dbe52))
+* expose SSO SAML mapping default roles ([49d7a67](https://github.com/descope/node-sdk/commit/49d7a6723b98e498fa10e3953afc689e4f257282))
+* expose SSO SAML mapping default roles ([49d7a67](https://github.com/descope/node-sdk/commit/49d7a6723b98e498fa10e3953afc689e4f257282))
+
 ## [1.9.1](https://github.com/descope/node-sdk/compare/v1.9.0...v1.9.1) (2026-01-15)
 
 
