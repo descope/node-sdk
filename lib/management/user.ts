@@ -21,6 +21,7 @@ import {
   TemplateOptions,
   ProviderTokenOptions,
   UserOptions,
+  UserSearchResponse,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -66,6 +67,7 @@ type SingleUserResponse = {
 
 type MultipleUsersResponse = {
   users: UserResponse[];
+  total: number;
 };
 
 const withUser = (httpClient: HttpClient) => {
@@ -618,8 +620,8 @@ const withUser = (httpClient: HttpClient) => {
         }),
         (data) => data.users,
       ),
-    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
-      transformResponse<MultipleUsersResponse, UserResponse[]>(
+    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
+      transformResponse<MultipleUsersResponse, UserSearchResponse>(
         httpClient.post(apiPaths.user.searchTestUsers, {
           ...searchReq,
           withTestUser: true,
@@ -627,16 +629,16 @@ const withUser = (httpClient: HttpClient) => {
           roleNames: searchReq.roles,
           roles: undefined,
         }),
-        (data) => data.users,
+        (data) => ({ users: data.users, total: data.total }),
       ),
-    search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
-      transformResponse<MultipleUsersResponse, UserResponse[]>(
+    search: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
+      transformResponse<MultipleUsersResponse, UserSearchResponse>(
         httpClient.post(apiPaths.user.search, {
           ...searchReq,
           roleNames: searchReq.roles,
           roles: undefined,
         }),
-        (data) => data.users,
+        (data) => ({ users: data.users, total: data.total }),
       ),
     /**
      * Get the provider token for the given login ID.
