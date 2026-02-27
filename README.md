@@ -867,6 +867,18 @@ usersRes.data.forEach((user) => {
 
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
+
+// Option 1: Use searchWithTotal to get both users and total count (recommended for pagination)
+const usersResWithTotal = await descopeClient.management.user.searchWithTotal({
+  tenantIds: ['tenant-ID'],
+  limit: 10,
+  page: 0,
+});
+const users = usersResWithTotal.data.users; // UserResponse[]
+const total = usersResWithTotal.data.total; // number
+console.log(`Found ${users.length} users out of ${total} total`);
+
+// Option 2: Use search (deprecated - returns only users array)
 const usersRes = await descopeClient.management.user.search({ tenantIds: ['tenant-ID'] });
 usersRes.data.forEach((user) => {
   // do something
@@ -1698,7 +1710,19 @@ await descopeClient.management.user.createTestUser('desmond@descope.com', {
 });
 
 // Search all test users according to various parameters
-const searchRes = await descopeClient.management.user.searchTestUsers(['id']);
+
+// Option 1: Use searchTestUsersWithTotal to get both users and total count (recommended for pagination)
+const searchResWithTotal = await descopeClient.management.user.searchTestUsersWithTotal({
+  tenantIds: ['tenant-ID'],
+  limit: 10,
+  page: 0,
+});
+const testUsers = searchResWithTotal.data.users; // UserResponse[]
+const testUsersTotal = searchResWithTotal.data.total; // number
+console.log(`Found ${testUsers.length} test users out of ${testUsersTotal} total`);
+
+// Option 2: Use searchTestUsers (deprecated - returns only users array)
+const searchRes = await descopeClient.management.user.searchTestUsers({ tenantIds: ['tenant-ID'] });
 searchRes.data.forEach((user) => {
   // do something
 });

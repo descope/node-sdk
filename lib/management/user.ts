@@ -67,7 +67,7 @@ type SingleUserResponse = {
 
 type MultipleUsersResponse = {
   users: UserResponse[];
-  total: number;
+  total?: number;
 };
 
 const withUser = (httpClient: HttpClient) => {
@@ -620,7 +620,28 @@ const withUser = (httpClient: HttpClient) => {
         }),
         (data) => data.users,
       ),
-    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
+    /**
+     * Search test users.
+     * @deprecated Use searchTestUsersWithTotal instead to get total count
+     */
+    searchTestUsers: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        httpClient.post(apiPaths.user.searchTestUsers, {
+          ...searchReq,
+          withTestUser: true,
+          testUsersOnly: true,
+          roleNames: searchReq.roles,
+          roles: undefined,
+        }),
+        (data) => data.users,
+      ),
+    /**
+     * Search test users with total count.
+     * Returns both users array and total count for pagination.
+     */
+    searchTestUsersWithTotal: (
+      searchReq: SearchRequest,
+    ): Promise<SdkResponse<UserSearchResponse>> =>
       transformResponse<MultipleUsersResponse, UserSearchResponse>(
         httpClient.post(apiPaths.user.searchTestUsers, {
           ...searchReq,
@@ -629,16 +650,33 @@ const withUser = (httpClient: HttpClient) => {
           roleNames: searchReq.roles,
           roles: undefined,
         }),
-        (data) => ({ users: data.users, total: data.total }),
+        (data) => ({ users: data.users, total: data.total || 0 }),
       ),
-    search: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
+    /**
+     * Search users.
+     * @deprecated Use searchWithTotal instead to get total count
+     */
+    search: (searchReq: SearchRequest): Promise<SdkResponse<UserResponse[]>> =>
+      transformResponse<MultipleUsersResponse, UserResponse[]>(
+        httpClient.post(apiPaths.user.search, {
+          ...searchReq,
+          roleNames: searchReq.roles,
+          roles: undefined,
+        }),
+        (data) => data.users,
+      ),
+    /**
+     * Search users with total count.
+     * Returns both users array and total count for pagination.
+     */
+    searchWithTotal: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
       transformResponse<MultipleUsersResponse, UserSearchResponse>(
         httpClient.post(apiPaths.user.search, {
           ...searchReq,
           roleNames: searchReq.roles,
           roles: undefined,
         }),
-        (data) => ({ users: data.users, total: data.total }),
+        (data) => ({ users: data.users, total: data.total || 0 }),
       ),
     /**
      * Get the provider token for the given login ID.

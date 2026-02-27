@@ -1003,7 +1003,7 @@ describe('Management User', () => {
   });
 
   describe('searchTestUsers', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response (deprecated)', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUsersResponse,
@@ -1014,7 +1014,64 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
       const now = new Date().getTime();
-      const resp: SdkResponse<UserSearchResponse> = await management.user.searchTestUsers({
+      const resp: SdkResponse<UserResponse[]> = await management.user.searchTestUsers({
+        tenantIds: ['t1'],
+        roles: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.searchTestUsers, {
+        tenantIds: ['t1'],
+        roleNames: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        withTestUser: true,
+        testUsersOnly: true,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('searchTestUsersWithTotal', () => {
+    it('should send the correct request and receive correct response with total', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      const now = new Date().getTime();
+      const resp: SdkResponse<UserSearchResponse> = await management.user.searchTestUsersWithTotal({
         tenantIds: ['t1'],
         roles: ['r1'],
         limit: 100,
@@ -1060,7 +1117,7 @@ describe('Management User', () => {
   });
 
   describe('search', () => {
-    it('should send the correct request and receive correct response', async () => {
+    it('should send the correct request and receive correct response (deprecated)', async () => {
       const httpResponse = {
         ok: true,
         json: () => mockMgmtUsersResponse,
@@ -1071,7 +1128,62 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
       const now = new Date().getTime();
-      const resp: SdkResponse<UserSearchResponse> = await management.user.search({
+      const resp: SdkResponse<UserResponse[]> = await management.user.search({
+        tenantIds: ['t1'],
+        roles: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
+        tenantIds: ['t1'],
+        roleNames: ['r1'],
+        limit: 100,
+        statuses: ['enabled'],
+        emails: ['a@b.com'],
+        phones: ['+11111111'],
+        text: 'some text',
+        fromCreatedTime: now,
+        toCreatedTime: now,
+        fromModifiedTime: now,
+        toModifiedTime: now,
+        sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
+        tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
+        tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockUserResponse],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('searchWithTotal', () => {
+    it('should send the correct request and receive correct response with total', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      const now = new Date().getTime();
+      const resp: SdkResponse<UserSearchResponse> = await management.user.searchWithTotal({
         tenantIds: ['t1'],
         roles: ['r1'],
         limit: 100,
