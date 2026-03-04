@@ -582,6 +582,11 @@ export type PatchUserBatchResponse = {
   additionalErrors: Record<string, string>;
 };
 
+export type UserSearchResponse = {
+  users: UserResponse[];
+  total: number;
+};
+
 /**
  * Search options to filter which audit records we should retrieve.
  * All parameters are optional. `From` is currently limited to 30 days.

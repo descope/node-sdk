@@ -868,7 +868,8 @@ usersRes.data.forEach((user) => {
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
 const usersRes = await descopeClient.management.user.search({ tenantIds: ['tenant-ID'] });
-usersRes.data.forEach((user) => {
+console.log('Total users:', usersRes.data.total);
+usersRes.data.users.forEach((user) => {
   // do something
 });
 
@@ -1698,8 +1699,9 @@ await descopeClient.management.user.createTestUser('desmond@descope.com', {
 });
 
 // Search all test users according to various parameters
-const searchRes = await descopeClient.management.user.searchTestUsers(['id']);
-searchRes.data.forEach((user) => {
+const searchRes = await descopeClient.management.user.searchTestUsers({ userIds: ['id'] });
+console.log('Total test users:', searchRes.data.total);
+searchRes.data.users.forEach((user) => {
   // do something
 });
 
