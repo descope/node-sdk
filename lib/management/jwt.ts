@@ -99,7 +99,9 @@ const withJWT = (httpClient: HttpClient) => ({
     signUpOptions?: MgmtSignUpOptions,
   ): Promise<SdkResponse<JWTResponse>> => {
     validateCustomClaims(signUpOptions?.customClaims);
-    return transformResponse(httpClient.post(apiPaths.jwt.signUp, { loginId, user, ...signUpOptions }));
+    return transformResponse(
+      httpClient.post(apiPaths.jwt.signUp, { loginId, user, ...signUpOptions }),
+    );
   },
   signUpOrIn: (
     loginId: string,
