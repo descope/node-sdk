@@ -31,7 +31,12 @@ const validateCustomClaims = (customClaims?: Record<string, any>): void => {
   }
 
   // Check for excessively large claims that could cause DoS
-  const claimsJson = JSON.stringify(customClaims);
+  let claimsJson: string;
+  try {
+    claimsJson = JSON.stringify(customClaims);
+  } catch {
+    throw new Error('Custom claims must be JSON-serializable');
+  }
   if (claimsJson.length > 10000) {
     throw new Error('Custom claims exceed maximum size of 10KB');
   }
@@ -84,22 +89,28 @@ const withJWT = (httpClient: HttpClient) => ({
       }),
     );
   },
-  signIn: (loginId: string, loginOptions?: MgmtLoginOptions): Promise<SdkResponse<JWTResponse>> =>
-    transformResponse(httpClient.post(apiPaths.jwt.signIn, { loginId, ...loginOptions })),
+  signIn: (loginId: string, loginOptions?: MgmtLoginOptions): Promise<SdkResponse<JWTResponse>> => {
+    validateCustomClaims(loginOptions?.customClaims);
+    return transformResponse(httpClient.post(apiPaths.jwt.signIn, { loginId, ...loginOptions }));
+  },
   signUp: (
     loginId: string,
     user?: MgmtUserOptions,
     signUpOptions?: MgmtSignUpOptions,
-  ): Promise<SdkResponse<JWTResponse>> =>
-    transformResponse(httpClient.post(apiPaths.jwt.signUp, { loginId, user, ...signUpOptions })),
+  ): Promise<SdkResponse<JWTResponse>> => {
+    validateCustomClaims(signUpOptions?.customClaims);
+    return transformResponse(httpClient.post(apiPaths.jwt.signUp, { loginId, user, ...signUpOptions }));
+  },
   signUpOrIn: (
     loginId: string,
     user?: MgmtUserOptions,
     signUpOptions?: MgmtSignUpOptions,
-  ): Promise<SdkResponse<JWTResponse>> =>
-    transformResponse(
+  ): Promise<SdkResponse<JWTResponse>> => {
+    validateCustomClaims(signUpOptions?.customClaims);
+    return transformResponse(
       httpClient.post(apiPaths.jwt.signUpOrIn, { loginId, user, ...signUpOptions }),
-    ),
+    );
+  },
   anonymous: (
     customClaims?: Record<string, any>,
     selectedTenant?: string,
