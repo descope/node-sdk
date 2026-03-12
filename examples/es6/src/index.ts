@@ -63,10 +63,20 @@ const returnOK = (res: Response, out: SdkResponse<ResponseData>) => {
  * @param options any options to put on the cookie like cookieDomain, cookieMaxAge, cookiePath
  * @returns Cookie string with all options on the string
  */
-const generateCookie = (name: string, value: string, options?: Record<string, string | number>) =>
-  `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
+const generateCookie = (
+  name: string,
+  value: string,
+  options?: Record<string, string | number | boolean>,
+) => {
+  // Secure flag should default to true (secure by default)
+  // Allow explicit override for local development via secureCookie option
+  const isSecure = options?.secureCookie !== false && process.env.NODE_ENV !== 'development';
+  const secureFlag = isSecure ? '; Secure' : '';
+
+  return `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
     options?.cookieMaxAge || ''
-  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`;
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict${secureFlag}`;
+};
 
 const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
   if (out.ok) {
