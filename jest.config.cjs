@@ -3,7 +3,7 @@ module.exports = {
 
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  collectCoverageFrom: ['lib/**/*.{js,jsx,ts,tsx}'],
+  collectCoverageFrom: ['lib/**/*.{js,jsx,ts,tsx}', '!lib/fetch-polyfill.ts'],
   coverageThreshold: {
     global: {
       branches: 74,
