@@ -2,7 +2,11 @@ import { fetch as crossFetch, Headers } from 'cross-fetch';
 
 globalThis.Headers ??= Headers;
 
-const highWaterMarkMb = 1024 * 1024 * 30; // 30MB
+// Reduced from 30MB to 1MB to prevent memory exhaustion attacks
+const highWaterMarkMb = 1024 * 1024; // 1MB
+
+// Default timeout of 30 seconds to prevent indefinite hangs and Slowloris-style DoS
+const DEFAULT_TIMEOUT_MS = 30000;
 
 // we are increasing the response buffer size due to an issue where node-fetch hangs when response is too big
 const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
@@ -16,7 +20,28 @@ const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
     }
   });
 
-  return crossFetch(...args);
+  // Create an AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
+  // Add signal to fetch options if not already present
+  const [input, init] = args;
+  const fetchInit = (init || {}) as RequestInit;
+
+  // Preserve existing signal if present, otherwise use our timeout signal
+  if (!fetchInit.signal) {
+    fetchInit.signal = controller.signal;
+  }
+
+  return crossFetch(input, fetchInit)
+    .finally(() => clearTimeout(timeoutId))
+    .catch((error) => {
+      // Provide a clearer error message for timeout
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout exceeded');
+      }
+      throw error;
+    });
 };
 
 export default patchedFetch as unknown as typeof fetch;
