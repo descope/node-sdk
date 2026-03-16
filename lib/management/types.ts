@@ -61,6 +61,10 @@ export type SamlApplicationOptions = {
   defaultRelayState?: string;
   forceAuthentication?: boolean;
   logoutRedirectUrl?: string;
+  /** The signature algorithm used to sign SAML responses. Only applies to IdP-initiated flows —
+   * SP-initiated flows use the algorithm from the SP's SAML request.
+   * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
+  defaultSignatureAlgorithm?: string;
 };
 
 /**
@@ -233,6 +237,10 @@ export type SSOApplicationSAMLSettings = {
   forceAuthentication: boolean;
   idpLogoutUrl: string;
   logoutRedirectUrl: string;
+  /** The signature algorithm used to sign SAML responses. Only applies to IdP-initiated flows —
+   * SP-initiated flows use the algorithm from the SP's SAML request.
+   * "sha256" means SHA-256; empty string means the default (SHA-1). */
+  defaultSignatureAlgorithm?: string;
 };
 
 /** Represents an SSO application in a project. */
