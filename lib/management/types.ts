@@ -240,7 +240,7 @@ export type SSOApplicationSAMLSettings = {
   /** The signature algorithm used to sign SAML responses. Only applies to IdP-initiated flows —
    * SP-initiated flows use the algorithm from the SP's SAML request.
    * "sha256" means SHA-256; empty string means the default (SHA-1). */
-  defaultSignatureAlgorithm: string;
+  defaultSignatureAlgorithm?: string;
 };
 
 /** Represents an SSO application in a project. */

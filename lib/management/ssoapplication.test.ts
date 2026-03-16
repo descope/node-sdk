@@ -274,6 +274,7 @@ describe('Management SSOApplication', () => {
         enabled: true,
         useMetadataInfo: false,
         entityId: 'ent1234',
+        defaultSignatureAlgorithm: 'sha256',
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlUpdate, {
@@ -296,6 +297,7 @@ describe('Management SSOApplication', () => {
         defaultRelayState: undefined,
         forceAuthentication: undefined,
         logoutRedirectUrl: undefined,
+        defaultSignatureAlgorithm: 'sha256',
       });
 
       expect(resp).toEqual({
