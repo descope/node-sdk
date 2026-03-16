@@ -10,14 +10,16 @@ import {
   FGAConfig,
 } from './types';
 
-const DEFAULT_CACHE_TIMEOUT_MS = 5000;
+const DEFAULT_CACHE_TIMEOUT_MS = 30000;
 
 const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
+  const cacheTimeoutMs = config?.fgaCacheTimeoutMs ?? DEFAULT_CACHE_TIMEOUT_MS;
+
   const postWithOptionalCache = async (path: string, body: unknown): Promise<Response> => {
     if (config?.fgaCacheUrl && config.managementKey) {
       const url = `${config.fgaCacheUrl}${path}`;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), DEFAULT_CACHE_TIMEOUT_MS);
+      const timeoutId = setTimeout(() => controller.abort(), cacheTimeoutMs);
 
       try {
         const response = await fetch(url, {

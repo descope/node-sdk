@@ -862,6 +862,7 @@ export interface FGAResourceDetails {
  */
 export type FGAConfig = {
   fgaCacheUrl?: string;
+  fgaCacheTimeoutMs?: number;
   managementKey?: string;
   projectId: string;
   headers: Record<string, string>;
