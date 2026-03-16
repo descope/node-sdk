@@ -135,6 +135,7 @@ describe('Management SSOApplication', () => {
           defaultRelayState: 'rs',
           forceAuthentication: true,
           logoutRedirectUrl: 'http://dummy.com/logout',
+          defaultSignatureAlgorithm: 'sha256',
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlCreate, {
@@ -157,6 +158,7 @@ describe('Management SSOApplication', () => {
         defaultRelayState: 'rs',
         forceAuthentication: true,
         logoutRedirectUrl: 'http://dummy.com/logout',
+        defaultSignatureAlgorithm: 'sha256',
       });
 
       expect(resp).toEqual({
