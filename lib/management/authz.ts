@@ -15,7 +15,9 @@ import {
 const DEFAULT_CACHE_TIMEOUT_MS = 30000;
 
 const WithAuthz = (httpClient: HttpClient, config?: FGAConfig) => {
-  const cacheTimeoutMs = config?.fgaCacheTimeoutMs ?? DEFAULT_CACHE_TIMEOUT_MS;
+  const rawTimeout = config?.fgaCacheTimeoutMs ?? DEFAULT_CACHE_TIMEOUT_MS;
+  const cacheTimeoutMs =
+    Number.isFinite(rawTimeout) && rawTimeout > 0 ? rawTimeout : DEFAULT_CACHE_TIMEOUT_MS;
 
   const postWithOptionalCache = async (path: string, body: unknown): Promise<Response> => {
     if (config?.fgaCacheUrl && config.managementKey) {
