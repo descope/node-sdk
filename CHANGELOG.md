@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/descope/node-sdk/compare/v1.10.0...v2.0.0) (2026-03-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **user:** The `search` and `searchTestUsers` methods now return `UserSearchResponse` with `{ users, total }` instead of `UserResponse[]`.
+
+### Features
+
+* **user:** return total count in search and searchTestUsers responses ([#664](https://github.com/descope/node-sdk/issues/664)) ([12150be](https://github.com/descope/node-sdk/commit/12150beea018e6a1f1b5f32c32057039361e1daf)), closes [#662](https://github.com/descope/node-sdk/issues/662)
+
+
+### Bug Fixes
+
+* increase FGA cache timeout and make it configurable ([#678](https://github.com/descope/node-sdk/issues/678)) ([001b2b5](https://github.com/descope/node-sdk/commit/001b2b5e0dbd828632d6240a7c2c9ba082e13635))
+
 ## [1.10.0](https://github.com/descope/node-sdk/compare/v1.9.1...v1.10.0) (2026-02-26)
 
 

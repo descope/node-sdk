@@ -313,5 +313,39 @@ describe('Management FGA', () => {
       expect(fetchMock).toHaveBeenCalled();
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
     });
+
+    it('should use custom fgaCacheTimeoutMs when provided', async () => {
+      const customConfig = { ...fgaConfig, fgaCacheTimeoutMs: 60000 };
+      fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+        clone: () => ({ json: async () => ({}) }),
+        status: 200,
+      });
+
+      await WithFGA(mockHttpClient, customConfig).saveSchema({ dsl: 'test' });
+
+      // Verify cache URL was called (timeout didn't fire immediately)
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+    });
+
+    it.each([0, -1, NaN, Infinity])(
+      'should fall back to default timeout for invalid fgaCacheTimeoutMs=%s',
+      async (invalidValue) => {
+        fetchMock.mockResolvedValue({
+          ok: true,
+          json: async () => ({}),
+          clone: () => ({ json: async () => ({}) }),
+          status: 200,
+        });
+
+        const invalidConfig = { ...fgaConfig, fgaCacheTimeoutMs: invalidValue };
+        await WithFGA(mockHttpClient, invalidConfig).saveSchema({ dsl: 'test' });
+
+        // Should still call the cache URL (not crash or abort immediately)
+        expect(fetchMock).toHaveBeenCalled();
+      },
+    );
   });
 });
