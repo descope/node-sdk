@@ -618,19 +618,19 @@ describe('Management User', () => {
       mockHttpClient.patch.mockResolvedValue(httpResponse);
       const resp: SdkResponse<PatchUserBatchResponse> = await management.user.patchBatch([
         {
-          loginId: 'user1',
+          loginIdOrUserId: 'user1',
           email: 'user1@example.com',
           displayName: 'User One',
           roles: ['role1'],
         },
         {
-          loginId: 'user2',
+          loginIdOrUserId: 'user2',
           phone: '+1234567890',
           verifiedPhone: true,
           customAttributes: { department: 'engineering' },
         },
         {
-          loginId: 'user3',
+          loginIdOrUserId: 'user3',
           status: 'disabled',
         },
       ]);
@@ -696,7 +696,7 @@ describe('Management User', () => {
       mockHttpClient.patch.mockResolvedValue(httpResponse);
       await management.user.patchBatch([
         {
-          loginId: 'user1',
+          loginIdOrUserId: 'user1',
           email: 'user1@example.com',
           phone: undefined,
           displayName: 'Updated Name',
