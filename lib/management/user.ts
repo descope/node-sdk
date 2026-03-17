@@ -306,7 +306,10 @@ const withUser = (httpClient: HttpClient) => {
   /* Invite User End */
 
   /* Update User */
-  function update(loginIdOrUserId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
+  function update(
+    loginIdOrUserId: string,
+    options?: UserOptions,
+  ): Promise<SdkResponse<UserResponse>>;
   function update(
     loginIdOrUserId: string,
     email?: string,
@@ -1070,9 +1073,6 @@ export interface PatchUserOptions {
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */
 export type PatchUserOptionsUsingIdentifier = PatchUserOptions &
-  (
-    | { loginIdOrUserId: string; loginId?: string }
-    | { loginId: string; loginIdOrUserId?: string }
-  );
+  ({ loginIdOrUserId: string; loginId?: string } | { loginId: string; loginIdOrUserId?: string });
 
 export default withUser;
