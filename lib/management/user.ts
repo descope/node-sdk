@@ -306,10 +306,7 @@ const withUser = (httpClient: HttpClient) => {
   /* Invite User End */
 
   /* Update User */
-  function update(
-    loginIdOrUserId: string,
-    options?: UserOptions,
-  ): Promise<SdkResponse<UserResponse>>;
+  function update(loginIdOrUserId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
   function update(
     loginIdOrUserId: string,
     email?: string,
@@ -461,9 +458,11 @@ const withUser = (httpClient: HttpClient) => {
     users: PatchUserOptionsUsingIdentifier[],
   ): Promise<SdkResponse<PatchUserBatchResponse>> {
     const body = {
-      users: users.map((user) =>
-        buildPatchRequestBody(user.loginIdOrUserId || user.loginId!, user),
-      ),
+      users: users.map((user) => {
+        const id = user.loginIdOrUserId ?? user.loginId;
+        if (!id) throw new Error('patchBatch: each user must have loginIdOrUserId or loginId');
+        return buildPatchRequestBody(id, user);
+      }),
     };
 
     return transformResponse<PatchUserBatchResponse, PatchUserBatchResponse>(
@@ -1070,11 +1069,10 @@ export interface PatchUserOptions {
 }
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */
-export interface PatchUserOptionsUsingIdentifier extends PatchUserOptions {
-  /** The login ID or user ID of the user */
-  loginIdOrUserId?: string;
-  /** @deprecated Use loginIdOrUserId instead */
-  loginId?: string;
-}
+export type PatchUserOptionsUsingIdentifier = PatchUserOptions &
+  (
+    | { loginIdOrUserId: string; loginId?: string }
+    | { loginId: string; loginIdOrUserId?: string }
+  );
 
 export default withUser;

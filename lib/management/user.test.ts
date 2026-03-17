@@ -718,6 +718,28 @@ describe('Management User', () => {
         ],
       });
     });
+
+    it('should support deprecated loginId field for backward compatibility', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtPatchBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtPatchBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+      await management.user.patchBatch([{ loginId: 'user1', email: 'user1@example.com' }]);
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patchBatch, {
+        users: [{ loginId: 'user1', email: 'user1@example.com' }],
+      });
+    });
+
+    it('should throw if neither loginIdOrUserId nor loginId is provided', async () => {
+      await expect(
+        management.user.patchBatch([{ loginIdOrUserId: undefined, loginId: undefined } as any]),
+      ).rejects.toThrow('patchBatch: each user must have loginIdOrUserId or loginId');
+    });
   });
 
   describe('delete', () => {
