@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/descope/node-sdk/compare/v2.0.0...v2.1.0) (2026-03-17)
+
+
+### Features
+
+* **sso-app:** add default signature method ([#679](https://github.com/descope/node-sdk/issues/679)) ([4bf0880](https://github.com/descope/node-sdk/commit/4bf088069726805b06db52a3c0982cd8e0035e53))
+
 ## [2.0.0](https://github.com/descope/node-sdk/compare/v1.10.0...v2.0.0) (2026-03-16)
 
 
