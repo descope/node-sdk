@@ -632,7 +632,7 @@ describe('Management User', () => {
           customAttributes: { department: 'engineering' },
         },
         {
-          loginIdOrUserId: 'user3',
+          loginId: 'user3',
           status: 'disabled',
         },
       ]);
