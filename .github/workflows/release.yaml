@@ -34,6 +34,8 @@ jobs:
 
       - name: Use Next Version
         run: |
+          git config --global user.email "info@descope.com"
+          git config --global user.name "Descope"
           yarn version --new-version ${NEW_VERSION}
           cat package.json
 
