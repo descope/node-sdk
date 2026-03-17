@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/descope/node-sdk/compare/v2.1.0...v2.2.0) (2026-03-17)
+
+
+### Features
+
+* **user:** rename loginId to loginIdOrUserId in user management methods ([#691](https://github.com/descope/node-sdk/issues/691)) ([f22b8b0](https://github.com/descope/node-sdk/commit/f22b8b0b812832c59218595e4d03cddc576d68e7))
+
 ## [2.1.0](https://github.com/descope/node-sdk/compare/v2.0.0...v2.1.0) (2026-03-17)
 
 
