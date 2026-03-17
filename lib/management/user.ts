@@ -306,9 +306,12 @@ const withUser = (httpClient: HttpClient) => {
   /* Invite User End */
 
   /* Update User */
-  function update(loginId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
   function update(
-    loginId: string,
+    loginIdOrUserId: string,
+    options?: UserOptions,
+  ): Promise<SdkResponse<UserResponse>>;
+  function update(
+    loginIdOrUserId: string,
     email?: string,
     phone?: string,
     displayName?: string,
@@ -325,7 +328,7 @@ const withUser = (httpClient: HttpClient) => {
   ): Promise<SdkResponse<UserResponse>>;
 
   function update(
-    loginId: string,
+    loginIdOrUserId: string,
     emailOrOptions?: string | UserOptions,
     phone?: string,
     displayName?: string,
@@ -341,12 +344,12 @@ const withUser = (httpClient: HttpClient) => {
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of update user
-    // 1. The new form - update(loginId, { email, phone, ... }})
-    // 2. The old form - update(loginId, email, phone, ...)
+    // 1. The new form - update(loginIdOrUserId, { email, phone, ... })
+    // 2. The old form - update(loginIdOrUserId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
-            loginId,
+            loginId: loginIdOrUserId,
             email: emailOrOptions,
             phone,
             displayName,
@@ -362,7 +365,7 @@ const withUser = (httpClient: HttpClient) => {
             additionalLoginIds,
           }
         : {
-            loginId,
+            loginId: loginIdOrUserId,
             ...emailOrOptions,
             roleNames: emailOrOptions?.roles,
             roles: undefined,
@@ -376,12 +379,12 @@ const withUser = (httpClient: HttpClient) => {
 
   /**
    * Helper function to build patch request body from options
-   * @param loginId The login ID of the user
+   * @param loginIdOrUserId The login ID or user ID of the user
    * @param options The fields to update
    */
-  function buildPatchRequestBody(loginId: string, options: PatchUserOptions): any {
+  function buildPatchRequestBody(loginIdOrUserId: string, options: PatchUserOptions): any {
     const body = {
-      loginId,
+      loginId: loginIdOrUserId,
     } as any;
 
     if (options.email !== undefined) {
@@ -435,11 +438,14 @@ const withUser = (httpClient: HttpClient) => {
 
   /**
    * Patches an existing user.
-   * @param loginId The login ID of the user
+   * @param loginIdOrUserId The login ID or user ID of the user
    * @param options The fields to update. Only the provided ones will be updated.
    */
-  function patch(loginId: string, options: PatchUserOptions): Promise<SdkResponse<UserResponse>> {
-    const body = buildPatchRequestBody(loginId, options);
+  function patch(
+    loginIdOrUserId: string,
+    options: PatchUserOptions,
+  ): Promise<SdkResponse<UserResponse>> {
+    const body = buildPatchRequestBody(loginIdOrUserId, options);
 
     return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.patch(apiPaths.user.patch, body),
@@ -449,13 +455,22 @@ const withUser = (httpClient: HttpClient) => {
 
   /**
    * Patches multiple users in batch.
-   * @param users Array of patch requests, each containing loginId and the fields to update
+   * @param users Array of patch requests. Each entry must include either `loginIdOrUserId`
+   *              or the deprecated `loginId` field to identify the user.
    */
   function patchBatch(
-    users: Array<{ loginId: string } & PatchUserOptions>,
+    users: PatchUserOptionsUsingIdentifier[],
   ): Promise<SdkResponse<PatchUserBatchResponse>> {
+    const missing = users.find((user) => !user.loginIdOrUserId && !user.loginId);
+    if (missing) {
+      return Promise.reject(
+        new Error('patchBatch: each user must have loginIdOrUserId or loginId'),
+      );
+    }
     const body = {
-      users: users.map((user) => buildPatchRequestBody(user.loginId, user)),
+      users: users.map((user) =>
+        buildPatchRequestBody(user.loginIdOrUserId ?? user.loginId!, user),
+      ),
     };
 
     return transformResponse<PatchUserBatchResponse, PatchUserBatchResponse>(
@@ -512,10 +527,10 @@ const withUser = (httpClient: HttpClient) => {
     patchBatch,
     /**
      * Delete an existing user.
-     * @param loginId The login ID of the user
+     * @param loginIdOrUserId The login ID or user ID of the user
      */
-    delete: (loginId: string): Promise<SdkResponse<never>> =>
-      transformResponse(httpClient.post(apiPaths.user.delete, { loginId })),
+    delete: (loginIdOrUserId: string): Promise<SdkResponse<never>> =>
+      transformResponse(httpClient.post(apiPaths.user.delete, { loginId: loginIdOrUserId })),
     /**
      * Delete an existing user by User ID.
      * @param userId The user ID can be found in the Subject (`sub`) claim
@@ -528,10 +543,10 @@ const withUser = (httpClient: HttpClient) => {
      */
     deleteAllTestUsers: (): Promise<SdkResponse<never>> =>
       transformResponse(httpClient.delete(apiPaths.user.deleteAllTestUsers)),
-    load: (loginId: string): Promise<SdkResponse<UserResponse>> =>
+    load: (loginIdOrUserId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.get(apiPaths.user.load, {
-          queryParams: { loginId },
+          queryParams: { loginId: loginIdOrUserId },
         }),
         (data) => data.user,
       ),
@@ -666,14 +681,20 @@ const withUser = (httpClient: HttpClient) => {
         }),
         (data) => data,
       ),
-    activate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
+    activate: (loginIdOrUserId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.updateStatus, { loginId, status: 'enabled' }),
+        httpClient.post(apiPaths.user.updateStatus, {
+          loginId: loginIdOrUserId,
+          status: 'enabled',
+        }),
         (data) => data.user,
       ),
-    deactivate: (loginId: string): Promise<SdkResponse<UserResponse>> =>
+    deactivate: (loginIdOrUserId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.updateStatus, { loginId, status: 'disabled' }),
+        httpClient.post(apiPaths.user.updateStatus, {
+          loginId: loginIdOrUserId,
+          status: 'disabled',
+        }),
         (data) => data.user,
       ),
     updateLoginId: (loginId: string, newLoginId?: string): Promise<SdkResponse<UserResponse>> =>
@@ -682,14 +703,14 @@ const withUser = (httpClient: HttpClient) => {
         (data) => data.user,
       ),
     updateEmail: (
-      loginId: string,
+      loginIdOrUserId: string,
       email: string,
       isVerified: boolean,
       failOnConflict?: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.updateEmail, {
-          loginId,
+          loginId: loginIdOrUserId,
           email,
           verified: isVerified,
           failOnConflict,
@@ -697,14 +718,14 @@ const withUser = (httpClient: HttpClient) => {
         (data) => data.user,
       ),
     updatePhone: (
-      loginId: string,
+      loginIdOrUserId: string,
       phone: string,
       isVerified: boolean,
       failOnConflict?: boolean,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.updatePhone, {
-          loginId,
+          loginId: loginIdOrUserId,
           phone,
           verified: isVerified,
           failOnConflict,
@@ -712,7 +733,7 @@ const withUser = (httpClient: HttpClient) => {
         (data) => data.user,
       ),
     updateDisplayName: (
-      loginId: string,
+      loginIdOrUserId: string,
       displayName?: string,
       givenName?: string,
       middleName?: string,
@@ -720,7 +741,7 @@ const withUser = (httpClient: HttpClient) => {
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.updateDisplayName, {
-          loginId,
+          loginId: loginIdOrUserId,
           displayName,
           givenName,
           middleName,
@@ -728,89 +749,110 @@ const withUser = (httpClient: HttpClient) => {
         }),
         (data) => data.user,
       ),
-    updatePicture: (loginId: string, picture: string): Promise<SdkResponse<UserResponse>> =>
+    updatePicture: (loginIdOrUserId: string, picture: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.updatePicture, { loginId, picture }),
+        httpClient.post(apiPaths.user.updatePicture, { loginId: loginIdOrUserId, picture }),
         (data) => data.user,
       ),
     updateCustomAttribute: (
-      loginId: string,
+      loginIdOrUserId: string,
       attributeKey: string,
       attributeValue: AttributesTypes,
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.updateCustomAttribute, {
-          loginId,
+          loginId: loginIdOrUserId,
           attributeKey,
           attributeValue,
         }),
         (data) => data.user,
       ),
-    setRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    setRoles: (loginIdOrUserId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.setRole, { loginId, roleNames: roles }),
+        httpClient.post(apiPaths.user.setRole, { loginId: loginIdOrUserId, roleNames: roles }),
         (data) => data.user,
       ),
-    addRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    addRoles: (loginIdOrUserId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.addRole, { loginId, roleNames: roles }),
+        httpClient.post(apiPaths.user.addRole, { loginId: loginIdOrUserId, roleNames: roles }),
         (data) => data.user,
       ),
-    removeRoles: (loginId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
+    removeRoles: (loginIdOrUserId: string, roles: string[]): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.removeRole, { loginId, roleNames: roles }),
+        httpClient.post(apiPaths.user.removeRole, { loginId: loginIdOrUserId, roleNames: roles }),
         (data) => data.user,
       ),
-    addTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
+    addTenant: (loginIdOrUserId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.addTenant, { loginId, tenantId }),
+        httpClient.post(apiPaths.user.addTenant, { loginId: loginIdOrUserId, tenantId }),
         (data) => data.user,
       ),
-    removeTenant: (loginId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
+    removeTenant: (loginIdOrUserId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.removeTenant, { loginId, tenantId }),
+        httpClient.post(apiPaths.user.removeTenant, { loginId: loginIdOrUserId, tenantId }),
         (data) => data.user,
       ),
     setTenantRoles: (
-      loginId: string,
+      loginIdOrUserId: string,
       tenantId: string,
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.setRole, { loginId, tenantId, roleNames: roles }),
+        httpClient.post(apiPaths.user.setRole, {
+          loginId: loginIdOrUserId,
+          tenantId,
+          roleNames: roles,
+        }),
         (data) => data.user,
       ),
     addTenantRoles: (
-      loginId: string,
+      loginIdOrUserId: string,
       tenantId: string,
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.addRole, { loginId, tenantId, roleNames: roles }),
+        httpClient.post(apiPaths.user.addRole, {
+          loginId: loginIdOrUserId,
+          tenantId,
+          roleNames: roles,
+        }),
         (data) => data.user,
       ),
     removeTenantRoles: (
-      loginId: string,
+      loginIdOrUserId: string,
       tenantId: string,
       roles: string[],
     ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.removeRole, { loginId, tenantId, roleNames: roles }),
+        httpClient.post(apiPaths.user.removeRole, {
+          loginId: loginIdOrUserId,
+          tenantId,
+          roleNames: roles,
+        }),
         (data) => data.user,
       ),
-    addSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+    addSSOapps: (
+      loginIdOrUserId: string,
+      ssoAppIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.addSSOApps, { loginId, ssoAppIds }),
+        httpClient.post(apiPaths.user.addSSOApps, { loginId: loginIdOrUserId, ssoAppIds }),
         (data) => data.user,
       ),
-    setSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+    setSSOapps: (
+      loginIdOrUserId: string,
+      ssoAppIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.setSSOApps, { loginId, ssoAppIds }),
+        httpClient.post(apiPaths.user.setSSOApps, { loginId: loginIdOrUserId, ssoAppIds }),
         (data) => data.user,
       ),
-    removeSSOapps: (loginId: string, ssoAppIds: string[]): Promise<SdkResponse<UserResponse>> =>
+    removeSSOapps: (
+      loginIdOrUserId: string,
+      ssoAppIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
-        httpClient.post(apiPaths.user.removeSSOApps, { loginId, ssoAppIds }),
+        httpClient.post(apiPaths.user.removeSSOApps, { loginId: loginIdOrUserId, ssoAppIds }),
         (data) => data.user,
       ),
 
@@ -1033,5 +1075,20 @@ export interface PatchUserOptions {
   scim?: boolean;
   status?: UserStatus;
 }
+
+/** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */
+export type PatchUserOptionsUsingIdentifier = PatchUserOptions &
+  (
+    | {
+        loginIdOrUserId: string;
+        /** @deprecated Use loginIdOrUserId instead */
+        loginId?: string;
+      }
+    | {
+        /** @deprecated Use loginIdOrUserId instead */
+        loginId: string;
+        loginIdOrUserId?: string;
+      }
+  );
 
 export default withUser;
