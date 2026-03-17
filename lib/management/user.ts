@@ -344,7 +344,7 @@ const withUser = (httpClient: HttpClient) => {
     additionalLoginIds?: string[],
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of update user
-    // 1. The new form - update(loginIdOrUserId, { email, phone, ... }})
+    // 1. The new form - update(loginIdOrUserId, { email, phone, ... })
     // 2. The old form - update(loginIdOrUserId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
@@ -455,17 +455,20 @@ const withUser = (httpClient: HttpClient) => {
 
   /**
    * Patches multiple users in batch.
-   * @param users Array of patch requests, each containing loginIdOrUserId and the fields to update
+   * @param users Array of patch requests. Each entry must include either `loginIdOrUserId`
+   *              or the deprecated `loginId` field to identify the user.
    */
   function patchBatch(
     users: PatchUserOptionsUsingIdentifier[],
   ): Promise<SdkResponse<PatchUserBatchResponse>> {
+    const missing = users.find((user) => !user.loginIdOrUserId && !user.loginId);
+    if (missing) {
+      return Promise.reject(new Error('patchBatch: each user must have loginIdOrUserId or loginId'));
+    }
     const body = {
-      users: users.map((user) => {
-        const id = user.loginIdOrUserId ?? user.loginId;
-        if (!id) throw new Error('patchBatch: each user must have loginIdOrUserId or loginId');
-        return buildPatchRequestBody(id, user);
-      }),
+      users: users.map((user) =>
+        buildPatchRequestBody(user.loginIdOrUserId ?? user.loginId!, user),
+      ),
     };
 
     return transformResponse<PatchUserBatchResponse, PatchUserBatchResponse>(
@@ -1073,6 +1076,17 @@ export interface PatchUserOptions {
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */
 export type PatchUserOptionsUsingIdentifier = PatchUserOptions &
-  ({ loginIdOrUserId: string; loginId?: string } | { loginId: string; loginIdOrUserId?: string });
+  (
+    | {
+        loginIdOrUserId: string;
+        /** @deprecated Use loginIdOrUserId instead */
+        loginId?: string;
+      }
+    | {
+        /** @deprecated Use loginIdOrUserId instead */
+        loginId: string;
+        loginIdOrUserId?: string;
+      }
+  );
 
 export default withUser;

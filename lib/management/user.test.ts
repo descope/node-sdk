@@ -735,10 +735,10 @@ describe('Management User', () => {
       });
     });
 
-    it('should throw if neither loginIdOrUserId nor loginId is provided', () => {
-      expect(() =>
+    it('should throw if neither loginIdOrUserId nor loginId is provided', async () => {
+      await expect(
         management.user.patchBatch([{ loginIdOrUserId: undefined, loginId: undefined } as any]),
-      ).toThrow('patchBatch: each user must have loginIdOrUserId or loginId');
+      ).rejects.toThrow('patchBatch: each user must have loginIdOrUserId or loginId');
     });
   });
 
