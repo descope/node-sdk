@@ -94,7 +94,7 @@ const nodeSdk = ({
         };
       } catch (e) {
         logger?.error('Failed to parse the provided public key', e);
-        throw new Error(`Failed to parse public key. Error: ${e}`);
+        throw new Error('Failed to parse public key');
       }
     }
 
@@ -216,7 +216,7 @@ const nodeSdk = ({
       } catch (error) {
         /* istanbul ignore next */
         logger?.error('session validation failed', error);
-        throw Error(`session validation failed. Error: ${error}`);
+        throw Error('Session validation failed');
       }
     },
 
@@ -258,7 +258,7 @@ const nodeSdk = ({
       } catch (refreshTokenErr) {
         /* istanbul ignore next */
         logger?.error('refresh token validation failed', refreshTokenErr);
-        throw Error(`refresh token validation failed, Error: ${refreshTokenErr}`);
+        throw Error('Refresh token validation failed');
       }
     },
 
@@ -306,18 +306,18 @@ const nodeSdk = ({
         resp = await sdk.accessKey.exchange(accessKey, loginOptions);
       } catch (error) {
         logger?.error('failed to exchange access key', error);
-        throw Error(`could not exchange access key - Failed to exchange. Error: ${error}`);
+        throw Error('Could not exchange access key');
       }
 
       if (!resp.ok) {
         logger?.error('failed to exchange access key', resp.error);
-        throw Error(`could not exchange access key - ${resp.error?.errorMessage}`);
+        throw Error(`Could not exchange access key - ${resp.error?.errorMessage}`);
       }
 
       const { sessionJwt } = resp.data;
       if (!sessionJwt) {
         logger?.error('failed to parse exchange access key response');
-        throw Error('could not exchange access key');
+        throw Error('Could not exchange access key');
       }
 
       try {
@@ -325,7 +325,7 @@ const nodeSdk = ({
         return token;
       } catch (error) {
         logger?.error('failed to parse jwt from access key', error);
-        throw Error(`could not exchange access key - failed to validate jwt. Error: ${error}`);
+        throw Error('Could not exchange access key - failed to validate JWT');
       }
     },
 
