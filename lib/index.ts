@@ -37,9 +37,16 @@ type NodeSdkArgs = Parameters<typeof createSdk>[0] & {
   managementKey?: string;
   authManagementKey?: string;
   publicKey?: string;
+  fgaCacheUrl?: string;
 };
 
-const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: NodeSdkArgs) => {
+const nodeSdk = ({
+  authManagementKey,
+  managementKey,
+  publicKey,
+  fgaCacheUrl,
+  ...config
+}: NodeSdkArgs) => {
   const nodeHeaders = {
     'x-descope-sdk-name': 'nodejs',
     'x-descope-sdk-node-version': process?.versions?.node || '',
@@ -128,7 +135,12 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
     },
   };
   const mgmtHttpClient = createHttpClient(mgmtSdkConfig);
-  const management = withManagement(mgmtHttpClient);
+  const management = withManagement(mgmtHttpClient, {
+    fgaCacheUrl,
+    managementKey,
+    projectId,
+    headers: nodeHeaders,
+  });
 
   const sdk = {
     ...coreSdk,
@@ -432,12 +444,19 @@ const nodeSdk = ({ authManagementKey, managementKey, publicKey, ...config }: Nod
       'otp.verify.voice',
       'otp.verify.whatsapp',
       'otp.verify.im',
+      'notp.waitForSession',
       'magicLink.verify',
       'enchantedLink.signUp',
       'enchantedLink.signIn',
+      'enchantedLink.waitForSession',
+      'oauth.exchangeOneTapIDToken',
+      'password.signIn',
+      'password.signUp',
+      'password.replace',
       'oauth.exchange',
       'saml.exchange',
       'totp.verify',
+      'selectTenant',
       'webauthn.signIn.finish',
       'webauthn.signUp.finish',
       'refresh',
@@ -475,5 +494,7 @@ export type {
   ResponseData,
   SdkResponse,
 } from '@descope/core-js-sdk';
-export type { AuthenticationInfo };
+export type { AuthenticationInfo, RefreshAuthenticationInfo };
 export type { VerifyOptions } from './types';
+export * from './management/types';
+export type { PatchUserOptions } from './management/user';

@@ -61,6 +61,10 @@ export type SamlApplicationOptions = {
   defaultRelayState?: string;
   forceAuthentication?: boolean;
   logoutRedirectUrl?: string;
+  /** The signature algorithm used to sign SAML responses. Only applies to IdP-initiated flows —
+   * SP-initiated flows use the algorithm from the SP's SAML request.
+   * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
+  defaultSignatureAlgorithm?: string;
 };
 
 /**
@@ -233,6 +237,10 @@ export type SSOApplicationSAMLSettings = {
   forceAuthentication: boolean;
   idpLogoutUrl: string;
   logoutRedirectUrl: string;
+  /** The signature algorithm used to sign SAML responses. Only applies to IdP-initiated flows —
+   * SP-initiated flows use the algorithm from the SP's SAML request.
+   * "sha256" means SHA-256; empty string means the default (SHA-1). */
+  defaultSignatureAlgorithm?: string;
 };
 
 /** Represents an SSO application in a project. */
@@ -582,6 +590,11 @@ export type PatchUserBatchResponse = {
   additionalErrors: Record<string, string>;
 };
 
+export type UserSearchResponse = {
+  users: UserResponse[];
+  total: number;
+};
+
 /**
  * Search options to filter which audit records we should retrieve.
  * All parameters are optional. `From` is currently limited to 30 days.
@@ -849,6 +862,19 @@ export interface FGAResourceDetails {
   resourceType: string;
   displayName: string;
 }
+
+/**
+ * Configuration for FGA cache proxy support.
+ * When fgaCacheUrl is provided along with managementKey, certain FGA operations
+ * will be routed through the cache proxy for improved performance.
+ */
+export type FGAConfig = {
+  fgaCacheUrl?: string;
+  fgaCacheTimeoutMs?: number;
+  managementKey?: string;
+  projectId: string;
+  headers: Record<string, string>;
+};
 
 // should have the type of loginoptions expect templateId and templateOptions
 export type MgmtLoginOptions = Omit<LoginOptions, 'templateId' | 'templateOptions'> & {

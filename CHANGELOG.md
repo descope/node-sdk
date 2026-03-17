@@ -1,5 +1,64 @@
 # Changelog
 
+## [2.1.0](https://github.com/descope/node-sdk/compare/v2.0.0...v2.1.0) (2026-03-17)
+
+
+### Features
+
+* **sso-app:** add default signature method ([#679](https://github.com/descope/node-sdk/issues/679)) ([4bf0880](https://github.com/descope/node-sdk/commit/4bf088069726805b06db52a3c0982cd8e0035e53))
+
+## [2.0.0](https://github.com/descope/node-sdk/compare/v1.10.0...v2.0.0) (2026-03-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **user:** The `search` and `searchTestUsers` methods now return `UserSearchResponse` with `{ users, total }` instead of `UserResponse[]`.
+
+### Features
+
+* **user:** return total count in search and searchTestUsers responses ([#664](https://github.com/descope/node-sdk/issues/664)) ([12150be](https://github.com/descope/node-sdk/commit/12150beea018e6a1f1b5f32c32057039361e1daf)), closes [#662](https://github.com/descope/node-sdk/issues/662)
+
+
+### Bug Fixes
+
+* increase FGA cache timeout and make it configurable ([#678](https://github.com/descope/node-sdk/issues/678)) ([001b2b5](https://github.com/descope/node-sdk/commit/001b2b5e0dbd828632d6240a7c2c9ba082e13635))
+
+## [1.10.0](https://github.com/descope/node-sdk/compare/v1.9.1...v1.10.0) (2026-02-26)
+
+
+### Features
+
+* access key custom attributes CRU ([#645](https://github.com/descope/node-sdk/issues/645)) ([145d363](https://github.com/descope/node-sdk/commit/145d3634ab3d60655bdb1124c60149bff5e514e9))
+* **authz:** route whoCanAccess and whatCanTargetAccess through FGA cache ([#658](https://github.com/descope/node-sdk/issues/658)) ([e7d0b2b](https://github.com/descope/node-sdk/commit/e7d0b2b62a6ac4403a23172b18b21b050dd0a4cf))
+* role inheritence config for sub tenants ([#648](https://github.com/descope/node-sdk/issues/648)) ([ae4d906](https://github.com/descope/node-sdk/commit/ae4d906df901bfe31808333c6131280c7efa3b91))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @descope/core-js-sdk to v2.56.2 ([#647](https://github.com/descope/node-sdk/issues/647)) ([7a2d6f3](https://github.com/descope/node-sdk/commit/7a2d6f3a299f2ea359a19a1b9df0c8df221d0694))
+* **deps:** update dependency @descope/core-js-sdk to v2.57.0 ([#650](https://github.com/descope/node-sdk/issues/650)) ([3b49073](https://github.com/descope/node-sdk/commit/3b4907321f9f8a29cc771338a1354b6b0a7dbe52))
+* expose SSO SAML mapping default roles ([49d7a67](https://github.com/descope/node-sdk/commit/49d7a6723b98e498fa10e3953afc689e4f257282))
+* expose SSO SAML mapping default roles ([49d7a67](https://github.com/descope/node-sdk/commit/49d7a6723b98e498fa10e3953afc689e4f257282))
+
+## [1.9.1](https://github.com/descope/node-sdk/compare/v1.9.0...v1.9.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* authzNode missing type ([#643](https://github.com/descope/node-sdk/issues/643)) ([aa69c35](https://github.com/descope/node-sdk/commit/aa69c3520872d75c46ffeb70429b1ad6afe6336a))
+
+## [1.9.0](https://github.com/descope/node-sdk/compare/v1.8.0...v1.9.0) (2026-01-07)
+
+
+### Features
+
+* **fga:** add fgacacheurl parameter for cache proxy support ([#642](https://github.com/descope/node-sdk/issues/642)) ([fae0133](https://github.com/descope/node-sdk/commit/fae01337c4075c95dc3f589dd77c4fbc043a1737))
+
+
+### Bug Fixes
+
+* support git commit -m with commitlint hook ([#640](https://github.com/descope/node-sdk/issues/640)) ([9624dde](https://github.com/descope/node-sdk/commit/9624ddeda6e5ba619f7dc09f8c57b83f704b28d3))
+
 ## [1.8.0](https://github.com/descope/node-sdk/compare/v1.7.7...v1.8.0) (2026-01-04)
 
 

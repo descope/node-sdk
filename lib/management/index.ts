@@ -19,9 +19,10 @@ import withInboundApplication from './inboundapplication';
 import withOutboundApplication from './outboundapplication';
 import withDescoper from './descoper';
 import withManagementKey from './managementKey';
+import { FGAConfig } from './types';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
-const withManagement = (client: HttpClient) => ({
+const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   user: withUser(client),
   project: withProject(client),
   accessKey: withAccessKey(client),
@@ -38,8 +39,8 @@ const withManagement = (client: HttpClient) => ({
   flow: WithFlow(client),
   theme: WithTheme(client),
   audit: WithAudit(client),
-  authz: WithAuthz(client),
-  fga: WithFGA(client),
+  authz: WithAuthz(client, fgaConfig),
+  fga: WithFGA(client, fgaConfig),
   descoper: withDescoper(client),
   managementKey: withManagementKey(client),
 });

@@ -63,6 +63,8 @@ describe('Management Tenant', () => {
         { customAttr: 'value' },
         true,
         true,
+        'p',
+        'none',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
@@ -71,6 +73,8 @@ describe('Management Tenant', () => {
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
         disabled: true,
+        parent: 'p',
+        roleInheritance: 'none',
       });
 
       expect(resp).toEqual({
@@ -99,6 +103,7 @@ describe('Management Tenant', () => {
         false,
         false,
         'parent-tenant-id',
+        'userOnly',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
@@ -108,6 +113,7 @@ describe('Management Tenant', () => {
         enforceSSO: false,
         disabled: false,
         parent: 'parent-tenant-id',
+        roleInheritance: 'userOnly',
       });
 
       expect(resp).toEqual({
@@ -138,6 +144,8 @@ describe('Management Tenant', () => {
         { customAttr: 'value' },
         true,
         true,
+        'p',
+        '',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
@@ -147,6 +155,8 @@ describe('Management Tenant', () => {
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
         disabled: true,
+        parent: 'p',
+        roleInheritance: '',
       });
 
       expect(resp).toEqual({
@@ -216,6 +226,7 @@ describe('Management Tenant', () => {
         { customAttr: 'value' },
         true,
         true,
+        'none',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.update, {
@@ -225,6 +236,7 @@ describe('Management Tenant', () => {
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
         disabled: true,
+        roleInheritance: 'none',
       });
 
       expect(resp).toEqual({

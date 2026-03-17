@@ -11,6 +11,7 @@ import {
   CreateOrInviteBatchResponse,
   PatchUserBatchResponse,
   UserPasswordHashed,
+  UserSearchResponse,
 } from './types';
 
 const management = withManagement(mockHttpClient);
@@ -25,6 +26,7 @@ const mockMgmtUserResponse = {
 
 const mockMgmtUsersResponse = {
   users: [mockUserResponse],
+  total: 1,
 };
 
 const mockMgmtInviteBatchResponse = {
@@ -1012,7 +1014,7 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
       const now = new Date().getTime();
-      const resp: SdkResponse<UserResponse[]> = await management.user.searchTestUsers({
+      const resp: SdkResponse<UserSearchResponse> = await management.user.searchTestUsers({
         tenantIds: ['t1'],
         roles: ['r1'],
         limit: 100,
@@ -1050,7 +1052,7 @@ describe('Management User', () => {
 
       expect(resp).toEqual({
         code: 200,
-        data: [mockUserResponse],
+        data: { users: [mockUserResponse], total: 1 },
         ok: true,
         response: httpResponse,
       });
@@ -1069,7 +1071,7 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
       const now = new Date().getTime();
-      const resp: SdkResponse<UserResponse[]> = await management.user.search({
+      const resp: SdkResponse<UserSearchResponse> = await management.user.search({
         tenantIds: ['t1'],
         roles: ['r1'],
         limit: 100,
@@ -1105,7 +1107,7 @@ describe('Management User', () => {
 
       expect(resp).toEqual({
         code: 200,
-        data: [mockUserResponse],
+        data: { users: [mockUserResponse], total: 1 },
         ok: true,
         response: httpResponse,
       });

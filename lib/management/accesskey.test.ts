@@ -51,6 +51,7 @@ describe('Management Access Keys', () => {
         { k1: 'v1' },
         'hey',
         ['10.0.0.1', '192.168.1.0/24'],
+        { customAttr1: 'value1' },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.create, {
@@ -62,6 +63,7 @@ describe('Management Access Keys', () => {
         customClaims: { k1: 'v1' },
         description: 'hey',
         permittedIps: ['10.0.0.1', '192.168.1.0/24'],
+        customAttributes: { customAttr1: 'value1' },
       });
 
       expect(resp).toEqual({
@@ -112,10 +114,18 @@ describe('Management Access Keys', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<AccessKey[]> = await management.accessKey.searchAll(['t1']);
+      const resp: SdkResponse<AccessKey[]> = await management.accessKey.searchAll(
+        ['t1'],
+        'buid',
+        'cuser',
+        { customAttr1: 'value1' },
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.search, {
         tenantIds: ['t1'],
+        boundUserId: 'buid',
+        creatingUser: 'cuser',
+        customAttributes: { customAttr1: 'value1' },
       });
 
       expect(resp).toEqual({
@@ -147,6 +157,7 @@ describe('Management Access Keys', () => {
         undefined,
         { k1: 'v1' },
         ['1.2.3.4'],
+        { customAttr1: 'value1' },
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.update, {
@@ -157,6 +168,7 @@ describe('Management Access Keys', () => {
         keyTenants: undefined,
         customClaims: { k1: 'v1' },
         permittedIps: ['1.2.3.4'],
+        customAttributes: { customAttr1: 'value1' },
       });
 
       expect(resp).toEqual({
