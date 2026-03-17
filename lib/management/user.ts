@@ -463,7 +463,9 @@ const withUser = (httpClient: HttpClient) => {
   ): Promise<SdkResponse<PatchUserBatchResponse>> {
     const missing = users.find((user) => !user.loginIdOrUserId && !user.loginId);
     if (missing) {
-      return Promise.reject(new Error('patchBatch: each user must have loginIdOrUserId or loginId'));
+      return Promise.reject(
+        new Error('patchBatch: each user must have loginIdOrUserId or loginId'),
+      );
     }
     const body = {
       users: users.map((user) =>
