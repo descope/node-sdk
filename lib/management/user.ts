@@ -214,8 +214,14 @@ const withUser = (httpClient: HttpClient) => {
   /* Create Test User End */
 
   /* Invite User */
+  /**
+   * Create a new user and invite them to set up their credentials.
+   * When loginIdOrUserId is a loginId, a new user is created if one doesn't already exist.
+   * When loginIdOrUserId is a userId, the user must already exist — no new user is created,
+   * and the invite is sent to the existing user (useful for re-inviting).
+   */
   function invite(
-    loginId: string,
+    loginIdOrUserId: string,
     options?: UserOptions & {
       inviteUrl?: string;
       sendMail?: boolean; // send invite via mail, default is according to project settings
@@ -225,7 +231,7 @@ const withUser = (httpClient: HttpClient) => {
     },
   ): Promise<SdkResponse<UserResponse>>;
   function invite(
-    loginId: string,
+    loginIdOrUserId: string,
     email?: string,
     phone?: string,
     displayName?: string,
@@ -246,7 +252,7 @@ const withUser = (httpClient: HttpClient) => {
   ): Promise<SdkResponse<UserResponse>>;
 
   function invite(
-    loginId: string,
+    loginIdOrUserId: string,
     emailOrOptions?: string | UserOptions,
     phone?: string,
     displayName?: string,
@@ -266,12 +272,12 @@ const withUser = (httpClient: HttpClient) => {
     templateId?: string,
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of invite user
-    // 1. The new form - invite(loginId, { email, phone, ... }})
-    // 2. The old form - invite(loginId, email, phone, ...)
+    // 1. The new form - invite(loginIdOrUserId, { email, phone, ... }})
+    // 2. The old form - invite(loginIdOrUserId, email, phone, ...)
     const body =
       typeof emailOrOptions === 'string'
         ? {
-            loginId,
+            loginId: loginIdOrUserId,
             email: emailOrOptions,
             phone,
             displayName,
@@ -292,7 +298,7 @@ const withUser = (httpClient: HttpClient) => {
             templateId,
           }
         : {
-            loginId,
+            loginId: loginIdOrUserId,
             ...emailOrOptions,
             roleNames: emailOrOptions?.roles,
             roles: undefined,
