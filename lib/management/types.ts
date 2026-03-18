@@ -371,7 +371,9 @@ export type AttributesTypes = string | boolean | number | string[] | null;
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
 export type User = {
-  loginId: string;
+  /** When a userId is provided, the user must already exist — no new user is created,
+   *  and the invite is sent to the existing user (useful for re-inviting). */
+  loginIdOrUserId: string;
   email?: string;
   phone?: string;
   displayName?: string;
