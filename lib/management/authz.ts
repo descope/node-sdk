@@ -39,6 +39,12 @@ const WithAuthz = (httpClient: HttpClient, config?: FGAConfig) => {
         });
 
         if (response.ok) {
+          // Pre-consume body to avoid node-fetch clone issues
+          // (same workaround as fetchWrapper in core-js-sdk)
+          const respText = await response.text();
+          (response as any).text = () => Promise.resolve(respText);
+          (response as any).json = () => Promise.resolve(JSON.parse(respText));
+          (response as any).clone = () => response;
           return response;
         }
       } catch {
