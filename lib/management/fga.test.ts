@@ -198,6 +198,7 @@ describe('Management FGA', () => {
       const schema = { dsl: 'model AuthZ 1.0' };
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify({}),
         json: async () => ({}),
         clone: () => ({ json: async () => ({}) }),
         status: 200,
@@ -223,6 +224,7 @@ describe('Management FGA', () => {
       const relations = [relation1];
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify({}),
         json: async () => ({}),
         clone: () => ({ json: async () => ({}) }),
         status: 200,
@@ -248,6 +250,7 @@ describe('Management FGA', () => {
       const relations = [relation1];
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify({}),
         json: async () => ({}),
         clone: () => ({ json: async () => ({}) }),
         status: 200,
@@ -271,10 +274,12 @@ describe('Management FGA', () => {
 
     it('should use cache URL for check when configured', async () => {
       const relations = [relation1, relation2];
+      const checkBody = { tuples: mockCheckResponseRelations };
       fetchMock.mockResolvedValue({
         ok: true,
-        json: async () => ({ tuples: mockCheckResponseRelations }),
-        clone: () => ({ json: async () => ({ tuples: mockCheckResponseRelations }) }),
+        text: async () => JSON.stringify(checkBody),
+        json: async () => checkBody,
+        clone: () => ({ json: async () => checkBody }),
         status: 200,
         headers: new Map(),
       });
@@ -318,6 +323,7 @@ describe('Management FGA', () => {
       const customConfig = { ...fgaConfig, fgaCacheTimeoutMs: 60000 };
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify({}),
         json: async () => ({}),
         clone: () => ({ json: async () => ({}) }),
         status: 200,
@@ -335,6 +341,7 @@ describe('Management FGA', () => {
       async (invalidValue) => {
         fetchMock.mockResolvedValue({
           ok: true,
+          text: async () => JSON.stringify({}),
           json: async () => ({}),
           clone: () => ({ json: async () => ({}) }),
           status: 200,
@@ -347,5 +354,125 @@ describe('Management FGA', () => {
         expect(fetchMock).toHaveBeenCalled();
       },
     );
+
+    it('should return correct data for a large check response (1206 tuples) via cache path', async () => {
+      const largeTuples = Array.from({ length: 1206 }, (_, i) => ({
+        resource: `u${i}`,
+        resourceType: 'user',
+        relation: 'member',
+        target: `g${i}`,
+        targetType: 'group',
+        allowed: i % 2 === 0,
+      }));
+      const responseBody = { tuples: largeTuples };
+      const bodyText = JSON.stringify(responseBody);
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: async () => bodyText,
+        json: async () => responseBody,
+        clone: () => ({ json: async () => responseBody }),
+        status: 200,
+      });
+
+      const result = await WithFGA(mockHttpClient, fgaConfig).check(
+        largeTuples.map(({ resource, resourceType, relation, target, targetType }) => ({
+          resource,
+          resourceType,
+          relation,
+          target,
+          targetType,
+        })),
+      );
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      expect(result.data).toHaveLength(1206);
+      expect(result.data![0]).toEqual(largeTuples[0]);
+      expect(result.data![1205]).toEqual(largeTuples[1205]);
+    });
+
+    it('should handle 1000+ concurrent check calls via cache path', async () => {
+      const singleTuple = [relation1];
+      const responseBody = { tuples: [{ ...relation1, allowed: true }] };
+      const bodyText = JSON.stringify(responseBody);
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: async () => bodyText,
+        json: async () => responseBody,
+        clone: () => ({ json: async () => responseBody }),
+        status: 200,
+      });
+
+      const calls = Array.from({ length: 1000 }, () =>
+        WithFGA(mockHttpClient, fgaConfig).check(singleTuple),
+      );
+      const results = await Promise.all(calls);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1000);
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      results.forEach((result) => {
+        expect(result.ok).toBe(true);
+        expect(result.data).toHaveLength(1);
+        expect(result.data![0].allowed).toBe(true);
+      });
+    });
+
+    // Skipped: demonstrates the actual node-fetch hang this fix addresses.
+    // Without the body pre-consumption fix, transformResponse calls clone().json() on the
+    // raw node-fetch Response. When the body stream is already consumed, node-fetch's
+    // clone().json() returns a Promise that never resolves — causing check() to hang
+    // indefinitely with no timeout protection (the AbortController is already cleared).
+    // With the fix, .clone() is overridden in postWithOptionalCache before transformResponse
+    // sees it, so it always resolves immediately.
+    it('should not hang when cache response .clone().json() never resolves (simulates node-fetch hang on consumed stream)', async () => {
+      const responseBody = { tuples: [{ ...relation1, allowed: true }] };
+      const bodyText = JSON.stringify(responseBody);
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: async () => bodyText,
+        json: async () => responseBody,
+        // Simulate node-fetch: clone().json() on a consumed body stream hangs forever
+        clone: () => ({ json: () => new Promise(() => {}) }),
+        status: 200,
+      });
+
+      // Without fix: hangs indefinitely (clone().json() never settles)
+      // With fix: .clone() is overridden → resolves immediately from memoized body
+      const result = await WithFGA(mockHttpClient, fgaConfig).check([relation1]);
+      expect(result.ok).toBe(true);
+      expect(result.data).toHaveLength(1);
+    }, 100);
+
+    it('should not crash when cache response .clone() would throw (body pre-consumed)', async () => {
+      const responseBody = { tuples: [{ ...relation1, allowed: true }] };
+      const bodyText = JSON.stringify(responseBody);
+      // Simulate a raw node-fetch response where .clone() would throw
+      fetchMock.mockResolvedValue({
+        ok: true,
+        text: async () => bodyText,
+        json: async () => responseBody,
+        clone: () => {
+          throw new Error('clone failed — body already consumed');
+        },
+        status: 200,
+      });
+
+      // After the fix, .clone() is overridden before transformResponse sees it
+      const result = await WithFGA(mockHttpClient, fgaConfig).check([relation1]);
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(result.ok).toBe(true);
+      expect(result.data).toHaveLength(1);
+    });
+
+    it('should fall back to httpClient when cache returns non-OK status', async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 503 });
+
+      const schema = { dsl: 'test' };
+      await WithFGA(mockHttpClient, fgaConfig).saveSchema(schema);
+
+      expect(fetchMock).toHaveBeenCalled();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.schema, schema);
+    });
   });
 });

@@ -613,6 +613,7 @@ describe('Management Authz', () => {
       const targets = { targets: ['u1'] };
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify(targets),
         json: async () => targets,
         clone: () => ({ json: async () => targets }),
         status: 200,
@@ -640,6 +641,7 @@ describe('Management Authz', () => {
       const relationsResponse = { relations: [mockRelation] };
       fetchMock.mockResolvedValue({
         ok: true,
+        text: async () => JSON.stringify(relationsResponse),
         json: async () => relationsResponse,
         clone: () => ({ json: async () => relationsResponse }),
         status: 200,
