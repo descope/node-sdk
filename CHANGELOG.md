@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.1](https://github.com/descope/node-sdk/compare/v2.2.0...v2.2.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @descope/core-js-sdk to v2.58.0 ([#701](https://github.com/descope/node-sdk/issues/701)) ([b4e9f21](https://github.com/descope/node-sdk/commit/b4e9f2199bdcef9a339751fc1b907874530e008b))
+* **fga:** pre-consume cache response body to prevent node-fetch clone hang when using fgaCacheUrl ([#700](https://github.com/descope/node-sdk/issues/700)) ([3b3d649](https://github.com/descope/node-sdk/commit/3b3d649159cc43329163a05407152d3fae69ad61))
+
 ## [2.2.0](https://github.com/descope/node-sdk/compare/v2.1.0...v2.2.0) (2026-03-17)
 
 
