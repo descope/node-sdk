@@ -395,13 +395,15 @@ describe('Management FGA', () => {
       const singleTuple = [relation1];
       const responseBody = { tuples: [{ ...relation1, allowed: true }] };
       const bodyText = JSON.stringify(responseBody);
-      fetchMock.mockResolvedValue({
-        ok: true,
-        text: async () => bodyText,
-        json: async () => responseBody,
-        clone: () => ({ json: async () => responseBody }),
-        status: 200,
-      });
+      fetchMock.mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          text: async () => bodyText,
+          json: async () => responseBody,
+          clone: () => ({ json: async () => responseBody }),
+          status: 200,
+        }),
+      );
 
       const calls = Array.from({ length: 1000 }, () =>
         WithFGA(mockHttpClient, fgaConfig).check(singleTuple),
@@ -417,13 +419,14 @@ describe('Management FGA', () => {
       });
     });
 
-    // Skipped: demonstrates the actual node-fetch hang this fix addresses.
+    // Regression test for the node-fetch clone hang this fix addresses.
     // Without the body pre-consumption fix, transformResponse calls clone().json() on the
     // raw node-fetch Response. When the body stream is already consumed, node-fetch's
     // clone().json() returns a Promise that never resolves — causing check() to hang
     // indefinitely with no timeout protection (the AbortController is already cleared).
     // With the fix, .clone() is overridden in postWithOptionalCache before transformResponse
-    // sees it, so it always resolves immediately.
+    // sees it, so it always resolves immediately. The 100ms timeout is intentionally tight:
+    // with the fix the call completes in <5ms; without it, it hangs indefinitely.
     it('should not hang when cache response .clone().json() never resolves (simulates node-fetch hang on consumed stream)', async () => {
       const responseBody = { tuples: [{ ...relation1, allowed: true }] };
       const bodyText = JSON.stringify(responseBody);
