@@ -17,12 +17,6 @@ export type CreateTenantResponse = {
   id: string;
 };
 
-/** Response from creating a single user, includes the user details and whether the user was newly created */
-export type CreateUserResponse = {
-  user: UserResponse;
-  created: boolean;
-};
-
 export type GenerateSSOConfigurationLinkResponse = {
   adminSSOConfigurationLink: string;
 };

@@ -22,7 +22,6 @@ import {
   ProviderTokenOptions,
   UserOptions,
   UserSearchResponse,
-  CreateUserResponse,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -64,7 +63,6 @@ type SearchRequest = {
 
 type SingleUserResponse = {
   user: UserResponse;
-  created?: boolean;
 };
 
 type MultipleUsersResponse = {
@@ -73,7 +71,7 @@ type MultipleUsersResponse = {
 
 const withUser = (httpClient: HttpClient) => {
   /* Create User */
-  function create(loginId: string, options?: UserOptions): Promise<SdkResponse<CreateUserResponse>>;
+  function create(loginId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
   function create(
     loginId: string,
     email?: string,
@@ -89,7 +87,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
-  ): Promise<SdkResponse<CreateUserResponse>>;
+  ): Promise<SdkResponse<UserResponse>>;
 
   function create(
     loginId: string,
@@ -106,7 +104,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
-  ): Promise<SdkResponse<CreateUserResponse>> {
+  ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of create user
     // 1. The new form - create(loginId, { email, phone, ... }})
     // 2. The old form - create(loginId, email, phone, ...)
@@ -134,9 +132,9 @@ const withUser = (httpClient: HttpClient) => {
             roleNames: emailOrOptions?.roles,
             roles: undefined,
           };
-    return transformResponse<SingleUserResponse, CreateUserResponse>(
+    return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.post(apiPaths.user.create, body),
-      (data) => ({ user: data.user, created: data.created ?? false }),
+      (data) => data.user,
     );
   }
   /* Create User End */
@@ -145,7 +143,7 @@ const withUser = (httpClient: HttpClient) => {
   function createTestUser(
     loginId: string,
     options?: UserOptions,
-  ): Promise<SdkResponse<CreateUserResponse>>;
+  ): Promise<SdkResponse<UserResponse>>;
   function createTestUser(
     loginId: string,
     email?: string,
@@ -161,7 +159,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
-  ): Promise<SdkResponse<CreateUserResponse>>;
+  ): Promise<SdkResponse<UserResponse>>;
 
   function createTestUser(
     loginId: string,
@@ -178,7 +176,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
-  ): Promise<SdkResponse<CreateUserResponse>> {
+  ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of create test user
     // 1. The new form - createTestUser(loginId, { email, phone, ... }})
     // 2. The old form - createTestUser(loginId, email, phone, ...)
@@ -208,9 +206,9 @@ const withUser = (httpClient: HttpClient) => {
             roles: undefined,
             test: true,
           };
-    return transformResponse<SingleUserResponse, CreateUserResponse>(
+    return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.post(apiPaths.user.createTestUser, body),
-      (data) => ({ user: data.user, created: data.created ?? false }),
+      (data) => data.user,
     );
   }
   /* Create Test User End */
@@ -225,7 +223,7 @@ const withUser = (httpClient: HttpClient) => {
       templateOptions?: TemplateOptions;
       templateId?: string;
     },
-  ): Promise<SdkResponse<CreateUserResponse>>;
+  ): Promise<SdkResponse<UserResponse>>;
   function invite(
     loginId: string,
     email?: string,
@@ -245,7 +243,7 @@ const withUser = (httpClient: HttpClient) => {
     familyName?: string,
     additionalLoginIds?: string[],
     templateId?: string,
-  ): Promise<SdkResponse<CreateUserResponse>>;
+  ): Promise<SdkResponse<UserResponse>>;
 
   function invite(
     loginId: string,
@@ -266,7 +264,7 @@ const withUser = (httpClient: HttpClient) => {
     familyName?: string,
     additionalLoginIds?: string[],
     templateId?: string,
-  ): Promise<SdkResponse<CreateUserResponse>> {
+  ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of invite user
     // 1. The new form - invite(loginId, { email, phone, ... }})
     // 2. The old form - invite(loginId, email, phone, ...)
@@ -300,9 +298,9 @@ const withUser = (httpClient: HttpClient) => {
             roles: undefined,
             invite: true,
           };
-    return transformResponse<SingleUserResponse, CreateUserResponse>(
+    return transformResponse<SingleUserResponse, UserResponse>(
       httpClient.post(apiPaths.user.create, body),
-      (data) => ({ user: data.user, created: data.created ?? false }),
+      (data) => data.user,
     );
   }
   /* Invite User End */
