@@ -59,6 +59,8 @@ type SearchRequest = {
   toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
   tenantRoleIds?: Record<string, RolesList>; // Search users based on tenants and role IDs
   tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
+  verifiedEmail?: boolean; // Filter by verified email status
+  verifiedPhone?: boolean; // Filter by verified phone status
 };
 
 type SingleUserResponse = {

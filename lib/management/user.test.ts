@@ -1169,6 +1169,29 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should pass verifiedEmail and verifiedPhone filters', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      await management.user.search({
+        verifiedEmail: true,
+        verifiedPhone: false,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
+        verifiedEmail: true,
+        verifiedPhone: false,
+        roleNames: undefined,
+        roles: undefined,
+      });
+    });
   });
 
   describe('getProviderToken', () => {
