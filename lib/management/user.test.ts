@@ -446,6 +446,50 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should support deprecated loginId field for backwards compatibility (createBatch)', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.createBatch([
+        { loginId: 'legacy@user.com', roles: ['r1'], email: 'legacy@user.com' },
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [{ loginId: 'legacy@user.com', roleNames: ['r1'], email: 'legacy@user.com' }],
+      });
+    });
+
+    it('should support deprecated loginId field for backwards compatibility', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.inviteBatch(
+        [{ loginId: 'legacy@user.com', roles: ['r1'], email: 'legacy@user.com' }],
+        'https://invite.me',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [{ loginId: 'legacy@user.com', roleNames: ['r1'], email: 'legacy@user.com' }],
+        invite: true,
+        inviteUrl: 'https://invite.me',
+        sendMail: undefined,
+      });
+    });
   });
 
   describe('create batch', () => {
