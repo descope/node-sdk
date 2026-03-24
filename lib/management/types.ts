@@ -371,7 +371,6 @@ export type AttributesTypes = string | boolean | number | string[] | null;
 export type TemplateOptions = Record<string, string>; // for providing messaging template options (templates that are being sent via email / text message)
 
 export type User = {
-  loginId: string;
   email?: string;
   phone?: string;
   displayName?: string;
@@ -388,7 +387,21 @@ export type User = {
   seed?: string; // a TOTP seed to set for the user in case of batch invite
   status?: UserStatus; // the status of the user (enabled, disabled, invited, expired)
   createdTime?: number; // the time the user was created in seconds since epoch
-};
+} & (
+  | {
+      /** The login ID or user ID of the user. When a userId is provided, the user must
+       *  already exist — no new user is created, and the invite is sent to the existing
+       *  user (useful for re-inviting). */
+      loginIdOrUserId: string;
+      /** @deprecated Use loginIdOrUserId instead */
+      loginId?: string;
+    }
+  | {
+      /** @deprecated Use loginIdOrUserId instead */
+      loginId: string;
+      loginIdOrUserId?: string;
+    }
+);
 
 // The kind of prehashed password to set for a user (only one should be set)
 export type UserPasswordHashed = {

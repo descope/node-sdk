@@ -346,6 +346,29 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the correct request when passing a userId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const userId = 'U2abc1234567890123456789';
+      await management.user.invite(userId, { email: 'a@b.c', sendMail: true });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: userId,
+        email: 'a@b.c',
+        roleNames: undefined,
+        invite: true,
+        sendMail: true,
+      });
+    });
   });
 
   describe('invite batch', () => {
@@ -373,8 +396,14 @@ describe('Management User', () => {
 
       const resp: SdkResponse<CreateOrInviteBatchResponse> = await management.user.inviteBatch(
         [
-          { loginId: 'one', roles: ['r1'], email: 'one@one', password: 'clear', seed: 'aaa' },
-          { loginId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
+          {
+            loginIdOrUserId: 'one',
+            roles: ['r1'],
+            email: 'one@one',
+            password: 'clear',
+            seed: 'aaa',
+          },
+          { loginIdOrUserId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
         ],
         'https://invite.me',
         true,
@@ -417,6 +446,50 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should support deprecated loginId field for backwards compatibility (createBatch)', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.createBatch([
+        { loginId: 'legacy@user.com', roles: ['r1'], email: 'legacy@user.com' },
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [{ loginId: 'legacy@user.com', roleNames: ['r1'], email: 'legacy@user.com' }],
+      });
+    });
+
+    it('should support deprecated loginId field for backwards compatibility', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtInviteBatchResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtInviteBatchResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.inviteBatch(
+        [{ loginId: 'legacy@user.com', roles: ['r1'], email: 'legacy@user.com' }],
+        'https://invite.me',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
+        users: [{ loginId: 'legacy@user.com', roleNames: ['r1'], email: 'legacy@user.com' }],
+        invite: true,
+        inviteUrl: 'https://invite.me',
+        sendMail: undefined,
+      });
+    });
   });
 
   describe('create batch', () => {
@@ -443,8 +516,14 @@ describe('Management User', () => {
       };
 
       const resp: SdkResponse<CreateOrInviteBatchResponse> = await management.user.createBatch([
-        { loginId: 'one', roles: ['r1'], email: 'one@one', password: 'clear', seed: 'aaa' },
-        { loginId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
+        {
+          loginIdOrUserId: 'one',
+          roles: ['r1'],
+          email: 'one@one',
+          password: 'clear',
+          seed: 'aaa',
+        },
+        { loginIdOrUserId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
       ]);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
