@@ -638,6 +638,7 @@ describe('Management User', () => {
         middleName: 'name2',
         familyName: 'name3',
         roles: ['r1', 'r2'],
+        additionalIdentifiers: ['id-1', 'id-2'],
       });
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patch, {
@@ -648,6 +649,7 @@ describe('Management User', () => {
         middleName: 'name2',
         familyName: 'name3',
         roleNames: ['r1', 'r2'],
+        additionalIdentifiers: ['id-1', 'id-2'],
       });
 
       expect(resp).toEqual({
@@ -703,6 +705,7 @@ describe('Management User', () => {
           email: 'user1@example.com',
           displayName: 'User One',
           roles: ['role1'],
+          additionalIdentifiers: ['id1', 'id2'],
         },
         {
           loginIdOrUserId: 'user2',
@@ -722,6 +725,7 @@ describe('Management User', () => {
             email: 'user1@example.com',
             displayName: 'User One',
             roleNames: ['role1'],
+            additionalIdentifiers: ['id1', 'id2'],
           },
           {
             loginId: 'user2',
