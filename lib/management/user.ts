@@ -440,6 +440,9 @@ const withUser = (httpClient: HttpClient) => {
     if (options.status !== undefined) {
       body.status = options.status;
     }
+    if (options.additionalIdentifiers !== undefined) {
+      body.additionalIdentifiers = options.additionalIdentifiers;
+    }
 
     return body;
   }
@@ -1082,6 +1085,7 @@ export interface PatchUserOptions {
   ssoAppIds?: string[];
   scim?: boolean;
   status?: UserStatus;
+  additionalIdentifiers?: string[];
 }
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */
