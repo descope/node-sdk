@@ -20,6 +20,11 @@ let publicKeys: JWK;
 let tokenAudA: string;
 let tokenAudB: string;
 let expiredTokenAudA: string;
+// Scope-specific tokens
+let tokenScopeArray: string;
+let tokenScopeReadWrite: string;
+let tokenScopeReadOnly: string;
+let tokenNoScopes: string;
 let permAuthInfo: AuthenticationInfo;
 let permTenantAuthInfo: AuthenticationInfo;
 
@@ -88,6 +93,31 @@ describe('sdk', () => {
       .setIssuedAt(1181398100)
       .setIssuer('project-id')
       .setExpirationTime(1181398111)
+      .sign(privateKey);
+    // Scope-specific tokens
+    tokenScopeArray = await new SignJWT({ scopes: ['read', 'write'] })
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    tokenScopeReadWrite = await new SignJWT({ scope: 'read write' })
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    tokenScopeReadOnly = await new SignJWT({ scope: 'read' })
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    tokenNoScopes = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('project-id')
+      .setExpirationTime(1981398111)
       .sign(privateKey);
     permAuthInfo = {
       jwt: 'jwt',
@@ -200,6 +230,92 @@ describe('sdk', () => {
       await expect(
         (sdk as any).validateSession(tokenAudA, { audience: ['nope', 'aud-a'] }),
       ).resolves.toHaveProperty('jwt', tokenAudA);
+    });
+  });
+
+  describe('scope validation', () => {
+    it('should reject when scopes are required but missing in token', async () => {
+      await expect((sdk as any).validateSession(tokenNoScopes, { scopes: 'read' })).rejects.toThrow(
+        'session validation failed',
+      );
+    });
+
+    it('should reject when scopes mismatch in token for validateSession', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenScopeReadOnly, { scopes: 'write' }),
+      ).rejects.toThrow('session validation failed');
+    });
+
+    it('should accept when all required scopes are present (single scope)', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenScopeReadWrite, { scopes: 'read' }),
+      ).resolves.toHaveProperty('jwt', tokenScopeReadWrite);
+    });
+
+    it('should accept when all required scopes are present (multiple scopes)', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenScopeReadWrite, { scopes: ['read', 'write'] }),
+      ).resolves.toHaveProperty('jwt', tokenScopeReadWrite);
+    });
+
+    it('should accept when token has scopes as array instead of space-separated string', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenScopeArray, { scopes: 'read' }),
+      ).resolves.toHaveProperty('jwt', tokenScopeArray);
+    });
+
+    it('should reject when token is missing some required scopes', async () => {
+      await expect(
+        (sdk as any).validateSession(tokenScopeReadOnly, { scopes: ['read', 'write'] }),
+      ).rejects.toThrow('session validation failed');
+    });
+
+    it('should reject when scopes mismatch in validateJwt', async () => {
+      await expect(
+        (sdk as any).validateJwt(tokenScopeReadOnly, { scopes: 'write' }),
+      ).rejects.toThrow('insufficient scopes');
+    });
+
+    it('should accept when validateJwt has matching scopes', async () => {
+      await expect(
+        (sdk as any).validateJwt(tokenScopeReadWrite, { scopes: ['read', 'write'] }),
+      ).resolves.toHaveProperty('jwt', tokenScopeReadWrite);
+    });
+
+    it('should reject when refreshSession returns session with insufficient scopes', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenScopeReadOnly },
+      } as SdkResponse<JWTResponse>);
+
+      await expect((sdk as any).refreshSession(validToken, { scopes: 'write' })).rejects.toThrow(
+        'refresh token validation failed',
+      );
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should accept when refreshSession returns session with sufficient scopes', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenScopeReadWrite },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(
+        (sdk as any).refreshSession(validToken, { scopes: ['read', 'write'] }),
+      ).resolves.toHaveProperty('jwt', tokenScopeReadWrite);
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
+    });
+
+    it('should reject when validateAndRefreshSession refreshes to insufficient scopes', async () => {
+      const spyRefresh = jest.spyOn(sdk, 'refresh').mockResolvedValueOnce({
+        ok: true,
+        data: { sessionJwt: tokenScopeReadOnly },
+      } as SdkResponse<JWTResponse>);
+
+      await expect(
+        (sdk as any).validateAndRefreshSession(expiredToken, validToken, { scopes: 'write' }),
+      ).rejects.toThrow('refresh token validation failed');
+      expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
   });
 
