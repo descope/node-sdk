@@ -49,6 +49,33 @@ describe('Management JWT', () => {
         response: httpResponse,
       });
     });
+
+    it('should reject reserved JWT claims', () => {
+      expect(() => management.jwt.update('jwt', { iss: 'malicious-issuer' }, 4)).toThrow(
+        'Cannot override reserved JWT claims: iss',
+      );
+
+      expect(() =>
+        management.jwt.update('jwt', { sub: 'malicious-sub', exp: 9999999999 }, 4),
+      ).toThrow('Cannot override reserved JWT claims: sub, exp');
+    });
+
+    it('should reject non-object custom claims', () => {
+      expect(() => management.jwt.update('jwt', 'not-an-object' as any, 4)).toThrow(
+        'Custom claims must be an object',
+      );
+
+      expect(() => management.jwt.update('jwt', ['array'] as any, 4)).toThrow(
+        'Custom claims must be an object',
+      );
+    });
+
+    it('should reject oversized custom claims', () => {
+      const largeClaims = { data: 'x'.repeat(15000) };
+      expect(() => management.jwt.update('jwt', largeClaims, 4)).toThrow(
+        'Custom claims exceed maximum size of 10KB',
+      );
+    });
   });
 
   describe('impersonate', () => {
