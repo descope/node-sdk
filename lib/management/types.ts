@@ -170,6 +170,7 @@ export type Tenant = {
   authType?: 'none' | 'saml' | 'oidc';
   enforceSSO?: boolean;
   disabled?: boolean;
+  defaultRoles?: string[];
 };
 
 /** Represents settings of a tenant in a project. It has an id, a name and an array of
