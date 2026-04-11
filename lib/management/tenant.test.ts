@@ -248,6 +248,60 @@ describe('Management Tenant', () => {
     });
   });
 
+  describe('updateDefaultRoles', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.tenant.updateDefaultRoles('t1', ['role1', 'role2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.updateDefaultRoles, {
+        id: 't1',
+        defaultRoles: ['role1', 'role2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send empty array to clear default roles', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.tenant.updateDefaultRoles('t1', []);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.updateDefaultRoles, {
+        id: 't1',
+        defaultRoles: [],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('delete', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

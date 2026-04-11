@@ -75,6 +75,8 @@ const withTenant = (httpClient: HttpClient) => ({
         roleInheritance,
       }),
     ),
+  updateDefaultRoles: (id: string, defaultRoles: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.tenant.updateDefaultRoles, { id, defaultRoles })),
   delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.tenant.delete, { id, cascade })),
   load: (id: string): Promise<SdkResponse<Tenant>> =>

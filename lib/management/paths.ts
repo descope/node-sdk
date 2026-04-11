@@ -70,6 +70,7 @@ export default {
     settings: '/v1/mgmt/tenant/settings',
     loadAll: '/v1/mgmt/tenant/all',
     searchAll: '/v1/mgmt/tenant/search',
+    updateDefaultRoles: '/v1/mgmt/tenant/updateDefaultRoles',
     generateSSOConfigurationLink: '/v2/mgmt/tenant/adminlinks/sso/generate',
   },
   ssoApplication: {

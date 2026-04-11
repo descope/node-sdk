@@ -630,6 +630,10 @@ await descopeClient.management.tenant.update(
   { customAttributeName: 'val' },
 );
 
+// Update the tenant's default roles by providing role names.
+// These are project-level roles that will be automatically assigned to users in this tenant.
+await descopeClient.management.tenant.updateDefaultRoles('my-custom-id', ['role1', 'role2']);
+
 // Tenant deletion cannot be undone. Use carefully.
 // Pass true to cascade value, in case you want to delete all users/keys associated only with this tenant
 await descopeClient.management.tenant.delete('my-custom-id', false);
