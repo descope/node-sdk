@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.0](https://github.com/descope/node-sdk/compare/v2.2.1...v2.3.0) (2026-04-11)
+
+
+### Features
+
+* Add additional login ids param to the patch ([#709](https://github.com/descope/node-sdk/issues/709)) ([ec20dd4](https://github.com/descope/node-sdk/commit/ec20dd4db41c2ad33957c5bf34e48d22272600d7))
+* **tenant:** add updateDefaultRoles method to tenant management ([#714](https://github.com/descope/node-sdk/issues/714)) ([99f0724](https://github.com/descope/node-sdk/commit/99f07248e24c6d1802b8233d53a53d6398e09c72))
+* **user:** add verifiedEmail and verifiedPhone filters to user search ([#704](https://github.com/descope/node-sdk/issues/704)) ([a23cbb1](https://github.com/descope/node-sdk/commit/a23cbb1bd547b243decd88beebd02793414d50bd))
+* **user:** support userId in invite and inviteBatch ([#696](https://github.com/descope/node-sdk/issues/696)) ([717dde6](https://github.com/descope/node-sdk/commit/717dde68d2b328d4685c174c57d2adc6680aa2dc))
+
 ## [2.2.1](https://github.com/descope/node-sdk/compare/v2.2.0...v2.2.1) (2026-03-23)
 
 
