@@ -309,6 +309,145 @@ describe('Management SSOApplication', () => {
     });
   });
 
+  describe('createWsFedApplication', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockSSOApplicationCreateResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockSSOApplicationCreateResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CreateSSOApplicationResponse> =
+        await management.ssoApplication.createWsFedApplication({
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          realm: 'urn:myapp:realm',
+          replyUrl: 'http://dummy.com/reply',
+          forceAuthentication: true,
+          logoutRedirectUrl: 'http://dummy.com/logout',
+          errorRedirectUrl: 'http://dummy.com/error',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.wsfedCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        id: undefined,
+        description: undefined,
+        logo: undefined,
+        enabled: true,
+        realm: 'urn:myapp:realm',
+        replyUrl: 'http://dummy.com/reply',
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        forceAuthentication: true,
+        logoutRedirectUrl: 'http://dummy.com/logout',
+        errorRedirectUrl: 'http://dummy.com/error',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockSSOApplicationCreateResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should allow false to be sent in the enabled flag', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockSSOApplicationCreateResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockSSOApplicationCreateResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CreateSSOApplicationResponse> =
+        await management.ssoApplication.createWsFedApplication({
+          name: 'name',
+          loginPageUrl: 'http://dummy.com',
+          enabled: false,
+          realm: 'urn:myapp:realm',
+          replyUrl: 'http://dummy.com/reply',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.wsfedCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        id: undefined,
+        description: undefined,
+        logo: undefined,
+        enabled: false,
+        realm: 'urn:myapp:realm',
+        replyUrl: 'http://dummy.com/reply',
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        forceAuthentication: undefined,
+        logoutRedirectUrl: undefined,
+        errorRedirectUrl: undefined,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockSSOApplicationCreateResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateWsFedApplication', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.ssoApplication.updateWsFedApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        enabled: true,
+        realm: 'urn:myapp:realm',
+        replyUrl: 'http://dummy.com/reply',
+        errorRedirectUrl: 'http://dummy.com/error',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.wsfedUpdate, {
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        description: undefined,
+        logo: undefined,
+        enabled: true,
+        realm: 'urn:myapp:realm',
+        replyUrl: 'http://dummy.com/reply',
+        attributeMapping: undefined,
+        groupsMapping: undefined,
+        forceAuthentication: undefined,
+        logoutRedirectUrl: undefined,
+        errorRedirectUrl: undefined,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('delete', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

@@ -78,6 +78,8 @@ export default {
     samlCreate: '/v1/mgmt/sso/idp/app/saml/create',
     oidcUpdate: '/v1/mgmt/sso/idp/app/oidc/update',
     samlUpdate: '/v1/mgmt/sso/idp/app/saml/update',
+    wsfedCreate: '/v1/mgmt/sso/idp/app/wsfed/create',
+    wsfedUpdate: '/v1/mgmt/sso/idp/app/wsfed/update',
     delete: '/v1/mgmt/sso/idp/app/delete',
     load: '/v1/mgmt/sso/idp/app/load',
     loadAll: '/v1/mgmt/sso/idp/apps/load',
