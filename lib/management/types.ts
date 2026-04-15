@@ -79,8 +79,8 @@ export type WsFedApplicationOptions = {
   description?: string;
   logo?: string;
   enabled?: boolean;
-  realm?: string;
-  replyUrl?: string;
+  realm: string;
+  replyUrl: string;
   attributeMapping?: SamlIdpAttributeMappingInfo[];
   groupsMapping?: SamlIdpGroupsMappingInfo[];
   forceAuthentication?: boolean;
@@ -290,7 +290,7 @@ export type SSOApplication = {
   appType: string;
   samlSettings: SSOApplicationSAMLSettings;
   oidcSettings: SSOApplicationOIDCSettings;
-  wsfedSettings: SSOApplicationWSFedSettings;
+  wsfedSettings?: SSOApplicationWSFedSettings;
 };
 
 /** Represents a permission in a project. It has a name and optionally a description.

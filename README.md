@@ -763,7 +763,6 @@ await descopeClient.management.ssoApplication.updateWsFedApplication({
   enabled: true,
   realm: 'urn:myapp:realm',
   replyUrl: 'http://dummy.com/reply',
-  certificate: 'certificate',
 });
 
 // SSO application deletion cannot be undone. Use carefully.
