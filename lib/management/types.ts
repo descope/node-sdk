@@ -277,6 +277,8 @@ export type SSOApplicationWSFedSettings = {
   errorRedirectUrl: string;
   idpInitiatedUrl?: string;
   idpMetadataUrl?: string;
+  idpEntityId?: string;
+  idpSsoUrl?: string;
   idpCert?: string;
 };
 
