@@ -436,7 +436,7 @@ describe('Management SSOApplication', () => {
         groupsMapping: undefined,
         forceAuthentication: undefined,
         logoutRedirectUrl: undefined,
-        errorRedirectUrl: undefined,
+        errorRedirectUrl: 'http://dummy.com/error',
       });
 
       expect(resp).toEqual({

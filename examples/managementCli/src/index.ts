@@ -799,8 +799,7 @@ program
   .argument('<loginPageUrl>', 'The URL where login page is hosted')
   .argument('<realm>', 'WS-Fed realm identifier')
   .argument('<replyUrl>', 'WS-Fed reply URL')
-  .argument('<certificate>', 'SP certificate')
-  .action(async (id, name, loginPageUrl, realm, replyUrl, certificate) => {
+  .action(async (id, name, loginPageUrl, realm, replyUrl) => {
     handleSdkRes(
       await sdk.management.ssoApplication.updateWsFedApplication({
         id,
@@ -809,7 +808,6 @@ program
         enabled: true,
         realm,
         replyUrl,
-        certificate,
       }),
     );
   });
