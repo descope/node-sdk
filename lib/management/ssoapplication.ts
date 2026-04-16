@@ -5,6 +5,7 @@ import {
   SSOApplication,
   OidcApplicationOptions,
   SamlApplicationOptions,
+  WsFedApplicationOptions,
 } from './types';
 
 type MultipleSSOApplicationResponse = {
@@ -38,6 +39,19 @@ const withSSOApplication = (httpClient: HttpClient) => ({
     options: SamlApplicationOptions & { id: string },
   ): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.ssoApplication.samlUpdate, { ...options })),
+  createWsFedApplication: (
+    options: WsFedApplicationOptions,
+  ): Promise<SdkResponse<CreateSSOApplicationResponse>> =>
+    transformResponse(
+      httpClient.post(apiPaths.ssoApplication.wsfedCreate, {
+        ...options,
+        enabled: options.enabled ?? true,
+      }),
+    ),
+  updateWsFedApplication: (
+    options: WsFedApplicationOptions & { id: string },
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.ssoApplication.wsfedUpdate, { ...options })),
   delete: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.ssoApplication.delete, { id })),
   load: (id: string): Promise<SdkResponse<SSOApplication>> =>
