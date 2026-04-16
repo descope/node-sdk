@@ -13,6 +13,7 @@ import { getCookieValue } from './helpers';
 
 let validToken: string;
 let validTokenIssuerURL: string;
+let validTokenIssuerMcpStyleURL: string;
 let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
@@ -68,6 +69,12 @@ describe('sdk', () => {
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
       .setIssuer('https://descope.com/bla/project-id')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    validTokenIssuerMcpStyleURL = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://auth.example.com/v1/apps/agentic/project-id/mcp-server-id-segment')
       .setExpirationTime(1981398111)
       .sign(privateKey);
     invalidTokenIssuer = await new SignJWT({})
@@ -126,6 +133,16 @@ describe('sdk', () => {
 
     it('should return the token payload when issuer is url and valid', async () => {
       const resp = await sdk.validateJwt(validTokenIssuerURL);
+      expect(resp).toMatchObject({
+        token: {
+          exp: 1981398111,
+          iss: 'project-id',
+        },
+      });
+    });
+
+    it('should return the token payload when issuer is MCP-style url (project id not last segment)', async () => {
+      const resp = await sdk.validateJwt(validTokenIssuerMcpStyleURL);
       expect(resp).toMatchObject({
         token: {
           exp: 1981398111,

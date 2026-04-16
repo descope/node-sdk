@@ -728,6 +728,26 @@ program
     );
   });
 
+// sso-application-create-wsfed
+program
+  .command('sso-application-create-wsfed')
+  .description('Create a new WS-Fed sso application')
+  .argument('<name>', 'sso application name')
+  .argument('<loginPageUrl>', 'The URL where login page is hosted')
+  .argument('<realm>', 'WS-Fed realm identifier')
+  .argument('<replyUrl>', 'WS-Fed reply URL')
+  .action(async (name, loginPageUrl, realm, replyUrl) => {
+    handleSdkRes(
+      await sdk.management.ssoApplication.createWsFedApplication({
+        name,
+        loginPageUrl,
+        enabled: true,
+        realm,
+        replyUrl,
+      }),
+    );
+  });
+
 // sso-application-update-oidc
 program
   .command('sso-application-update-oidc')
@@ -766,6 +786,28 @@ program
         entityId,
         acsUrl,
         certificate,
+      }),
+    );
+  });
+
+// sso-application-update-wsfed
+program
+  .command('sso-application-update-wsfed')
+  .description('Update a WS-Fed sso application')
+  .argument('<id>', 'sso application ID')
+  .argument('<name>', 'sso application name')
+  .argument('<loginPageUrl>', 'The URL where login page is hosted')
+  .argument('<realm>', 'WS-Fed realm identifier')
+  .argument('<replyUrl>', 'WS-Fed reply URL')
+  .action(async (id, name, loginPageUrl, realm, replyUrl) => {
+    handleSdkRes(
+      await sdk.management.ssoApplication.updateWsFedApplication({
+        id,
+        name,
+        loginPageUrl,
+        enabled: true,
+        realm,
+        replyUrl,
       }),
     );
   });

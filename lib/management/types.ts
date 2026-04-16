@@ -68,6 +68,27 @@ export type SamlApplicationOptions = {
 };
 
 /**
+ * Options to create or update a WS-Fed application.
+ *
+ * **Note:** When updating, `id` will be required to perform the operation
+ */
+export type WsFedApplicationOptions = {
+  name: string;
+  loginPageUrl: string;
+  id?: string;
+  description?: string;
+  logo?: string;
+  enabled?: boolean;
+  realm: string;
+  replyUrl: string;
+  attributeMapping?: SamlIdpAttributeMappingInfo[];
+  groupsMapping?: SamlIdpGroupsMappingInfo[];
+  forceAuthentication?: boolean;
+  logoutRedirectUrl?: string;
+  errorRedirectUrl?: string;
+};
+
+/**
  * Represents a SAML IDP attribute mapping object. Use this class for mapping Descope attribute
  * to the relevant SAML Assertion attributes matching your expected SP attributes names.
  */
@@ -244,6 +265,23 @@ export type SSOApplicationSAMLSettings = {
   defaultSignatureAlgorithm?: string;
 };
 
+/** Represents WS-Fed settings of an SSO application in a project. */
+export type SSOApplicationWSFedSettings = {
+  loginPageUrl: string;
+  realm: string;
+  replyUrl: string;
+  attributeMapping: SamlIdpAttributeMappingInfo[];
+  groupsMapping: SamlIdpGroupsMappingInfo[];
+  forceAuthentication: boolean;
+  logoutRedirectUrl: string;
+  errorRedirectUrl: string;
+  idpInitiatedUrl?: string;
+  idpMetadataUrl?: string;
+  idpEntityId?: string;
+  idpSsoUrl?: string;
+  idpCert?: string;
+};
+
 /** Represents an SSO application in a project. */
 export type SSOApplication = {
   id: string;
@@ -254,6 +292,7 @@ export type SSOApplication = {
   appType: string;
   samlSettings: SSOApplicationSAMLSettings;
   oidcSettings: SSOApplicationOIDCSettings;
+  wsfedSettings?: SSOApplicationWSFedSettings;
 };
 
 /** Represents a permission in a project. It has a name and optionally a description.

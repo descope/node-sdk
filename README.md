@@ -725,6 +725,14 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   metadataUrl: 'http://dummy.com/metadata',
 });
 
+// Create WS-Fed SSO application
+await descopeClient.management.ssoApplication.createWsFedApplication({
+  name: 'My WS-Fed app name',
+  loginPageUrl: 'http://dummy.com/login',
+  realm: 'urn:myapp:realm',
+  replyUrl: 'http://dummy.com/reply',
+});
+
 // Update OIDC SSO application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.ssoApplication.updateOidcApplication({
@@ -744,6 +752,17 @@ await descopeClient.management.ssoApplication.updateSamlApplication({
   entityId: 'entity1234',
   aceUrl: 'http://dummy.com/acs',
   certificate: 'certificate',
+});
+
+// Update WS-Fed SSO application.
+// Update will override all fields as is. Use carefully.
+await descopeClient.management.ssoApplication.updateWsFedApplication({
+  id: 'my-app-id',
+  name: 'My WS-Fed app name',
+  loginPageUrl: 'http://dummy.com/login',
+  enabled: true,
+  realm: 'urn:myapp:realm',
+  replyUrl: 'http://dummy.com/reply',
 });
 
 // SSO application deletion cannot be undone. Use carefully.
