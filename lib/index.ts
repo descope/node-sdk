@@ -22,7 +22,7 @@ import {
   withCookie,
 } from './helpers';
 import withManagement from './management';
-import { AuthenticationInfo, RefreshAuthenticationInfo, VerifyOptions } from './types';
+import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -30,6 +30,7 @@ declare const BUILD_VERSION: string;
 // Extend the type wrapped by withCookie
 type JWTResponseWithCookies = CoreJWTResponse & {
   cookies: string[];
+  idpResponse?: IDPResponse;
 };
 
 /** Configuration arguments which include the Descope core SDK args and an optional management key */
@@ -494,7 +495,7 @@ export type {
   ResponseData,
   SdkResponse,
 } from '@descope/core-js-sdk';
-export type { AuthenticationInfo, RefreshAuthenticationInfo };
+export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
 export type { VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
