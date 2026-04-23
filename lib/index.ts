@@ -12,6 +12,7 @@ import {
   permissionsClaimName,
   refreshTokenCookieName,
   rolesClaimName,
+  scopeClaimName,
   sessionTokenCookieName,
 } from './constants';
 import fetch from './fetch-polyfill';
@@ -174,7 +175,7 @@ const nodeSdk = ({
     /**
      * Validate the given JWT with the right key and make sure the issuer is correct
      * @param jwt the JWT string to parse and validate
-     * @param options optional verification options (e.g., { audience })
+     * @param options optional verification options (e.g., { audience, scopes })
      * @returns AuthenticationInfo with the parsed token and JWT. Will throw an error if validation fails.
      */
     async validateJwt(jwt: string, options?: VerifyOptions): Promise<AuthenticationInfo> {
@@ -194,6 +195,39 @@ const nodeSdk = ({
             'check_failed',
           );
         }
+
+        // Validate scopes if provided
+        if (options?.scopes) {
+          // Normalize required scopes to array
+          const requiredScopes = Array.isArray(options.scopes) ? options.scopes : [options.scopes];
+
+          // Extract scopes from token - support both "scope" (space-separated string) and "scopes" (array)
+          let tokenScopes: string[] = [];
+          const scopeClaim = token[scopeClaimName];
+          const scopesClaim = token.scopes;
+
+          if (typeof scopeClaim === 'string') {
+            // OAuth 2.0 standard: space-separated string
+            tokenScopes = scopeClaim.split(' ').filter((s) => s.length > 0);
+          } else if (Array.isArray(scopesClaim)) {
+            // Alternative: array of scopes
+            tokenScopes = scopesClaim.filter((s) => typeof s === 'string');
+          } else if (Array.isArray(scopeClaim)) {
+            // Handle if "scope" claim is an array (non-standard but possible)
+            tokenScopes = scopeClaim.filter((s) => typeof s === 'string');
+          }
+
+          // Check if all required scopes are present in token scopes
+          const hasAllScopes = requiredScopes.every((scope) => tokenScopes.includes(scope));
+
+          if (!hasAllScopes) {
+            throw new errors.JWTClaimValidationFailed(
+              'insufficient scopes',
+              scopeClaimName,
+              'check_failed',
+            );
+          }
+        }
       }
 
       return { jwt, token };
@@ -202,7 +236,7 @@ const nodeSdk = ({
     /**
      * Validate an active session
      * @param sessionToken session JWT to validate
-     * @param options optional verification options (e.g., { audience })
+     * @param options optional verification options (e.g., { audience, scopes })
      * @returns AuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateSession(
@@ -226,7 +260,7 @@ const nodeSdk = ({
      * For session migration, use {@link sdk.refresh}.
      *
      * @param refreshToken refresh JWT to refresh the session with
-     * @param options optional verification options for the new session (e.g., { audience })
+     * @param options optional verification options for the new session (e.g., { audience, scopes })
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async refreshSession(
@@ -267,7 +301,7 @@ const nodeSdk = ({
      * Validate session and refresh it if it expired
      * @param sessionToken session JWT
      * @param refreshToken refresh JWT
-     * @param options optional verification options (e.g., { audience }) used on validation and post-refresh
+     * @param options optional verification options (e.g., { audience, scopes }) used on validation and post-refresh
      * @returns RefreshAuthenticationInfo promise or throws Error if there is an issue with JWTs
      */
     async validateAndRefreshSession(
@@ -292,7 +326,7 @@ const nodeSdk = ({
      * Exchange API key (access key) for a session key
      * @param accessKey access key to exchange for a session JWT
      * @param loginOptions Optional advanced controls over login parameters
-     * @param options optional verification options for the returned session (e.g., { audience })
+     * @param options optional verification options for the returned session (e.g., { audience, scopes })
      * @returns AuthenticationInfo with session JWT data
      */
     async exchangeAccessKey(

@@ -29,9 +29,10 @@ export interface RefreshAuthenticationInfo extends AuthenticationInfo {
   refreshJwt?: string;
 }
 
-/** Options for token verification (extensible). For now only audience. */
+/** Options for token verification (extensible). For now only audience and scopes. */
 export interface VerifyOptions {
   audience?: string | string[];
+  scopes?: string | string[];
 }
 
 /** Descope core SDK type */

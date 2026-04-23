@@ -4,6 +4,7 @@ export default {
   missingArguments: 'E011002',
   invalidRequest: 'E011003',
   invalidArguments: 'E011004',
+  insufficientScopes: 'E011005',
   wrongOTPCode: 'E061102',
   tooManyOTPAttempts: 'E061103',
   enchantedLinkPending: 'E062503',
