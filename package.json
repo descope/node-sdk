@@ -104,7 +104,7 @@
   "dependencies": {
     "@descope/core-js-sdk": "^2.58.0",
     "cross-fetch": "^4.0.0",
-    "jose": "5.2.2",
+    "jose": "6.2.2",
     "tslib": "^2.0.0"
   }
 }
