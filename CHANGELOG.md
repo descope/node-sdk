@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/descope/node-sdk/compare/v2.4.0...v2.4.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **tenant:** correct TenantSettings type to match proto API ([#722](https://github.com/descope/node-sdk/issues/722)) ([81b09ed](https://github.com/descope/node-sdk/commit/81b09ed582820b20dc524babbb69934ac632b2bd))
+
 ## [2.4.0](https://github.com/descope/node-sdk/compare/v2.3.0...v2.4.0) (2026-04-20)
 
 
