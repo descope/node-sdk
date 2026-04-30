@@ -31,8 +31,8 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
  * or a URL where the project ID is followed by more path segments (e.g. MCP server tokens).
  */
 export function issuerMatchesProject(iss: string | undefined, projectId: string): boolean {
-  if (!iss || !projectId) return false;
   if (iss === projectId) return true;
+  if (!iss || !projectId) return false;
   try {
     const { pathname } = new URL(iss);
     return pathname
