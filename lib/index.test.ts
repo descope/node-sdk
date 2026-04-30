@@ -15,6 +15,7 @@ let validToken: string;
 let validTokenIssuerURL: string;
 let validTokenIssuerMcpStyleURL: string;
 let invalidTokenIssuerHostMatch: string;
+let invalidTokenIssuerDeepPath: string;
 let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
@@ -82,6 +83,12 @@ describe('sdk', () => {
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
       .setIssuer('https://project-id/other')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    invalidTokenIssuerDeepPath = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://auth.example.com/v1/apps/project-id/mcp-server/extra')
       .setExpirationTime(1981398111)
       .sign(privateKey);
     invalidTokenIssuer = await new SignJWT({})
@@ -166,6 +173,12 @@ describe('sdk', () => {
 
     it('should reject when only issuer host matches project id', async () => {
       await expect(sdk.validateJwt(invalidTokenIssuerHostMatch)).rejects.toThrow(
+        'unexpected "iss" claim value',
+      );
+    });
+
+    it('should reject when project id is deeper than supported issuer path positions', async () => {
+      await expect(sdk.validateJwt(invalidTokenIssuerDeepPath)).rejects.toThrow(
         'unexpected "iss" claim value',
       );
     });

@@ -25,28 +25,26 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
   return match ? match[1] : null;
 };
 
-const matchesProjectPathSegments = (pathname: string, projectId: string): boolean => {
-  const segments = pathname.split('/').filter((segment) => segment.length > 0);
-  const lastSegment = segments[segments.length - 1];
-  const penultimateSegment = segments[segments.length - 2];
-
-  return lastSegment === projectId || penultimateSegment === projectId;
-};
-
 /**
  * True if the JWT `iss` claim belongs to the configured Descope project.
  * Accepts a plain project ID, a URL whose last path segment is the project ID,
- * or a URL where the project ID is the penultimate segment (e.g. MCP server tokens).
+ * or a URL where the project ID is followed by more path segments (e.g. MCP server tokens).
  */
 export function issuerMatchesProject(iss: string | undefined, projectId: string): boolean {
   if (iss === projectId) return true;
   if (!iss || !projectId) return false;
+
+  const isSupportedPosition = (segments: string[]) =>
+    segments[segments.length - 1] === projectId || segments[segments.length - 2] === projectId;
+
   try {
     const { pathname } = new URL(iss);
-    return matchesProjectPathSegments(pathname, projectId);
+    const segments = pathname.split('/').filter((segment) => segment.length > 0);
+    return isSupportedPosition(segments);
   } catch (_error) {
     // If iss is not a valid URL, support slash-separated issuer formats.
-    return matchesProjectPathSegments(iss, projectId);
+    const segments = iss.split('/').filter((segment) => segment.length > 0);
+    return isSupportedPosition(segments);
   }
 }
 
