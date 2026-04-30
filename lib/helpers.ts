@@ -26,6 +26,29 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
 };
 
 /**
+ * True if the JWT `iss` claim belongs to the configured Descope project.
+ * Accepts a plain project ID, a URL whose last path segment is the project ID,
+ * or a URL where the project ID is followed by more path segments (e.g. MCP server tokens).
+ */
+export function issuerMatchesProject(iss: string | undefined, projectId: string): boolean {
+  if (iss === projectId) return true;
+  if (!iss || !projectId) return false;
+
+  const isSupportedPosition = (segments: string[]) =>
+    segments[segments.length - 1] === projectId || segments[segments.length - 2] === projectId;
+
+  try {
+    const { pathname } = new URL(iss);
+    const segments = pathname.split('/').filter((segment) => segment.length > 0);
+    return isSupportedPosition(segments);
+  } catch (_error) {
+    // If iss is not a valid URL, support slash-separated issuer formats.
+    const segments = iss.split('/').filter((segment) => segment.length > 0);
+    return isSupportedPosition(segments);
+  }
+}
+
+/**
  * Add cookie generation to core-js functions.
  * @param fn the function we are wrapping
  * @returns Wrapped function with cookie generation

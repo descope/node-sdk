@@ -18,6 +18,7 @@ import fetch from './fetch-polyfill';
 import {
   getAuthorizationClaimItems,
   getCookieValue,
+  issuerMatchesProject,
   isUserAssociatedWithTenant,
   withCookie,
 } from './helpers';
@@ -185,15 +186,16 @@ const nodeSdk = ({
       const token = res.payload;
 
       if (token) {
-        token.iss = token.iss?.split('/').pop(); // support both url and project id as issuer
-        if (token.iss !== projectId) {
-          // We must do the verification here, since issuer can be either project ID or URL
+        const rawIss = token.iss;
+        if (!issuerMatchesProject(typeof rawIss === 'string' ? rawIss : undefined, projectId)) {
+          // Issuer can be project ID, project URL, or URL with extra segments (e.g. MCP)
           throw new errors.JWTClaimValidationFailed(
             'unexpected "iss" claim value',
             'iss',
             'check_failed',
           );
         }
+        token.iss = projectId;
       }
 
       return { jwt, token };
