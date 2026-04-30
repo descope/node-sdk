@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.5.0](https://github.com/descope/node-sdk/compare/v2.4.0...v2.5.0) (2026-04-30)
+
+
+### Features
+
+* add support for MCP-server JWT issuers ([#724](https://github.com/descope/node-sdk/issues/724)) ([d75e777](https://github.com/descope/node-sdk/commit/d75e777c1739b3c9228ee7603b636ab3c0aeed9b))
+
+
+### Bug Fixes
+
+* **tenant:** correct TenantSettings type to match proto API ([#722](https://github.com/descope/node-sdk/issues/722)) ([81b09ed](https://github.com/descope/node-sdk/commit/81b09ed582820b20dc524babbb69934ac632b2bd))
+
 ## [2.4.0](https://github.com/descope/node-sdk/compare/v2.3.0...v2.4.0) (2026-04-20)
 
 
