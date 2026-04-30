@@ -14,6 +14,7 @@ import { getCookieValue } from './helpers';
 let validToken: string;
 let validTokenIssuerURL: string;
 let validTokenIssuerMcpStyleURL: string;
+let invalidTokenIssuerHostMatch: string;
 let invalidTokenIssuer: string;
 let expiredToken: string;
 let publicKeys: JWK;
@@ -75,6 +76,12 @@ describe('sdk', () => {
       .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
       .setIssuedAt()
       .setIssuer('https://auth.example.com/v1/apps/agentic/project-id/mcp-server-id-segment')
+      .setExpirationTime(1981398111)
+      .sign(privateKey);
+    invalidTokenIssuerHostMatch = await new SignJWT({})
+      .setProtectedHeader({ alg: 'ES384', kid: '0ad99869f2d4e57f3f71c68300ba84fa' })
+      .setIssuedAt()
+      .setIssuer('https://project-id/other')
       .setExpirationTime(1981398111)
       .sign(privateKey);
     invalidTokenIssuer = await new SignJWT({})
@@ -153,6 +160,12 @@ describe('sdk', () => {
 
     it('should reject with a proper error message when token issuer invalid', async () => {
       await expect(sdk.validateJwt(invalidTokenIssuer)).rejects.toThrow(
+        'unexpected "iss" claim value',
+      );
+    });
+
+    it('should reject when only issuer host matches project id', async () => {
+      await expect(sdk.validateJwt(invalidTokenIssuerHostMatch)).rejects.toThrow(
         'unexpected "iss" claim value',
       );
     });

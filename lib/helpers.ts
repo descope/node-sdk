@@ -33,10 +33,19 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
 export function issuerMatchesProject(iss: string | undefined, projectId: string): boolean {
   if (!iss || !projectId) return false;
   if (iss === projectId) return true;
-  return iss
-    .split('/')
-    .filter((segment) => segment.length > 0)
-    .includes(projectId);
+  try {
+    const { pathname } = new URL(iss);
+    return pathname
+      .split('/')
+      .filter((segment) => segment.length > 0)
+      .includes(projectId);
+  } catch (_error) {
+    // If iss is not a valid URL, support slash-separated issuer formats.
+    return iss
+      .split('/')
+      .filter((segment) => segment.length > 0)
+      .includes(projectId);
+  }
 }
 
 /**

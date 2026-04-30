@@ -1,1 +1,7 @@
-npx --no -- commitlint --edit "$1"
+#!/usr/bin/env sh
+cd "$(dirname "$0")/.." || exit 1
+if [ ! -f ./node_modules/.bin/commitlint ]; then
+  echo "husky (commit-msg): commitlint not installed. Run npm install in the repo root."
+  exit 1
+fi
+exec ./node_modules/.bin/commitlint --edit "$1"
