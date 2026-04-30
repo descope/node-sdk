@@ -24,7 +24,7 @@ const mockTenants = [
 const mockSettings: TenantSettings = {
   domains: ['domain1.com'],
   selfProvisioningDomains: ['domain1.com'],
-  sessionSettingsEnabled: true,
+  enabled: true,
   refreshTokenExpiration: 12,
   refreshTokenExpirationUnit: 'days',
   sessionTokenExpiration: 10,

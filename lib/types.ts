@@ -10,11 +10,19 @@ interface Token {
   [claim: string]: unknown;
 }
 
+/** IDP response containing groups, SAML attributes, and OIDC claims from SSO authentication */
+export interface IDPResponse {
+  idpGroups?: string[];
+  idpSAMLAttributes?: Record<string, unknown>;
+  idpOIDCClaims?: Record<string, unknown>;
+}
+
 /** All information regarding token including the raw JWT, parsed JWT and cookies */
 export interface AuthenticationInfo {
   jwt: string;
   token: Token;
   cookies?: string[];
+  idpResponse?: IDPResponse;
 }
 
 export interface RefreshAuthenticationInfo extends AuthenticationInfo {
