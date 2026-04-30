@@ -194,6 +194,20 @@ export type Tenant = {
   defaultRoles?: string[];
 };
 
+export type SSOSetupSuiteSettingsDisabledFeatures = {
+  saml?: boolean;
+  oidc?: boolean;
+  scim?: boolean;
+  ssoDomains?: boolean;
+  groupMapping?: boolean;
+};
+
+export type SSOSetupSuiteSettings = {
+  enabled?: boolean;
+  styleId?: string;
+  disabledFeatures?: SSOSetupSuiteSettingsDisabledFeatures;
+};
+
 /** Represents settings of a tenant in a project. It has an id, a name and an array of
  * self provisioning domains used to associate users with that tenant.
  */
@@ -201,7 +215,7 @@ export type TenantSettings = {
   selfProvisioningDomains: string[];
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
-  sessionSettingsEnabled?: boolean;
+  enabled?: boolean;
   refreshTokenExpiration?: number;
   refreshTokenExpirationUnit?: ExpirationUnit;
   sessionTokenExpiration?: number;
@@ -212,6 +226,7 @@ export type TenantSettings = {
   InactivityTime?: number;
   InactivityTimeUnit?: ExpirationUnit;
   JITDisabled?: boolean;
+  ssoSetupSuiteSettings?: SSOSetupSuiteSettings;
 };
 
 /** Represents password settings of a tenant in a project. It has the password policy details. */

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.0](https://github.com/descope/node-sdk/compare/v2.3.0...v2.4.0) (2026-04-20)
+
+
+### Features
+
+* add IDPResponse type for SSO exchange ([#721](https://github.com/descope/node-sdk/issues/721)) ([5bf8e27](https://github.com/descope/node-sdk/commit/5bf8e273e010f1fc40491616b2cf80e5d02ff921))
+* add WS-Fed SSO application management ([#716](https://github.com/descope/node-sdk/issues/716)) ([14d7b63](https://github.com/descope/node-sdk/commit/14d7b63477c7a48c9dfc9a2234ed6975383ca786))
+
 ## [2.3.0](https://github.com/descope/node-sdk/compare/v2.2.1...v2.3.0) (2026-04-11)
 
 
