@@ -136,7 +136,6 @@ const nodeSdk = ({
         (requestConfig: RequestConfig) => {
           // eslint-disable-next-line no-param-reassign
           requestConfig.token = managementKey;
-          /* istanbul ignore if */
           if (rateLimitTier) {
             // eslint-disable-next-line no-param-reassign
             requestConfig.headers = {
@@ -160,7 +159,6 @@ const nodeSdk = ({
   // Fire-and-forget license handshake. Backend skips license-header validation
   // for the GetLicense endpoint itself, so this initial request is safe even
   // before the tier is cached.
-  /* istanbul ignore next */
   if (managementKey) {
     management.license
       .get()
@@ -170,7 +168,7 @@ const nodeSdk = ({
         }
       })
       .catch((e) => {
-        logger?.debug?.('License handshake failed', e);
+        logger?.warn?.('License handshake failed', e);
       });
   }
 
