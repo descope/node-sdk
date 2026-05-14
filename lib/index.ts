@@ -115,6 +115,11 @@ const nodeSdk = ({
     );
   };
 
+  // Rate limit tier from the license handshake. Populated asynchronously on init
+  // and injected into the x-descope-license header on every management request so
+  // Cloudflare can apply the correct rate limit bucket per customer tier.
+  let rateLimitTier: string | undefined;
+
   const mgmtSdkConfig = {
     fetch,
     ...config,
@@ -131,6 +136,13 @@ const nodeSdk = ({
         (requestConfig: RequestConfig) => {
           // eslint-disable-next-line no-param-reassign
           requestConfig.token = managementKey;
+          if (rateLimitTier) {
+            // eslint-disable-next-line no-param-reassign
+            requestConfig.headers = {
+              ...requestConfig.headers,
+              'x-descope-license': rateLimitTier,
+            };
+          }
           return requestConfig;
         },
       ].concat(config.hooks?.beforeRequest || []),
@@ -143,6 +155,22 @@ const nodeSdk = ({
     projectId,
     headers: nodeHeaders,
   });
+
+  // Fire-and-forget license handshake. Backend skips license-header validation
+  // for the GetLicense endpoint itself, so this initial request is safe even
+  // before the tier is cached.
+  if (managementKey) {
+    management.license
+      .get()
+      .then((resp) => {
+        if (resp.ok && resp.data?.rateLimitTier) {
+          rateLimitTier = resp.data.rateLimitTier;
+        }
+      })
+      .catch((e) => {
+        logger?.debug?.('License handshake failed', e);
+      });
+  }
 
   const sdk = {
     ...coreSdk,

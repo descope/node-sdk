@@ -214,4 +214,7 @@ export default {
     delete: '/v1/mgmt/managementkey/delete',
     search: '/v1/mgmt/managementkey/search',
   },
+  license: {
+    get: '/v1/mgmt/license',
+  },
 };
