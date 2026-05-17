@@ -858,7 +858,11 @@ describe('sdk', () => {
       }));
       jest.doMock('./management', () => ({
         __esModule: true,
-        default: () => ({ license: { get: licenseGet } }),
+        default: () => ({}),
+      }));
+      jest.doMock('./management/license', () => ({
+        __esModule: true,
+        default: () => ({ get: licenseGet }),
       }));
 
       return { createCoreJs, createHttpClient };
