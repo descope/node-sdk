@@ -839,6 +839,131 @@ describe('sdk', () => {
     });
   });
 
+  describe('license handshake', () => {
+    const setupMocks = (licenseGet: jest.Mock) => {
+      jest.resetModules();
+      const createCoreJs = jest.fn(() => ({}));
+      const createHttpClient = jest.fn();
+
+      jest.doMock('@descope/core-js-sdk', () => ({
+        __esModule: true,
+        default: createCoreJs,
+        createHttpClient,
+        wrapWith: (sdkInstance: object) => sdkInstance,
+        addHooksToConfig: (config, hooks) => {
+          // eslint-disable-next-line no-param-reassign
+          config.hooks = hooks;
+          return config;
+        },
+      }));
+      jest.doMock('./management', () => ({
+        __esModule: true,
+        default: () => ({}),
+      }));
+      jest.doMock('./management/license', () => ({
+        __esModule: true,
+        default: () => ({ get: licenseGet }),
+      }));
+
+      return { createCoreJs, createHttpClient };
+    };
+
+    const getMgmtBeforeRequest = (createHttpClient: jest.Mock) => {
+      const mgmtConfig = createHttpClient.mock.calls[0][0];
+      return mgmtConfig.hooks.beforeRequest[0];
+    };
+
+    const flushPromises = () =>
+      new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+    it('should skip handshake when no management key', () => {
+      const licenseGet = jest.fn();
+      setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({ projectId: 'project-id' });
+
+      expect(licenseGet).not.toHaveBeenCalled();
+    });
+
+    it('should inject x-descope-license header after handshake resolves', async () => {
+      const licenseGet = jest.fn().mockResolvedValue({
+        ok: true,
+        data: { rateLimitTier: 'tier3' },
+      });
+      const { createHttpClient } = setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({ projectId: 'project-id', managementKey: 'mk' });
+
+      expect(licenseGet).toHaveBeenCalled();
+      await flushPromises();
+
+      const beforeRequest = getMgmtBeforeRequest(createHttpClient);
+      const result = beforeRequest({ url: 'test' });
+      expect(result.headers).toEqual({ 'x-descope-license': 'tier3' });
+      expect(result.token).toBe('mk');
+    });
+
+    it('should not inject header before handshake resolves', () => {
+      const licenseGet = jest.fn().mockReturnValue(new Promise(() => {}));
+      const { createHttpClient } = setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({ projectId: 'project-id', managementKey: 'mk' });
+
+      const beforeRequest = getMgmtBeforeRequest(createHttpClient);
+      const result = beforeRequest({ url: 'test' });
+      expect(result.headers).toBeUndefined();
+      expect(result.token).toBe('mk');
+    });
+
+    it('should not inject header when response is not ok', async () => {
+      const licenseGet = jest.fn().mockResolvedValue({ ok: false, data: undefined });
+      const { createHttpClient } = setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({ projectId: 'project-id', managementKey: 'mk' });
+      await flushPromises();
+
+      const beforeRequest = getMgmtBeforeRequest(createHttpClient);
+      const result = beforeRequest({ url: 'test' });
+      expect(result.headers).toBeUndefined();
+    });
+
+    it('should log a warning when handshake rejects', async () => {
+      const err = new Error('boom');
+      const licenseGet = jest.fn().mockRejectedValue(err);
+      const warnLogger = { warn: jest.fn() };
+      const { createHttpClient } = setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      createNodeSdk({
+        projectId: 'project-id',
+        managementKey: 'mk',
+        logger: warnLogger,
+      });
+      await flushPromises();
+
+      expect(warnLogger.warn).toHaveBeenCalledWith('License handshake failed', err);
+
+      const beforeRequest = getMgmtBeforeRequest(createHttpClient);
+      const result = beforeRequest({ url: 'test' });
+      expect(result.headers).toBeUndefined();
+    });
+
+    it('should not throw when handshake rejects and logger is undefined', async () => {
+      const licenseGet = jest.fn().mockRejectedValue(new Error('boom'));
+      setupMocks(licenseGet);
+      const createNodeSdk = require('.').default; // eslint-disable-line
+
+      expect(() => createNodeSdk({ projectId: 'project-id', managementKey: 'mk' })).not.toThrow();
+      await flushPromises();
+    });
+  });
+
   describe('public key', () => {
     it('should headers to request', async () => {
       const { publicKey, privateKey } = await generateKeyPair('ES384');

@@ -1203,3 +1203,7 @@ export type MgmtKeyCreateResponse = {
   key: MgmtKey;
   cleartext: string;
 };
+
+export type License = {
+  rateLimitTier: string;
+};

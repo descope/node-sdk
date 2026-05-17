@@ -23,6 +23,7 @@ import {
   withCookie,
 } from './helpers';
 import withManagement from './management';
+import withLicense from './management/license';
 import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
 
@@ -115,6 +116,11 @@ const nodeSdk = ({
     );
   };
 
+  // Rate limit tier from the license handshake. Populated asynchronously on init
+  // and injected into the x-descope-license header on every management request
+  // to apply the correct rate-limit bucket for the project's company tier.
+  let rateLimitTier: string | undefined;
+
   const mgmtSdkConfig = {
     fetch,
     ...config,
@@ -131,6 +137,13 @@ const nodeSdk = ({
         (requestConfig: RequestConfig) => {
           // eslint-disable-next-line no-param-reassign
           requestConfig.token = managementKey;
+          if (rateLimitTier) {
+            // eslint-disable-next-line no-param-reassign
+            requestConfig.headers = {
+              ...requestConfig.headers,
+              'x-descope-license': rateLimitTier,
+            };
+          }
           return requestConfig;
         },
       ].concat(config.hooks?.beforeRequest || []),
@@ -143,6 +156,22 @@ const nodeSdk = ({
     projectId,
     headers: nodeHeaders,
   });
+
+  // Fire-and-forget license handshake. Backend skips license-header validation
+  // for the GetLicense endpoint itself, so this initial request is safe even
+  // before the tier is cached.
+  if (managementKey) {
+    withLicense(mgmtHttpClient)
+      .get()
+      .then((resp) => {
+        if (resp.ok && resp.data?.rateLimitTier) {
+          rateLimitTier = resp.data.rateLimitTier;
+        }
+      })
+      .catch((e) => {
+        logger?.warn?.('License handshake failed', e);
+      });
+  }
 
   const sdk = {
     ...coreSdk,
