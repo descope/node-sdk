@@ -1,10 +1,10 @@
 import { SdkResponse } from '@descope/core-js-sdk';
-import withManagement from '.';
+import withLicense from './license';
 import apiPaths from './paths';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
 import { License } from './types';
 
-const management = withManagement(mockHttpClient);
+const licenseApi = withLicense(mockHttpClient);
 
 const mockLicense: License = {
   rateLimitTier: 'tier4',
@@ -28,7 +28,7 @@ describe('Management License', () => {
       };
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<License> = await management.license.get();
+      const resp: SdkResponse<License> = await licenseApi.get();
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.license.get);
       expect(resp).toEqual({
