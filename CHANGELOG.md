@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/descope/node-sdk/compare/v2.5.0...v2.6.0) (2026-05-17)
+
+
+### Features
+
+* license handshake and x-descope-license header ([#730](https://github.com/descope/node-sdk/issues/730)) ([826feaa](https://github.com/descope/node-sdk/commit/826feaa89baf5f51daf300efcbb42557bfba83f8))
+
 ## [2.5.0](https://github.com/descope/node-sdk/compare/v2.4.0...v2.5.0) (2026-04-30)
 
 
