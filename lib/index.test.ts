@@ -195,12 +195,12 @@ describe('sdk', () => {
       // Calling with an audience should enforce aud claim; current implementation ignores it.
       await expect(
         (sdk as any).validateSession(validToken, { audience: 'expected-aud' }),
-      ).rejects.toThrow('session validation failed');
+      ).rejects.toThrow('Session validation failed');
     });
 
     it('should reject when audience mismatches in token for validateSession', async () => {
       await expect((sdk as any).validateSession(tokenAudA, { audience: 'aud-b' })).rejects.toThrow(
-        'session validation failed',
+        'Session validation failed',
       );
     });
 
@@ -222,7 +222,7 @@ describe('sdk', () => {
       } as SdkResponse<JWTResponse>);
 
       await expect((sdk as any).refreshSession(validToken, { audience: 'aud-a' })).rejects.toThrow(
-        'refresh token validation failed',
+        'Refresh token validation failed',
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
@@ -235,7 +235,7 @@ describe('sdk', () => {
 
       await expect(
         (sdk as any).validateAndRefreshSession(expiredTokenAudA, validToken, { audience: 'aud-a' }),
-      ).rejects.toThrow('refresh token validation failed');
+      ).rejects.toThrow('Refresh token validation failed');
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
 
@@ -287,7 +287,7 @@ describe('sdk', () => {
       });
     });
     it('should throw an error when session token expired', async () => {
-      await expect(sdk.validateSession(expiredToken)).rejects.toThrow('session validation failed');
+      await expect(sdk.validateSession(expiredToken)).rejects.toThrow('Session validation failed');
     });
   });
 
@@ -299,7 +299,7 @@ describe('sdk', () => {
     });
     it('should throw an error when refresh token expired', async () => {
       await expect(sdk.refreshSession(expiredToken)).rejects.toThrow(
-        'refresh token validation failed',
+        'Refresh token validation failed',
       );
     });
     it('should refresh session token when refresh token is valid', async () => {
@@ -361,7 +361,7 @@ describe('sdk', () => {
       } as unknown as SdkResponse<JWTResponse>);
 
       await expect(sdk.refreshSession(validToken)).rejects.toThrow(
-        'refresh token validation failed',
+        'Refresh token validation failed',
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
@@ -371,7 +371,7 @@ describe('sdk', () => {
       } as SdkResponse<JWTResponse>);
 
       await expect(sdk.refreshSession(validToken)).rejects.toThrow(
-        'refresh token validation failed',
+        'Refresh token validation failed',
       );
       expect(spyRefresh).toHaveBeenCalledWith(validToken);
     });
@@ -410,7 +410,7 @@ describe('sdk', () => {
     });
     it('should throw an error when both refresh & session tokens expired', async () => {
       await expect(sdk.validateAndRefreshSession(expiredToken, expiredToken)).rejects.toThrow(
-        'refresh token validation failed',
+        'Refresh token validation failed',
       );
     });
     it('should refresh session token when it expired and refresh token is valid', async () => {
@@ -466,14 +466,14 @@ describe('sdk', () => {
   describe('exchangeAccessKey', () => {
     it('should fail when the server call throws', async () => {
       const spyExchange = jest.spyOn(sdk.accessKey, 'exchange').mockRejectedValueOnce('error');
-      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('Could not exchange access key');
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should fail when getting an unexpected response from the server', async () => {
       const spyExchange = jest
         .spyOn(sdk.accessKey, 'exchange')
         .mockResolvedValueOnce({ ok: true, data: {} } as SdkResponse<ExchangeAccessKeyResponse>);
-      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('Could not exchange access key');
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should fail when getting an error response from the server', async () => {
@@ -484,7 +484,7 @@ describe('sdk', () => {
         },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key')).rejects.toThrow(
-        'could not exchange access key - error-1',
+        'Could not exchange access key - error-1',
       );
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
@@ -493,7 +493,7 @@ describe('sdk', () => {
         ok: true,
         data: { sessionJwt: expiredToken },
       } as SdkResponse<ExchangeAccessKeyResponse>);
-      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('could not exchange access key');
+      await expect(sdk.exchangeAccessKey('key')).rejects.toThrow('Could not exchange access key');
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
     it('should return the same session token it got from the server', async () => {
@@ -527,7 +527,7 @@ describe('sdk', () => {
         data: { sessionJwt: tokenAudB },
       } as SdkResponse<ExchangeAccessKeyResponse>);
       await expect(sdk.exchangeAccessKey('key', undefined, { audience: 'aud-a' })).rejects.toThrow(
-        'could not exchange access key - failed to validate jwt',
+        'Could not exchange access key - failed to validate JWT',
       );
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
     });
@@ -653,7 +653,7 @@ describe('sdk', () => {
             data: {
               ...data,
               cookies: [
-                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict; Secure`,
               ],
             },
           }),
