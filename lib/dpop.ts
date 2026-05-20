@@ -25,15 +25,6 @@ const IAT_BACKWARD_WINDOW = 60;
 const IAT_FORWARD_WINDOW = 5;
 
 /**
- * Extract the DPoP JWK thumbprint from token claims.
- * Returns an empty string if the token is not DPoP-bound.
- */
-export function getDPoPThumbprint(claims: Record<string, unknown>): string {
-  const cnf = claims?.cnf as Record<string, unknown> | undefined;
-  return (cnf?.jkt as string) || '';
-}
-
-/**
  * Normalize a URL for DPoP `htu` comparison per RFC 9449 §4.2:
  * - Lowercase scheme and host
  * - Strip default ports (443 for https, 80 for http)
@@ -48,8 +39,15 @@ function normalizeHtu(raw: string): string {
   }
   const scheme = parsed.protocol.replace(/:$/, '').toLowerCase();
   const host = parsed.hostname.toLowerCase();
-  const port = parsed.port;
-  const defaultPort = scheme === 'https' ? '443' : scheme === 'http' ? '80' : '';
+  const { port } = parsed;
+  let defaultPort: string;
+  if (scheme === 'https') {
+    defaultPort = '443';
+  } else if (scheme === 'http') {
+    defaultPort = '80';
+  } else {
+    defaultPort = '';
+  }
 
   const portStr = port && port !== defaultPort ? `:${port}` : '';
   return `${scheme}://${host}${portStr}${parsed.pathname}`;
@@ -101,7 +99,8 @@ export async function validateDPoPProof(
     throw new Error('Session token is invalid: could not decode JWT payload');
   }
 
-  const storedJKT = getDPoPThumbprint(claims);
+  const cnf = claims?.cnf as Record<string, unknown> | undefined;
+  const storedJKT = (cnf?.jkt as string) || '';
   if (!storedJKT) {
     // Token is not DPoP-bound — nothing to validate
     return;
@@ -116,9 +115,7 @@ export async function validateDPoPProof(
   }
 
   if (!proof) {
-    throw new Error(
-      'DPoP proof required: access token is DPoP-bound (cnf.jkt present)',
-    );
+    throw new Error('DPoP proof required: access token is DPoP-bound (cnf.jkt present)');
   }
 
   // Step 4-5: Parse protected header (first part of JWS compact serialization)
@@ -192,41 +189,33 @@ export async function validateDPoPProof(
 
   // Step 16: htm must match the HTTP method
   if (payload.htm !== method) {
-    throw new Error(
-      `DPoP proof htm "${payload.htm}" does not match request method "${method}"`,
-    );
+    throw new Error(`DPoP proof htm "${payload.htm}" does not match request method "${method}"`);
   }
 
   // Step 17: htu must match the request URL (scheme+host+path, ignore query/fragment)
   const normalizedHtu = normalizeHtu(payload.htu as string);
   const normalizedUrl = normalizeHtu(requestUrl);
   if (!normalizedHtu || !normalizedUrl || normalizedHtu !== normalizedUrl) {
-    throw new Error(
-      `DPoP proof htu "${payload.htu}" does not match request URL "${requestUrl}"`,
-    );
+    throw new Error(`DPoP proof htu "${payload.htu}" does not match request URL "${requestUrl}"`);
   }
 
   // Steps 18-21: iat window check (no exp in DPoP proofs)
-  const iat = payload.iat;
+  const { iat } = payload;
   if (typeof iat !== 'number') {
     throw new Error('DPoP proof payload must contain a numeric iat claim');
   }
   const now = Date.now() / 1000;
   const diff = now - iat;
   if (diff <= -IAT_FORWARD_WINDOW || diff >= IAT_BACKWARD_WINDOW) {
-    throw new Error(
-      `DPoP proof iat is outside the acceptable window (diff=${diff.toFixed(2)}s)`,
-    );
+    throw new Error(`DPoP proof iat is outside the acceptable window (diff=${diff.toFixed(2)}s)`);
   }
 
   // Steps 22-24: ath claim — sha256(sessionToken) as base64url without padding
-  const ath = payload.ath;
+  const { ath } = payload;
   if (!ath || typeof ath !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string ath claim');
   }
-  const expectedAth = base64urlNoPad(
-    createHash('sha256').update(sessionToken).digest(),
-  );
+  const expectedAth = base64urlNoPad(createHash('sha256').update(sessionToken).digest());
   if (ath !== expectedAth) {
     throw new Error('DPoP proof ath claim does not match the session token hash');
   }
@@ -247,4 +236,13 @@ export async function validateDPoPProof(
       `DPoP proof JWK thumbprint "${thumbprint}" does not match session cnf.jkt "${storedJKT}"`,
     );
   }
+}
+
+/**
+ * Extract the DPoP JWK thumbprint from token claims.
+ * Returns an empty string if the token is not DPoP-bound.
+ */
+export function getDPoPThumbprint(claims: Record<string, unknown>): string {
+  const cnf = claims?.cnf as Record<string, unknown> | undefined;
+  return (cnf?.jkt as string) || '';
 }

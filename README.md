@@ -501,9 +501,9 @@ const authInfo = await sdk.validateSession(sessionToken);
 
 // Then validate the DPoP proof (no-op if token is not DPoP-bound)
 await sdk.validateDPoP(
-  authInfo.jwt,        // the raw session JWT string
-  dpopProof,           // value of the DPoP header
-  req.method,          // HTTP method in uppercase, e.g. "GET"
+  authInfo.jwt, // the raw session JWT string
+  dpopProof, // value of the DPoP header
+  req.method, // HTTP method in uppercase, e.g. "GET"
   `https://${req.headers.host}${req.url}`, // absolute request URL
 );
 ```
@@ -518,7 +518,8 @@ await sdk.validateDPoP(
 > const requestUrl = `${req.protocol}://${req.get('host')}${req.path}`;
 >
 > // Raw Node.js http/https using X-Forwarded-Proto:
-> const scheme = req.headers['x-forwarded-proto'] ?? (req.socket as any).encrypted ? 'https' : 'http';
+> const scheme =
+>   req.headers['x-forwarded-proto'] ?? (req.socket as any).encrypted ? 'https' : 'http';
 > const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
 > ```
 
