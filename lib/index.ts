@@ -26,7 +26,7 @@ import withManagement from './management';
 import withLicense from './management/license';
 import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
-import { validateDPoPProof, getDPoPThumbprint } from './dpop';
+import { validateDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 

@@ -73,6 +73,12 @@ function base64urlNoPad(buf: Buffer): string {
  * @throws Error if DPoP validation fails for any reason
  * @returns void — resolves successfully if the proof is valid, or is a no-op when the session
  *   token has no `cnf.jkt` claim (i.e. is not DPoP-bound)
+ *
+ * @note jti replay protection (RFC 9449 §11.1) is intentionally NOT implemented here.
+ *   A stateless SDK has no shared storage in which to persist seen jti values across requests.
+ *   Integrators who require replay protection should maintain a server-side jti store (e.g.
+ *   a Redis set keyed by jti with TTL equal to the iat window) and reject duplicate jti values
+ *   before or after calling this function.
  */
 export async function validateDPoPProof(
   sessionToken: string,
@@ -82,13 +88,17 @@ export async function validateDPoPProof(
 ): Promise<void> {
   // Decode the session JWT claims to check for cnf.jkt (no signature verification needed here —
   // the caller has already validated the session token via validateSession).
+  // Fail closed: if the session token is malformed we cannot determine whether it is DPoP-bound,
+  // so we throw rather than silently treating it as a plain Bearer token.
   const parts = sessionToken.split('.');
-  if (parts.length < 2) return;
+  if (parts.length < 2) {
+    throw new Error('Session token is invalid: not a valid JWT');
+  }
   let claims: Record<string, unknown>;
   try {
     claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
   } catch {
-    return;
+    throw new Error('Session token is invalid: could not decode JWT payload');
   }
 
   const storedJKT = getDPoPThumbprint(claims);
