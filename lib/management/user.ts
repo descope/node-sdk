@@ -230,6 +230,7 @@ const withUser = (httpClient: HttpClient) => {
       sendSMS?: boolean; // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions;
       templateId?: string;
+      locale?: string; // locale for the invite message
     },
   ): Promise<SdkResponse<UserResponse>>;
   function invite(
@@ -251,6 +252,7 @@ const withUser = (httpClient: HttpClient) => {
     familyName?: string,
     additionalLoginIds?: string[],
     templateId?: string,
+    locale?: string, // locale for the invite message
   ): Promise<SdkResponse<UserResponse>>;
 
   function invite(
@@ -272,6 +274,7 @@ const withUser = (httpClient: HttpClient) => {
     familyName?: string,
     additionalLoginIds?: string[],
     templateId?: string,
+    locale?: string, // locale for the invite message
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of invite user
     // 1. The new form - invite(loginIdOrUserId, { email, phone, ... }})
@@ -298,6 +301,7 @@ const withUser = (httpClient: HttpClient) => {
             sendSMS,
             additionalLoginIds,
             templateId,
+            locale,
           }
         : {
             loginId: loginIdOrUserId,
@@ -511,6 +515,7 @@ const withUser = (httpClient: HttpClient) => {
       sendSMS?: boolean, // send invite via text message, default is according to project settings
       templateOptions?: TemplateOptions,
       templateId?: string,
+      locale?: string, // locale for the invite message
     ): Promise<SdkResponse<CreateOrInviteBatchResponse>> =>
       transformResponse<CreateOrInviteBatchResponse, CreateOrInviteBatchResponse>(
         httpClient.post(apiPaths.user.createBatch, {
@@ -521,6 +526,7 @@ const withUser = (httpClient: HttpClient) => {
           sendSMS,
           templateOptions,
           templateId,
+          locale,
         }),
         (data) => data,
       ),

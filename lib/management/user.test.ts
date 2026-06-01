@@ -326,6 +326,7 @@ describe('Management User', () => {
         inviteUrl: 'https://invite.me',
         sendMail: true,
         templateOptions: { k1: 'v1' },
+        locale: 'en-US',
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
@@ -337,6 +338,7 @@ describe('Management User', () => {
         inviteUrl: 'https://invite.me',
         sendMail: true,
         templateOptions: { k1: 'v1' },
+        locale: 'en-US',
       });
 
       expect(resp).toEqual({
@@ -407,6 +409,10 @@ describe('Management User', () => {
         ],
         'https://invite.me',
         true,
+        undefined,
+        undefined,
+        undefined,
+        'fr-FR',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
@@ -437,6 +443,7 @@ describe('Management User', () => {
         invite: true,
         inviteUrl: 'https://invite.me',
         sendMail: true,
+        locale: 'fr-FR',
       });
 
       expect(resp).toEqual({
