@@ -308,6 +308,50 @@ describe('Management User', () => {
       });
     });
 
+    it('should send locale via the positional arguments overload', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.invite(
+        'loginId',
+        'a@b.c',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'en-US',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        expect.objectContaining({
+          loginId: 'loginId',
+          email: 'a@b.c',
+          locale: 'en-US',
+          invite: true,
+        }),
+      );
+    });
+
     it('should send the correct request and receive correct response with options argument', async () => {
       const httpResponse = {
         ok: true,
@@ -326,6 +370,7 @@ describe('Management User', () => {
         inviteUrl: 'https://invite.me',
         sendMail: true,
         templateOptions: { k1: 'v1' },
+        locale: 'en-US',
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
@@ -337,6 +382,7 @@ describe('Management User', () => {
         inviteUrl: 'https://invite.me',
         sendMail: true,
         templateOptions: { k1: 'v1' },
+        locale: 'en-US',
       });
 
       expect(resp).toEqual({
@@ -407,6 +453,10 @@ describe('Management User', () => {
         ],
         'https://invite.me',
         true,
+        undefined,
+        undefined,
+        undefined,
+        'fr-FR',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createBatch, {
@@ -437,6 +487,7 @@ describe('Management User', () => {
         invite: true,
         inviteUrl: 'https://invite.me',
         sendMail: true,
+        locale: 'fr-FR',
       });
 
       expect(resp).toEqual({
