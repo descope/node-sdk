@@ -308,6 +308,50 @@ describe('Management User', () => {
       });
     });
 
+    it('should send locale via the positional arguments overload', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.invite(
+        'loginId',
+        'a@b.c',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'en-US',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        expect.objectContaining({
+          loginId: 'loginId',
+          email: 'a@b.c',
+          locale: 'en-US',
+          invite: true,
+        }),
+      );
+    });
+
     it('should send the correct request and receive correct response with options argument', async () => {
       const httpResponse = {
         ok: true,
