@@ -409,6 +409,7 @@ describe('Management SSO', () => {
         't1',
         {
           idpMetadataUrl: 'https://metadata.com',
+          entityId: 'https://idp.example.com/entity',
           attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
           spACSUrl: 'https://spacs.url',
           spEntityId: 'spentityid',
@@ -422,6 +423,7 @@ describe('Management SSO', () => {
         tenantId: 't1',
         settings: {
           idpMetadataUrl: 'https://metadata.com',
+          entityId: 'https://idp.example.com/entity',
           attributeMapping: { name: 'IDP_NAME', email: 'IDP_MAIL' },
           spACSUrl: 'https://spacs.url',
           spEntityId: 'spentityid',
