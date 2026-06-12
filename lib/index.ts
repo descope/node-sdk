@@ -26,6 +26,7 @@ import withManagement from './management';
 import withLicense from './management/license';
 import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
+import { validateDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 
@@ -362,6 +363,27 @@ const nodeSdk = ({
     },
 
     /**
+     * Validate a DPoP proof JWT for a DPoP-bound session token (RFC 9449).
+     *
+     * Call this after `validateSession` when your server receives requests that may carry
+     * a `DPoP` header. If the session token does not have a `cnf.jkt` claim this is a no-op.
+     *
+     * @param sessionToken - The validated session JWT string returned by `validateSession`
+     * @param dpopProof - The value of the `DPoP` header from the incoming request
+     * @param method - HTTP method of the request in uppercase, e.g. `"GET"` or `"POST"`
+     * @param requestUrl - Absolute URL of the request, e.g. `"https://api.example.com/resource"`
+     * @throws Error if the DPoP proof is missing, invalid, or does not match the session token
+     */
+    async validateDPoP(
+      sessionToken: string,
+      dpopProof: string | undefined,
+      method: string,
+      requestUrl: string,
+    ): Promise<void> {
+      return validateDPoPProof(sessionToken, dpopProof, method, requestUrl);
+    },
+
+    /**
      * Make sure that all given permissions exist on the parsed JWT top level claims
      * @param authInfo JWT parsed info
      * @param permissions list of permissions to make sure they exist on te JWT claims
@@ -530,3 +552,4 @@ export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
 export type { VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
+export { validateDPoPProof, getDPoPThumbprint } from './dpop';
