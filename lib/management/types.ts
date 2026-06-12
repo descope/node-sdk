@@ -619,6 +619,8 @@ export type SSOSAMLSettings = {
 
 export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
+  /** IdP entity ID - set so IdP-initiated login can resolve the tenant by the SAML response issuer */
+  entityId?: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
   defaultSSORoles?: string[];
