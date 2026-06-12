@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.7.0](https://github.com/descope/node-sdk/compare/v2.6.0...v2.7.0) (2026-06-12)
+
+
+### Features
+
+* **sso:** add entityId to configureSAMLByMetadata settings ([#739](https://github.com/descope/node-sdk/issues/739)) ([c822975](https://github.com/descope/node-sdk/commit/c8229759ab2ad0ea095b75d10972ec8edc0fcabc))
+* **user:** add locale option to invite and invite-batch ([#735](https://github.com/descope/node-sdk/issues/735)) ([60c63e6](https://github.com/descope/node-sdk/commit/60c63e69e1eeac1c71923dc82e8767fea820bafc))
+
 ## [2.6.0](https://github.com/descope/node-sdk/compare/v2.5.0...v2.6.0) (2026-05-17)
 
 
