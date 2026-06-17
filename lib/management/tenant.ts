@@ -123,11 +123,16 @@ const withTenant = (httpClient: HttpClient) => ({
     ssoId?: string,
     email?: string,
     templateId?: string,
+    // When provided, the SSO Setup Suite session is attributed to that real user so actions
+    // are audited against them instead of a temporary user. The user must exist and belong to
+    // the tenant. userId takes precedence over loginId.
+    userId?: string,
+    loginId?: string,
   ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
     transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
       httpClient.post(
         apiPaths.tenant.generateSSOConfigurationLink,
-        { tenantId, expireTime: expireDuration, ssoId, email, templateId },
+        { tenantId, expireTime: expireDuration, ssoId, email, templateId, userId, loginId },
         {},
       ),
       (data) => data,

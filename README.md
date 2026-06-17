@@ -679,6 +679,20 @@ const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   60 * 60 * 24,
 );
 console.log(res.adminSSOConfigurationLink);
+
+// Optionally bind the link to a real user (by userId or loginId) so actions taken inside the
+// SSO Suite are audited against that user instead of a temporary one. The user must exist and
+// belong to the tenant; userId takes precedence over loginId.
+const resWithActor = await descopeClient.management.tenant.generateSSOConfigurationLink(
+  'my-tenant-id',
+  60 * 60 * 24,
+  undefined, // ssoId
+  undefined, // email
+  undefined, // templateId
+  undefined, // userId
+  'admin@my-tenant.com', // loginId
+);
+console.log(resWithActor.adminSSOConfigurationLink);
 ```
 
 ### Manage Password

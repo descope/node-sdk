@@ -583,5 +583,40 @@ describe('Management Tenant', () => {
         response: httpResponse,
       });
     });
+
+    it('should send the actor userId and loginId when provided', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({
+          adminSSOConfigurationLink: 'some link',
+        }),
+        clone: () => ({
+          json: () => Promise.resolve({ adminSSOConfigurationLink: 'some link' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.tenant.generateSSOConfigurationLink(
+        'test',
+        60 * 60 * 24,
+        undefined,
+        undefined,
+        undefined,
+        'user-1',
+        'admin@aa.com',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.generateSSOConfigurationLink,
+        {
+          tenantId: 'test',
+          expireTime: 60 * 60 * 24,
+          userId: 'user-1',
+          loginId: 'admin@aa.com',
+        },
+        {},
+      );
+    });
   });
 });
