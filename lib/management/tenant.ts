@@ -123,11 +123,15 @@ const withTenant = (httpClient: HttpClient) => ({
     ssoId?: string,
     email?: string,
     templateId?: string,
+    // When provided, actorId is recorded as the audit actor for actions performed inside the
+    // SSO Setup Suite (instead of the temporary user). It is used as-is for audit attribution
+    // and is not validated.
+    actorId?: string,
   ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
     transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
       httpClient.post(
         apiPaths.tenant.generateSSOConfigurationLink,
-        { tenantId, expireTime: expireDuration, ssoId, email, templateId },
+        { tenantId, expireTime: expireDuration, ssoId, email, templateId, actorId },
         {},
       ),
       (data) => data,
