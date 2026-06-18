@@ -19,4 +19,13 @@ const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
   return crossFetch(...args);
 };
 
-export default patchedFetch as unknown as typeof fetch;
+// node-fetch@2 (bundled by cross-fetch) throws a false ERR_STREAM_PREMATURE_CLOSE on
+// keep-alive responses on Node >= 22.23.0 / 24.17.0 (nodejs/node#63989, the CVE-2026-48931
+// http.Agent fix). Node's built-in fetch (undici, Node >= 18) is unaffected, so prefer it
+// when present and fall back to cross-fetch (node-fetch) only on older runtimes.
+const polyfillFetch =
+  typeof globalThis.fetch === 'function'
+    ? (...args: Parameters<typeof globalThis.fetch>) => globalThis.fetch(...args)
+    : patchedFetch;
+
+export default polyfillFetch as unknown as typeof fetch;
