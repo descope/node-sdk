@@ -584,7 +584,7 @@ describe('Management Tenant', () => {
       });
     });
 
-    it('should send the actor userId and loginId when provided', async () => {
+    it('should send the actorId when provided', async () => {
       const httpResponse = {
         ok: true,
         json: () => ({
@@ -603,8 +603,7 @@ describe('Management Tenant', () => {
         undefined,
         undefined,
         undefined,
-        'user-1',
-        'admin@aa.com',
+        'admin-actor-1',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -612,8 +611,7 @@ describe('Management Tenant', () => {
         {
           tenantId: 'test',
           expireTime: 60 * 60 * 24,
-          userId: 'user-1',
-          loginId: 'admin@aa.com',
+          actorId: 'admin-actor-1',
         },
         {},
       );
