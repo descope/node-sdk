@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.8.0](https://github.com/descope/node-sdk/compare/v2.7.0...v2.8.0) (2026-06-18)
+
+
+### Features
+
+* **tenant:** add optional userId/loginId actor to generateSSOConfigurationLink ([#740](https://github.com/descope/node-sdk/issues/740)) ([c7351cf](https://github.com/descope/node-sdk/commit/c7351cff304a2008c731b14336294a8142aa472e))
+
+
+### Bug Fixes
+
+* **fetch:** prefer native fetch to avoid node-fetch premature close ([#742](https://github.com/descope/node-sdk/issues/742)) ([5c85f1f](https://github.com/descope/node-sdk/commit/5c85f1fda193b8ee4e436ce336168793db3eecb4))
+
 ## [2.7.0](https://github.com/descope/node-sdk/compare/v2.6.0...v2.7.0) (2026-06-12)
 
 
