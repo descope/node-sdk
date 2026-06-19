@@ -8,3 +8,5 @@ export const authorizedTenantsClaimName = 'tenants';
 export const permissionsClaimName = 'permissions';
 /** The key of the roles claims in the claims map either under tenant or top level */
 export const rolesClaimName = 'roles';
+/** The key of the scopes claims in the claims map */
+export const scopesClaimName = 'scopes';
