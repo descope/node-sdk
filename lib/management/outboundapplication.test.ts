@@ -89,6 +89,88 @@ describe('Management OutboundApplication', () => {
     });
   });
 
+  describe('createOutboundApplicationByTemplate', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplicationByTemplate({
+          templateId: 'hubspot',
+          id: 'hubspot',
+          clientId: 'client-id',
+          clientSecret: 'shhh..',
+          tenantId: 'tenant789',
+          overrides: {
+            name: 'HubSpot',
+            defaultScopes: ['crm.objects.contacts.read'],
+            pkce: true,
+          },
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.createByTemplate,
+        {
+          templateId: 'hubspot',
+          id: 'hubspot',
+          clientId: 'client-id',
+          clientSecret: 'shhh..',
+          tenantId: 'tenant789',
+          overrides: {
+            name: 'HubSpot',
+            defaultScopes: ['crm.objects.contacts.read'],
+            pkce: true,
+          },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should work with only templateId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplicationByTemplate({
+          templateId: 'google',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.createByTemplate,
+        {
+          templateId: 'google',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('updateOutboundApplication', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

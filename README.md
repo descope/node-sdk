@@ -1475,6 +1475,21 @@ const { id } =
     ...
   });
 
+// Create an outbound application from a preconfigured app library template.
+// The template (e.g. "hubspot", "google", "slack") prepopulates the provider's
+// OAuth config - authorization/token endpoints, default scopes, pkce, etc.
+// Any field set in `overrides` takes precedence over the template default.
+const { id: templatedId } =
+  await descopeClient.management.outboundApplication.createApplicationByTemplate({
+    templateId: 'hubspot',
+    clientId: 'my-client-id',
+    clientSecret: 'my-client-secret',
+    overrides: {
+      name: 'HubSpot',
+      // authorizationUrl / tokenUrl / defaultScopes / pkce inherited from the template
+    },
+  });
+
 // Update an outbound application.
 // Update will override all fields as is. Use carefully.
 await descopeClient.management.outboundApplication.updateApplication({

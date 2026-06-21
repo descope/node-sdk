@@ -5,6 +5,7 @@ import {
   OutboundAppToken,
   FetchOutboundAppTokenOptions,
   OutboundAppTokenResponse,
+  CreateOutboundAppByTemplateOptions,
 } from './types';
 
 type OutboundApplicationResponse = {
@@ -24,6 +25,15 @@ const withOutboundApplication = (httpClient: HttpClient) => ({
     transformResponse<OutboundApplicationResponse, OutboundApplication>(
       httpClient.post(apiPaths.outboundApplication.create, {
         ...app,
+      }),
+      (data) => data.app,
+    ),
+  createApplicationByTemplate: (
+    options: CreateOutboundAppByTemplateOptions,
+  ): Promise<SdkResponse<OutboundApplication>> =>
+    transformResponse<OutboundApplicationResponse, OutboundApplication>(
+      httpClient.post(apiPaths.outboundApplication.createByTemplate, {
+        ...options,
       }),
       (data) => data.app,
     ),
