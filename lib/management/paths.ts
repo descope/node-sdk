@@ -100,6 +100,7 @@ export default {
   },
   outboundApplication: {
     create: '/v1/mgmt/outbound/app/create',
+    createByTemplate: '/v1/mgmt/outbound/app/create/bytemplate',
     update: '/v1/mgmt/outbound/app/update',
     delete: '/v1/mgmt/outbound/app/delete',
     load: '/v1/mgmt/outbound/app',

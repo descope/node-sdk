@@ -1069,6 +1069,41 @@ export type OutboundApplication = {
   prompt?: Array<PromptType>;
 };
 
+// Fields of an outbound application that can override a template's
+// prepopulated values when creating an application from the app library.
+export type OutboundAppTemplateOverrides = {
+  name?: string;
+  description?: string;
+  logo?: string;
+  discoveryUrl?: string;
+  authorizationUrl?: string;
+  authorizationUrlParams?: URLParam[];
+  tokenUrl?: string;
+  tokenUrlParams?: URLParam[];
+  revocationUrl?: string;
+  defaultScopes?: string[];
+  defaultRedirectUrl?: string;
+  callbackDomain?: string;
+  pkce?: boolean;
+  accessType?: AccessType;
+  prompt?: Array<PromptType>;
+  useDcr?: boolean;
+  dcrUrl?: string;
+};
+
+// Options for creating an outbound application from a preconfigured
+// app library template. The template prepopulates the provider's OAuth
+// config (endpoints, scopes, pkce, etc.); any field set in `overrides`
+// takes precedence over the template default.
+export type CreateOutboundAppByTemplateOptions = {
+  templateId: string;
+  id?: string;
+  clientId?: string;
+  clientSecret?: string;
+  tenantId?: string;
+  overrides?: OutboundAppTemplateOverrides;
+};
+
 // Example for URLParam type (adjust as needed)
 export type URLParam = {
   key: string;
