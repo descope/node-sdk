@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.9.0](https://github.com/descope/node-sdk/compare/v2.8.0...v2.9.0) (2026-06-22)
+
+
+### Features
+
+* create outbound app from template ([#744](https://github.com/descope/node-sdk/issues/744)) ([868a081](https://github.com/descope/node-sdk/commit/868a081bcef17767c4753680ce9262c182656d64))
+
+
+### Bug Fixes
+
+* **deps:** update @descope/core-js-sdk to ^2.64.0 ([#751](https://github.com/descope/node-sdk/issues/751)) ([b55fdb1](https://github.com/descope/node-sdk/commit/b55fdb1d6cc01017589a3a4d3d3c2d0b057d645f))
+* **outbound:** add useDcr/dcrUrl to OutboundApplication type ([#747](https://github.com/descope/node-sdk/issues/747)) ([9d4c506](https://github.com/descope/node-sdk/commit/9d4c506cdc9eb140ac33790ac10096e345875bd7))
+
 ## [2.8.0](https://github.com/descope/node-sdk/compare/v2.7.0...v2.8.0) (2026-06-18)
 
 
