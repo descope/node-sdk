@@ -1468,6 +1468,8 @@ You can create, update, delete or load outbound applications:
 
 ```typescript
 // Create an outbound application.
+// For DCR-based apps (e.g. custom MCP servers that support RFC 7591 dynamic
+// client registration), pass `useDcr: true` and `dcrUrl`.
 const { id } =
   await descopeClient.management.outboundApplication.createApplication({
     name: 'my new app',

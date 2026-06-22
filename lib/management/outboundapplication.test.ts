@@ -87,6 +87,44 @@ describe('Management OutboundApplication', () => {
         response: httpResponse,
       });
     });
+
+    it('should pass through DCR fields (useDcr/dcrUrl) without a cast', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplication({
+          name: 'dcr app',
+          description: 'custom MCP server with dynamic client registration',
+          useDcr: true,
+          dcrUrl: 'https://mcp.example.com/register',
+          pkce: true,
+          defaultRedirectUrl: 'https://api.descope.com/v1/outbound/oauth/callback',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.create, {
+        name: 'dcr app',
+        description: 'custom MCP server with dynamic client registration',
+        useDcr: true,
+        dcrUrl: 'https://mcp.example.com/register',
+        pkce: true,
+        defaultRedirectUrl: 'https://api.descope.com/v1/outbound/oauth/callback',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('createOutboundApplicationByTemplate', () => {
