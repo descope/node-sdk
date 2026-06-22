@@ -1067,6 +1067,8 @@ export type OutboundApplication = {
   pkce?: boolean;
   accessType?: AccessType;
   prompt?: Array<PromptType>;
+  useDcr?: boolean;
+  dcrUrl?: string;
 };
 
 // Fields of an outbound application that can override a template's
