@@ -111,6 +111,13 @@ export default {
     fetchTenantTokenByScopes: '/v1/mgmt/outbound/app/tenant/token',
     deleteUserTokens: '/v1/mgmt/outbound/user/tokens',
     deleteTokenById: '/v1/mgmt/outbound/token',
+    listAppsWithUserToken: '/v1/mgmt/outbound/apps-with-user-token',
+    uploadUserApiKey: '/v1/mgmt/outbound/app/user/apikey/upload',
+    uploadTenantApiKey: '/v1/mgmt/outbound/app/tenant/apikey/upload',
+    uploadUserToken: '/v1/mgmt/outbound/app/user/oauthtoken/upload',
+    uploadTenantToken: '/v1/mgmt/outbound/app/tenant/oauthtoken/upload',
+    batchUploadUserTokens: '/v1/mgmt/outbound/app/user/oauthtoken/batch/upload',
+    batchUploadTenantTokens: '/v1/mgmt/outbound/app/tenant/oauthtoken/batch/upload',
   },
   sso: {
     settings: '/v1/mgmt/sso/settings',
