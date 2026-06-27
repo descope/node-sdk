@@ -141,10 +141,7 @@ const withOutboundApplication = (httpClient: HttpClient) => ({
    * @param userId the user to look up
    * @param tenantId optional tenant to scope the lookup to
    */
-  listAppsWithUserToken: (
-    userId: string,
-    tenantId?: string,
-  ): Promise<SdkResponse<string[]>> =>
+  listAppsWithUserToken: (userId: string, tenantId?: string): Promise<SdkResponse<string[]>> =>
     transformResponse<{ appIds: string[] }, string[]>(
       httpClient.get(apiPaths.outboundApplication.listAppsWithUserToken, {
         queryParams: { userId, ...(tenantId ? { tenantId } : {}) },
@@ -183,16 +180,10 @@ const withOutboundApplication = (httpClient: HttpClient) => ({
    * Upload (migrate) an existing OAuth token for a user on an oauth-type outbound application,
    * without requiring the user to re-run the OAuth flow.
    */
-  uploadUserToken: (
-    token: UploadOutboundAppUserTokenRequest,
-  ): Promise<SdkResponse<never>> =>
-    transformResponse(
-      httpClient.post(apiPaths.outboundApplication.uploadUserToken, { ...token }),
-    ),
+  uploadUserToken: (token: UploadOutboundAppUserTokenRequest): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.outboundApplication.uploadUserToken, { ...token })),
   /** Upload (migrate) an existing OAuth token for a tenant on an oauth-type outbound application. */
-  uploadTenantToken: (
-    token: UploadOutboundAppTenantTokenRequest,
-  ): Promise<SdkResponse<never>> =>
+  uploadTenantToken: (token: UploadOutboundAppTenantTokenRequest): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.outboundApplication.uploadTenantToken, { ...token }),
     ),

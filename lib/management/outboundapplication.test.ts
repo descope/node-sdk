@@ -872,9 +872,7 @@ describe('Management OutboundApplication', () => {
   describe('batchUploadUserTokens', () => {
     it('should send the tokens and return failures', async () => {
       const batchResponse = {
-        failures: [
-          { appId: 'app123', userId: 'user2', errorCode: 'E152110', reason: 'bad token' },
-        ],
+        failures: [{ appId: 'app123', userId: 'user2', errorCode: 'E152110', reason: 'bad token' }],
       };
       const httpResponse = {
         ok: true,
