@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.0](https://github.com/descope/node-sdk/compare/v2.10.0...v2.11.0) (2026-06-28)
+
+
+### Features
+
+* **mgmt:** add engine management API ([#757](https://github.com/descope/node-sdk/issues/757)) ([e0bc769](https://github.com/descope/node-sdk/commit/e0bc769e5bd228cf8ccf5517ec94c2ee703e8962))
+
 ## [2.10.0](https://github.com/descope/node-sdk/compare/v2.9.0...v2.10.0) (2026-06-28)
 
 
