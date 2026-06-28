@@ -225,4 +225,12 @@ export default {
   license: {
     get: '/v1/mgmt/license',
   },
+  engine: {
+    create: '/v1/mgmt/engine/create',
+    update: '/v1/mgmt/engine/update',
+    delete: '/v1/mgmt/engine/delete',
+    load: '/v1/mgmt/engine/load',
+    loadAll: '/v1/mgmt/engines/load',
+    rotate: '/v1/mgmt/engine/rotate',
+  },
 };
