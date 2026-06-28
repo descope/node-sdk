@@ -1314,3 +1314,17 @@ export type MgmtKeyCreateResponse = {
 export type License = {
   rateLimitTier: string;
 };
+
+/** Represents an engine in a project. `secret` is populated only on create and
+ * rotateSecret; it is always empty on load/loadAll. */
+export type Engine = {
+  id: string;
+  name: string;
+  secret?: string;
+  createdTime?: number; // epoch seconds
+};
+
+/** Response of an engine secret rotation. */
+export type EngineSecretResponse = {
+  secret: string;
+};
