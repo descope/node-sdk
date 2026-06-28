@@ -6,15 +6,13 @@ import { mockHttpClient, resetMockHttpClient } from './testutils';
 
 const management = withManagement(mockHttpClient);
 
-// createdTime/version are int64 in the proto, so the management gateway returns them as
-// JSON strings — the SDK types them as string and passes them through verbatim.
+// The management Engine exposes only id/name/secret/createdTime; createdTime is an int32
+// epoch-seconds JSON number.
 const mockEngine: Engine = {
   id: 'eng1',
   name: 'my-engine',
-  projectId: 'proj1',
   secret: 's3cret',
-  version: '1',
-  createdTime: '1719571200',
+  createdTime: 1719571200,
 };
 
 describe('Management Engine', () => {

@@ -1316,19 +1316,12 @@ export type License = {
 };
 
 /** Represents an engine in a project. `secret` is populated only on create and
- * rotateSecret; it is always empty on load/loadAll. The numeric fields are typed as
- * string because the management gateway serializes proto int64 values as JSON strings. */
+ * rotateSecret; it is always empty on load/loadAll. */
 export type Engine = {
   id: string;
   name: string;
-  projectId?: string;
   secret?: string;
-  imageVersion?: string;
-  contentVersion?: string;
-  version?: string;
-  createdTime?: string;
-  modifiedTime?: string;
-  lastSync?: string;
+  createdTime?: number; // epoch seconds
 };
 
 /** Response of an engine secret rotation. */
