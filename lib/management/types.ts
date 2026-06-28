@@ -1162,6 +1162,74 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
   options?: FetchOutboundAppTokenOptions;
 };
 
+/**
+ * A single OAuth token to upload (migrate) for a user. At least one of `refreshToken` or
+ * `accessToken` must be provided. `accessTokenExpiry` is in epoch seconds (0/absent means unknown).
+ * Used both as a single-upload payload and as a batch item.
+ */
+export type OutboundAppUserTokenToUpload = {
+  appId: string;
+  userId: string;
+  tenantId?: string;
+  refreshToken?: string;
+  accessToken?: string;
+  accessTokenExpiry?: number;
+  accessTokenType?: string;
+  scopes?: string[];
+  externalIdentifier?: string;
+  idToken?: string;
+  grantedBy?: string;
+};
+
+/**
+ * A single OAuth token to upload (migrate) for a tenant. At least one of `refreshToken` or
+ * `accessToken` must be provided.
+ */
+export type OutboundAppTenantTokenToUpload = {
+  appId: string;
+  tenantId: string;
+  refreshToken?: string;
+  accessToken?: string;
+  accessTokenExpiry?: number;
+  accessTokenType?: string;
+  scopes?: string[];
+  externalIdentifier?: string;
+  idToken?: string;
+  grantedBy?: string;
+};
+
+/**
+ * Single-upload payload for a user OAuth token. When `verifyRefresh` is true, the refresh token is
+ * verified against the provider before persisting; nothing is written if verification fails.
+ */
+export type UploadOutboundAppUserTokenRequest = OutboundAppUserTokenToUpload & {
+  verifyRefresh?: boolean;
+};
+
+/**
+ * Single-upload payload for a tenant OAuth token. See `UploadOutboundAppUserTokenRequest`.
+ */
+export type UploadOutboundAppTenantTokenRequest = OutboundAppTenantTokenToUpload & {
+  verifyRefresh?: boolean;
+};
+
+/** A single per-item failure returned by the batch upload endpoints. */
+export type OutboundAppTokenUploadFailure = {
+  appId: string;
+  userId?: string;
+  tenantId?: string;
+  errorCode: string;
+  reason: string;
+};
+
+/**
+ * Response from the batch upload endpoints. Batch upload is all-or-nothing: a non-empty `failures`
+ * array means no tokens were committed.
+ */
+export type BatchUploadOutboundAppTokensResponse = {
+  failures: OutboundAppTokenUploadFailure[];
+};
+
 export type ManagementFlowOptions = {
   input?: Record<string, any>;
   preview?: boolean;

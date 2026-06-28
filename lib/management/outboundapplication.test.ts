@@ -725,4 +725,203 @@ describe('Management OutboundApplication', () => {
       });
     });
   });
+
+  describe('listAppsWithUserToken', () => {
+    it('should send the correct request and return the app ids', async () => {
+      const listResponse = { appIds: ['app1', 'app2'] };
+      const httpResponse = {
+        ok: true,
+        json: () => listResponse,
+        clone: () => ({ json: () => Promise.resolve(listResponse) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<string[]> =
+        await management.outboundApplication.listAppsWithUserToken('user456', 'tenant789');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.listAppsWithUserToken,
+        { queryParams: { userId: 'user456', tenantId: 'tenant789' } },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: ['app1', 'app2'],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit tenantId when not provided', async () => {
+      const listResponse = { appIds: ['app1'] };
+      const httpResponse = {
+        ok: true,
+        json: () => listResponse,
+        clone: () => ({ json: () => Promise.resolve(listResponse) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.listAppsWithUserToken('user456');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.listAppsWithUserToken,
+        { queryParams: { userId: 'user456' } },
+      );
+    });
+  });
+
+  describe('uploadUserApiKey', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadUserApiKey(
+        'app123',
+        'user456',
+        'secret-key',
+        'tenant789',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadUserApiKey,
+        { appId: 'app123', userId: 'user456', apiKey: 'secret-key', tenantId: 'tenant789' },
+      );
+    });
+  });
+
+  describe('uploadTenantApiKey', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadTenantApiKey('app123', 'tenant789', 'secret-key');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadTenantApiKey,
+        { appId: 'app123', tenantId: 'tenant789', apiKey: 'secret-key' },
+      );
+    });
+  });
+
+  describe('uploadUserToken', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadUserToken({
+        appId: 'app123',
+        userId: 'user456',
+        refreshToken: 'refresh',
+        scopes: ['read'],
+        verifyRefresh: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadUserToken,
+        {
+          appId: 'app123',
+          userId: 'user456',
+          refreshToken: 'refresh',
+          scopes: ['read'],
+          verifyRefresh: true,
+        },
+      );
+    });
+  });
+
+  describe('uploadTenantToken', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadTenantToken({
+        appId: 'app123',
+        tenantId: 'tenant789',
+        accessToken: 'access',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadTenantToken,
+        { appId: 'app123', tenantId: 'tenant789', accessToken: 'access' },
+      );
+    });
+  });
+
+  describe('batchUploadUserTokens', () => {
+    it('should send the tokens and return failures', async () => {
+      const batchResponse = {
+        failures: [{ appId: 'app123', userId: 'user2', errorCode: 'E152110', reason: 'bad token' }],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => batchResponse,
+        clone: () => ({ json: () => Promise.resolve(batchResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tokens = [
+        { appId: 'app123', userId: 'user1', accessToken: 'a1' },
+        { appId: 'app123', userId: 'user2', accessToken: 'a2' },
+      ];
+      const resp = await management.outboundApplication.batchUploadUserTokens(tokens);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.batchUploadUserTokens,
+        { tokens },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: batchResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('batchUploadTenantTokens', () => {
+    it('should send the tokens', async () => {
+      const batchResponse = { failures: [] };
+      const httpResponse = {
+        ok: true,
+        json: () => batchResponse,
+        clone: () => ({ json: () => Promise.resolve(batchResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tokens = [{ appId: 'app123', tenantId: 'tenant1', accessToken: 'a1' }];
+      const resp = await management.outboundApplication.batchUploadTenantTokens(tokens);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.batchUploadTenantTokens,
+        { tokens },
+      );
+
+      expect(resp.data).toEqual(batchResponse);
+    });
+  });
 });

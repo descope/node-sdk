@@ -1559,6 +1559,48 @@ await descopeClient.management.outboundApplication.deleteUserTokens(undefined, '
 // Delete a specific token by its ID
 // Token deletion cannot be undone. Use carefully.
 await descopeClient.management.outboundApplication.deleteTokenById('token-id');
+
+// List the IDs of the outbound apps a user currently holds a valid token for.
+// Use this for connection-status UIs instead of calling fetchToken once per app.
+const connectedApps = await descopeClient.management.outboundApplication.listAppsWithUserToken(
+  'user-id',
+  'tenant-id' // optional
+);
+// connectedApps.data => ['app-1', 'app-2']
+
+// Store a static API key for a user / tenant on an apikey-type outbound app
+await descopeClient.management.outboundApplication.uploadUserApiKey(
+  'my-app-id',
+  'user-id',
+  'the-users-api-key',
+  'tenant-id' // optional
+);
+await descopeClient.management.outboundApplication.uploadTenantApiKey(
+  'my-app-id',
+  'tenant-id',
+  'the-tenants-api-key'
+);
+
+// Upload (migrate) an existing OAuth token for a user / tenant on an oauth-type outbound app,
+// without requiring the user to re-run the OAuth flow.
+await descopeClient.management.outboundApplication.uploadUserToken({
+  appId: 'my-app-id',
+  userId: 'user-id',
+  refreshToken: 'the-refresh-token',
+  scopes: ['read', 'write'],
+});
+await descopeClient.management.outboundApplication.uploadTenantToken({
+  appId: 'my-app-id',
+  tenantId: 'tenant-id',
+  accessToken: 'the-access-token',
+});
+
+// Batch upload OAuth tokens (all-or-nothing): inspect `failures` to see rejected items
+const batchRes = await descopeClient.management.outboundApplication.batchUploadUserTokens([
+  { appId: 'my-app-id', userId: 'user-1', accessToken: 'token-1' },
+  { appId: 'my-app-id', userId: 'user-2', accessToken: 'token-2' },
+]);
+// batchRes.data.failures => [{ appId, userId, errorCode, reason }, ...]
 ```
 
 ### Manage Inbound Applications

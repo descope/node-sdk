@@ -6,6 +6,11 @@ import {
   FetchOutboundAppTokenOptions,
   OutboundAppTokenResponse,
   CreateOutboundAppByTemplateOptions,
+  OutboundAppUserTokenToUpload,
+  OutboundAppTenantTokenToUpload,
+  UploadOutboundAppUserTokenRequest,
+  UploadOutboundAppTenantTokenRequest,
+  BatchUploadOutboundAppTokensResponse,
 } from './types';
 
 type OutboundApplicationResponse = {
@@ -129,6 +134,78 @@ const withOutboundApplication = (httpClient: HttpClient) => ({
       httpClient.delete(apiPaths.outboundApplication.deleteTokenById, {
         queryParams: { id },
       }),
+    ),
+  /**
+   * List the IDs of the outbound applications the given user currently holds a valid token for.
+   * Replaces calling fetchToken once per app to derive connection status.
+   * @param userId the user to look up
+   * @param tenantId optional tenant to scope the lookup to
+   */
+  listAppsWithUserToken: (userId: string, tenantId?: string): Promise<SdkResponse<string[]>> =>
+    transformResponse<{ appIds: string[] }, string[]>(
+      httpClient.get(apiPaths.outboundApplication.listAppsWithUserToken, {
+        queryParams: { userId, ...(tenantId ? { tenantId } : {}) },
+      }),
+      (data) => data.appIds,
+    ),
+  /** Upload/set a static API key for a user on an apikey-type outbound application. */
+  uploadUserApiKey: (
+    appId: string,
+    userId: string,
+    apiKey: string,
+    tenantId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.outboundApplication.uploadUserApiKey, {
+        appId,
+        userId,
+        apiKey,
+        tenantId,
+      }),
+    ),
+  /** Upload/set a static API key for a tenant on an apikey-type outbound application. */
+  uploadTenantApiKey: (
+    appId: string,
+    tenantId: string,
+    apiKey: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.outboundApplication.uploadTenantApiKey, {
+        appId,
+        tenantId,
+        apiKey,
+      }),
+    ),
+  /**
+   * Upload (migrate) an existing OAuth token for a user on an oauth-type outbound application,
+   * without requiring the user to re-run the OAuth flow.
+   */
+  uploadUserToken: (token: UploadOutboundAppUserTokenRequest): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.outboundApplication.uploadUserToken, { ...token })),
+  /** Upload (migrate) an existing OAuth token for a tenant on an oauth-type outbound application. */
+  uploadTenantToken: (token: UploadOutboundAppTenantTokenRequest): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.outboundApplication.uploadTenantToken, { ...token }),
+    ),
+  /**
+   * Batch upload (migrate) existing OAuth tokens for users. All-or-nothing: if any item fails
+   * per-item validation, the returned `failures` are populated and no tokens are committed.
+   */
+  batchUploadUserTokens: (
+    tokens: OutboundAppUserTokenToUpload[],
+  ): Promise<SdkResponse<BatchUploadOutboundAppTokensResponse>> =>
+    transformResponse(
+      httpClient.post(apiPaths.outboundApplication.batchUploadUserTokens, { tokens }),
+    ),
+  /**
+   * Batch upload (migrate) existing OAuth tokens for tenants. All-or-nothing: if any item fails
+   * per-item validation, the returned `failures` are populated and no tokens are committed.
+   */
+  batchUploadTenantTokens: (
+    tokens: OutboundAppTenantTokenToUpload[],
+  ): Promise<SdkResponse<BatchUploadOutboundAppTokensResponse>> =>
+    transformResponse(
+      httpClient.post(apiPaths.outboundApplication.batchUploadTenantTokens, { tokens }),
     ),
 });
 
