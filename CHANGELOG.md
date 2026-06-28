@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/descope/node-sdk/compare/v2.9.0...v2.10.0) (2026-06-28)
+
+
+### Features
+
+* **outbound:** add token/api-key upload and connection-status list methods ([#754](https://github.com/descope/node-sdk/issues/754)) ([dad7907](https://github.com/descope/node-sdk/commit/dad7907d2d5a3f65c76382365efa6ca57b74d7df))
+
 ## [2.9.0](https://github.com/descope/node-sdk/compare/v2.8.0...v2.9.0) (2026-06-22)
 
 
