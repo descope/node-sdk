@@ -752,4 +752,81 @@ describe('Management SSO', () => {
       data: mockResponse,
     });
   });
+
+  describe('configureSSORedirectURL', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureSSORedirectURL(
+        't1',
+        'https://saml.redirect.com',
+        'https://oauth.redirect.com',
+        'somessoid',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.redirect, {
+        tenantId: 't1',
+        samlRedirectUrl: 'https://saml.redirect.com',
+        oauthRedirectUrl: 'https://oauth.redirect.com',
+        ssoId: 'somessoid',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should only send the provided redirect url', async () => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureSSORedirectURL('t1', 'https://saml.redirect.com');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.redirect, {
+        tenantId: 't1',
+        samlRedirectUrl: 'https://saml.redirect.com',
+      });
+    });
+  });
+
+  describe('recalculateSSOMappings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.recalculateSSOMappings('t1', 'somessoid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.recalculateMappings, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

@@ -712,6 +712,50 @@ export type AuditRecord = {
   data: Record<string, any>;
 };
 
+/** Response for the searchAll audit method, including the total number of matching records. */
+export type AuditSearchAllResponse = {
+  audits: AuditRecord[];
+  total: number;
+};
+
+/** Basic authentication for an HTTP connector. */
+export type ConnectorHTTPBasicAuthentication = {
+  username?: string;
+  password?: string;
+};
+
+/** API key authentication for an HTTP connector. */
+export type ConnectorHTTPAPIKeyAuthentication = {
+  key?: string;
+  token?: string;
+};
+
+/** Authentication configuration for an HTTP connector. */
+export type ConnectorHTTPAuthentication = {
+  bearerToken?: string;
+  basic?: ConnectorHTTPBasicAuthentication;
+  apiKey?: ConnectorHTTPAPIKeyAuthentication;
+};
+
+/** Filters that determine which audit events are streamed by an audit webhook. */
+export type AuditFilters = {
+  key?: string;
+  operator?: string;
+  values?: string[];
+};
+
+/** Configuration for an audit webhook connector. */
+export type AuditWebhook = {
+  name: string;
+  description?: string;
+  url?: string;
+  authentication?: ConnectorHTTPAuthentication;
+  hmacSecret?: string;
+  headers?: Record<string, string>;
+  insecure?: boolean;
+  filters?: AuditFilters[];
+};
+
 export type UserStatus = 'enabled' | 'disabled' | 'invited' | 'expired';
 
 export type AuthzNodeExpressionType =
@@ -1327,4 +1371,178 @@ export type Engine = {
 /** Response of an engine secret rotation. */
 export type EngineSecretResponse = {
   secret: string;
+};
+
+/** A single option for a custom attribute of type "select". */
+export type CustomAttributeOption = {
+  value?: string;
+  label?: string;
+};
+
+/** Represents a custom attribute definition in the project schema. */
+export type CustomAttribute = {
+  name?: string;
+  type?: number;
+  options?: CustomAttributeOption[];
+  displayName?: string;
+  defaultValue?: any;
+  viewPermissions?: string[];
+  editPermissions?: string[];
+};
+
+/** A registered passkey (WebAuthn credential) for a user. */
+export type UserPasskey = {
+  id?: string;
+  rpId?: string;
+  kind?: string;
+  displayName?: string;
+  createdTime?: number;
+};
+
+/** A trusted device associated with a user. */
+export type UserTrustedDevice = {
+  id?: string;
+  name?: string;
+  deviceType?: string;
+  lastLoginTime?: number;
+  expirationTime?: number;
+  lastLocation?: string;
+};
+
+/** A single failure entry returned from a user import. */
+export type UserImportFailure = {
+  user: string;
+  reason: string;
+};
+
+/** Response of a user import operation. */
+export type UserImportResponse = {
+  users?: UserResponse[];
+  failures?: UserImportFailure[];
+};
+
+/** Request to update an existing permission by its ID as part of a batch update. */
+export type PermissionUpdateRequest = {
+  id: string;
+  newName: string;
+  description?: string;
+};
+
+/** Request to update an existing role by its ID as part of a batch update. */
+export type RoleUpdateRequest = {
+  id: string;
+  newName: string;
+  description?: string;
+  permissionNames?: string[];
+  tenantId?: string;
+  default?: boolean;
+};
+
+/** The type of a project list (currently "ip" or "text"). */
+export type ListType = string;
+
+/** Represents a project list of IPs or texts. */
+export type List = {
+  id?: string;
+  name?: string;
+  description?: string;
+  type?: ListType;
+  data?: any;
+};
+
+/** Request payload for creating or updating a list. */
+export type ListRequest = {
+  name: string;
+  description?: string;
+  type: ListType;
+  data?: any;
+};
+
+/** Represents a JWT template configuration. */
+export type JWTTemplate = {
+  id?: string;
+  name?: string;
+  description?: string;
+  template?: Record<string, any>;
+  source?: string;
+  tags?: string[];
+  authSchema?: string;
+  type?: string;
+  conformanceIssuer?: boolean;
+  autoDCT?: boolean;
+  enforceIssuer?: boolean;
+  emptyClaimPolicy?: string;
+  overrideSubject?: boolean;
+  issuerType?: string;
+  omitCustomClaimsFromDSR?: boolean;
+  addJti?: boolean;
+  excludePermissions?: boolean;
+};
+
+/** A single validation issue found while validating a JWT template. */
+export type JWTTemplateValidationIssue = {
+  message?: string;
+  severity?: string;
+  path?: string;
+};
+
+/** Result of validating a JWT template. */
+export type JWTTemplateValidationResult = {
+  valid: boolean;
+  issues?: JWTTemplateValidationIssue[];
+};
+
+/** A JWT template entry available in the shared template library. */
+export type JWTTemplateLibraryEntry = JWTTemplate & {
+  experimental?: boolean;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+/** Request payload for applying a JWT template from the library. */
+export type ApplyJWTTemplateFromLibraryRequest = {
+  libraryEntryId: string;
+  nameOverride?: string;
+  descriptionOverride?: string;
+  tagsOverride?: string[];
+  templateOverride?: Record<string, any>;
+};
+
+/** A single scope-to-claims mapping entry. */
+export type ScopeClaimMappingEntry = {
+  scope?: string;
+  claims?: Record<string, string>;
+  description?: string;
+};
+
+/** Options for searching analytics records. Time fields are epoch milliseconds. */
+export type AnalyticsSearchOptions = {
+  actions?: string[];
+  excludedActions?: string[];
+  from?: number;
+  to?: number;
+  devices?: string[];
+  methods?: string[];
+  geos?: string[];
+  tenants?: string[];
+  groupByAction?: boolean;
+  groupByDevice?: boolean;
+  groupByMethod?: boolean;
+  groupByGeo?: boolean;
+  groupByTenant?: boolean;
+  groupByReferrer?: boolean;
+  groupByCreated?: string;
+};
+
+/** A single analytics record returned from an analytics search. */
+export type AnalyticRecord = {
+  projectId?: string;
+  action?: string;
+  created?: string;
+  device?: string;
+  method?: string;
+  geo?: string;
+  tenant?: string;
+  referrer?: string;
+  cnt?: string;
 };

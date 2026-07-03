@@ -3,6 +3,7 @@ import apiPaths from './paths';
 import {
   CreateSSOApplicationResponse,
   SSOApplication,
+  SSOApplicationSecretResponse,
   OidcApplicationOptions,
   SamlApplicationOptions,
   WsFedApplicationOptions,
@@ -65,6 +66,18 @@ const withSSOApplication = (httpClient: HttpClient) => ({
     transformResponse<MultipleSSOApplicationResponse, SSOApplication[]>(
       httpClient.get(apiPaths.ssoApplication.loadAll, {}),
       (data) => data.apps,
+    ),
+  getApplicationSecret: (id: string): Promise<SdkResponse<SSOApplicationSecretResponse>> =>
+    transformResponse<SSOApplicationSecretResponse, SSOApplicationSecretResponse>(
+      httpClient.get(apiPaths.ssoApplication.secret, {
+        queryParams: { id },
+      }),
+      (data) => data,
+    ),
+  rotateApplicationSecret: (id: string): Promise<SdkResponse<SSOApplicationSecretResponse>> =>
+    transformResponse<SSOApplicationSecretResponse, SSOApplicationSecretResponse>(
+      httpClient.post(apiPaths.ssoApplication.rotate, { id }),
+      (data) => data,
     ),
 });
 

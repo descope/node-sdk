@@ -37,6 +37,13 @@ const withProject = (httpClient: HttpClient) => ({
       }),
     ),
   /**
+   * Delete the current project.
+   * This action is irreversible.
+   */
+  delete: (): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.project.delete, {})),
+
+  /**
    * Clone the current project, including its settings and configurations.
    *  - This action is supported only with a pro license or above.
    *  - Users, tenants and access keys are not cloned.

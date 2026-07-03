@@ -126,17 +126,47 @@ const withAccessKey = (httpClient: HttpClient) => ({
   deactivate: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.accessKey.deactivate, { id })),
   /**
+   * Deactivate multiple access keys in a single batch request. Deactivated access
+   * keys cannot be used until they are activated again.
+   * @param ids Access key IDs to deactivate
+   */
+  deactivateBatch: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.accessKey.deactivateBatch, { ids })),
+  /**
    * Activate an access key. Only deactivated access keys can be activated again.
    * @param id Access key ID to activate
    */
   activate: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.accessKey.activate, { id })),
   /**
+   * Activate multiple access keys in a single batch request. Only deactivated
+   * access keys can be activated again.
+   * @param ids Access key IDs to activate
+   */
+  activateBatch: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.accessKey.activateBatch, { ids })),
+  /**
    * Delete an access key. IMPORTANT: This cannot be undone. Use carefully.
    * @param id Access key ID to delete
    */
   delete: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.accessKey.delete, { id })),
+  /**
+   * Delete multiple access keys in a single batch request. IMPORTANT: This cannot
+   * be undone. Use carefully.
+   * @param ids Access key IDs to delete
+   */
+  deleteBatch: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.accessKey.deleteBatch, { ids })),
+  /**
+   * Rotate an access key. This generates a new cleartext for the access key while
+   * keeping its ID. IMPORTANT: The previous cleartext becomes invalid. Make sure to
+   * save the new cleartext securely.
+   * @param id Access key ID to rotate
+   * @returns The rotated access key and its new cleartext.
+   */
+  rotate: (id: string): Promise<SdkResponse<CreatedAccessKeyResponse>> =>
+    transformResponse(httpClient.post(apiPaths.accessKey.rotate, { id })),
 });
 
 export default withAccessKey;
