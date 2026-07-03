@@ -39,7 +39,7 @@ const withList = (httpClient: HttpClient) => ({
   removeIPs: (id: string, ips: string[]): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.list.removeIPs, { id, ips })),
 
-  checkIP: (id: string, ip: string): Promise<SdkResponse<boolean>> =>
+  checkIP: (id: string, ip: string) =>
     transformResponse(httpClient.post(apiPaths.list.checkIP, { id, ip }), (data) => data.exists),
 
   addTexts: (id: string, texts: string[]): Promise<SdkResponse<never>> =>
@@ -48,7 +48,7 @@ const withList = (httpClient: HttpClient) => ({
   removeTexts: (id: string, texts: string[]): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.list.removeTexts, { id, texts })),
 
-  checkText: (id: string, text: string): Promise<SdkResponse<boolean>> =>
+  checkText: (id: string, text: string) =>
     transformResponse(
       httpClient.post(apiPaths.list.checkText, { id, text }),
       (data) => data.exists,

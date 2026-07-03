@@ -34,6 +34,22 @@ describe('Management JWT Templates', () => {
     expect(resp.data).toEqual(mockTemplate);
   });
 
+  it('update sends the template wrapped', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({ template: mockTemplate }));
+    const resp = await management.jwtTemplate.update(mockTemplate);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwtTemplate.update, {
+      template: mockTemplate,
+    });
+    expect(resp.data).toEqual(mockTemplate);
+  });
+
+  it('load returns the template', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({ template: mockTemplate }));
+    const resp = await management.jwtTemplate.load('t1');
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwtTemplate.load, { id: 't1' });
+    expect(resp.data).toEqual(mockTemplate);
+  });
+
   it('list returns templates', async () => {
     mockHttpClient.post.mockResolvedValue(okResponse({ templates: [mockTemplate] }));
     const resp = await management.jwtTemplate.list();
@@ -63,6 +79,16 @@ describe('Management JWT Templates', () => {
     const resp = await management.jwtTemplate.listLibrary();
     expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwtTemplate.libraryList, {});
     expect(resp.data).toEqual([entry]);
+  });
+
+  it('loadLibraryEntry returns the entry', async () => {
+    const entry: JWTTemplateLibraryEntry = { id: 'lib1', name: 'lib-template' };
+    mockHttpClient.post.mockResolvedValue(okResponse({ entry }));
+    const resp = await management.jwtTemplate.loadLibraryEntry('lib1');
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.jwtTemplate.libraryLoad, {
+      id: 'lib1',
+    });
+    expect(resp.data).toEqual(entry);
   });
 
   it('applyFromLibrary sends the request', async () => {

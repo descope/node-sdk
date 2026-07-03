@@ -74,6 +74,43 @@ describe('Management Lists', () => {
     expect(resp.data).toEqual(true);
   });
 
+  it('delete sends the id', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.delete('l1');
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.delete, { id: 'l1' });
+  });
+
+  it('loadByName calls the correct url', async () => {
+    mockHttpClient.get.mockResolvedValue(okResponse({ list: mockList }));
+    const resp = await management.list.loadByName('blocklist');
+    expect(mockHttpClient.get).toHaveBeenCalledWith(`${apiPaths.list.loadByName}/blocklist`);
+    expect(resp.data).toEqual(mockList);
+  });
+
+  it('import sends the lists', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.import([mockList]);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.import, { lists: [mockList] });
+  });
+
+  it('addIPs sends ips', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.addIPs('l1', ['1.2.3.4']);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.addIPs, {
+      id: 'l1',
+      ips: ['1.2.3.4'],
+    });
+  });
+
+  it('removeIPs sends ips', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.removeIPs('l1', ['1.2.3.4']);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.removeIPs, {
+      id: 'l1',
+      ips: ['1.2.3.4'],
+    });
+  });
+
   it('addTexts sends texts', async () => {
     mockHttpClient.post.mockResolvedValue(okResponse({}));
     await management.list.addTexts('l1', ['a', 'b']);
@@ -81,5 +118,30 @@ describe('Management Lists', () => {
       id: 'l1',
       texts: ['a', 'b'],
     });
+  });
+
+  it('removeTexts sends texts', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.removeTexts('l1', ['a', 'b']);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.removeTexts, {
+      id: 'l1',
+      texts: ['a', 'b'],
+    });
+  });
+
+  it('checkText returns the exists flag', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({ exists: false }));
+    const resp = await management.list.checkText('l1', 'foo');
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.checkText, {
+      id: 'l1',
+      text: 'foo',
+    });
+    expect(resp.data).toEqual(false);
+  });
+
+  it('clear sends the id', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({}));
+    await management.list.clear('l1');
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.clear, { id: 'l1' });
   });
 });

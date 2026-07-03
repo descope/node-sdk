@@ -310,6 +310,10 @@ export type SSOApplication = {
   wsfedSettings?: SSOApplicationWSFedSettings;
 };
 
+export type SSOApplicationSecretResponse = {
+  cleartext: string;
+};
+
 /** Represents a permission in a project. It has a name and optionally a description.
  * It also has a flag indicating whether it is system default or not.
  */
@@ -977,6 +981,37 @@ export interface FGAResourceDetails {
   displayName: string;
 }
 
+export type FGASchemaDryRunResponse = {
+  deletesPreview?: {
+    hasDeletes: boolean;
+    relations?: string[];
+    types?: string[];
+  };
+};
+
+export type FGAMappableResource = {
+  resource: string;
+};
+
+export type FGAMappableResources = {
+  type: string;
+  resources: FGAMappableResource[];
+};
+
+export type FGAMappableSchema = {
+  schema?: AuthzSchema | null;
+  mappableResources?: FGAMappableResources[];
+};
+
+export type FGAMappableResourcesQuery = {
+  type: string;
+  queries: string[];
+};
+
+export type FGAMappableResourcesOptions = {
+  resourcesLimit?: number;
+};
+
 /**
  * Configuration for FGA cache proxy support.
  * When fgaCacheUrl is provided along with managementKey, certain FGA operations
@@ -1088,6 +1123,12 @@ export type InboundApplicationConsentDeleteOptions = {
   consentIds?: string[];
   appId?: string;
   userIds?: string[];
+};
+
+export type InboundApplicationTenantConsentDeleteOptions = {
+  consentIds?: string[];
+  appId?: string;
+  tenantId?: string;
 };
 
 export type PromptType = 'none' | 'login' | 'consent' | 'select_account';
