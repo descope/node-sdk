@@ -224,6 +224,33 @@ describe('Management InboundApplication', () => {
     });
   });
 
+  describe('deleteInboundApplicationBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.inboundApplication.deleteApplicationBatch(['app1', 'app2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.deleteBatch, {
+        ids: ['app1', 'app2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('loadInboundApplication', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -397,6 +424,43 @@ describe('Management InboundApplication', () => {
         userIds: ['user1'],
         consentIds: ['consent1'],
       });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: undefined,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteInboundApplicationTenantConsents', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => {},
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<InboundApplicationConsent[]> =
+        await management.inboundApplication.deleteTenantConsents({
+          appId: 'app1',
+          tenantId: 'tenant1',
+          consentIds: ['consent1'],
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.inboundApplicationConsents.deleteTenant,
+        {
+          appId: 'app1',
+          tenantId: 'tenant1',
+          consentIds: ['consent1'],
+        },
+      );
 
       expect(resp).toEqual({
         code: 200,

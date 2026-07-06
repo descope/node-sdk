@@ -166,6 +166,27 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         ...(ssoId ? { ssoId } : {}),
       }),
     ),
+  configureSSORedirectURL: (
+    tenantId: string,
+    samlRedirectUrl?: string,
+    oauthRedirectUrl?: string,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.redirect, {
+        tenantId,
+        ...(samlRedirectUrl !== undefined ? { samlRedirectUrl } : {}),
+        ...(oauthRedirectUrl !== undefined ? { oauthRedirectUrl } : {}),
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
+  recalculateSSOMappings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.recalculateMappings, {
+        tenantId,
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
   loadSettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<SSOSettings>> =>
     transformResponse<SSOSettings>(
       httpClient.get(apiPaths.sso.settingsv2, {

@@ -22,6 +22,10 @@ import {
   ProviderTokenOptions,
   UserOptions,
   UserSearchResponse,
+  CustomAttribute,
+  UserPasskey,
+  UserTrustedDevice,
+  UserImportResponse,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -1070,6 +1074,177 @@ const withUser = (httpClient: HttpClient) => {
     history: (userIds: string[]): Promise<SdkResponse<UserHistoryResponse[]>> =>
       transformResponse<UserHistoryResponse[]>(
         httpClient.post(apiPaths.user.history, userIds),
+        (data) => data,
+      ),
+
+    /**
+     * Import users and their password hashes from a source system.
+     * @param source The name of the source system (e.g. "Auth0")
+     * @param users The exported users payload as a raw byte/string buffer
+     * @param hashes The exported password hashes payload as a raw byte/string buffer
+     * @param dryrun When true, validate the import without persisting any users
+     * @returns The UserImportResponse with the imported users and any failures
+     */
+    import: (
+      source: string,
+      users?: string | Uint8Array,
+      hashes?: string | Uint8Array,
+      dryrun?: boolean,
+    ): Promise<SdkResponse<UserImportResponse>> =>
+      transformResponse<UserImportResponse, UserImportResponse>(
+        httpClient.post(apiPaths.user.import, {
+          source,
+          users,
+          hashes,
+          dryrun: dryrun ?? false,
+        }),
+        (data) => data,
+      ),
+
+    /**
+     * Update the recovery email for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param email The recovery email to set for the user
+     * @param isVerified Whether the recovery email is verified
+     */
+    updateRecoveryEmail: (
+      loginIdOrUserId: string,
+      email: string,
+      isVerified?: boolean,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateRecoveryEmail, {
+          loginId: loginIdOrUserId,
+          recoveryEmail: email,
+          verified: isVerified,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Update the recovery phone for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param phone The recovery phone to set for the user
+     * @param isVerified Whether the recovery phone is verified
+     */
+    updateRecoveryPhone: (
+      loginIdOrUserId: string,
+      phone: string,
+      isVerified?: boolean,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateRecoveryPhone, {
+          loginId: loginIdOrUserId,
+          recoveryPhone: phone,
+          verified: isVerified,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Update the given/middle/family names for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param givenName The given name to set for the user
+     * @param middleName The middle name to set for the user
+     * @param familyName The family name to set for the user
+     */
+    updateUserNames: (
+      loginIdOrUserId: string,
+      givenName?: string,
+      middleName?: string,
+      familyName?: string,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateName, {
+          loginId: loginIdOrUserId,
+          givenName,
+          middleName,
+          familyName,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Get the custom attributes schema defined for the project.
+     * @returns An array of CustomAttribute definitions
+     */
+    getCustomAttributes: (): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.get(apiPaths.user.getCustomAttributes),
+        (data) => data.data,
+      ),
+
+    /**
+     * Create custom attributes in the project's user schema.
+     * @param attributes The custom attribute definitions to create
+     * @returns The updated array of CustomAttribute definitions
+     */
+    createCustomAttributes: (
+      attributes: CustomAttribute[],
+    ): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.post(apiPaths.user.createCustomAttributes, { attributes }),
+        (data) => data.data,
+      ),
+
+    /**
+     * Delete custom attributes from the project's user schema by name.
+     * @param names The names of the custom attributes to delete
+     * @returns The updated array of CustomAttribute definitions
+     */
+    deleteCustomAttributes: (names: string[]): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.post(apiPaths.user.deleteCustomAttributes, { names }),
+        (data) => data.data,
+      ),
+
+    /**
+     * Remove a single passkey (WebAuthn credential) for the user with the given login ID.
+     * @param loginId The login ID of the user
+     * @param credentialId The credential ID of the passkey to remove
+     */
+    removePasskey: (loginId: string, credentialId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removePasskey, { loginId, credentialId }),
+        (data) => data,
+      ),
+
+    /**
+     * List the passkeys (WebAuthn credentials) for the user with the given login ID.
+     * @param loginId The login ID of the user
+     * @returns An array of UserPasskey belonging to the user
+     */
+    listPasskeys: (loginId: string): Promise<SdkResponse<UserPasskey[]>> =>
+      transformResponse<{ passkeys: UserPasskey[] }, UserPasskey[]>(
+        httpClient.post(apiPaths.user.listPasskeys, { loginId }),
+        (data) => data.passkeys,
+      ),
+
+    /**
+     * List the trusted devices for the given login IDs or user IDs.
+     * @param loginIdsOrUserIds The login IDs or user IDs of the users
+     * @returns An array of UserTrustedDevice
+     */
+    listTrustedDevices: (loginIdsOrUserIds: string[]): Promise<SdkResponse<UserTrustedDevice[]>> =>
+      transformResponse<{ devices: UserTrustedDevice[] }, UserTrustedDevice[]>(
+        httpClient.post(apiPaths.user.listTrustedDevices, { identifiers: loginIdsOrUserIds }),
+        (data) => data.devices,
+      ),
+
+    /**
+     * Remove trusted devices for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param deviceIds The IDs of the trusted devices to remove
+     */
+    removeTrustedDevices: (
+      loginIdOrUserId: string,
+      deviceIds: string[],
+    ): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removeTrustedDevices, {
+          identifier: loginIdOrUserId,
+          deviceIds,
+        }),
         (data) => data,
       ),
   };
