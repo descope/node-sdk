@@ -409,17 +409,18 @@ const nodeSdk = ({
      * Performs the OAuth2 `client_credentials` grant against the app's token endpoint,
      * then validates the returned access token.
      *
-     * Supports two kinds of apps, selected via `loginOptions.appType`:
+     * Both grants use a form-urlencoded token request, per RFC 6749 §4.4.2. The kind of
+     * app is selected via `loginOptions.appType`:
      * - `'inbound'` (default): Inbound Apps and agentic clients. Agentic clients are
      *   Inbound Apps under the hood, so pass the client ID and secret of an agentic
-     *   client here just as you would for any other Inbound App. Credentials are sent
-     *   in a JSON body to `/oauth2/v1/apps/token`.
+     *   client here just as you would for any other Inbound App. The credentials are
+     *   sent in the form body to `/oauth2/v1/apps/token`.
      * - `'federated'`: OIDC Federated Apps. Federated apps expose their token endpoint
      *   in different URL shapes (project-scoped or app-scoped), so pass the app's OIDC
      *   discovery URL (`loginOptions.discoveryUrl`, required). The SDK fetches that
-     *   document and uses its published `token_endpoint`, sending the credentials via
-     *   HTTP Basic auth with a form-urlencoded body, per the OAuth2 spec. When using an
-     *   access key as the client secret, set `clientId` to your Project ID.
+     *   document and uses its published `token_endpoint`, authenticating with HTTP Basic
+     *   auth. When using an access key as the client secret, set `clientId` to your
+     *   Project ID.
      * @param clientId the app (or agentic client) client ID; the Project ID when using an access key as the secret
      * @param clientSecret the app (or agentic client) client secret, or an access key
      * @param loginOptions Optional controls over the grant (scope, audience, resource, appType, discoveryUrl)
@@ -454,38 +455,40 @@ const nodeSdk = ({
         }
       }
 
+      // OAuth2 token endpoints expect an application/x-www-form-urlencoded body per
+      // RFC 6749 §4.4.2, so both grants are form-encoded. The core HTTP client only
+      // speaks JSON, so we issue these requests directly.
+      const params: Record<string, string> = { grant_type: 'client_credentials' };
+      if (loginOptions?.scope) params.scope = loginOptions.scope;
+      if (loginOptions?.audience) params.audience = loginOptions.audience;
+      if (loginOptions?.resource) params.resource = loginOptions.resource;
+
+      const headers: Record<string, string> = {
+        ...nodeHeaders,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+      let url: string;
+      if (federatedTokenEndpoint) {
+        // Federated Apps authenticate to their discovered endpoint with HTTP Basic auth.
+        url = federatedTokenEndpoint;
+        headers.Authorization = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
+          'base64',
+        )}`;
+      } else {
+        // Inbound Apps / agentic clients send the credentials in the form body.
+        url = coreSdk.httpClient.buildUrl(inboundAppsTokenPath);
+        headers['x-descope-project-id'] = projectId;
+        params.client_id = clientId;
+        params.client_secret = clientSecret;
+      }
+
       let httpResp: Response;
       try {
-        if (federatedTokenEndpoint) {
-          // Federated Apps use a standard OIDC token endpoint, which expects HTTP Basic
-          // auth and a form-urlencoded body per the OAuth2 spec. The core HTTP client
-          // only speaks JSON + bearer tokens, so issue this request directly.
-          const params: Record<string, string> = { grant_type: 'client_credentials' };
-          if (loginOptions?.scope) params.scope = loginOptions.scope;
-          if (loginOptions?.audience) params.audience = loginOptions.audience;
-          if (loginOptions?.resource) params.resource = loginOptions.resource;
-
-          const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-          httpResp = await fetch(federatedTokenEndpoint, {
-            method: 'POST',
-            headers: {
-              ...nodeHeaders,
-              'Content-Type': 'application/x-www-form-urlencoded',
-              Authorization: `Basic ${basicAuth}`,
-            },
-            body: new URLSearchParams(params).toString(),
-          });
-        } else {
-          // Inbound Apps / agentic clients accept the credentials in a JSON body.
-          httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {
-            grant_type: 'client_credentials',
-            client_id: clientId,
-            client_secret: clientSecret,
-            ...(loginOptions?.scope && { scope: loginOptions.scope }),
-            ...(loginOptions?.audience && { audience: loginOptions.audience }),
-            ...(loginOptions?.resource && { resource: loginOptions.resource }),
-          });
-        }
+        httpResp = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: new URLSearchParams(params).toString(),
+        });
       } catch (error) {
         logger?.error('failed to exchange client credentials', error);
         throw Error(`could not exchange client credentials - Failed to exchange. Error: ${error}`);

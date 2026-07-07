@@ -552,6 +552,11 @@ describe('sdk', () => {
         json: () => Promise.resolve(body),
       } as Response);
 
+    afterEach(() => {
+      // Reset calls and implementation so a persistent mock doesn't leak between tests.
+      mockFetch.mockReset();
+    });
+
     it('should fail when client id is empty', async () => {
       await expect(sdk.exchangeClientCredentials('', 'secret')).rejects.toThrow(
         'client id must not be empty',
@@ -563,39 +568,34 @@ describe('sdk', () => {
       );
     });
     it('should fail when the server call throws', async () => {
-      jest.spyOn(sdk.httpClient, 'post').mockRejectedValueOnce('error');
+      mockFetch.mockRejectedValueOnce('error');
       await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
         'could not exchange client credentials - Failed to exchange',
       );
     });
     it('should fail when getting an error response from the server', async () => {
-      jest
-        .spyOn(sdk.httpClient, 'post')
-        .mockResolvedValueOnce(
-          mockTokenResponse({ error: 'invalid_client', error_description: 'bad secret' }, false),
-        );
+      mockFetch.mockResolvedValueOnce(
+        mockTokenResponse({ error: 'invalid_client', error_description: 'bad secret' }, false),
+      );
       await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
         'could not exchange client credentials - bad secret',
       );
     });
     it('should fail when getting an unexpected response from the server', async () => {
-      jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce(mockTokenResponse({}));
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({}));
       await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
         'could not exchange client credentials',
       );
     });
     it('should fail when the access token the server returns is invalid', async () => {
-      jest
-        .spyOn(sdk.httpClient, 'post')
-        .mockResolvedValueOnce(mockTokenResponse({ access_token: expiredToken }));
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: expiredToken }));
       await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
         'could not exchange client credentials',
       );
     });
-    it('should return the token it got from the server and pass grant params', async () => {
-      const spyPost = jest
-        .spyOn(sdk.httpClient, 'post')
-        .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+    it('should send a form-urlencoded request with grant params for inbound apps', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+      const spyPost = jest.spyOn(sdk.httpClient, 'post');
       const expected: AuthenticationInfo = {
         jwt: validToken,
         token: { exp: 1981398111, iss: 'project-id' },
@@ -603,25 +603,27 @@ describe('sdk', () => {
       await expect(
         sdk.exchangeClientCredentials('client', 'secret', { scope: 'openid email' }),
       ).resolves.toMatchObject(expected);
-      expect(spyPost).toHaveBeenCalledWith('/oauth2/v1/apps/token', {
-        grant_type: 'client_credentials',
-        client_id: 'client',
-        client_secret: 'secret',
-        scope: 'openid email',
-      });
+
+      // The JSON core client must not be used; the token request is form-encoded
+      expect(spyPost).not.toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [url, init] = mockFetch.mock.calls[0];
+      expect(url).toBe('https://api.descope.com/oauth2/v1/apps/token');
+      expect(init.method).toBe('POST');
+      expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+      expect(init.headers['x-descope-project-id']).toBe('project-id');
+      expect(init.body).toBe(
+        'grant_type=client_credentials&scope=openid+email&client_id=client&client_secret=secret',
+      );
     });
     it('should enforce audience when provided (match)', async () => {
-      jest
-        .spyOn(sdk.httpClient, 'post')
-        .mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudA }));
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudA }));
       await expect(
         sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
       ).resolves.toHaveProperty('jwt', tokenAudA);
     });
     it('should fail when audience mismatches', async () => {
-      jest
-        .spyOn(sdk.httpClient, 'post')
-        .mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudB }));
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudB }));
       await expect(
         sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
       ).rejects.toThrow('could not exchange client credentials - failed to validate jwt');
@@ -631,10 +633,6 @@ describe('sdk', () => {
       // The federated flow resolves the token endpoint from the discovery document,
       // caching it per discovery URL. Use a distinct URL per test to avoid cache reuse.
       const tokenEndpoint = 'https://auth.example.com/sso-app-id/oauth2/v1/token';
-      afterEach(() => {
-        // Reset calls and implementation so a persistent mock doesn't leak between tests.
-        mockFetch.mockReset();
-      });
 
       it('should fail when discoveryUrl is missing for a federated app', async () => {
         await expect(
