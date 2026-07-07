@@ -10,6 +10,17 @@ import {
   sessionTokenCookieName,
 } from './constants';
 import { getCookieValue } from './helpers';
+import fetchPolyfill from './fetch-polyfill';
+
+// The federated client_credentials flow calls the fetch polyfill directly (not via the
+// core HTTP client), so mock the polyfill to control those requests deterministically.
+// This avoids relying on a global `fetch`, which is not present in jest's sandbox.
+jest.mock('./fetch-polyfill', () => {
+  const actual = jest.requireActual('./fetch-polyfill');
+  return { __esModule: true, ...actual, default: jest.fn() };
+});
+
+const mockFetch = fetchPolyfill as unknown as jest.Mock;
 
 let validToken: string;
 let validTokenIssuerURL: string;
@@ -620,24 +631,21 @@ describe('sdk', () => {
       // The federated flow resolves the token endpoint from the discovery document,
       // caching it per discovery URL. Use a distinct URL per test to avoid cache reuse.
       const tokenEndpoint = 'https://auth.example.com/sso-app-id/oauth2/v1/token';
-      let fetchSpy: jest.SpyInstance | undefined;
       afterEach(() => {
-        fetchSpy?.mockRestore();
-        fetchSpy = undefined;
+        // Reset calls and implementation so a persistent mock doesn't leak between tests.
+        mockFetch.mockReset();
       });
 
       it('should fail when discoveryUrl is missing for a federated app', async () => {
-        fetchSpy = jest.spyOn(globalThis, 'fetch');
         await expect(
           sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
         ).rejects.toThrow('discoveryUrl is required for federated apps');
-        expect(fetchSpy).not.toHaveBeenCalled();
+        expect(mockFetch).not.toHaveBeenCalled();
       });
 
       it('should resolve the token endpoint from discovery and use basic auth + a form body', async () => {
         const discoveryUrl = 'https://auth.example.com/p/s1/.well-known/openid-configuration';
-        fetchSpy = jest
-          .spyOn(globalThis, 'fetch')
+        mockFetch
           .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
         const spyPost = jest.spyOn(sdk.httpClient, 'post');
@@ -656,13 +664,13 @@ describe('sdk', () => {
         // The inbound (JSON) client must not be used for federated apps
         expect(spyPost).not.toHaveBeenCalled();
 
-        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        expect(mockFetch).toHaveBeenCalledTimes(2);
         // First call fetches the discovery document
-        const [discoveryReqUrl, discoveryInit] = fetchSpy.mock.calls[0];
+        const [discoveryReqUrl, discoveryInit] = mockFetch.mock.calls[0];
         expect(discoveryReqUrl).toBe(discoveryUrl);
         expect(discoveryInit.method).toBe('GET');
         // Second call hits the token_endpoint from the discovery document
-        const [url, init] = fetchSpy.mock.calls[1];
+        const [url, init] = mockFetch.mock.calls[1];
         expect(url).toBe(tokenEndpoint);
         expect(init.method).toBe('POST');
         expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
@@ -673,8 +681,7 @@ describe('sdk', () => {
 
       it('should cache the discovery document across calls with the same discoveryUrl', async () => {
         const discoveryUrl = 'https://auth.example.com/p/s2/.well-known/openid-configuration';
-        fetchSpy = jest
-          .spyOn(globalThis, 'fetch')
+        mockFetch
           .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockResolvedValue(mockTokenResponse({ access_token: validToken }));
         const opts = { appType: 'federated' as const, discoveryUrl };
@@ -685,12 +692,12 @@ describe('sdk', () => {
           sdk.exchangeClientCredentials('client', 'secret', opts),
         ).resolves.toHaveProperty('jwt', validToken);
         // discovery (1) + two token requests (2) = 3, i.e. discovery was fetched only once
-        expect(fetchSpy).toHaveBeenCalledTimes(3);
+        expect(mockFetch).toHaveBeenCalledTimes(3);
       });
 
       it('should fail when the discovery document has no token_endpoint', async () => {
         const discoveryUrl = 'https://auth.example.com/p/s3/.well-known/openid-configuration';
-        fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(mockTokenResponse({}));
+        mockFetch.mockResolvedValueOnce(mockTokenResponse({}));
         await expect(
           sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
         ).rejects.toThrow('could not exchange client credentials - token_endpoint missing');
@@ -698,8 +705,7 @@ describe('sdk', () => {
 
       it('should fail when the federated token endpoint returns an error', async () => {
         const discoveryUrl = 'https://auth.example.com/p/s4/.well-known/openid-configuration';
-        fetchSpy = jest
-          .spyOn(globalThis, 'fetch')
+        mockFetch
           .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockResolvedValueOnce(
             mockTokenResponse({ error: 'invalid_client', error_description: 'nope' }, false),
@@ -709,10 +715,17 @@ describe('sdk', () => {
         ).rejects.toThrow('could not exchange client credentials - nope');
       });
 
-      it('should fail when the federated token call throws', async () => {
+      it('should fail when the discovery fetch throws', async () => {
         const discoveryUrl = 'https://auth.example.com/p/s5/.well-known/openid-configuration';
-        fetchSpy = jest
-          .spyOn(globalThis, 'fetch')
+        mockFetch.mockRejectedValueOnce('boom');
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - failed to fetch discovery');
+      });
+
+      it('should fail when the federated token call throws', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s6/.well-known/openid-configuration';
+        mockFetch
           .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockRejectedValueOnce('boom');
         await expect(
