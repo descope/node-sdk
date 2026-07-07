@@ -617,23 +617,28 @@ describe('sdk', () => {
     });
 
     describe('federated apps', () => {
+      // The federated flow resolves the token endpoint from the discovery document,
+      // caching it per discovery URL. Use a distinct URL per test to avoid cache reuse.
+      const tokenEndpoint = 'https://auth.example.com/sso-app-id/oauth2/v1/token';
       let fetchSpy: jest.SpyInstance | undefined;
       afterEach(() => {
         fetchSpy?.mockRestore();
         fetchSpy = undefined;
       });
 
-      it('should fail when ssoAppId is missing for a federated app', async () => {
+      it('should fail when discoveryUrl is missing for a federated app', async () => {
         fetchSpy = jest.spyOn(globalThis, 'fetch');
         await expect(
           sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
-        ).rejects.toThrow('ssoAppId is required for federated apps');
+        ).rejects.toThrow('discoveryUrl is required for federated apps');
         expect(fetchSpy).not.toHaveBeenCalled();
       });
 
-      it('should use the per-app federated token endpoint with basic auth and a form body', async () => {
+      it('should resolve the token endpoint from discovery and use basic auth + a form body', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s1/.well-known/openid-configuration';
         fetchSpy = jest
           .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
         const spyPost = jest.spyOn(sdk.httpClient, 'post');
         const expected: AuthenticationInfo = {
@@ -643,7 +648,7 @@ describe('sdk', () => {
         await expect(
           sdk.exchangeClientCredentials('client', 'secret', {
             appType: 'federated',
-            ssoAppId: 'sso-app-id',
+            discoveryUrl,
             scope: 'openid email',
           }),
         ).resolves.toMatchObject(expected);
@@ -651,39 +656,67 @@ describe('sdk', () => {
         // The inbound (JSON) client must not be used for federated apps
         expect(spyPost).not.toHaveBeenCalled();
 
-        expect(fetchSpy).toHaveBeenCalledTimes(1);
-        const [url, init] = fetchSpy.mock.calls[0];
-        // Endpoint is scoped by the SSO app ID
-        expect(url).toBe('https://api.descope.com/sso-app-id/oauth2/v1/token');
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        // First call fetches the discovery document
+        const [discoveryReqUrl, discoveryInit] = fetchSpy.mock.calls[0];
+        expect(discoveryReqUrl).toBe(discoveryUrl);
+        expect(discoveryInit.method).toBe('GET');
+        // Second call hits the token_endpoint from the discovery document
+        const [url, init] = fetchSpy.mock.calls[1];
+        expect(url).toBe(tokenEndpoint);
         expect(init.method).toBe('POST');
         expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
         // base64('client:secret')
         expect(init.headers.Authorization).toBe('Basic Y2xpZW50OnNlY3JldA==');
-        expect(init.headers['x-descope-project-id']).toBe('project-id');
         expect(init.body).toBe('grant_type=client_credentials&scope=openid+email');
       });
 
-      it('should fail when the federated endpoint returns an error', async () => {
+      it('should cache the discovery document across calls with the same discoveryUrl', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s2/.well-known/openid-configuration';
         fetchSpy = jest
           .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockResolvedValue(mockTokenResponse({ access_token: validToken }));
+        const opts = { appType: 'federated' as const, discoveryUrl };
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', opts),
+        ).resolves.toHaveProperty('jwt', validToken);
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', opts),
+        ).resolves.toHaveProperty('jwt', validToken);
+        // discovery (1) + two token requests (2) = 3, i.e. discovery was fetched only once
+        expect(fetchSpy).toHaveBeenCalledTimes(3);
+      });
+
+      it('should fail when the discovery document has no token_endpoint', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s3/.well-known/openid-configuration';
+        fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(mockTokenResponse({}));
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - token_endpoint missing');
+      });
+
+      it('should fail when the federated token endpoint returns an error', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s4/.well-known/openid-configuration';
+        fetchSpy = jest
+          .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
           .mockResolvedValueOnce(
             mockTokenResponse({ error: 'invalid_client', error_description: 'nope' }, false),
           );
         await expect(
-          sdk.exchangeClientCredentials('client', 'secret', {
-            appType: 'federated',
-            ssoAppId: 'sso-app-id',
-          }),
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
         ).rejects.toThrow('could not exchange client credentials - nope');
       });
 
-      it('should fail when the federated call throws', async () => {
-        fetchSpy = jest.spyOn(globalThis, 'fetch').mockRejectedValueOnce('boom');
+      it('should fail when the federated token call throws', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s5/.well-known/openid-configuration';
+        fetchSpy = jest
+          .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockRejectedValueOnce('boom');
         await expect(
-          sdk.exchangeClientCredentials('client', 'secret', {
-            appType: 'federated',
-            ssoAppId: 'sso-app-id',
-          }),
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
         ).rejects.toThrow('could not exchange client credentials - Failed to exchange');
       });
     });

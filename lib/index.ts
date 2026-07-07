@@ -9,7 +9,6 @@ import createSdk, {
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
-  federatedAppTokenPath,
   inboundAppsTokenPath,
   permissionsClaimName,
   refreshTokenCookieName,
@@ -30,6 +29,7 @@ import {
   AuthenticationInfo,
   ClientCredentialsOptions,
   IDPResponse,
+  OidcDiscoveryDocument,
   RefreshAuthenticationInfo,
   TokenEndpointResponse,
   VerifyOptions,
@@ -123,6 +123,40 @@ const nodeSdk = ({
       (acc, [kid, jwk]) => (kid ? { ...acc, [kid.toString()]: jwk } : acc),
       {},
     );
+  };
+
+  // Cache of resolved Federated App token endpoints, keyed by discovery URL. OIDC
+  // discovery documents rarely change, so we resolve each one at most once.
+  const federatedTokenEndpoints: Record<string, string> = {};
+
+  /**
+   * Resolve (and cache) a Federated App's OAuth2 token endpoint by fetching its OIDC
+   * discovery document. Federated apps expose their token endpoint in different URL
+   * shapes (project-scoped or app-scoped), so we always read it from discovery rather
+   * than constructing it.
+   */
+  const resolveFederatedTokenEndpoint = async (discoveryUrl: string): Promise<string> => {
+    if (federatedTokenEndpoints[discoveryUrl]) return federatedTokenEndpoints[discoveryUrl];
+
+    let resp: Response;
+    try {
+      resp = await fetch(discoveryUrl, {
+        method: 'GET',
+        headers: { ...nodeHeaders, Accept: 'application/json' },
+      });
+    } catch (error) {
+      logger?.error('failed to fetch federated app discovery document', error);
+      throw Error(`failed to fetch discovery document. Error: ${error}`);
+    }
+
+    const discovery: OidcDiscoveryDocument = await resp.json().catch(() => ({}));
+    if (!resp.ok || !discovery.token_endpoint) {
+      logger?.error('failed to resolve token endpoint from discovery document', discovery);
+      throw Error('token_endpoint missing from discovery document');
+    }
+
+    federatedTokenEndpoints[discoveryUrl] = discovery.token_endpoint;
+    return discovery.token_endpoint;
   };
 
   // Rate limit tier from the license handshake. Populated asynchronously on init
@@ -380,14 +414,15 @@ const nodeSdk = ({
      *   Inbound Apps under the hood, so pass the client ID and secret of an agentic
      *   client here just as you would for any other Inbound App. Credentials are sent
      *   in a JSON body to `/oauth2/v1/apps/token`.
-     * - `'federated'`: OIDC Federated Apps. Each federated app has its own token
-     *   endpoint scoped by its SSO app ID (`loginOptions.ssoAppId`, required),
-     *   `/{ssoAppId}/oauth2/v1/token`. Credentials are sent via HTTP Basic auth with a
-     *   form-urlencoded body, per the OAuth2 spec. For a custom auth domain, configure
-     *   the SDK's `baseUrl` accordingly.
-     * @param clientId the app (or agentic client) client ID
-     * @param clientSecret the app (or agentic client) client secret
-     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType, ssoAppId)
+     * - `'federated'`: OIDC Federated Apps. Federated apps expose their token endpoint
+     *   in different URL shapes (project-scoped or app-scoped), so pass the app's OIDC
+     *   discovery URL (`loginOptions.discoveryUrl`, required). The SDK fetches that
+     *   document and uses its published `token_endpoint`, sending the credentials via
+     *   HTTP Basic auth with a form-urlencoded body, per the OAuth2 spec. When using an
+     *   access key as the client secret, set `clientId` to your Project ID.
+     * @param clientId the app (or agentic client) client ID; the Project ID when using an access key as the secret
+     * @param clientSecret the app (or agentic client) client secret, or an access key
+     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType, discoveryUrl)
      * @param options optional verification options for the returned token (e.g., { audience })
      * @returns AuthenticationInfo with the access token data
      */
@@ -400,36 +435,46 @@ const nodeSdk = ({
       if (!clientId) throw Error('client id must not be empty');
       if (!clientSecret) throw Error('client secret must not be empty');
 
+      // Federated apps need their token endpoint resolved from OIDC discovery first, so
+      // that discovery failures surface with a clear message rather than being reported
+      // as a failed token exchange below.
+      let federatedTokenEndpoint: string | undefined;
+      if (loginOptions?.appType === 'federated') {
+        if (!loginOptions.discoveryUrl) {
+          throw Error('discoveryUrl is required for federated apps');
+        }
+        try {
+          federatedTokenEndpoint = await resolveFederatedTokenEndpoint(loginOptions.discoveryUrl);
+        } catch (error) {
+          throw Error(
+            `could not exchange client credentials - ${
+              error instanceof Error ? error.message : error
+            }`,
+          );
+        }
+      }
+
       let httpResp: Response;
       try {
-        if (loginOptions?.appType === 'federated') {
-          // Each Federated App has its own OIDC token endpoint, scoped by its SSO app ID.
-          if (!loginOptions.ssoAppId) {
-            throw Error('ssoAppId is required for federated apps');
-          }
-
-          // Federated Apps use the standard OIDC token endpoint, which expects HTTP
-          // Basic auth and a form-urlencoded body per the OAuth2 spec. The core HTTP
-          // client only speaks JSON + bearer tokens, so issue this request directly.
+        if (federatedTokenEndpoint) {
+          // Federated Apps use a standard OIDC token endpoint, which expects HTTP Basic
+          // auth and a form-urlencoded body per the OAuth2 spec. The core HTTP client
+          // only speaks JSON + bearer tokens, so issue this request directly.
           const params: Record<string, string> = { grant_type: 'client_credentials' };
-          if (loginOptions.scope) params.scope = loginOptions.scope;
-          if (loginOptions.audience) params.audience = loginOptions.audience;
-          if (loginOptions.resource) params.resource = loginOptions.resource;
+          if (loginOptions?.scope) params.scope = loginOptions.scope;
+          if (loginOptions?.audience) params.audience = loginOptions.audience;
+          if (loginOptions?.resource) params.resource = loginOptions.resource;
 
           const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-          httpResp = await fetch(
-            coreSdk.httpClient.buildUrl(federatedAppTokenPath(loginOptions.ssoAppId)),
-            {
-              method: 'POST',
-              headers: {
-                ...nodeHeaders,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'x-descope-project-id': projectId,
-                Authorization: `Basic ${basicAuth}`,
-              },
-              body: new URLSearchParams(params).toString(),
+          httpResp = await fetch(federatedTokenEndpoint, {
+            method: 'POST',
+            headers: {
+              ...nodeHeaders,
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Authorization: `Basic ${basicAuth}`,
             },
-          );
+            body: new URLSearchParams(params).toString(),
+          });
         } else {
           // Inbound Apps / agentic clients accept the credentials in a JSON body.
           httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {
@@ -640,6 +685,7 @@ export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
 export type {
   ClientCredentialsAppType,
   ClientCredentialsOptions,
+  OidcDiscoveryDocument,
   TokenEndpointResponse,
   VerifyOptions,
 } from './types';

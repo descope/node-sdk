@@ -461,23 +461,30 @@ const { jwt, token } = authInfo;
 
 #### Federated Apps
 
-The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Each federated app exposes its own OIDC discovery URL, whose path contains your Project ID followed by the app's SSO app ID:
+The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Federated apps expose their token endpoint in different URL shapes (some are project-scoped, others app-scoped), so instead of constructing the URL, pass the app's **OIDC discovery URL**. The SDK fetches that document (and caches it) and uses its published `token_endpoint`, sending the credentials via HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec.
+
+You can find the discovery URL in the Descope console. It looks like this, where the first path segment is your Project ID and the second is the app's SSO app ID:
 
 ```
 https://<your-auth-domain>/<projectId>/<ssoAppId>/.well-known/openid-configuration
 ```
 
-Because the token endpoint is scoped per app (`/<ssoAppId>/oauth2/v1/token`), set `appType: 'federated'` and pass the `ssoAppId`. The SDK routes the request to that endpoint using HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec:
-
 ```typescript
 const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
   appType: 'federated',
-  ssoAppId: 'your-sso-app-id',
+  discoveryUrl: 'https://auth.example.com/<projectId>/<ssoAppId>/.well-known/openid-configuration',
   scope: 'openid email profile',
 });
 ```
 
-> **Custom domains:** if your federated app is served from a custom auth domain (e.g. `https://auth.example.com`), configure the SDK with that `baseUrl` when creating the client so the token request is sent to the correct host.
+> **Using an access key as the client secret:** the client ID is always your Project ID in this case, so pass the Project ID as the first argument and the access key as the second.
+
+```typescript
+const authInfo = await descopeClient.exchangeClientCredentials('my-project-id', 'my-access-key', {
+  appType: 'federated',
+  discoveryUrl: 'https://auth.example.com/<projectId>/<ssoAppId>/.well-known/openid-configuration',
+});
+```
 
 ### Session Validation
 

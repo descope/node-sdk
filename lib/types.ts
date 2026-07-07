@@ -56,15 +56,22 @@ export interface ClientCredentialsOptions {
   /** Which kind of Descope app the credentials belong to. Defaults to `'inbound'`. */
   appType?: ClientCredentialsAppType;
   /**
-   * The SSO app ID of the Federated App. Required when `appType` is `'federated'`,
-   * since each federated app has its own token endpoint. This is the second path
-   * segment of the app's OIDC discovery URL
-   * (`/{projectId}/{ssoAppId}/.well-known/openid-configuration`).
+   * The OIDC discovery URL of the Federated App. Required when `appType` is
+   * `'federated'`, since each federated app has its own token endpoint (which may be
+   * project-scoped or app-scoped). The SDK fetches this document and uses its
+   * published `token_endpoint`. You can find it in the Descope console; it looks like
+   * `https://<auth-domain>/<projectId>/<ssoAppId>/.well-known/openid-configuration`.
    */
-  ssoAppId?: string;
+  discoveryUrl?: string;
 }
 
-/** Raw response returned by the Inbound App OAuth2 token endpoint. */
+/** Subset of an OIDC discovery document (`.well-known/openid-configuration`) the SDK reads. */
+export interface OidcDiscoveryDocument {
+  token_endpoint?: string;
+  [key: string]: unknown;
+}
+
+/** Raw response returned by an OAuth2 token endpoint. */
 export interface TokenEndpointResponse {
   access_token?: string;
   token_type?: string;
