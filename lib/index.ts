@@ -9,6 +9,7 @@ import createSdk, {
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
+  federatedAppsTokenPath,
   inboundAppsTokenPath,
   permissionsClaimName,
   refreshTokenCookieName,
@@ -370,16 +371,21 @@ const nodeSdk = ({
     },
 
     /**
-     * Exchange client credentials for a session JWT using a Descope Inbound App.
-     * Performs the OAuth2 `client_credentials` grant against the project's Inbound App
-     * token endpoint, then validates the returned access token.
+     * Exchange client credentials for a session JWT using a Descope app.
+     * Performs the OAuth2 `client_credentials` grant against the app's token endpoint,
+     * then validates the returned access token.
      *
-     * This also authenticates agentic clients: agentic clients are Inbound Apps under the
-     * hood, so pass the client ID and secret of an agentic client here just as you would
-     * for any other Inbound App.
-     * @param clientId the Inbound App (or agentic client) client ID
-     * @param clientSecret the Inbound App (or agentic client) client secret
-     * @param loginOptions Optional controls over the grant (scope, audience, resource)
+     * Supports two kinds of apps, selected via `loginOptions.appType`:
+     * - `'inbound'` (default): Inbound Apps and agentic clients. Agentic clients are
+     *   Inbound Apps under the hood, so pass the client ID and secret of an agentic
+     *   client here just as you would for any other Inbound App. Credentials are sent
+     *   in a JSON body to `/oauth2/v1/apps/token`.
+     * - `'federated'`: OIDC Federated Apps. Credentials are sent via HTTP Basic auth
+     *   with a form-urlencoded body to the standard OIDC token endpoint
+     *   `/oauth2/v1/token`.
+     * @param clientId the app (or agentic client) client ID
+     * @param clientSecret the app (or agentic client) client secret
+     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType)
      * @param options optional verification options for the returned token (e.g., { audience })
      * @returns AuthenticationInfo with the access token data
      */
@@ -394,14 +400,37 @@ const nodeSdk = ({
 
       let httpResp: Response;
       try {
-        httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {
-          grant_type: 'client_credentials',
-          client_id: clientId,
-          client_secret: clientSecret,
-          ...(loginOptions?.scope && { scope: loginOptions.scope }),
-          ...(loginOptions?.audience && { audience: loginOptions.audience }),
-          ...(loginOptions?.resource && { resource: loginOptions.resource }),
-        });
+        if (loginOptions?.appType === 'federated') {
+          // Federated Apps use the standard OIDC token endpoint, which expects HTTP
+          // Basic auth and a form-urlencoded body per the OAuth2 spec. The core HTTP
+          // client only speaks JSON + bearer tokens, so issue this request directly.
+          const params: Record<string, string> = { grant_type: 'client_credentials' };
+          if (loginOptions.scope) params.scope = loginOptions.scope;
+          if (loginOptions.audience) params.audience = loginOptions.audience;
+          if (loginOptions.resource) params.resource = loginOptions.resource;
+
+          const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+          httpResp = await fetch(coreSdk.httpClient.buildUrl(federatedAppsTokenPath), {
+            method: 'POST',
+            headers: {
+              ...nodeHeaders,
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'x-descope-project-id': projectId,
+              Authorization: `Basic ${basicAuth}`,
+            },
+            body: new URLSearchParams(params).toString(),
+          });
+        } else {
+          // Inbound Apps / agentic clients accept the credentials in a JSON body.
+          httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {
+            grant_type: 'client_credentials',
+            client_id: clientId,
+            client_secret: clientSecret,
+            ...(loginOptions?.scope && { scope: loginOptions.scope }),
+            ...(loginOptions?.audience && { audience: loginOptions.audience }),
+            ...(loginOptions?.resource && { resource: loginOptions.resource }),
+          });
+        }
       } catch (error) {
         logger?.error('failed to exchange client credentials', error);
         throw Error(`could not exchange client credentials - Failed to exchange. Error: ${error}`);
@@ -598,6 +627,11 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
-export type { ClientCredentialsOptions, TokenEndpointResponse, VerifyOptions } from './types';
+export type {
+  ClientCredentialsAppType,
+  ClientCredentialsOptions,
+  TokenEndpointResponse,
+  VerifyOptions,
+} from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';

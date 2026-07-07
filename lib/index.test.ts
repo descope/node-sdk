@@ -615,6 +615,62 @@ describe('sdk', () => {
         sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
       ).rejects.toThrow('could not exchange client credentials - failed to validate jwt');
     });
+
+    describe('federated apps', () => {
+      let fetchSpy: jest.SpyInstance | undefined;
+      afterEach(() => {
+        fetchSpy?.mockRestore();
+        fetchSpy = undefined;
+      });
+
+      it('should use the federated OIDC token endpoint with basic auth and a form body', async () => {
+        fetchSpy = jest
+          .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+        const spyPost = jest.spyOn(sdk.httpClient, 'post');
+        const expected: AuthenticationInfo = {
+          jwt: validToken,
+          token: { exp: 1981398111, iss: 'project-id' },
+        };
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', {
+            appType: 'federated',
+            scope: 'openid email',
+          }),
+        ).resolves.toMatchObject(expected);
+
+        // The inbound (JSON) client must not be used for federated apps
+        expect(spyPost).not.toHaveBeenCalled();
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchSpy.mock.calls[0];
+        expect(url).toBe('https://api.descope.com/oauth2/v1/token');
+        expect(init.method).toBe('POST');
+        expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+        // base64('client:secret')
+        expect(init.headers.Authorization).toBe('Basic Y2xpZW50OnNlY3JldA==');
+        expect(init.headers['x-descope-project-id']).toBe('project-id');
+        expect(init.body).toBe('grant_type=client_credentials&scope=openid+email');
+      });
+
+      it('should fail when the federated endpoint returns an error', async () => {
+        fetchSpy = jest
+          .spyOn(globalThis, 'fetch')
+          .mockResolvedValueOnce(
+            mockTokenResponse({ error: 'invalid_client', error_description: 'nope' }, false),
+          );
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+        ).rejects.toThrow('could not exchange client credentials - nope');
+      });
+
+      it('should fail when the federated call throws', async () => {
+        fetchSpy = jest.spyOn(globalThis, 'fetch').mockRejectedValueOnce('boom');
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+        ).rejects.toThrow('could not exchange client credentials - Failed to exchange');
+      });
+    });
   });
 
   describe('validatePermissionsRoles', () => {

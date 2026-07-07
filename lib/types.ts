@@ -35,8 +35,16 @@ export interface VerifyOptions {
 }
 
 /**
+ * The kind of Descope app the client credentials belong to. This determines which
+ * OAuth2 token endpoint and authentication style is used for the exchange.
+ * - `inbound` (default): Inbound Apps / agentic clients (`/oauth2/v1/apps/token`).
+ * - `federated`: OIDC Federated Apps (`/oauth2/v1/token`, HTTP Basic auth).
+ */
+export type ClientCredentialsAppType = 'inbound' | 'federated';
+
+/**
  * Options for exchanging client credentials for a session token via a Descope
- * Inbound App (OAuth2 `client_credentials` grant).
+ * Inbound App or Federated App (OAuth2 `client_credentials` grant).
  */
 export interface ClientCredentialsOptions {
   /** Space-delimited scopes to request (e.g. `"openid email profile"`). */
@@ -45,6 +53,8 @@ export interface ClientCredentialsOptions {
   audience?: string;
   /** Optional resource indicator (RFC 8707). */
   resource?: string;
+  /** Which kind of Descope app the credentials belong to. Defaults to `'inbound'`. */
+  appType?: ClientCredentialsAppType;
 }
 
 /** Raw response returned by the Inbound App OAuth2 token endpoint. */

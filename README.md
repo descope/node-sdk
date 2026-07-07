@@ -38,7 +38,7 @@ Once you've created a `descopeClient`, you can use that to work with the followi
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
 7. [Passwords](#passwords)
-8. [Client Credentials (Inbound Apps)](#client-credentials-inbound-apps)
+8. [Client Credentials (OAuth)](#client-credentials-oauth)
 9. [Session Validation](#session-validation)
 10. [Roles & Permission Validation](#roles--permission-validation)
 11. [Logging Out](#logging-out)
@@ -430,11 +430,11 @@ const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, n
 // jwtResponse.data.refreshJwt;
 ```
 
-### Client Credentials (Inbound Apps)
+### Client Credentials (OAuth)
 
-If you have configured an [Inbound App](https://docs.descope.com/identity-federation/inbound-apps) in your Descope project, you can perform a machine-to-machine OAuth2 `client_credentials` grant. Provide the app's client ID and client secret, and the SDK will exchange them for a validated session JWT — similar to exchanging an access key (`exchangeAccessKey`), but authenticated with the client credentials of an Inbound App rather than an access key.
+If you have configured an [Inbound App](https://docs.descope.com/identity-federation/inbound-apps) or [Agentic Client](https://docs.descope.com/agentic-identity-hub/core-components/clients) in your Descope project, you can perform a machine-to-machine `client_credentials` grant.
 
-> **Note:** This is also how you authenticate **agentic clients**. Agentic clients are Inbound Apps under the hood, so the same `exchangeClientCredentials` call works for both — use the client ID and client secret of your agentic client exactly as you would for any other Inbound App.
+Provide the app's client ID and client secret, and the SDK will exchange them for a validated session JWT — similar to exchanging an access key (`exchangeAccessKey`), but authenticated with the client credentials of an Descope App or Client rather than an access key.
 
 ```typescript
 // Exchange client credentials for a session JWT
@@ -457,6 +457,17 @@ const withAud = await descopeClient.exchangeClientCredentials(
 
 // The returned authInfo contains the raw JWT and its parsed claims
 const { jwt, token } = authInfo;
+```
+
+#### Federated Apps
+
+The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Federated Apps use the standard OIDC token endpoint (`/oauth2/v1/token`) rather than the Inbound Apps endpoint, so set `appType: 'federated'` and the SDK routes the request accordingly (HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec):
+
+```typescript
+const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
+  appType: 'federated',
+  scope: 'openid email profile',
+});
 ```
 
 ### Session Validation
