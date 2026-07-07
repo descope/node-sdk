@@ -616,6 +616,21 @@ describe('sdk', () => {
         'grant_type=client_credentials&scope=openid+email&client_id=client&client_secret=secret',
       );
     });
+    it('should send both audience and resource grant params when provided', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', {
+          audience: 'my-api',
+          resource: 'https://api.example.com',
+        }),
+      ).resolves.toHaveProperty('jwt', validToken);
+      const [, init] = mockFetch.mock.calls[0];
+      // Parse the body so the assertion is independent of param order/encoding
+      const body = new URLSearchParams(init.body);
+      expect(body.get('grant_type')).toBe('client_credentials');
+      expect(body.get('audience')).toBe('my-api');
+      expect(body.get('resource')).toBe('https://api.example.com');
+    });
     it('should enforce audience when provided (match)', async () => {
       mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudA }));
       await expect(
