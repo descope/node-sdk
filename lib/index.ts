@@ -373,8 +373,12 @@ const nodeSdk = ({
      * Exchange client credentials for a session JWT using a Descope Inbound App.
      * Performs the OAuth2 `client_credentials` grant against the project's Inbound App
      * token endpoint, then validates the returned access token.
-     * @param clientId the Inbound App client ID
-     * @param clientSecret the Inbound App client secret
+     *
+     * This also authenticates agentic clients: agentic clients are Inbound Apps under the
+     * hood, so pass the client ID and secret of an agentic client here just as you would
+     * for any other Inbound App.
+     * @param clientId the Inbound App (or agentic client) client ID
+     * @param clientSecret the Inbound App (or agentic client) client secret
      * @param loginOptions Optional controls over the grant (scope, audience, resource)
      * @param options optional verification options for the returned token (e.g., { audience })
      * @returns AuthenticationInfo with the access token data

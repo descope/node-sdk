@@ -434,6 +434,8 @@ const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, n
 
 If you have configured an [Inbound App](https://docs.descope.com/identity-federation/inbound-apps) in your Descope project, you can perform a machine-to-machine OAuth2 `client_credentials` grant. Provide the app's client ID and client secret, and the SDK will exchange them for a validated session JWT — similar to exchanging an access key (`exchangeAccessKey`), but authenticated with the client credentials of an Inbound App rather than an access key.
 
+> **Note:** This is also how you authenticate **agentic clients**. Agentic clients are Inbound Apps under the hood, so the same `exchangeClientCredentials` call works for both — use the client ID and client secret of your agentic client exactly as you would for any other Inbound App.
+
 ```typescript
 // Exchange client credentials for a session JWT
 const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret');
