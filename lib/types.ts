@@ -55,6 +55,13 @@ export interface ClientCredentialsOptions {
   resource?: string;
   /** Which kind of Descope app the credentials belong to. Defaults to `'inbound'`. */
   appType?: ClientCredentialsAppType;
+  /**
+   * The SSO app ID of the Federated App. Required when `appType` is `'federated'`,
+   * since each federated app has its own token endpoint. This is the second path
+   * segment of the app's OIDC discovery URL
+   * (`/{projectId}/{ssoAppId}/.well-known/openid-configuration`).
+   */
+  ssoAppId?: string;
 }
 
 /** Raw response returned by the Inbound App OAuth2 token endpoint. */

@@ -9,7 +9,7 @@ import createSdk, {
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
-  federatedAppsTokenPath,
+  federatedAppTokenPath,
   inboundAppsTokenPath,
   permissionsClaimName,
   refreshTokenCookieName,
@@ -380,12 +380,14 @@ const nodeSdk = ({
      *   Inbound Apps under the hood, so pass the client ID and secret of an agentic
      *   client here just as you would for any other Inbound App. Credentials are sent
      *   in a JSON body to `/oauth2/v1/apps/token`.
-     * - `'federated'`: OIDC Federated Apps. Credentials are sent via HTTP Basic auth
-     *   with a form-urlencoded body to the standard OIDC token endpoint
-     *   `/oauth2/v1/token`.
+     * - `'federated'`: OIDC Federated Apps. Each federated app has its own token
+     *   endpoint scoped by its SSO app ID (`loginOptions.ssoAppId`, required),
+     *   `/{ssoAppId}/oauth2/v1/token`. Credentials are sent via HTTP Basic auth with a
+     *   form-urlencoded body, per the OAuth2 spec. For a custom auth domain, configure
+     *   the SDK's `baseUrl` accordingly.
      * @param clientId the app (or agentic client) client ID
      * @param clientSecret the app (or agentic client) client secret
-     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType)
+     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType, ssoAppId)
      * @param options optional verification options for the returned token (e.g., { audience })
      * @returns AuthenticationInfo with the access token data
      */
@@ -401,6 +403,11 @@ const nodeSdk = ({
       let httpResp: Response;
       try {
         if (loginOptions?.appType === 'federated') {
+          // Each Federated App has its own OIDC token endpoint, scoped by its SSO app ID.
+          if (!loginOptions.ssoAppId) {
+            throw Error('ssoAppId is required for federated apps');
+          }
+
           // Federated Apps use the standard OIDC token endpoint, which expects HTTP
           // Basic auth and a form-urlencoded body per the OAuth2 spec. The core HTTP
           // client only speaks JSON + bearer tokens, so issue this request directly.
@@ -410,16 +417,19 @@ const nodeSdk = ({
           if (loginOptions.resource) params.resource = loginOptions.resource;
 
           const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-          httpResp = await fetch(coreSdk.httpClient.buildUrl(federatedAppsTokenPath), {
-            method: 'POST',
-            headers: {
-              ...nodeHeaders,
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'x-descope-project-id': projectId,
-              Authorization: `Basic ${basicAuth}`,
+          httpResp = await fetch(
+            coreSdk.httpClient.buildUrl(federatedAppTokenPath(loginOptions.ssoAppId)),
+            {
+              method: 'POST',
+              headers: {
+                ...nodeHeaders,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'x-descope-project-id': projectId,
+                Authorization: `Basic ${basicAuth}`,
+              },
+              body: new URLSearchParams(params).toString(),
             },
-            body: new URLSearchParams(params).toString(),
-          });
+          );
         } else {
           // Inbound Apps / agentic clients accept the credentials in a JSON body.
           httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {

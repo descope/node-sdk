@@ -623,7 +623,15 @@ describe('sdk', () => {
         fetchSpy = undefined;
       });
 
-      it('should use the federated OIDC token endpoint with basic auth and a form body', async () => {
+      it('should fail when ssoAppId is missing for a federated app', async () => {
+        fetchSpy = jest.spyOn(globalThis, 'fetch');
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+        ).rejects.toThrow('ssoAppId is required for federated apps');
+        expect(fetchSpy).not.toHaveBeenCalled();
+      });
+
+      it('should use the per-app federated token endpoint with basic auth and a form body', async () => {
         fetchSpy = jest
           .spyOn(globalThis, 'fetch')
           .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
@@ -635,6 +643,7 @@ describe('sdk', () => {
         await expect(
           sdk.exchangeClientCredentials('client', 'secret', {
             appType: 'federated',
+            ssoAppId: 'sso-app-id',
             scope: 'openid email',
           }),
         ).resolves.toMatchObject(expected);
@@ -644,7 +653,8 @@ describe('sdk', () => {
 
         expect(fetchSpy).toHaveBeenCalledTimes(1);
         const [url, init] = fetchSpy.mock.calls[0];
-        expect(url).toBe('https://api.descope.com/oauth2/v1/token');
+        // Endpoint is scoped by the SSO app ID
+        expect(url).toBe('https://api.descope.com/sso-app-id/oauth2/v1/token');
         expect(init.method).toBe('POST');
         expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
         // base64('client:secret')
@@ -660,14 +670,20 @@ describe('sdk', () => {
             mockTokenResponse({ error: 'invalid_client', error_description: 'nope' }, false),
           );
         await expect(
-          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+          sdk.exchangeClientCredentials('client', 'secret', {
+            appType: 'federated',
+            ssoAppId: 'sso-app-id',
+          }),
         ).rejects.toThrow('could not exchange client credentials - nope');
       });
 
       it('should fail when the federated call throws', async () => {
         fetchSpy = jest.spyOn(globalThis, 'fetch').mockRejectedValueOnce('boom');
         await expect(
-          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+          sdk.exchangeClientCredentials('client', 'secret', {
+            appType: 'federated',
+            ssoAppId: 'sso-app-id',
+          }),
         ).rejects.toThrow('could not exchange client credentials - Failed to exchange');
       });
     });

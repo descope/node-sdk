@@ -10,5 +10,9 @@ export const permissionsClaimName = 'permissions';
 export const rolesClaimName = 'roles';
 /** OAuth2 token endpoint for Descope Inbound Apps (used for the client_credentials grant) */
 export const inboundAppsTokenPath = '/oauth2/v1/apps/token';
-/** OAuth2 token endpoint for Descope Federated Apps (used for the client_credentials grant) */
-export const federatedAppsTokenPath = '/oauth2/v1/token';
+/**
+ * Builds the OAuth2 token endpoint path for a Descope Federated App. Each federated
+ * app has its own endpoint scoped by its SSO app ID, as published in the app's OIDC
+ * discovery document (`/{projectId}/{ssoAppId}/.well-known/openid-configuration`).
+ */
+export const federatedAppTokenPath = (ssoAppId: string) => `/${ssoAppId}/oauth2/v1/token`;

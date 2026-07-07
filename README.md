@@ -461,14 +461,23 @@ const { jwt, token } = authInfo;
 
 #### Federated Apps
 
-The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Federated Apps use the standard OIDC token endpoint (`/oauth2/v1/token`) rather than the Inbound Apps endpoint, so set `appType: 'federated'` and the SDK routes the request accordingly (HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec):
+The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Each federated app exposes its own OIDC discovery URL, whose path contains your Project ID followed by the app's SSO app ID:
+
+```
+https://<your-auth-domain>/<projectId>/<ssoAppId>/.well-known/openid-configuration
+```
+
+Because the token endpoint is scoped per app (`/<ssoAppId>/oauth2/v1/token`), set `appType: 'federated'` and pass the `ssoAppId`. The SDK routes the request to that endpoint using HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec:
 
 ```typescript
 const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
   appType: 'federated',
+  ssoAppId: 'your-sso-app-id',
   scope: 'openid email profile',
 });
 ```
+
+> **Custom domains:** if your federated app is served from a custom auth domain (e.g. `https://auth.example.com`), configure the SDK with that `baseUrl` when creating the client so the token request is sent to the correct host.
 
 ### Session Validation
 
