@@ -34,6 +34,31 @@ export interface VerifyOptions {
   audience?: string | string[];
 }
 
+/**
+ * Options for exchanging client credentials for a session token via a Descope
+ * Inbound App (OAuth2 `client_credentials` grant).
+ */
+export interface ClientCredentialsOptions {
+  /** Space-delimited scopes to request (e.g. `"openid email profile"`). */
+  scope?: string;
+  /** Optional audience for the requested access token. */
+  audience?: string;
+  /** Optional resource indicator (RFC 8707). */
+  resource?: string;
+}
+
+/** Raw response returned by the Inbound App OAuth2 token endpoint. */
+export interface TokenEndpointResponse {
+  access_token?: string;
+  token_type?: string;
+  expires_in?: number;
+  scope?: string;
+  refresh_token?: string;
+  id_token?: string;
+  error?: string;
+  error_description?: string;
+}
+
 /** Descope core SDK type */
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;

@@ -38,9 +38,10 @@ Once you've created a `descopeClient`, you can use that to work with the followi
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
 7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+8. [Client Credentials (Inbound Apps)](#client-credentials-inbound-apps)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -427,6 +428,33 @@ Alternatively, it is also possible to replace an existing active password with a
 const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, newPassword);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
+```
+
+### Client Credentials (Inbound Apps)
+
+If you have configured an [Inbound App](https://docs.descope.com/identity-federation/inbound-apps) in your Descope project, you can perform a machine-to-machine OAuth2 `client_credentials` grant. Provide the app's client ID and client secret, and the SDK will exchange them for a validated session JWT — similar to exchanging an access key (`exchangeAccessKey`), but authenticated with the client credentials of an Inbound App rather than an access key.
+
+```typescript
+// Exchange client credentials for a session JWT
+const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret');
+
+// Optionally request specific scopes, an audience, or a resource indicator (RFC 8707)
+const withOptions = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
+  scope: 'openid email profile',
+  audience: 'my-api',
+  resource: 'https://my-api.example.com',
+});
+
+// Optionally validate the returned token against an expected audience
+const withAud = await descopeClient.exchangeClientCredentials(
+  'client-id',
+  'client-secret',
+  undefined,
+  { audience: 'my-api' },
+);
+
+// The returned authInfo contains the raw JWT and its parsed claims
+const { jwt, token } = authInfo;
 ```
 
 ### Session Validation

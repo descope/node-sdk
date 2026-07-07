@@ -533,6 +533,90 @@ describe('sdk', () => {
     });
   });
 
+  describe('exchangeClientCredentials', () => {
+    const mockTokenResponse = (body: Record<string, any>, ok = true, statusText = '') =>
+      ({
+        ok,
+        statusText,
+        json: () => Promise.resolve(body),
+      } as Response);
+
+    it('should fail when client id is empty', async () => {
+      await expect(sdk.exchangeClientCredentials('', 'secret')).rejects.toThrow(
+        'client id must not be empty',
+      );
+    });
+    it('should fail when client secret is empty', async () => {
+      await expect(sdk.exchangeClientCredentials('client', '')).rejects.toThrow(
+        'client secret must not be empty',
+      );
+    });
+    it('should fail when the server call throws', async () => {
+      jest.spyOn(sdk.httpClient, 'post').mockRejectedValueOnce('error');
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials - Failed to exchange',
+      );
+    });
+    it('should fail when getting an error response from the server', async () => {
+      jest
+        .spyOn(sdk.httpClient, 'post')
+        .mockResolvedValueOnce(
+          mockTokenResponse({ error: 'invalid_client', error_description: 'bad secret' }, false),
+        );
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials - bad secret',
+      );
+    });
+    it('should fail when getting an unexpected response from the server', async () => {
+      jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce(mockTokenResponse({}));
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials',
+      );
+    });
+    it('should fail when the access token the server returns is invalid', async () => {
+      jest
+        .spyOn(sdk.httpClient, 'post')
+        .mockResolvedValueOnce(mockTokenResponse({ access_token: expiredToken }));
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials',
+      );
+    });
+    it('should return the token it got from the server and pass grant params', async () => {
+      const spyPost = jest
+        .spyOn(sdk.httpClient, 'post')
+        .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+      const expected: AuthenticationInfo = {
+        jwt: validToken,
+        token: { exp: 1981398111, iss: 'project-id' },
+      };
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', { scope: 'openid email' }),
+      ).resolves.toMatchObject(expected);
+      expect(spyPost).toHaveBeenCalledWith('/oauth2/v1/apps/token', {
+        grant_type: 'client_credentials',
+        client_id: 'client',
+        client_secret: 'secret',
+        scope: 'openid email',
+      });
+    });
+    it('should enforce audience when provided (match)', async () => {
+      jest
+        .spyOn(sdk.httpClient, 'post')
+        .mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudA }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
+      ).resolves.toHaveProperty('jwt', tokenAudA);
+    });
+    it('should fail when audience mismatches', async () => {
+      jest
+        .spyOn(sdk.httpClient, 'post')
+        .mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudB }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
+      ).rejects.toThrow('could not exchange client credentials - failed to validate jwt');
+    });
+  });
+
   describe('validatePermissionsRoles', () => {
     it('should always succeed with empty requirements', () => {
       expect(sdk.validatePermissions(permAuthInfo, [])).toStrictEqual(true);

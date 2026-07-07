@@ -9,6 +9,7 @@ import createSdk, {
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
+  inboundAppsTokenPath,
   permissionsClaimName,
   refreshTokenCookieName,
   rolesClaimName,
@@ -24,7 +25,14 @@ import {
 } from './helpers';
 import withManagement from './management';
 import withLicense from './management/license';
-import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
+import {
+  AuthenticationInfo,
+  ClientCredentialsOptions,
+  IDPResponse,
+  RefreshAuthenticationInfo,
+  TokenEndpointResponse,
+  VerifyOptions,
+} from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -362,6 +370,65 @@ const nodeSdk = ({
     },
 
     /**
+     * Exchange client credentials for a session JWT using a Descope Inbound App.
+     * Performs the OAuth2 `client_credentials` grant against the project's Inbound App
+     * token endpoint, then validates the returned access token.
+     * @param clientId the Inbound App client ID
+     * @param clientSecret the Inbound App client secret
+     * @param loginOptions Optional controls over the grant (scope, audience, resource)
+     * @param options optional verification options for the returned token (e.g., { audience })
+     * @returns AuthenticationInfo with the access token data
+     */
+    async exchangeClientCredentials(
+      clientId: string,
+      clientSecret: string,
+      loginOptions?: ClientCredentialsOptions,
+      options?: VerifyOptions,
+    ): Promise<AuthenticationInfo> {
+      if (!clientId) throw Error('client id must not be empty');
+      if (!clientSecret) throw Error('client secret must not be empty');
+
+      let httpResp: Response;
+      try {
+        httpResp = await coreSdk.httpClient.post(inboundAppsTokenPath, {
+          grant_type: 'client_credentials',
+          client_id: clientId,
+          client_secret: clientSecret,
+          ...(loginOptions?.scope && { scope: loginOptions.scope }),
+          ...(loginOptions?.audience && { audience: loginOptions.audience }),
+          ...(loginOptions?.resource && { resource: loginOptions.resource }),
+        });
+      } catch (error) {
+        logger?.error('failed to exchange client credentials', error);
+        throw Error(`could not exchange client credentials - Failed to exchange. Error: ${error}`);
+      }
+
+      const data: TokenEndpointResponse = await httpResp.json().catch(() => ({}));
+
+      if (!httpResp.ok) {
+        const message = data?.error_description || data?.error || httpResp.statusText;
+        logger?.error('failed to exchange client credentials', message);
+        throw Error(`could not exchange client credentials - ${message}`);
+      }
+
+      const { access_token: accessToken } = data;
+      if (!accessToken) {
+        logger?.error('failed to parse exchange client credentials response');
+        throw Error('could not exchange client credentials');
+      }
+
+      try {
+        const token = await sdk.validateJwt(accessToken, options);
+        return token;
+      } catch (error) {
+        logger?.error('failed to parse jwt from client credentials', error);
+        throw Error(
+          `could not exchange client credentials - failed to validate jwt. Error: ${error}`,
+        );
+      }
+    },
+
+    /**
      * Make sure that all given permissions exist on the parsed JWT top level claims
      * @param authInfo JWT parsed info
      * @param permissions list of permissions to make sure they exist on te JWT claims
@@ -527,6 +594,6 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
-export type { VerifyOptions } from './types';
+export type { ClientCredentialsOptions, TokenEndpointResponse, VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
