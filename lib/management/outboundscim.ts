@@ -45,18 +45,12 @@ const withOutboundSCIM = (httpClient: HttpClient) => ({
     ),
   /** Load all outbound SCIM configurations for the project. */
   loadAllConfigurations: (): Promise<SdkResponse<OutboundSCIMConfiguration[]>> =>
-    transformResponse<
-      MultipleOutboundSCIMConfigurationsResponse,
-      OutboundSCIMConfiguration[]
-    >(
+    transformResponse<MultipleOutboundSCIMConfigurationsResponse, OutboundSCIMConfiguration[]>(
       httpClient.get(apiPaths.outboundSCIM.loadAll, {}),
       (data) => data.configurations,
     ),
   /** Enable or disable an outbound SCIM configuration. */
-  setEnabled: (
-    id: string,
-    enabled: boolean,
-  ): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
+  setEnabled: (id: string, enabled: boolean): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
     transformResponse<OutboundSCIMConfigurationResponse, OutboundSCIMConfiguration>(
       httpClient.post(apiPaths.outboundSCIM.setEnabled, { id, enabled }),
       (data) => data.configuration,

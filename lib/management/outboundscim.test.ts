@@ -171,9 +171,7 @@ describe('Management OutboundSCIM', () => {
       const resp: SdkResponse<OutboundSCIMConfiguration> =
         await management.outboundSCIM.loadConfiguration('scim1');
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        `${apiPaths.outboundSCIM.load}/scim1`,
-      );
+      expect(mockHttpClient.get).toHaveBeenCalledWith(`${apiPaths.outboundSCIM.load}/scim1`);
 
       expect(resp).toEqual({
         code: 200,
@@ -222,8 +220,10 @@ describe('Management OutboundSCIM', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<OutboundSCIMConfiguration> =
-        await management.outboundSCIM.setEnabled('scim1', true);
+      const resp: SdkResponse<OutboundSCIMConfiguration> = await management.outboundSCIM.setEnabled(
+        'scim1',
+        true,
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.setEnabled, {
         id: 'scim1',
