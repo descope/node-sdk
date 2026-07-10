@@ -136,6 +136,14 @@ const withTenant = (httpClient: HttpClient) => ({
       ),
       (data) => data,
     ),
+  revokeSSOConfigurationLink: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(
+        apiPaths.tenant.revokeSSOConfigurationLink,
+        { tenantId, ...(ssoId ? { ssoId } : {}) },
+        {},
+      ),
+    ),
 });
 
 export default withTenant;

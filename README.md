@@ -78,6 +78,7 @@ Then, you can use that to work with the following functions:
 15. [Manage SSO applications](#manage-sso-applications)
 16. [Manage Management Keys](#manage-management-keys)
 17. [Manage Descopers](#manage-descopers)
+18. [Manage Engines](#manage-engines)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1778,6 +1779,36 @@ await descopeClient.management.descoper.update(
 
 // Descoper deletion cannot be undone. Use carefully.
 await descopeClient.management.descoper.delete('descoper-id');
+```
+
+### Manage Engines
+
+You can create, update, delete, load engines, and rotate their secrets. The engine secret
+is returned only on create and rotate — store it securely, as it cannot be retrieved again.
+
+```typescript
+// Create an engine. The response includes the generated id and secret.
+const createRes = await descopeClient.management.engine.create('My Engine');
+const { id, secret } = createRes.data; // save `secret` securely!
+
+// Update an engine's name (the response does not include the secret).
+await descopeClient.management.engine.update(id, 'Updated Engine Name');
+
+// Load a specific engine by id (the secret is always empty).
+const engineRes = await descopeClient.management.engine.load(id);
+
+// Load all engines (secrets are always empty).
+const enginesRes = await descopeClient.management.engine.loadAll();
+enginesRes.data.forEach((engine) => {
+  // do something
+});
+
+// Rotate an engine's secret. The previous secret is invalidated and the new one returned.
+const rotateRes = await descopeClient.management.engine.rotateSecret(id);
+const newSecret = rotateRes.data.secret;
+
+// Engine deletion cannot be undone. Use carefully.
+await descopeClient.management.engine.delete(id);
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests

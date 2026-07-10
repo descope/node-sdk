@@ -2393,4 +2393,338 @@ describe('Management User', () => {
       });
     });
   });
+
+  describe('import', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockImportResponse = {
+        users: [mockUserResponse],
+        failures: [{ user: 'bad', reason: 'invalid' }],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockImportResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockImportResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.import('Auth0', 'users-data', 'hashes-data', true);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.import, {
+        source: 'Auth0',
+        users: 'users-data',
+        hashes: 'hashes-data',
+        dryrun: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockImportResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateRecoveryEmail', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateRecoveryEmail(
+        'lid',
+        'a@b.c',
+        true,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateRecoveryEmail, {
+        loginId: 'lid',
+        recoveryEmail: 'a@b.c',
+        verified: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateRecoveryPhone', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateRecoveryPhone(
+        'lid',
+        '+123456789',
+        false,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateRecoveryPhone, {
+        loginId: 'lid',
+        recoveryPhone: '+123456789',
+        verified: false,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('updateUserNames', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.updateUserNames(
+        'lid',
+        'given',
+        'middle',
+        'family',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.updateName, {
+        loginId: 'lid',
+        givenName: 'given',
+        middleName: 'middle',
+        familyName: 'family',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.getCustomAttributes();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.user.getCustomAttributes);
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('createCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.createCustomAttributes(attributes);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.createCustomAttributes, {
+        attributes,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.deleteCustomAttributes(['attr1']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.deleteCustomAttributes, {
+        names: ['attr1'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removePasskey', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.removePasskey('some-id', 'cred-id');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removePasskey, {
+        loginId: 'some-id',
+        credentialId: 'cred-id',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('listPasskeys', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const passkeys = [{ id: 'p1', rpId: 'rp', kind: 'k', displayName: 'dn', createdTime: 12 }];
+      const mockResponse = { passkeys };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.listPasskeys('some-id');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.listPasskeys, {
+        loginId: 'some-id',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: passkeys,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('listTrustedDevices', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const devices = [{ id: 'd1', name: 'device', deviceType: 'mobile' }];
+      const mockResponse = { devices };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.listTrustedDevices(['some-id-1', 'some-id-2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.listTrustedDevices, {
+        identifiers: ['some-id-1', 'some-id-2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: devices,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeTrustedDevices', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.removeTrustedDevices('some-id', ['d1', 'd2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeTrustedDevices, {
+        identifier: 'some-id',
+        deviceIds: ['d1', 'd2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

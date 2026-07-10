@@ -236,6 +236,25 @@ const WithAuthz = (httpClient: HttpClient, config?: FGAConfig) => {
         (data) => data.relations,
       ),
     /**
+     * Return the list of all defined relations (not recursive) on the given resource,
+     * controlling whether target set relations are included via a filter flag.
+     *
+     * @param resource The resource we are checking
+     * @param includeTargetSetRelations if true, will include target set relations as well as direct relations
+     * @returns array of relations that exist for the given resource
+     */
+    resourceRelationsWithTargetSetsFilter: (
+      resource: string,
+      includeTargetSetRelations = true,
+    ): Promise<SdkResponse<AuthzRelation[]>> =>
+      transformResponse(
+        httpClient.post(apiPaths.authz.resource, {
+          resource,
+          ignoreTargetSetRelations: !includeTargetSetRelations,
+        }),
+        (data) => data.relations,
+      ),
+    /**
      * Return the list of all defined relations (not recursive) for the given targets.
      *
      * @param targets array of targets we want to check
@@ -243,6 +262,22 @@ const WithAuthz = (httpClient: HttpClient, config?: FGAConfig) => {
      * @returns array of relations that exist for the given targets
      */
     targetsRelations: (
+      targets: string[],
+      includeTargetSetRelations = false,
+    ): Promise<SdkResponse<AuthzRelation[]>> =>
+      transformResponse(
+        httpClient.post(apiPaths.authz.targets, { targets, includeTargetSetRelations }),
+        (data) => data.relations,
+      ),
+    /**
+     * Return the list of all defined relations (not recursive) for the given targets,
+     * controlling whether target set relations are included via a filter flag.
+     *
+     * @param targets array of targets we want to check
+     * @param includeTargetSetRelations if true, will include target set relations as well as target relations
+     * @returns array of relations that exist for the given targets
+     */
+    targetsRelationsWithTargetSetsFilter: (
       targets: string[],
       includeTargetSetRelations = false,
     ): Promise<SdkResponse<AuthzRelation[]>> =>

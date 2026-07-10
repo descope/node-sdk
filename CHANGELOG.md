@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.12.0](https://github.com/descope/node-sdk/compare/v2.11.0...v2.12.0) (2026-07-06)
+
+
+### Features
+
+* **sdk:** implement management sdk parity between node-sdk and go-sdk ([#760](https://github.com/descope/node-sdk/issues/760)) ([83f08bb](https://github.com/descope/node-sdk/commit/83f08bbc214d8922ede975a26435a0ca4c6441ce))
+
+## [2.11.0](https://github.com/descope/node-sdk/compare/v2.10.0...v2.11.0) (2026-06-28)
+
+
+### Features
+
+* **mgmt:** add engine management API ([#757](https://github.com/descope/node-sdk/issues/757)) ([e0bc769](https://github.com/descope/node-sdk/commit/e0bc769e5bd228cf8ccf5517ec94c2ee703e8962))
+
 ## [2.10.0](https://github.com/descope/node-sdk/compare/v2.9.0...v2.10.0) (2026-06-28)
 
 

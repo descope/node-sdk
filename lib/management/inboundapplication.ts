@@ -4,6 +4,7 @@ import {
   InboundApplication,
   InboundApplicationConsent,
   InboundApplicationConsentDeleteOptions,
+  InboundApplicationTenantConsentDeleteOptions,
   InboundApplicationConsentSearchOptions,
   CreateInboundApplicationResponse,
   InboundApplicationOptions,
@@ -37,6 +38,8 @@ const withInboundApplication = (httpClient: HttpClient) => ({
     transformResponse(httpClient.post(apiPaths.inboundApplication.patch, { ...options })),
   deleteApplication: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.inboundApplication.delete, { id })),
+  deleteApplicationBatch: (ids: string[]): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.inboundApplication.deleteBatch, { ids })),
   loadApplication: (id: string): Promise<SdkResponse<InboundApplication>> =>
     transformResponse<InboundApplication, InboundApplication>(
       httpClient.get(apiPaths.inboundApplication.load, {
@@ -67,6 +70,12 @@ const withInboundApplication = (httpClient: HttpClient) => ({
     ),
   deleteConsents: (options: InboundApplicationConsentDeleteOptions): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.inboundApplicationConsents.delete, { ...options })),
+  deleteTenantConsents: (
+    options: InboundApplicationTenantConsentDeleteOptions,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.inboundApplicationConsents.deleteTenant, { ...options }),
+    ),
 });
 
 export default withInboundApplication;

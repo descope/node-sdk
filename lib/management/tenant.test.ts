@@ -617,4 +617,36 @@ describe('Management Tenant', () => {
       );
     });
   });
+
+  describe('revokeSSOConfigurationLink', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.tenant.revokeSSOConfigurationLink('test', 'somessoid');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.tenant.revokeSSOConfigurationLink,
+        {
+          tenantId: 'test',
+          ssoId: 'somessoid',
+        },
+        {},
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });
