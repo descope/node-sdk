@@ -1230,6 +1230,40 @@ export type BatchUploadOutboundAppTokensResponse = {
   failures: OutboundAppTokenUploadFailure[];
 };
 
+/**
+ * Configuration for an outbound SCIM provisioning integration. Bound to an outbound
+ * application (`appId`); `configuration` holds the provider-specific settings blob.
+ */
+export type OutboundSCIMConfiguration = {
+  id: string;
+  name: string;
+  appId: string;
+  configuration: Record<string, unknown>;
+  enabled: boolean;
+  lastExportTime: number;
+  lastProcessingTime: number;
+  failures: number;
+  version: number;
+};
+
+/** Request body for creating an outbound SCIM configuration. */
+export type CreateOutboundSCIMConfigurationRequest = {
+  name: string;
+  appId: string;
+  configuration: Record<string, unknown>;
+};
+
+/**
+ * Request body for updating an outbound SCIM configuration. `version` is required for
+ * optimistic concurrency; the update fails if it does not match the currently stored version.
+ */
+export type UpdateOutboundSCIMConfigurationRequest = {
+  id: string;
+  name?: string;
+  configuration: Record<string, unknown>;
+  version: number;
+};
+
 export type ManagementFlowOptions = {
   input?: Record<string, any>;
   preview?: boolean;

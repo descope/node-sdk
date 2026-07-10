@@ -17,6 +17,7 @@ import withPassword from './password';
 import WithFGA from './fga';
 import withInboundApplication from './inboundapplication';
 import withOutboundApplication from './outboundapplication';
+import withOutboundSCIM from './outboundscim';
 import withDescoper from './descoper';
 import withManagementKey from './managementKey';
 import { FGAConfig } from './types';
@@ -30,6 +31,7 @@ const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   ssoApplication: withSSOApplication(client),
   inboundApplication: withInboundApplication(client),
   outboundApplication: withOutboundApplication(client),
+  outboundSCIM: withOutboundSCIM(client),
   sso: withSSOSettings(client),
   jwt: withJWT(client),
   permission: withPermission(client),
