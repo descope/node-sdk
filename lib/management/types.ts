@@ -333,6 +333,8 @@ export type Role = {
   createdTime: number;
   tenantId?: string;
   default?: boolean;
+  private?: boolean;
+  id?: string;
 };
 
 /** Search roles based on the parameters */
