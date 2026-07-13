@@ -554,11 +554,13 @@ describe('Management SSO', () => {
           },
           providerID: 'pidoidc',
           scimProviderID: 'scimidoidc',
+          lastSuccessTestTime: 888,
         },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
           providerID: 'pidsaml',
           scimProviderID: 'scimidsaml',
+          lastSuccessTestTime: 777,
         },
       };
       const httpResponse = {
@@ -593,11 +595,13 @@ describe('Management SSO', () => {
             },
             providerID: 'pidoidc',
             scimProviderID: 'scimidoidc',
+            lastSuccessTestTime: 888,
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
             providerID: 'pidsaml',
             scimProviderID: 'scimidsaml',
+            lastSuccessTestTime: 777,
           },
         },
       });
