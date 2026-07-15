@@ -333,6 +333,8 @@ export type Role = {
   createdTime: number;
   tenantId?: string;
   default?: boolean;
+  private?: boolean;
+  id?: string;
 };
 
 /** Search roles based on the parameters */
@@ -555,6 +557,8 @@ export type SSOSAMLSettingsResponse = {
   redirectUrl: string;
   providerID?: string;
   scimProviderID?: string;
+  /** Epoch seconds of the last successful SSO test login on this configuration (read-only) */
+  lastSuccessTestTime?: number;
 };
 
 export type SSOSettings = {
@@ -606,6 +610,8 @@ export type SSOOIDCSettings = {
   roleMappings?: OIDCRoleMapping;
   providerID?: string;
   scimProviderID?: string;
+  /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
+  lastSuccessTestTime?: number;
 };
 
 export type SSOSAMLSettings = {

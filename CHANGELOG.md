@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.1](https://github.com/descope/node-sdk/compare/v2.12.0...v2.12.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **mgmt:** add id and private fields to Role type ([#766](https://github.com/descope/node-sdk/issues/766)) ([747d8f6](https://github.com/descope/node-sdk/commit/747d8f6a4e1a901aa8a5fbbbcf88169e8c02beaf))
+
 ## [2.12.0](https://github.com/descope/node-sdk/compare/v2.11.0...v2.12.0) (2026-07-06)
 
 
