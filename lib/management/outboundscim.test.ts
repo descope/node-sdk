@@ -22,13 +22,6 @@ const mockOutboundSCIMConfigResponse = {
   configuration: mockOutboundSCIMConfig,
 };
 
-const mockAllOutboundSCIMConfigsResponse = {
-  configurations: [
-    mockOutboundSCIMConfig,
-    { ...mockOutboundSCIMConfig, id: 'scim2', name: 'Widgets SCIM' },
-  ],
-};
-
 describe('Management OutboundSCIM', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -176,32 +169,6 @@ describe('Management OutboundSCIM', () => {
       expect(resp).toEqual({
         code: 200,
         data: mockOutboundSCIMConfig,
-        ok: true,
-        response: httpResponse,
-      });
-    });
-  });
-
-  describe('loadAllConfigurations', () => {
-    it('should send the correct request and receive correct response', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => mockAllOutboundSCIMConfigsResponse,
-        clone: () => ({
-          json: () => Promise.resolve(mockAllOutboundSCIMConfigsResponse),
-        }),
-        status: 200,
-      };
-      mockHttpClient.get.mockResolvedValue(httpResponse);
-
-      const resp: SdkResponse<OutboundSCIMConfiguration[]> =
-        await management.outboundSCIM.loadAllConfigurations();
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.outboundSCIM.loadAll, {});
-
-      expect(resp).toEqual({
-        code: 200,
-        data: mockAllOutboundSCIMConfigsResponse.configurations,
         ok: true,
         response: httpResponse,
       });

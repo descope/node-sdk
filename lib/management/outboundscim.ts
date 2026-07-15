@@ -10,10 +10,6 @@ type OutboundSCIMConfigurationResponse = {
   configuration: OutboundSCIMConfiguration;
 };
 
-type MultipleOutboundSCIMConfigurationsResponse = {
-  configurations: OutboundSCIMConfiguration[];
-};
-
 const withOutboundSCIM = (httpClient: HttpClient) => ({
   /** Create a new outbound SCIM configuration bound to an outbound application. */
   createConfiguration: (
@@ -42,12 +38,6 @@ const withOutboundSCIM = (httpClient: HttpClient) => ({
     transformResponse<OutboundSCIMConfigurationResponse, OutboundSCIMConfiguration>(
       httpClient.get(`${apiPaths.outboundSCIM.load}/${id}`),
       (data) => data.configuration,
-    ),
-  /** Load all outbound SCIM configurations for the project. */
-  loadAllConfigurations: (): Promise<SdkResponse<OutboundSCIMConfiguration[]>> =>
-    transformResponse<MultipleOutboundSCIMConfigurationsResponse, OutboundSCIMConfiguration[]>(
-      httpClient.get(apiPaths.outboundSCIM.loadAll, {}),
-      (data) => data.configurations,
     ),
   /** Enable or disable an outbound SCIM configuration. */
   setEnabled: (id: string, enabled: boolean): Promise<SdkResponse<OutboundSCIMConfiguration>> =>

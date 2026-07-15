@@ -145,7 +145,6 @@ export default {
     update: '/v1/mgmt/outbound/scim/update',
     delete: '/v1/mgmt/outbound/scim/delete',
     load: '/v1/mgmt/outbound/scim',
-    loadAll: '/v1/mgmt/outbound/scim',
     setEnabled: '/v1/mgmt/outbound/scim/enabled/set',
   },
   sso: {
