@@ -1326,8 +1326,6 @@ export type BatchUploadOutboundAppTokensResponse = {
  * application (`appId`); `configuration` holds the provider-specific settings blob.
  */
 export type OutboundSCIMConfiguration = {
-  id: string;
-  name: string;
   appId: string;
   configuration: Record<string, unknown>;
   enabled: boolean;
@@ -1337,9 +1335,11 @@ export type OutboundSCIMConfiguration = {
   version: number;
 };
 
-/** Request body for creating an outbound SCIM configuration. */
+/**
+ * Request body for creating an outbound SCIM configuration on a federated SSO
+ * application. The connector name is derived server-side from the app.
+ */
 export type CreateOutboundSCIMConfigurationRequest = {
-  name: string;
   appId: string;
   configuration: Record<string, unknown>;
 };
@@ -1349,8 +1349,7 @@ export type CreateOutboundSCIMConfigurationRequest = {
  * optimistic concurrency; the update fails if it does not match the currently stored version.
  */
 export type UpdateOutboundSCIMConfigurationRequest = {
-  id: string;
-  name?: string;
+  appId: string;
   configuration: Record<string, unknown>;
   version: number;
 };

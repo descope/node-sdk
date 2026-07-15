@@ -11,7 +11,7 @@ type OutboundSCIMConfigurationResponse = {
 };
 
 const withOutboundSCIM = (httpClient: HttpClient) => ({
-  /** Create a new outbound SCIM configuration bound to an outbound application. */
+  /** Create a new outbound SCIM configuration on the federated SSO application identified by `appId`. */
   createConfiguration: (
     request: CreateOutboundSCIMConfigurationRequest,
   ): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
@@ -20,8 +20,8 @@ const withOutboundSCIM = (httpClient: HttpClient) => ({
       (data) => data.configuration,
     ),
   /**
-   * Update an existing outbound SCIM configuration. `version` must match the currently
-   * stored version — a mismatch fails the update (optimistic concurrency).
+   * Update the outbound SCIM configuration attached to the given federated SSO app. `version`
+   * must match the currently stored version — a mismatch fails the update (optimistic concurrency).
    */
   updateConfiguration: (
     request: UpdateOutboundSCIMConfigurationRequest,
@@ -30,19 +30,22 @@ const withOutboundSCIM = (httpClient: HttpClient) => ({
       httpClient.post(apiPaths.outboundSCIM.update, { ...request }),
       (data) => data.configuration,
     ),
-  /** Delete an outbound SCIM configuration by id. */
-  deleteConfiguration: (id: string): Promise<SdkResponse<never>> =>
-    transformResponse(httpClient.post(apiPaths.outboundSCIM.delete, { id })),
-  /** Load a single outbound SCIM configuration by id. */
-  loadConfiguration: (id: string): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
+  /** Delete the outbound SCIM configuration attached to the given federated SSO app. */
+  deleteConfiguration: (appId: string): Promise<SdkResponse<never>> =>
+    transformResponse(httpClient.post(apiPaths.outboundSCIM.delete, { appId })),
+  /** Load the outbound SCIM configuration attached to the given federated SSO app. */
+  loadConfiguration: (appId: string): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
     transformResponse<OutboundSCIMConfigurationResponse, OutboundSCIMConfiguration>(
-      httpClient.get(`${apiPaths.outboundSCIM.load}/${id}`),
+      httpClient.get(`${apiPaths.outboundSCIM.load}/${appId}`),
       (data) => data.configuration,
     ),
-  /** Enable or disable an outbound SCIM configuration. */
-  setEnabled: (id: string, enabled: boolean): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
+  /** Enable or disable the outbound SCIM configuration attached to the given federated SSO app. */
+  setEnabled: (
+    appId: string,
+    enabled: boolean,
+  ): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
     transformResponse<OutboundSCIMConfigurationResponse, OutboundSCIMConfiguration>(
-      httpClient.post(apiPaths.outboundSCIM.setEnabled, { id, enabled }),
+      httpClient.post(apiPaths.outboundSCIM.setEnabled, { appId, enabled }),
       (data) => data.configuration,
     ),
 });

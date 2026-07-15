@@ -7,8 +7,6 @@ import { mockHttpClient, resetMockHttpClient } from './testutils';
 const management = withManagement(mockHttpClient);
 
 const mockOutboundSCIMConfig: OutboundSCIMConfiguration = {
-  id: 'scim1',
-  name: 'ACME SCIM',
   appId: 'app1',
   configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
   enabled: true,
@@ -42,13 +40,11 @@ describe('Management OutboundSCIM', () => {
 
       const resp: SdkResponse<OutboundSCIMConfiguration> =
         await management.outboundSCIM.createConfiguration({
-          name: 'ACME SCIM',
           appId: 'app1',
           configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.create, {
-        name: 'ACME SCIM',
         appId: 'app1',
         configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
       });
@@ -76,15 +72,13 @@ describe('Management OutboundSCIM', () => {
 
       const resp: SdkResponse<OutboundSCIMConfiguration> =
         await management.outboundSCIM.updateConfiguration({
-          id: 'scim1',
-          name: 'ACME SCIM v2',
+          appId: 'app1',
           configuration: { baseUrl: 'https://scim2.example.com', token: 'shh2' },
           version: 3,
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.update, {
-        id: 'scim1',
-        name: 'ACME SCIM v2',
+        appId: 'app1',
         configuration: { baseUrl: 'https://scim2.example.com', token: 'shh2' },
         version: 3,
       });
@@ -94,30 +88,6 @@ describe('Management OutboundSCIM', () => {
         data: mockOutboundSCIMConfig,
         ok: true,
         response: httpResponse,
-      });
-    });
-
-    it('should send update without name when omitted', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => mockOutboundSCIMConfigResponse,
-        clone: () => ({
-          json: () => Promise.resolve(mockOutboundSCIMConfigResponse),
-        }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
-
-      await management.outboundSCIM.updateConfiguration({
-        id: 'scim1',
-        configuration: { baseUrl: 'https://scim.example.com' },
-        version: 5,
-      });
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.update, {
-        id: 'scim1',
-        configuration: { baseUrl: 'https://scim.example.com' },
-        version: 5,
       });
     });
   });
@@ -134,10 +104,10 @@ describe('Management OutboundSCIM', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.outboundSCIM.deleteConfiguration('scim1');
+      const resp = await management.outboundSCIM.deleteConfiguration('app1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.delete, {
-        id: 'scim1',
+        appId: 'app1',
       });
 
       expect(resp).toEqual({
@@ -162,9 +132,9 @@ describe('Management OutboundSCIM', () => {
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundSCIMConfiguration> =
-        await management.outboundSCIM.loadConfiguration('scim1');
+        await management.outboundSCIM.loadConfiguration('app1');
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(`${apiPaths.outboundSCIM.load}/scim1`);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(`${apiPaths.outboundSCIM.load}/app1`);
 
       expect(resp).toEqual({
         code: 200,
@@ -188,12 +158,12 @@ describe('Management OutboundSCIM', () => {
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
       const resp: SdkResponse<OutboundSCIMConfiguration> = await management.outboundSCIM.setEnabled(
-        'scim1',
+        'app1',
         true,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.setEnabled, {
-        id: 'scim1',
+        appId: 'app1',
         enabled: true,
       });
 
@@ -216,10 +186,10 @@ describe('Management OutboundSCIM', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      await management.outboundSCIM.setEnabled('scim1', false);
+      await management.outboundSCIM.setEnabled('app1', false);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.setEnabled, {
-        id: 'scim1',
+        appId: 'app1',
         enabled: false,
       });
     });
