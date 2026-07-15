@@ -40,10 +40,7 @@ const withOutboundSCIM = (httpClient: HttpClient) => ({
       (data) => data.configuration,
     ),
   /** Enable or disable the outbound SCIM configuration attached to the given federated SSO app. */
-  setEnabled: (
-    appId: string,
-    enabled: boolean,
-  ): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
+  setEnabled: (appId: string, enabled: boolean): Promise<SdkResponse<OutboundSCIMConfiguration>> =>
     transformResponse<OutboundSCIMConfigurationResponse, OutboundSCIMConfiguration>(
       httpClient.post(apiPaths.outboundSCIM.setEnabled, { appId, enabled }),
       (data) => data.configuration,
