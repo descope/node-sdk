@@ -8,7 +8,10 @@ const management = withManagement(mockHttpClient);
 
 const mockOutboundSCIMConfig: OutboundSCIMConfiguration = {
   appId: 'app1',
-  configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
+  configuration: {
+    baseUrl: 'https://scim.example.com',
+    authentication: { method: 'bearerToken', bearerToken: 'shh' },
+  },
   enabled: true,
   lastExportTime: 1_700_000_000,
   lastProcessingTime: 1_700_000_100,
@@ -41,12 +44,18 @@ describe('Management OutboundSCIM', () => {
       const resp: SdkResponse<OutboundSCIMConfiguration> =
         await management.outboundSCIM.createConfiguration({
           appId: 'app1',
-          configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
+          configuration: {
+            baseUrl: 'https://scim.example.com',
+            authentication: { method: 'bearerToken', bearerToken: 'shh' },
+          },
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.create, {
         appId: 'app1',
-        configuration: { baseUrl: 'https://scim.example.com', token: 'shh' },
+        configuration: {
+          baseUrl: 'https://scim.example.com',
+          authentication: { method: 'bearerToken', bearerToken: 'shh' },
+        },
       });
 
       expect(resp).toEqual({
@@ -73,13 +82,19 @@ describe('Management OutboundSCIM', () => {
       const resp: SdkResponse<OutboundSCIMConfiguration> =
         await management.outboundSCIM.updateConfiguration({
           appId: 'app1',
-          configuration: { baseUrl: 'https://scim2.example.com', token: 'shh2' },
+          configuration: {
+            baseUrl: 'https://scim2.example.com',
+            authentication: { method: 'bearerToken', bearerToken: 'shh2' },
+          },
           version: 3,
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundSCIM.update, {
         appId: 'app1',
-        configuration: { baseUrl: 'https://scim2.example.com', token: 'shh2' },
+        configuration: {
+          baseUrl: 'https://scim2.example.com',
+          authentication: { method: 'bearerToken', bearerToken: 'shh2' },
+        },
         version: 3,
       });
 

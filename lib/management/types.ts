@@ -1324,12 +1324,13 @@ export type BatchUploadOutboundAppTokensResponse = {
 };
 
 /**
- * Configuration for an outbound SCIM provisioning integration. Bound to an outbound
- * application (`appId`); `configuration` holds the provider-specific settings blob.
+ * Configuration for an outbound SCIM provisioning integration. Bound to a
+ * federated SSO application (`appId`); `configuration` carries the
+ * provider-specific settings, typed against the SCIM connector template.
  */
 export type OutboundSCIMConfiguration = {
   appId: string;
-  configuration: Record<string, unknown>;
+  configuration: OutboundSCIMConfigurationData;
   enabled: boolean;
   lastExportTime: number;
   lastProcessingTime: number;
@@ -1338,12 +1339,110 @@ export type OutboundSCIMConfiguration = {
 };
 
 /**
+ * OutboundSCIMConfigurationData is the provider-specific configuration blob for an
+ * outbound SCIM connector. Field names mirror the SCIM connector template
+ * (`content/connectors/templates/scim/metadata.json`). Secret-typed fields
+ * (`hmacSecret`, `awsAccessKeyId`, `awsSecretAccessKey`, `rfc9421PrivateKey`)
+ * are stored encrypted server-side; the backend returns them masked on Load —
+ * never plaintext.
+ */
+export type OutboundSCIMConfigurationData = {
+  /** SCIM SP root URL, e.g. "https://scim.example.com". */
+  baseUrl: string;
+  /** Drop unverified phone numbers from outgoing SCIM payloads. */
+  ignoreUnverifiedPhones?: boolean;
+  /** Drop unverified emails from outgoing SCIM payloads. */
+  ignoreUnverifiedEmails?: boolean;
+  /** Maps Descope user attributes to SCIM attributes. */
+  userMapping?: OutboundSCIMUserMapping[];
+  /** HTTP auth used for every SCIM request. */
+  authentication?: OutboundSCIMHTTPAuth;
+  /** Extra HTTP headers sent with every SCIM request. Values may be secret-typed. */
+  headers?: OutboundSCIMHeader[];
+  /**
+   * HMAC secret; signs the base64-encoded payload — the signature is delivered
+   * in the `x-descope-webhook-s256` header. Secret-typed: returned masked on Load.
+   */
+  hmacSecret?: string;
+  /** AWS Signature V4 signing mode. One of `"none"` (default) | `"credentials"`. */
+  awsAuthType?: 'none' | 'credentials';
+  /** Required when `awsAuthType === "credentials"`. Secret-typed. */
+  awsAccessKeyId?: string;
+  /** Required when `awsAuthType === "credentials"`. Secret-typed. */
+  awsSecretAccessKey?: string;
+  /** AWS service to target (e.g. `"lambda"`, `"execute-api"`). Required when `awsAuthType === "credentials"`. */
+  awsService?: string;
+  /** Turn on RFC 9421 HTTP Message Signatures. */
+  rfc9421SigningEnabled?: boolean;
+  /** PEM private key (ECDSA / Ed25519 / RSA) or HMAC secret. Secret-typed. */
+  rfc9421PrivateKey?: string;
+  /** Key id included in the signature metadata. */
+  rfc9421KeyId?: string;
+  /**
+   * HTTP message components covered by the signature (comma-separated, e.g.
+   * `"@method,@target-uri,@authority"`). Empty means defaults.
+   */
+  rfc9421Components?: string;
+  /** How long the signature is valid, in seconds. Default 300. */
+  rfc9421SignatureTTL?: number;
+  /** Disable TLS certificate verification. Do not use in production. */
+  insecure?: boolean;
+};
+
+/** One entry in the user attribute mapping. `srcKey` may be a dot-path (e.g. `"customAttributes.foo"`). */
+export type OutboundSCIMUserMapping = {
+  srcKey: string;
+  namespace: string;
+  destKey: string;
+};
+
+/** One extra HTTP header sent with every SCIM request. Secret headers are stored encrypted. */
+export type OutboundSCIMHeader = {
+  key: string;
+  value: string;
+  secret?: boolean;
+};
+
+export type OutboundSCIMHTTPAuthMethod =
+  | 'none'
+  | 'bearerToken'
+  | 'apiKey'
+  | 'basicAuth'
+  | 'oauth2ClientCredentials';
+
+/**
+ * Flat HTTP auth config: `method` is the discriminator, and the matching sub-field
+ * carries the credentials. Only the sub-field named by `method` is used at request
+ * time — others are ignored server-side.
+ */
+export type OutboundSCIMHTTPAuth = {
+  method: OutboundSCIMHTTPAuthMethod;
+  bearerToken?: string;
+  apiKey?: { key: string; token: string };
+  basicAuth?: { username: string; password: string };
+  oauth2ClientCredentials?: OutboundSCIMOAuth2ClientCredentials;
+};
+
+/**
+ * OAuth2 client-credentials grant configuration. `scopes` is space-separated.
+ * `authStyle` is one of `"header"` (default) or `"body"`.
+ */
+export type OutboundSCIMOAuth2ClientCredentials = {
+  clientId: string;
+  clientSecret: string;
+  authUrl: string;
+  scopes?: string;
+  authStyle?: 'header' | 'body';
+  tokenRequestHeaders?: { name: string; value: string }[];
+};
+
+/**
  * Request body for creating an outbound SCIM configuration on a federated SSO
  * application. The connector name is derived server-side from the app.
  */
 export type CreateOutboundSCIMConfigurationRequest = {
   appId: string;
-  configuration: Record<string, unknown>;
+  configuration: OutboundSCIMConfigurationData;
 };
 
 /**
@@ -1352,7 +1451,7 @@ export type CreateOutboundSCIMConfigurationRequest = {
  */
 export type UpdateOutboundSCIMConfigurationRequest = {
   appId: string;
-  configuration: Record<string, unknown>;
+  configuration: OutboundSCIMConfigurationData;
   version: number;
 };
 
