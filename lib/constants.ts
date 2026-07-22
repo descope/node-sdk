@@ -8,3 +8,5 @@ export const authorizedTenantsClaimName = 'tenants';
 export const permissionsClaimName = 'permissions';
 /** The key of the roles claims in the claims map either under tenant or top level */
 export const rolesClaimName = 'roles';
+/** OAuth2 token endpoint for Descope Inbound Apps (used for the client_credentials grant) */
+export const inboundAppsTokenPath = '/oauth2/v1/apps/token';

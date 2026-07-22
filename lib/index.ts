@@ -9,6 +9,7 @@ import createSdk, {
 } from '@descope/core-js-sdk';
 import { JWK, JWTHeaderParameters, KeyLike, errors, importJWK, jwtVerify } from 'jose';
 import {
+  inboundAppsTokenPath,
   permissionsClaimName,
   refreshTokenCookieName,
   rolesClaimName,
@@ -24,7 +25,15 @@ import {
 } from './helpers';
 import withManagement from './management';
 import withLicense from './management/license';
-import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
+import {
+  AuthenticationInfo,
+  ClientCredentialsOptions,
+  IDPResponse,
+  OidcDiscoveryDocument,
+  RefreshAuthenticationInfo,
+  TokenEndpointResponse,
+  VerifyOptions,
+} from './types';
 import descopeErrors from './errors';
 
 declare const BUILD_VERSION: string;
@@ -114,6 +123,40 @@ const nodeSdk = ({
       (acc, [kid, jwk]) => (kid ? { ...acc, [kid.toString()]: jwk } : acc),
       {},
     );
+  };
+
+  // Cache of resolved Federated App token endpoints, keyed by discovery URL. OIDC
+  // discovery documents rarely change, so we resolve each one at most once.
+  const federatedTokenEndpoints: Record<string, string> = {};
+
+  /**
+   * Resolve (and cache) a Federated App's OAuth2 token endpoint by fetching its OIDC
+   * discovery document. Federated apps expose their token endpoint in different URL
+   * shapes (project-scoped or app-scoped), so we always read it from discovery rather
+   * than constructing it.
+   */
+  const resolveFederatedTokenEndpoint = async (discoveryUrl: string): Promise<string> => {
+    if (federatedTokenEndpoints[discoveryUrl]) return federatedTokenEndpoints[discoveryUrl];
+
+    let resp: Response;
+    try {
+      resp = await fetch(discoveryUrl, {
+        method: 'GET',
+        headers: { ...nodeHeaders, Accept: 'application/json' },
+      });
+    } catch (error) {
+      logger?.error('failed to fetch federated app discovery document', error);
+      throw Error(`failed to fetch discovery document. Error: ${error}`);
+    }
+
+    const discovery: OidcDiscoveryDocument = await resp.json().catch(() => ({}));
+    if (!resp.ok || !discovery.token_endpoint) {
+      logger?.error('failed to resolve token endpoint from discovery document', discovery);
+      throw Error('token_endpoint missing from discovery document');
+    }
+
+    federatedTokenEndpoints[discoveryUrl] = discovery.token_endpoint;
+    return discovery.token_endpoint;
   };
 
   // Rate limit tier from the license handshake. Populated asynchronously on init
@@ -362,6 +405,121 @@ const nodeSdk = ({
     },
 
     /**
+     * Exchange client credentials for a session JWT using a Descope app.
+     * Performs the OAuth2 `client_credentials` grant against the app's token endpoint,
+     * then validates the returned access token.
+     *
+     * Both grants use a form-urlencoded token request, per RFC 6749 §4.4.2. The kind of
+     * app is selected via `loginOptions.appType`:
+     * - `'inbound'` (default): Inbound Apps and agentic clients. Agentic clients are
+     *   Inbound Apps under the hood, so pass the client ID and secret of an agentic
+     *   client here just as you would for any other Inbound App. The credentials are
+     *   sent in the form body to `/oauth2/v1/apps/token`.
+     * - `'federated'`: OIDC Federated Apps. Federated apps expose their token endpoint
+     *   in different URL shapes (project-scoped or app-scoped), so pass the app's OIDC
+     *   discovery URL (`loginOptions.discoveryUrl`, required). The SDK fetches that
+     *   document and uses its published `token_endpoint`, authenticating with HTTP Basic
+     *   auth. When using an access key as the client secret, set `clientId` to your
+     *   Project ID.
+     * @param clientId the app (or agentic client) client ID; the Project ID when using an access key as the secret
+     * @param clientSecret the app (or agentic client) client secret, or an access key
+     * @param loginOptions Optional controls over the grant (scope, audience, resource, appType, discoveryUrl)
+     * @param options optional verification options for the returned token (e.g., { audience })
+     * @returns AuthenticationInfo with the access token data
+     */
+    async exchangeClientCredentials(
+      clientId: string,
+      clientSecret: string,
+      loginOptions?: ClientCredentialsOptions,
+      options?: VerifyOptions,
+    ): Promise<AuthenticationInfo> {
+      if (!clientId) throw Error('client id must not be empty');
+      if (!clientSecret) throw Error('client secret must not be empty');
+
+      // Federated apps need their token endpoint resolved from OIDC discovery first, so
+      // that discovery failures surface with a clear message rather than being reported
+      // as a failed token exchange below.
+      let federatedTokenEndpoint: string | undefined;
+      if (loginOptions?.appType === 'federated') {
+        if (!loginOptions.discoveryUrl) {
+          throw Error('discoveryUrl is required for federated apps');
+        }
+        try {
+          federatedTokenEndpoint = await resolveFederatedTokenEndpoint(loginOptions.discoveryUrl);
+        } catch (error) {
+          throw Error(
+            `could not exchange client credentials - ${
+              error instanceof Error ? error.message : error
+            }`,
+          );
+        }
+      }
+
+      // OAuth2 token endpoints expect an application/x-www-form-urlencoded body per
+      // RFC 6749 §4.4.2, so both grants are form-encoded. The core HTTP client only
+      // speaks JSON, so we issue these requests directly.
+      const params: Record<string, string> = { grant_type: 'client_credentials' };
+      if (loginOptions?.scope) params.scope = loginOptions.scope;
+      if (loginOptions?.audience) params.audience = loginOptions.audience;
+      if (loginOptions?.resource) params.resource = loginOptions.resource;
+
+      const headers: Record<string, string> = {
+        ...nodeHeaders,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+      let url: string;
+      if (federatedTokenEndpoint) {
+        // Federated Apps authenticate to their discovered endpoint with HTTP Basic auth.
+        url = federatedTokenEndpoint;
+        headers.Authorization = `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
+          'base64',
+        )}`;
+      } else {
+        // Inbound Apps / agentic clients send the credentials in the form body.
+        url = coreSdk.httpClient.buildUrl(inboundAppsTokenPath);
+        headers['x-descope-project-id'] = projectId;
+        params.client_id = clientId;
+        params.client_secret = clientSecret;
+      }
+
+      let httpResp: Response;
+      try {
+        httpResp = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: new URLSearchParams(params).toString(),
+        });
+      } catch (error) {
+        logger?.error('failed to exchange client credentials', error);
+        throw Error(`could not exchange client credentials - Failed to exchange. Error: ${error}`);
+      }
+
+      const data: TokenEndpointResponse = await httpResp.json().catch(() => ({}));
+
+      if (!httpResp.ok) {
+        const message = data?.error_description || data?.error || httpResp.statusText;
+        logger?.error('failed to exchange client credentials', message);
+        throw Error(`could not exchange client credentials - ${message}`);
+      }
+
+      const { access_token: accessToken } = data;
+      if (!accessToken) {
+        logger?.error('failed to parse exchange client credentials response');
+        throw Error('could not exchange client credentials');
+      }
+
+      try {
+        const token = await sdk.validateJwt(accessToken, options);
+        return token;
+      } catch (error) {
+        logger?.error('failed to parse jwt from client credentials', error);
+        throw Error(
+          `could not exchange client credentials - failed to validate jwt. Error: ${error}`,
+        );
+      }
+    },
+
+    /**
      * Make sure that all given permissions exist on the parsed JWT top level claims
      * @param authInfo JWT parsed info
      * @param permissions list of permissions to make sure they exist on te JWT claims
@@ -527,6 +685,12 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
-export type { VerifyOptions } from './types';
+export type {
+  ClientCredentialsAppType,
+  ClientCredentialsOptions,
+  OidcDiscoveryDocument,
+  TokenEndpointResponse,
+  VerifyOptions,
+} from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';

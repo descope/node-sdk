@@ -38,9 +38,10 @@ Once you've created a `descopeClient`, you can use that to work with the followi
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
 7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+8. [Client Credentials (OAuth)](#client-credentials-oauth)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -427,6 +428,62 @@ Alternatively, it is also possible to replace an existing active password with a
 const jwtResponse = await descopeClient.password.replace(loginId, oldPassword, newPassword);
 // jwtResponse.data.sessionJwt;
 // jwtResponse.data.refreshJwt;
+```
+
+### Client Credentials (OAuth)
+
+If you have configured an [Inbound App](https://docs.descope.com/identity-federation/inbound-apps) or [Agentic Client](https://docs.descope.com/agentic-identity-hub/core-components/clients) in your Descope project, you can perform a machine-to-machine `client_credentials` grant.
+
+Provide the app's client ID and client secret, and the SDK will exchange them for a validated session JWT — similar to exchanging an access key (`exchangeAccessKey`), but authenticated with the client credentials of a Descope App or Client rather than an access key.
+
+```typescript
+// Exchange client credentials for a session JWT
+const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret');
+
+// Optionally request specific scopes, an audience, or a resource indicator (RFC 8707)
+const withOptions = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
+  scope: 'openid email profile',
+  audience: 'my-api',
+  resource: 'https://my-api.example.com',
+});
+
+// Optionally validate the returned token against an expected audience
+const withAud = await descopeClient.exchangeClientCredentials(
+  'client-id',
+  'client-secret',
+  undefined,
+  { audience: 'my-api' },
+);
+
+// The returned authInfo contains the raw JWT and its parsed claims
+const { jwt, token } = authInfo;
+```
+
+#### Federated Apps
+
+The same method also works with [OIDC Federated Apps](https://docs.descope.com/identity-federation/applications/oidc-apps). Federated apps expose their token endpoint in different URL shapes (some are project-scoped, others app-scoped), so instead of constructing the URL, pass the app's **OIDC discovery URL**. The SDK fetches that document (and caches it) and uses its published `token_endpoint`, sending the credentials via HTTP Basic authentication with a form-urlencoded body, per the OAuth2 spec.
+
+You can find the discovery URL in the Descope console. It looks like this, where the first path segment is your Project ID and the second is the app's SSO app ID:
+
+```
+https://<your-auth-domain>/<projectId>/<ssoAppId>/.well-known/openid-configuration
+```
+
+```typescript
+const authInfo = await descopeClient.exchangeClientCredentials('client-id', 'client-secret', {
+  appType: 'federated',
+  discoveryUrl: 'https://auth.example.com/<projectId>/<ssoAppId>/.well-known/openid-configuration',
+  scope: 'openid email profile',
+});
+```
+
+> **Using an access key as the client secret:** the client ID is always your Project ID in this case, so pass the Project ID as the first argument and the access key as the second.
+
+```typescript
+const authInfo = await descopeClient.exchangeClientCredentials('my-project-id', 'my-access-key', {
+  appType: 'federated',
+  discoveryUrl: 'https://auth.example.com/<projectId>/<ssoAppId>/.well-known/openid-configuration',
+});
 ```
 
 ### Session Validation
