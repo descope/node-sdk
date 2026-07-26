@@ -181,6 +181,68 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send templateId via the options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.create('loginId', {
+        email: 'a@b.c',
+        templateId: 'my-template-id',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        templateId: 'my-template-id',
+      });
+    });
+
+    it('should send templateId via the positional arguments overload', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.user.create(
+        'loginId',
+        'a@b.c',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'my-template-id',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.create,
+        expect.objectContaining({
+          loginId: 'loginId',
+          email: 'a@b.c',
+          templateId: 'my-template-id',
+        }),
+      );
+    });
   });
 
   describe('createTestUser', () => {
