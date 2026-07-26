@@ -181,6 +181,61 @@ describe('Management User', () => {
         response: httpResponse,
       });
     });
+
+    it('should send password and hashed password with options argument', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const hashed: UserPasswordHashed = {
+        firebase: {
+          hash: 'h',
+          salt: 's',
+          saltSeparator: 'ss',
+          signerKey: 'sk',
+          memory: 14,
+          rounds: 8,
+        },
+      };
+
+      const resp: SdkResponse<UserResponse> = await management.user.create('loginId', {
+        email: 'a@b.c',
+        password: 'cleartext',
+        hashedPassword: hashed,
+        seed: 'totp-seed',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
+        loginId: 'loginId',
+        email: 'a@b.c',
+        password: 'cleartext',
+        hashedPassword: {
+          firebase: {
+            hash: 'h',
+            salt: 's',
+            saltSeparator: 'ss',
+            signerKey: 'sk',
+            memory: 14,
+            rounds: 8,
+          },
+        },
+        seed: 'totp-seed',
+        roleNames: undefined,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('createTestUser', () => {
