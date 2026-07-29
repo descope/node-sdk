@@ -351,6 +351,8 @@ export type Group = {
   id: string;
   display: string;
   members?: GroupMember[];
+  /** Origin of the group: "scim" (default) or "jit" (SSO SAML/OIDC assertion groups). */
+  source?: string;
 };
 
 /** Represents a group member. It has loginId, userId and display. */
