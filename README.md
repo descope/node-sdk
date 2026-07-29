@@ -614,9 +614,16 @@ You can create, update, delete or load tenants, as well as read and update tenan
 ```typescript
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
-await descopeClient.management.tenant.create('My Tenant', ['domain.com'], {
-  customAttributeName: 'val',
-});
+await descopeClient.management.tenant.create(
+  'My Tenant',
+  ['domain.com'],
+  { customAttributeName: 'val' },
+  true, // enforceSSO
+  false, // disabled
+  '', // parent tenant ID
+  'none', // roleInheritance
+  ['admin@domain.com'], // enforceSSOExclusions - user IDs excluded from SSO enforcement
+);
 
 // You can optionally set your own ID when creating a tenant
 await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com'], {
@@ -624,11 +631,17 @@ await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', 
 });
 
 // Update will override all fields as is. Use carefully.
+// Any field you omit is cleared on the tenant, so read the tenant first and pass
+// back the values you want to keep.
 await descopeClient.management.tenant.update(
   'my-custom-id',
   'My Tenant',
   ['domain.com', 'another-domain.com'],
   { customAttributeName: 'val' },
+  true, // enforceSSO
+  false, // disabled
+  'none', // roleInheritance
+  ['admin@domain.com'], // enforceSSOExclusions - user IDs excluded from SSO enforcement
 );
 
 // Update the tenant's default roles by providing role names.
