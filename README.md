@@ -622,17 +622,29 @@ await descopeClient.management.tenant.create(
   false, // disabled
   '', // parent tenant ID
   'none', // roleInheritance
-  ['admin@domain.com'], // enforceSSOExclusions - user IDs excluded from SSO enforcement
+  ['<user-ID>'], // enforceSSOExclusions - Descope user IDs excluded from SSO enforcement
 );
 
-// You can optionally set your own ID when creating a tenant
-await descopeClient.management.tenant.createWithId('my-custom-id', 'My Tenant', ['domain.com'], {
-  customAttributeName: 'val',
-});
+// You can optionally set your own ID when creating a tenant. It accepts the same
+// optional arguments as create, shifted one position to make room for the ID.
+await descopeClient.management.tenant.createWithId(
+  'my-custom-id',
+  'My Tenant',
+  ['domain.com'],
+  { customAttributeName: 'val' },
+  true, // enforceSSO
+  false, // disabled
+  '', // parent tenant ID
+  'none', // roleInheritance
+  ['<user-ID>'], // enforceSSOExclusions - Descope user IDs excluded from SSO enforcement
+);
 
 // Update will override all fields as is. Use carefully.
-// Any field you omit is cleared on the tenant, so read the tenant first and pass
-// back the values you want to keep.
+// Every parameter update takes is replaced, so any one you omit is cleared on the tenant -
+// read the tenant first and pass back the values you want to keep. Fields update has no
+// parameter for, such as the parent tenant and default roles, are not affected.
+// The values below are illustrative rather than defaults: copying this call as-is also
+// turns enforceSSO on.
 await descopeClient.management.tenant.update(
   'my-custom-id',
   'My Tenant',
@@ -641,7 +653,7 @@ await descopeClient.management.tenant.update(
   true, // enforceSSO
   false, // disabled
   'none', // roleInheritance
-  ['admin@domain.com'], // enforceSSOExclusions - user IDs excluded from SSO enforcement
+  ['<user-ID>'], // enforceSSOExclusions - Descope user IDs excluded from SSO enforcement
 );
 
 // Update the tenant's default roles by providing role names.
