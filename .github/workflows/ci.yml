@@ -146,11 +146,7 @@ jobs:
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One or more required jobs failed or were cancelled:"
-          echo "  build:          ${{ needs.build.result }}"
-          echo "  eslint:         ${{ needs.eslint.result }}"
-          echo "  gitleaks:       ${{ needs.gitleaks.result }}"
-          echo "  pr-title-check: ${{ needs.pr-title-check.result }}"
-          echo "  unit-test:      ${{ needs.unit-test.result }}"
+          echo '${{ toJSON(needs) }}'
           exit 1
       - name: Ready
         run: echo "All checks passed and the PR is ready to be merged!"
