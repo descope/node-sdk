@@ -351,6 +351,14 @@ export type Group = {
   id: string;
   display: string;
   members?: GroupMember[];
+  /** Origin of the group: "scim" (default) or "jit" (SSO SAML/OIDC assertion groups). */
+  source?: string;
+  /**
+   * The SSO configuration the group came from (the ssoId bound to the SCIM token that created it,
+   * or the SSO configuration used at the JIT login that persisted it). Groups from the tenant's
+   * default SSO configuration report the reserved id "default_ssoid".
+   */
+  ssoId?: string;
 };
 
 /** Represents a group member. It has loginId, userId and display. */
