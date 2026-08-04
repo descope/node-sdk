@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.13.0](https://github.com/descope/node-sdk/compare/v2.12.1...v2.13.0) (2026-07-15)
+
+
+### Features
+
+* expose external-group source on the Group model ([#770](https://github.com/descope/node-sdk/issues/770)) ([3a503b8](https://github.com/descope/node-sdk/commit/3a503b843142c7ec6819763e48468690184ca2ec))
+* expose lastSuccessTestTime on SSO settings load response ([#768](https://github.com/descope/node-sdk/issues/768)) ([6b50a44](https://github.com/descope/node-sdk/commit/6b50a44edda75e349ff3a27400477f72d31b769a))
+
 ## [2.12.1](https://github.com/descope/node-sdk/compare/v2.12.0...v2.12.1) (2026-07-11)
 
 

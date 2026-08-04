@@ -77,7 +77,12 @@ type MultipleUsersResponse = {
 
 const withUser = (httpClient: HttpClient) => {
   /* Create User */
-  function create(loginId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
+  function create(
+    loginId: string,
+    options?: UserOptions & {
+      templateId?: string;
+    },
+  ): Promise<SdkResponse<UserResponse>>;
   function create(
     loginId: string,
     email?: string,
@@ -93,6 +98,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>>;
 
   function create(
@@ -110,6 +116,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of create user
     // 1. The new form - create(loginId, { email, phone, ... }})
@@ -131,6 +138,7 @@ const withUser = (httpClient: HttpClient) => {
             verifiedEmail,
             verifiedPhone,
             additionalLoginIds,
+            templateId,
           }
         : {
             loginId,
