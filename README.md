@@ -904,10 +904,14 @@ usersRes.data.forEach((user) => {
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
 // Additional filters: verifiedEmail, verifiedPhone, statuses, roles, tenantIds, etc.
+// Results can also be filtered by time using fromCreatedTime, toCreatedTime,
+// fromModifiedTime, and toModifiedTime (epoch in milliseconds)
 const usersRes = await descopeClient.management.user.search({
   tenantIds: ['tenant-ID'],
   verifiedEmail: true, // optional: filter by verified email status
   verifiedPhone: false, // optional: filter by verified phone status
+  fromCreatedTime: 1700000000000, // optional: only users created on or after this time
+  toModifiedTime: 1800000000000, // optional: only users modified on or before this time
 });
 console.log('Total users:', usersRes.data.total);
 usersRes.data.users.forEach((user) => {

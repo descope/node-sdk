@@ -674,6 +674,16 @@ const withUser = (httpClient: HttpClient) => {
         }),
         (data) => ({ users: data.users, total: data.total }),
       ),
+    /**
+     * Search all users. Results can be filtered according to tenants, roles,
+     * and other attributes on the given SearchRequest, and paginated using
+     * the limit and page fields.
+     * @param searchReq.fromCreatedTime only include users created on or after this time (epoch in milliseconds)
+     * @param searchReq.toCreatedTime only include users created on or before this time (epoch in milliseconds)
+     * @param searchReq.fromModifiedTime only include users modified on or after this time (epoch in milliseconds)
+     * @param searchReq.toModifiedTime only include users modified on or before this time (epoch in milliseconds)
+     * @returns The users found by the query, along with the total number of matches
+     */
     search: (searchReq: SearchRequest): Promise<SdkResponse<UserSearchResponse>> =>
       transformResponse<UserSearchResponse, UserSearchResponse>(
         httpClient.post(apiPaths.user.search, {
