@@ -480,6 +480,71 @@ for more information.
 
 Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
 
+#### DPoP Sender-Constrained Tokens (RFC 9449)
+
+Descope supports DPoP (Demonstrated Proof of Possession) sender-constrained tokens. When a session
+token contains a `cnf.jkt` claim, the client must prove possession of the corresponding private key
+on every request by sending a `DPoP` header containing a signed proof JWT.
+
+After validating the session with `validateSession`, call `validateDPoP` to verify the DPoP proof:
+
+```typescript
+import descopeClient from '@descope/node-sdk';
+
+const sdk = descopeClient({ projectId: 'YOUR_PROJECT_ID' });
+
+// In your request handler:
+const sessionToken = req.headers.authorization?.replace(/^(Bearer|DPoP)\s+/i, '');
+const dpopProof = req.headers['dpop'] as string | undefined;
+
+// First validate the session token
+const authInfo = await sdk.validateSession(sessionToken);
+
+// Then validate the DPoP proof (no-op if token is not DPoP-bound)
+await sdk.validateDPoP(
+  authInfo.jwt, // the raw session JWT string
+  dpopProof, // value of the DPoP header
+  req.method, // HTTP method in uppercase, e.g. "GET"
+  `https://${req.headers.host}${req.url}`, // absolute request URL
+);
+```
+
+> **Important:** The URL passed to `validateDPoP` must exactly match the `htu` claim in the DPoP
+> proof — same scheme, host, and path (query string and fragment are ignored). In environments
+> behind a reverse proxy or load balancer, the scheme seen by Node.js may be `http` even when the
+> client used `https`. Reconstruct the URL from request context to ensure they match:
+>
+> ```typescript
+> // Express with trust proxy enabled (app.set('trust proxy', true)):
+> const requestUrl = `${req.protocol}://${req.get('host')}${req.path}`;
+>
+> // Raw Node.js http/https using X-Forwarded-Proto:
+> const scheme =
+>   req.headers['x-forwarded-proto'] ?? (req.socket as any).encrypted ? 'https' : 'http';
+> const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
+> ```
+
+If the token is DPoP-bound and the proof is missing or invalid, `validateDPoP` throws an error.
+If the token has no `cnf.jkt` claim (i.e. it is a regular Bearer token), `validateDPoP` is a no-op.
+
+The `DPoP` Authorization scheme is treated identically to `Bearer` — the session JWT that follows
+the scheme prefix is the same Descope-issued token in both cases.
+
+> **Note on jti replay protection (RFC 9449 §11.1):** `validateDPoP` does not implement jti replay
+> protection because a stateless SDK has no shared storage to persist seen jti values across
+> requests. If your application requires replay protection, maintain a server-side jti store (e.g.
+> a Redis set keyed by jti with TTL equal to the iat window, approximately 60 s) and reject
+> duplicate jti values before or after calling `validateDPoP`.
+
+You can also import the standalone helpers directly:
+
+```typescript
+import { validateDPoPProof, getDPoPThumbprint } from '@descope/node-sdk';
+
+// Extract cnf.jkt from already-parsed token claims
+const jkt = getDPoPThumbprint(authInfo.token);
+```
+
 #### Session Validation Using Middleware
 
 Alternatively, you can create a simple middleware function that internally uses the `validateSession` function.
