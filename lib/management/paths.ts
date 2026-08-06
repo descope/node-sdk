@@ -140,6 +140,13 @@ export default {
     batchUploadUserTokens: '/v1/mgmt/outbound/app/user/oauthtoken/batch/upload',
     batchUploadTenantTokens: '/v1/mgmt/outbound/app/tenant/oauthtoken/batch/upload',
   },
+  outboundSCIM: {
+    create: '/v1/mgmt/outbound/scim/create',
+    update: '/v1/mgmt/outbound/scim/update',
+    delete: '/v1/mgmt/outbound/scim/delete',
+    load: '/v1/mgmt/outbound/scim',
+    setEnabled: '/v1/mgmt/outbound/scim/enabled/set',
+  },
   sso: {
     settings: '/v1/mgmt/sso/settings',
     settingsNew: '/v1/mgmt/sso/settings/new',
