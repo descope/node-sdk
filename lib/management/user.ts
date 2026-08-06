@@ -1076,6 +1076,18 @@ const withUser = (httpClient: HttpClient) => {
       ),
 
     /**
+     * Removes all recovery codes for the user with the given login ID.
+     * Note: The user might not be able to login anymore if they have no other authentication
+     * methods or a verified email/phone.
+     * @param loginId The login ID of the user
+     */
+    removeRecoveryCodes: (loginId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removeRecoveryCodes, { loginId }),
+        (data) => data,
+      ),
+
+    /**
      * Retrieve users' authentication history, by the given user's ids.
      * @param userIds The user IDs
      */
