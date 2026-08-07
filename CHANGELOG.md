@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.14.0](https://github.com/descope/node-sdk/compare/v2.13.0...v2.14.0) (2026-08-07)
+
+
+### Features
+
+* add removeRecoveryCodes user management method ([#784](https://github.com/descope/node-sdk/issues/784)) ([be33d9d](https://github.com/descope/node-sdk/commit/be33d9d376373e7862e9a90801dc65590db3790d))
+* add templateId parameter to management user create ([#773](https://github.com/descope/node-sdk/issues/773)) ([897fbe0](https://github.com/descope/node-sdk/commit/897fbe0af54167ea33716ff154ec06a5b8ce3083))
+* **mgmt:** load external groups scoped to a specific SSO config ([#783](https://github.com/descope/node-sdk/issues/783)) ([f9553b8](https://github.com/descope/node-sdk/commit/f9553b8411c3d9a3aab9959d56102df48ecf6cf9))
+
 ## [2.13.0](https://github.com/descope/node-sdk/compare/v2.12.1...v2.13.0) (2026-07-15)
 
 
