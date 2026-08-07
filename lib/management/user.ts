@@ -1076,14 +1076,14 @@ const withUser = (httpClient: HttpClient) => {
       ),
 
     /**
-     * Removes all recovery codes for the user with the given login ID.
+     * Removes all recovery codes for the user with the given login ID or user ID.
      * Note: The user will no longer be able to sign in with any previously
      * generated recovery codes.
-     * @param loginId The login ID of the user
+     * @param loginIdOrUserId The login ID or user ID of the user
      */
-    removeRecoveryCodes: (loginId: string): Promise<SdkResponse<never>> =>
+    removeRecoveryCodes: (loginIdOrUserId: string): Promise<SdkResponse<never>> =>
       transformResponse<never>(
-        httpClient.post(apiPaths.user.removeRecoveryCodes, { loginId }),
+        httpClient.post(apiPaths.user.removeRecoveryCodes, { loginId: loginIdOrUserId }),
         (data) => data,
       ),
 
