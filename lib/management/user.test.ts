@@ -2426,11 +2426,11 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const loginId = 'some-id';
-      const resp = await management.user.removeRecoveryCodes(loginId);
+      const loginIdOrUserId = 'some-id';
+      const resp = await management.user.removeRecoveryCodes(loginIdOrUserId);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeRecoveryCodes, {
-        loginId,
+        loginId: loginIdOrUserId,
       });
 
       expect(resp).toEqual({
