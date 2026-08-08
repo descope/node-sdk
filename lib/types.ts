@@ -34,6 +34,55 @@ export interface VerifyOptions {
   audience?: string | string[];
 }
 
+/**
+ * The kind of Descope app the client credentials belong to. This determines which
+ * OAuth2 token endpoint and authentication style is used for the exchange.
+ * - `inbound` (default): Inbound Apps / agentic clients (`/oauth2/v1/apps/token`).
+ * - `federated`: OIDC Federated Apps (`/oauth2/v1/token`, HTTP Basic auth).
+ */
+export type ClientCredentialsAppType = 'inbound' | 'federated';
+
+/**
+ * Options for exchanging client credentials for a session token via a Descope
+ * Inbound App or Federated App (OAuth2 `client_credentials` grant).
+ */
+export interface ClientCredentialsOptions {
+  /** Space-delimited scopes to request (e.g. `"openid email profile"`). */
+  scope?: string;
+  /** Optional audience for the requested access token. */
+  audience?: string;
+  /** Optional resource indicator (RFC 8707). */
+  resource?: string;
+  /** Which kind of Descope app the credentials belong to. Defaults to `'inbound'`. */
+  appType?: ClientCredentialsAppType;
+  /**
+   * The OIDC discovery URL of the Federated App. Required when `appType` is
+   * `'federated'`, since each federated app has its own token endpoint (which may be
+   * project-scoped or app-scoped). The SDK fetches this document and uses its
+   * published `token_endpoint`. You can find it in the Descope console; it looks like
+   * `https://<auth-domain>/<projectId>/<ssoAppId>/.well-known/openid-configuration`.
+   */
+  discoveryUrl?: string;
+}
+
+/** Subset of an OIDC discovery document (`.well-known/openid-configuration`) the SDK reads. */
+export interface OidcDiscoveryDocument {
+  token_endpoint?: string;
+  [key: string]: unknown;
+}
+
+/** Raw response returned by an OAuth2 token endpoint. */
+export interface TokenEndpointResponse {
+  access_token?: string;
+  token_type?: string;
+  expires_in?: number;
+  scope?: string;
+  refresh_token?: string;
+  id_token?: string;
+  error?: string;
+  error_description?: string;
+}
+
 /** Descope core SDK type */
 export type CreateCoreSdk = typeof createSdk;
 export type CoreSdkConfig = Head<Parameters<CreateCoreSdk>>;
