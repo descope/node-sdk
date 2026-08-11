@@ -2414,6 +2414,34 @@ describe('Management User', () => {
     });
   });
 
+  describe('removeRecoveryCodes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const loginIdOrUserId = 'some-id';
+      const resp = await management.user.removeRecoveryCodes(loginIdOrUserId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeRecoveryCodes, {
+        loginId: loginIdOrUserId,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('history', () => {
     it('should send the correct request and receive correct response', async () => {
       const usersHistoryRes = [

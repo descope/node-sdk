@@ -363,6 +363,14 @@ Provide the `loginId` to the function to remove the user's TOTP seed.
 const response = await descopeClient.management.user.removeTOTPSeed(loginId);
 ```
 
+#### Deleting Recovery Codes
+
+Provide a login ID or user ID to the function to remove all of the user's recovery codes.
+
+```typescript
+const response = await descopeClient.management.user.removeRecoveryCodes(loginIdOrUserId);
+```
+
 ### Passwords
 
 The user can also authenticate with a password, though it's recommended to
