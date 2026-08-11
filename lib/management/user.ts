@@ -58,9 +58,9 @@ type SearchRequest = {
   loginIds?: string[];
   userIds?: string[];
   fromCreatedTime?: number; // Search users created after this time (epoch in milliseconds)
-  toCreatedTime?: number; // Search users created before this time (epoch in milliseconds)
+  toCreatedTime?: number; // Search users created on or before this time (epoch in milliseconds)
   fromModifiedTime?: number; // Search users modified after this time (epoch in milliseconds)
-  toModifiedTime?: number; // Search users modified before this time (epoch in milliseconds)
+  toModifiedTime?: number; // Search users modified on or before this time (epoch in milliseconds)
   tenantRoleIds?: Record<string, RolesList>; // Search users based on tenants and role IDs
   tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
   verifiedEmail?: boolean; // Filter by verified email status
@@ -678,9 +678,9 @@ const withUser = (httpClient: HttpClient) => {
      * Search all users. Results can be filtered according to tenants, roles,
      * and other attributes on the given SearchRequest, and paginated using
      * the limit and page fields.
-     * @param searchReq.fromCreatedTime only include users created on or after this time (epoch in milliseconds)
+     * @param searchReq.fromCreatedTime only include users created after this time (epoch in milliseconds)
      * @param searchReq.toCreatedTime only include users created on or before this time (epoch in milliseconds)
-     * @param searchReq.fromModifiedTime only include users modified on or after this time (epoch in milliseconds)
+     * @param searchReq.fromModifiedTime only include users modified after this time (epoch in milliseconds)
      * @param searchReq.toModifiedTime only include users modified on or before this time (epoch in milliseconds)
      * @returns The users found by the query, along with the total number of matches
      */

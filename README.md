@@ -910,7 +910,7 @@ const usersRes = await descopeClient.management.user.search({
   tenantIds: ['tenant-ID'],
   verifiedEmail: true, // optional: filter by verified email status
   verifiedPhone: false, // optional: filter by verified phone status
-  fromCreatedTime: 1700000000000, // optional: only users created on or after this time
+  fromCreatedTime: 1700000000000, // optional: only users created after this time
   toModifiedTime: 1800000000000, // optional: only users modified on or before this time
 });
 console.log('Total users:', usersRes.data.total);
