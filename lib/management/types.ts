@@ -190,8 +190,10 @@ export type Tenant = {
   domains?: string[];
   authType?: 'none' | 'saml' | 'oidc';
   enforceSSO?: boolean;
+  enforceSSOExclusions?: string[];
   disabled?: boolean;
   defaultRoles?: string[];
+  roleInheritance?: '' | 'none' | 'userOnly';
 };
 
 export type SSOSetupSuiteSettingsDisabledFeatures = {
