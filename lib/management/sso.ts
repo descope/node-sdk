@@ -39,8 +39,22 @@ function transformAllSettingsResponse(data) {
   return res;
 }
 
+// Rename each loaded group->role mapping's `role.name` to `roleName` (dropping `role`), matching the
+// SAML transform above, so a loaded XAA config's groupsMapping round-trips back into configureXAASettings.
+function transformXAASettingsResponse(setting: any): XAASettingsResponse {
+  if (setting?.groupsMapping) {
+    setting.groupsMapping = setting.groupsMapping.map((gm: any) => {
+      const rm = gm;
+      rm.roleName = rm.role?.name;
+      delete rm.role;
+      return rm;
+    });
+  }
+  return setting;
+}
+
 function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
-  return (data.XAASettings as XAASettingsResponse[]) ?? [];
+  return ((data.XAASettings as XAASettingsResponse[]) ?? []).map(transformXAASettingsResponse);
 }
 
 const withSSOSettings = (httpClient: HttpClient) => ({
@@ -231,7 +245,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
       httpClient.get(apiPaths.sso.xaa.settings, {
         queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
       }),
-      (data) => data,
+      (data) => transformXAASettingsResponse(data),
     ),
   loadAllXAASettings: (tenantId: string): Promise<SdkResponse<XAASettingsResponse[]>> =>
     transformResponse<XAASettingsResponse[]>(
