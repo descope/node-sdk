@@ -168,6 +168,34 @@ export type AttributeMapping = {
   customAttributes?: Record<string, string>;
 };
 
+/** Cross-App Access (XAA / ID-JAG) trusted-issuer settings, including per-issuer JIT provisioning and
+ * user attribute / group-to-role mapping (parity with the SSO login JIT). */
+export type XAAIssuerSettings = {
+  jwksUri?: string;
+  signAlgorithm?: string;
+  userInfoUri?: string;
+  externalIdFieldName?: string;
+  /** When true, the exchange only signs in an already-provisioned user (no JIT creation). */
+  jitDisabled?: boolean;
+  /** Maps assertion claims to Descope user fields. */
+  attributeMapping?: AttributeMapping;
+  /** Maps the assertion's groups claim to Descope roles. */
+  roleMappings?: RoleMappings;
+  /** Roles granted when no group matches. */
+  defaultSSORoles?: string[];
+  /** Group names in priority order (first = highest). */
+  groupsPriority?: string[];
+  allowOverrideRoles?: boolean;
+};
+
+/** Cross-App Access (XAA / ID-JAG) trust config: the set of trusted issuers, keyed by issuer URL. */
+export type JWTBearerSettings = {
+  issuers?: Record<string, XAAIssuerSettings>;
+  jwtBearerGrantTypeAudienceToUse?: string;
+  jwtBearerGrantTypeScopeToUse?: string;
+  jwtBearerGrantTypeCustomClaimsToUse?: string;
+};
+
 /** UpdateJWT response with a new JWT value with the added custom claims */
 export type UpdateJWTResponse = {
   jwt: string;
@@ -192,6 +220,10 @@ export type Tenant = {
   enforceSSO?: boolean;
   disabled?: boolean;
   defaultRoles?: string[];
+  /** Cross-App Access (XAA / ID-JAG) trust config for the tenant (read-only). */
+  idJagSettings?: JWTBearerSettings;
+  /** Whether Cross-App Access (ID-JAG) is enabled for the tenant (read-only). */
+  idJagEnabled?: boolean;
 };
 
 export type SSOSetupSuiteSettingsDisabledFeatures = {
