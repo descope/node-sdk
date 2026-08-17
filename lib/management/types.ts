@@ -217,13 +217,14 @@ export type XAASettings = {
   allowOverrideRoles?: boolean;
 };
 
-/** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` returns role
- * references by id and name (mirrors the SSO SAML settings load shape). */
+/** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
+ * load to `{ roleName, groups }` (matching the SAML settings load transform) so it round-trips back
+ * into `configureXAASettings`. */
 export type XAASettingsResponse = {
   ssoId?: string;
   enabled?: boolean;
   settings?: JWTBearerSettings;
-  groupsMapping?: GroupsMapping[];
+  groupsMapping?: RoleMappings;
   defaultSSORoles?: string[];
   fgaMappings?: Record<string, XAAFGAGroupMapping>;
   groupsPriority?: string[];

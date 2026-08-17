@@ -42,15 +42,16 @@ function transformAllSettingsResponse(data) {
 // Rename each loaded group->role mapping's `role.name` to `roleName` (dropping `role`), matching the
 // SAML transform above, so a loaded XAA config's groupsMapping round-trips back into configureXAASettings.
 function transformXAASettingsResponse(setting: any): XAASettingsResponse {
-  if (setting?.groupsMapping) {
-    setting.groupsMapping = setting.groupsMapping.map((gm: any) => {
+  const ready = setting;
+  if (ready?.groupsMapping) {
+    ready.groupsMapping = ready.groupsMapping.map((gm: any) => {
       const rm = gm;
-      rm.roleName = rm.role?.name;
+      rm.roleName = rm.role.name;
       delete rm.role;
       return rm;
     });
   }
-  return setting;
+  return ready;
 }
 
 function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
