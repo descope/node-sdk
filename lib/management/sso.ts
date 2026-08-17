@@ -8,6 +8,8 @@ import {
   SSOSAMLSettings,
   SSOSAMLByMetadataSettings,
   SSOSettings,
+  XAASettings,
+  XAASettingsResponse,
 } from './types';
 
 function transformSettingsResponse(data) {
@@ -35,6 +37,10 @@ function transformAllSettingsResponse(data) {
   const res = [];
   readySettings.forEach((setting) => res.push(transformSettingsResponse(setting)));
   return res;
+}
+
+function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
+  return (data.XAASettings as XAASettingsResponse[]) ?? [];
 }
 
 const withSSOSettings = (httpClient: HttpClient) => ({
@@ -200,6 +206,48 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         queryParams: { tenantId },
       }),
       (data) => transformAllSettingsResponse(data),
+    ),
+  configureXAASettings: (
+    tenantId: string,
+    ssoId: string,
+    settings: XAASettings,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.xaa.settings, {
+        tenantId,
+        ...(ssoId ? { ssoId } : {}),
+        enabled: settings.enabled,
+        settings: settings.settings,
+        roleMappings: settings.roleMappings,
+        defaultSSORoles: settings.defaultSSORoles,
+        fgaMappings: settings.fgaMappings,
+        groupsPriority: settings.groupsPriority,
+        groupPriorityEnabled: settings.groupPriorityEnabled,
+        allowOverrideRoles: settings.allowOverrideRoles,
+      }),
+    ),
+  loadXAASettings: (
+    tenantId: string,
+    ssoId?: string,
+  ): Promise<SdkResponse<XAASettingsResponse>> =>
+    transformResponse<XAASettingsResponse>(
+      httpClient.get(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
+      (data) => data,
+    ),
+  loadAllXAASettings: (tenantId: string): Promise<SdkResponse<XAASettingsResponse[]>> =>
+    transformResponse<XAASettingsResponse[]>(
+      httpClient.get(apiPaths.sso.xaa.settingsAll, {
+        queryParams: { tenantId },
+      }),
+      (data) => transformAllXAASettingsResponse(data),
+    ),
+  deleteXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.delete(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
     ),
 });
 
