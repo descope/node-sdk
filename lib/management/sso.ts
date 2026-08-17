@@ -226,10 +226,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         allowOverrideRoles: settings.allowOverrideRoles,
       }),
     ),
-  loadXAASettings: (
-    tenantId: string,
-    ssoId?: string,
-  ): Promise<SdkResponse<XAASettingsResponse>> =>
+  loadXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<XAASettingsResponse>> =>
     transformResponse<XAASettingsResponse>(
       httpClient.get(apiPaths.sso.xaa.settings, {
         queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
