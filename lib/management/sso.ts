@@ -51,7 +51,7 @@ function transformXAASettingsResponse(setting: any): XAASettingsResponse {
       return rm;
     });
   }
-  ready.providerID = setting.providerID;
+  // providerID passes through unchanged (ready === setting); no transform needed.
   return ready;
 }
 

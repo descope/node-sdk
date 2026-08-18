@@ -936,6 +936,7 @@ describe('Management SSO', () => {
         },
         groupsMapping: [{ role: { id: 'r1', name: 'role1' }, groups: ['g1'] }],
         defaultSSORoles: ['Member'],
+        providerID: 'okta',
       };
       const httpResponse = {
         ok: true,
@@ -948,6 +949,8 @@ describe('Management SSO', () => {
       mockHttpClient.get.mockResolvedValue(httpResponse);
 
       const resp = await management.sso.loadXAASettings('t1', 'somessoid');
+      // providerID round-trips through transformXAASettingsResponse (no explicit copy needed).
+      expect(resp.data?.providerID).toBe('okta');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
         queryParams: { tenantId: 't1', ssoId: 'somessoid' },
