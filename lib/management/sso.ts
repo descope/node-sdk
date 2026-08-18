@@ -51,6 +51,7 @@ function transformXAASettingsResponse(setting: any): XAASettingsResponse {
       return rm;
     });
   }
+  ready.providerID = setting.providerID;
   return ready;
 }
 
@@ -239,6 +240,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         groupsPriority: settings.groupsPriority,
         groupPriorityEnabled: settings.groupPriorityEnabled,
         allowOverrideRoles: settings.allowOverrideRoles,
+        ...(settings.providerID ? { providerID: settings.providerID } : {}),
       }),
     ),
   loadXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<XAASettingsResponse>> =>

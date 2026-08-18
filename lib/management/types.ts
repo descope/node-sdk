@@ -215,6 +215,7 @@ export type XAASettings = {
   groupsPriority?: string[];
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
+  providerID?: string;
 };
 
 /** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
@@ -230,6 +231,7 @@ export type XAASettingsResponse = {
   groupsPriority?: string[];
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
+  providerID?: string;
 };
 
 /** UpdateJWT response with a new JWT value with the added custom claims */
