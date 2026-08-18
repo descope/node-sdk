@@ -164,6 +164,7 @@ describe('Management User', () => {
         roles: ['r1', 'r2'],
         customAttributes: { a: 'a', b: 1, c: true },
         additionalLoginIds: ['id-1', 'id-2'],
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
@@ -172,6 +173,7 @@ describe('Management User', () => {
         roleNames: ['r1', 'r2'],
         customAttributes: { a: 'a', b: 1, c: true },
         additionalLoginIds: ['id-1', 'id-2'],
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(resp).toEqual({
@@ -784,6 +786,7 @@ describe('Management User', () => {
         scim: true,
         ssoAppIds: ['sso1', 'sso2'],
         status: 'invited',
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.user.patch, {
@@ -797,6 +800,7 @@ describe('Management User', () => {
         ssoAppIds: ['sso1', 'sso2'],
         scim: true,
         status: 'invited',
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
     });
   });
@@ -1353,6 +1357,29 @@ describe('Management User', () => {
         roles: undefined,
       });
     });
+
+    it('should pass familyIds and dependent filters', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUsersResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUsersResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+      await management.user.search({
+        familyIds: ['f1'],
+        dependent: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
+        familyIds: ['f1'],
+        dependent: true,
+        roleNames: undefined,
+        roles: undefined,
+      });
+    });
   });
 
   describe('getProviderToken', () => {
@@ -1889,6 +1916,66 @@ describe('Management User', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeTenant, {
         loginId: 'lid',
         tenantId: 'tid',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('addFamilies', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.addFamilies('lid', [
+        { familyId: 'f1', roleNames: ['role1'], familyScopedAttributes: { customAttr: 'value' } },
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.addFamilies, {
+        loginId: 'lid',
+        familyAssociations: [
+          { familyId: 'f1', roleNames: ['role1'], familyScopedAttributes: { customAttr: 'value' } },
+        ],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockUserResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('removeFamilies', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtUserResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtUserResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<UserResponse> = await management.user.removeFamilies('lid', ['f1']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.removeFamilies, {
+        loginId: 'lid',
+        familyIds: ['f1'],
       });
 
       expect(resp).toEqual({
