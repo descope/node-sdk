@@ -229,6 +229,56 @@ export type TenantSettings = {
   ssoSetupSuiteSettings?: SSOSetupSuiteSettings;
 };
 
+/**
+ * Represents a family association for a user. The familyId is required to denote which family
+ * the user belongs to. roleNames is an optional list of the user's roles within that family, and
+ * familyScopedAttributes is an optional map of the user's custom attribute values scoped to that family.
+ */
+export type AssociatedFamily = {
+  familyId: string;
+  roleNames?: string[];
+  familyScopedAttributes?: Record<string, AttributesTypes>;
+};
+
+/** Represents a family in a project. A family groups a set of users (e.g. a guardian and their
+ * dependents) that can share access and family-scoped custom attributes.
+ */
+export type Family = {
+  id: string;
+  name: string;
+  customAttributes?: Record<string, AttributesTypes>;
+  disabled?: boolean;
+  photo?: string;
+  createdTime: number;
+};
+
+/** Options for searching families */
+export type SearchFamiliesOptions = {
+  familyIds?: string[];
+  freeText?: string;
+  familyNames?: string[];
+  page?: number;
+  size?: number;
+  customAttributes?: Record<string, AttributesTypes>;
+};
+
+/** Options for creating a dependent (shadow profile) user in a family */
+export type CreateFamilyDependentOptions = {
+  /** When missing, the login ID is derived from name; email/phone are never used as the login ID
+   * since they are not unique - a dependent may share them with their guardian. */
+  loginId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  picture?: string;
+  customAttributes?: Record<string, AttributesTypes>;
+  /** Per-family custom attribute values (familyId -> { attrName -> value }) */
+  familyScopedAttributes?: Record<string, Record<string, AttributesTypes>>;
+};
+
 /** Represents password settings of a tenant in a project. It has the password policy details. */
 export type PasswordSettings = {
   enabled: boolean;
@@ -451,6 +501,7 @@ export type User = {
   verifiedPhone?: boolean;
   test?: boolean;
   additionalLoginIds?: string[];
+  familyAssociations?: AssociatedFamily[];
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
@@ -1066,11 +1117,18 @@ export interface UserOptions {
   familyName?: string;
   additionalLoginIds?: string[];
   ssoAppIds?: string[];
+  familyAssociations?: AssociatedFamily[];
 }
 
 export type MgmtUserOptions = Omit<
   UserOptions,
-  'roles' | 'userTenants' | 'customAttributes' | 'picture' | 'additionalLoginIds' | 'displayName'
+  | 'roles'
+  | 'userTenants'
+  | 'customAttributes'
+  | 'picture'
+  | 'additionalLoginIds'
+  | 'displayName'
+  | 'familyAssociations'
 > & {
   name?: string;
 };
