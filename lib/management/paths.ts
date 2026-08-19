@@ -157,6 +157,10 @@ export default {
       configure: '/v1/mgmt/sso/saml',
       metadata: '/v1/mgmt/sso/saml/metadata',
     },
+    xaa: {
+      settings: '/v1/mgmt/sso/xaa/settings',
+      settingsAll: '/v1/mgmt/sso/xaa/settings/all',
+    },
   },
   jwt: {
     update: '/v1/mgmt/jwt/update',
