@@ -225,8 +225,8 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     ),
   configureXAASettings: (
     tenantId: string,
-    ssoId: string,
     settings: XAASettings,
+    ssoId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.sso.xaa.settings, {

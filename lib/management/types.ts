@@ -258,10 +258,6 @@ export type Tenant = {
   enforceSSO?: boolean;
   disabled?: boolean;
   defaultRoles?: string[];
-  /** Cross-App Access (XAA / ID-JAG) trust config for the tenant (read-only). */
-  idJagSettings?: JWTBearerSettings;
-  /** Whether Cross-App Access (ID-JAG) is enabled for the tenant (read-only). */
-  idJagEnabled?: boolean;
 };
 
 export type SSOSetupSuiteSettingsDisabledFeatures = {

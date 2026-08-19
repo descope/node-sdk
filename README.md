@@ -1696,7 +1696,7 @@ await descopeClient.management.inboundApplication.deleteConsents({
 
 ### Manage Cross-App Access (XAA / ID-JAG)
 
-Cross-App Access (XAA), built on the OAuth identity-assertion authorization grant (ID-JAG), lets a tenant trust external OIDC issuers so a token minted by a trusted issuer can be exchanged for a Descope token (the RFC 7523 `jwt-bearer` grant). XAA trust is configured **per SSO configuration** of a tenant through the SSO management API, addressed by its `ssoId` (pass an empty string for the tenant's default SSO configuration). The loaded tenant still surfaces XAA state as read-only fields: `idJagEnabled` reports whether XAA is active, and `idJagSettings.issuers` holds the trusted issuers keyed by issuer URL (each an `XAAIssuerSettings`).
+Cross-App Access (XAA), built on the OAuth identity-assertion authorization grant (ID-JAG), lets a tenant trust external OIDC issuers so a token minted by a trusted issuer can be exchanged for a Descope token (the RFC 7523 `jwt-bearer` grant). XAA trust is configured **per SSO configuration** of a tenant through the SSO management API, addressed by its `ssoId` (pass an empty string for the tenant's default SSO configuration).
 
 Configure the trusted issuers together with the config-level shared group/role mapping. Each issuer supports just-in-time provisioning with the same attribute mapping as the SSO login JIT:
 
@@ -1727,8 +1727,8 @@ const settings: XAASettings = {
   defaultSSORoles: ['Member'],
 };
 
-// Configure XAA for a single SSO configuration ('' = the default SSO configuration).
-await descopeClient.management.sso.configureXAASettings('my-tenant-id', '', settings);
+// Configure XAA for a single SSO configuration (omit ssoId for the default SSO configuration).
+await descopeClient.management.sso.configureXAASettings('my-tenant-id', settings);
 
 // Load the XAA settings for a single SSO configuration.
 const { data: xaa } = await descopeClient.management.sso.loadXAASettings('my-tenant-id', '');
@@ -1738,14 +1738,9 @@ const { data: allXaa } = await descopeClient.management.sso.loadAllXAASettings('
 
 // Delete the XAA settings of a single SSO configuration (removes its trusted issuers from the tenant).
 await descopeClient.management.sso.deleteXAASettings('my-tenant-id', '');
-
-// The tenant's read-only XAA state is also exposed on tenant.load.
-const { data: tenant } = await descopeClient.management.tenant.load('my-tenant-id');
-console.log('XAA enabled:', tenant.idJagEnabled);
-console.log('Trusted issuers:', tenant.idJagSettings?.issuers);
 ```
 
-> Group-to-role mapping is **not** configured per issuer. `roleMappings`, `defaultSSORoles`, and `fgaMappings` passed to `configureXAASettings` are the config-level shared mapping: the same mapping is shared across SAML / OIDC / SCIM / XAA for that `ssoId`. Each issuer only maps the assertion's groups claim (via `attributeMapping.group`); how those group names resolve to roles is defined once, per SSO configuration. On load, this shared mapping is returned as `groupsMapping` (role references by id and name), mirroring the SAML settings load shape.
+> Group-to-role mapping is **not** configured per issuer. `roleMappings`, `defaultSSORoles`, and `fgaMappings` passed to `configureXAASettings` are the config-level shared mapping: the same mapping is shared across SAML / OIDC / SCIM / XAA for that `ssoId`. Each issuer only maps the assertion's groups claim (via `attributeMapping.group`); how those group names resolve to roles is defined once, per SSO configuration. On load, this shared mapping is returned as `groupsMapping`, where each entry is rewritten to `{ roleName, groups }` (the loaded `role` object is replaced by its `name` as `roleName` and the role id is dropped), mirroring the SAML settings load shape.
 
 ### Manage Management Keys
 

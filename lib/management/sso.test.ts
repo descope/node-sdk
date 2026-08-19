@@ -845,7 +845,7 @@ describe('Management SSO', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.sso.configureXAASettings('t1', '', {
+      const resp = await management.sso.configureXAASettings('t1', {
         enabled: true,
         settings: {
           issuers: {
@@ -904,10 +904,14 @@ describe('Management SSO', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      await management.sso.configureXAASettings('t1', 'somessoid', {
-        enabled: true,
-        settings: { issuers: { 'https://issuer.example.com': { jwksUri: 'https://jwks' } } },
-      });
+      await management.sso.configureXAASettings(
+        't1',
+        {
+          enabled: true,
+          settings: { issuers: { 'https://issuer.example.com': { jwksUri: 'https://jwks' } } },
+        },
+        'somessoid',
+      );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
         tenantId: 't1',
