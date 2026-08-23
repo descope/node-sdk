@@ -8,6 +8,8 @@ import {
   SSOSAMLSettings,
   SSOSAMLByMetadataSettings,
   SSOSettings,
+  XAASettings,
+  XAASettingsResponse,
 } from './types';
 
 function transformSettingsResponse(data) {
@@ -35,6 +37,26 @@ function transformAllSettingsResponse(data) {
   const res = [];
   readySettings.forEach((setting) => res.push(transformSettingsResponse(setting)));
   return res;
+}
+
+// Rename each loaded group->role mapping's `role.name` to `roleName` (dropping `role`), matching the
+// SAML transform above, so a loaded XAA config's groupsMapping round-trips back into configureXAASettings.
+function transformXAASettingsResponse(setting: any): XAASettingsResponse {
+  const ready = setting;
+  if (ready?.groupsMapping) {
+    ready.groupsMapping = ready.groupsMapping.map((gm: any) => {
+      const rm = gm;
+      rm.roleName = rm.role.name;
+      delete rm.role;
+      return rm;
+    });
+  }
+  // providerID passes through unchanged (ready === setting); no transform needed.
+  return ready;
+}
+
+function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
+  return ((data.XAASettings as XAASettingsResponse[]) ?? []).map(transformXAASettingsResponse);
 }
 
 const withSSOSettings = (httpClient: HttpClient) => ({
@@ -200,6 +222,46 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         queryParams: { tenantId },
       }),
       (data) => transformAllSettingsResponse(data),
+    ),
+  configureXAASettings: (
+    tenantId: string,
+    settings: XAASettings,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.xaa.settings, {
+        tenantId,
+        ...(ssoId ? { ssoId } : {}),
+        enabled: settings.enabled,
+        settings: settings.settings,
+        roleMappings: settings.roleMappings,
+        defaultSSORoles: settings.defaultSSORoles,
+        fgaMappings: settings.fgaMappings,
+        groupsPriority: settings.groupsPriority,
+        groupPriorityEnabled: settings.groupPriorityEnabled,
+        allowOverrideRoles: settings.allowOverrideRoles,
+        ...(settings.providerID ? { providerID: settings.providerID } : {}),
+      }),
+    ),
+  loadXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<XAASettingsResponse>> =>
+    transformResponse<XAASettingsResponse>(
+      httpClient.get(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
+      (data) => transformXAASettingsResponse(data),
+    ),
+  loadAllXAASettings: (tenantId: string): Promise<SdkResponse<XAASettingsResponse[]>> =>
+    transformResponse<XAASettingsResponse[]>(
+      httpClient.get(apiPaths.sso.xaa.settingsAll, {
+        queryParams: { tenantId },
+      }),
+      (data) => transformAllXAASettingsResponse(data),
+    ),
+  deleteXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.delete(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
     ),
 });
 
