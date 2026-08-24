@@ -484,6 +484,61 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('configureAuthType', () => {
+    it('should disable a specific SSO configuration', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureAuthType('t1', 'none', 'conf1');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authType, {
+        tenantId: 't1',
+        authType: 'none',
+        ssoId: 'conf1',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+
+    it('should target the default configuration when no ssoId is given', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureAuthType('t1', 'saml');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authType, {
+        tenantId: 't1',
+        authType: 'saml',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
+
   describe('newSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockResponse = {

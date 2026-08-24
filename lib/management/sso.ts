@@ -8,6 +8,7 @@ import {
   SSOSAMLSettings,
   SSOSAMLByMetadataSettings,
   SSOSettings,
+  SSOAuthType,
   XAASettings,
   XAASettingsResponse,
 } from './types';
@@ -156,6 +157,26 @@ const withSSOSettings = (httpClient: HttpClient) => ({
       }),
     );
   },
+  /**
+   * Set the authentication type of a single SSO configuration, leaving its stored SAML/OIDC
+   * settings, mappings and domains untouched. `none` disables the configuration without deleting
+   * it, `saml`/`oidc` enable it on that protocol.
+   * @param tenantId the tenant the configuration belongs to
+   * @param authType `none` to disable, `saml` or `oidc` to enable on that protocol
+   * @param ssoId the SSO configuration to change; omit for the tenant's default configuration
+   */
+  configureAuthType: (
+    tenantId: string,
+    authType: SSOAuthType,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.authType, {
+        tenantId,
+        authType,
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
   configureSAMLSettings: (
     tenantId: string,
     settings: SSOSAMLSettings,

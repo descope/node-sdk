@@ -1102,6 +1102,13 @@ await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
 // You can delete existing SSO configuration
 // You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
 await descopeClient.management.sso.deleteSettings(tenantID);
+
+// You can disable an SSO configuration without deleting it, and enable it again later.
+// Its settings, mappings and domains are kept, so re-enabling needs no payload.
+// You can pass ssoId in case using multi SSO and you want to disable a specific SSO configuration
+await descopeClient.management.sso.configureAuthType(tenantID, 'none', ssoId);
+// Enable it again on the protocol it is configured for ('saml' or 'oidc')
+await descopeClient.management.sso.configureAuthType(tenantID, 'saml', ssoId);
 ```
 
 Note: Certificates should have a similar structure to:
