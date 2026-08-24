@@ -833,4 +833,202 @@ describe('Management SSO', () => {
       });
     });
   });
+
+  describe('configureXAASettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureXAASettings('t1', {
+        enabled: true,
+        settings: {
+          issuers: {
+            'https://issuer.example.com': {
+              jwksUri: 'https://issuer.example.com/jwks',
+              signAlgorithm: 'RS256',
+              jitDisabled: true,
+              attributeMapping: { email: 'email', group: 'groups' },
+            },
+          },
+          jwtBearerGrantTypeAudienceToUse: 'clientId',
+        },
+        roleMappings: [{ groups: ['g1'], roleName: 'role1' }],
+        defaultSSORoles: ['Member'],
+        groupsPriority: ['g1'],
+        groupPriorityEnabled: true,
+        allowOverrideRoles: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
+        tenantId: 't1',
+        enabled: true,
+        settings: {
+          issuers: {
+            'https://issuer.example.com': {
+              jwksUri: 'https://issuer.example.com/jwks',
+              signAlgorithm: 'RS256',
+              jitDisabled: true,
+              attributeMapping: { email: 'email', group: 'groups' },
+            },
+          },
+          jwtBearerGrantTypeAudienceToUse: 'clientId',
+        },
+        roleMappings: [{ groups: ['g1'], roleName: 'role1' }],
+        defaultSSORoles: ['Member'],
+        fgaMappings: undefined,
+        groupsPriority: ['g1'],
+        groupPriorityEnabled: true,
+        allowOverrideRoles: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send ssoId when provided', async () => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureXAASettings(
+        't1',
+        {
+          enabled: true,
+          settings: { issuers: { 'https://issuer.example.com': { jwksUri: 'https://jwks' } } },
+        },
+        'somessoid',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        enabled: true,
+        settings: { issuers: { 'https://issuer.example.com': { jwksUri: 'https://jwks' } } },
+        roleMappings: undefined,
+        defaultSSORoles: undefined,
+        fgaMappings: undefined,
+        groupsPriority: undefined,
+        groupPriorityEnabled: undefined,
+        allowOverrideRoles: undefined,
+      });
+    });
+  });
+
+  describe('loadXAASettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        ssoId: 'somessoid',
+        enabled: true,
+        settings: {
+          issuers: {
+            'https://issuer.example.com': { jwksUri: 'https://jwks', signAlgorithm: 'RS256' },
+          },
+        },
+        groupsMapping: [{ role: { id: 'r1', name: 'role1' }, groups: ['g1'] }],
+        defaultSSORoles: ['Member'],
+        providerID: 'okta',
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.loadXAASettings('t1', 'somessoid');
+      // providerID round-trips through transformXAASettingsResponse (no explicit copy needed).
+      expect(resp.data?.providerID).toBe('okta');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId: 't1', ssoId: 'somessoid' },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: mockResponse,
+      });
+    });
+  });
+
+  describe('loadAllXAASettings', () => {
+    it('should send the correct request and unwrap the XAASettings array', async () => {
+      const mockResponse = {
+        XAASettings: [
+          { ssoId: 'sso1', enabled: true },
+          { ssoId: 'sso2', enabled: false },
+        ],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.loadAllXAASettings('t1');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.xaa.settingsAll, {
+        queryParams: { tenantId: 't1' },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: [
+          { ssoId: 'sso1', enabled: true },
+          { ssoId: 'sso2', enabled: false },
+        ],
+      });
+    });
+  });
+
+  describe('deleteXAASettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.delete.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.deleteXAASettings('t1', 'somessoid');
+
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId: 't1', ssoId: 'somessoid' },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
 });

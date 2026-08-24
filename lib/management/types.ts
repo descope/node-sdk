@@ -168,6 +168,72 @@ export type AttributeMapping = {
   customAttributes?: Record<string, string>;
 };
 
+/** Cross-App Access (XAA / ID-JAG) trusted-issuer settings, including per-issuer JIT provisioning and
+ * user attribute mapping (parity with the SSO login JIT). Group-to-role mapping reuses the tenant's
+ * shared SSO group mapping. */
+export type XAAIssuerSettings = {
+  jwksUri?: string;
+  signAlgorithm?: string;
+  userInfoUri?: string;
+  externalIdFieldName?: string;
+  /** When true, the exchange only signs in an already-provisioned user (no JIT creation). */
+  jitDisabled?: boolean;
+  /** Maps assertion claims to Descope user fields. */
+  attributeMapping?: AttributeMapping;
+};
+
+/** Cross-App Access (XAA / ID-JAG) trust config: the set of trusted issuers, keyed by issuer URL. */
+export type JWTBearerSettings = {
+  issuers?: Record<string, XAAIssuerSettings>;
+  jwtBearerGrantTypeAudienceToUse?: string;
+  jwtBearerGrantTypeScopeToUse?: string;
+  jwtBearerGrantTypeCustomClaimsToUse?: string;
+};
+
+/** A single ReBAC/FGA relation grant. */
+export type XAAFGAGroupMappingRelation = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+};
+
+/** ReBAC/FGA group grants for a single group. */
+export type XAAFGAGroupMapping = {
+  relations: XAAFGAGroupMappingRelation[];
+};
+
+/** Cross-App Access (XAA / ID-JAG) write payload for a single SSO configuration of a tenant.
+ * `settings` holds the trusted issuers (keyed by issuer URL) and jwt-bearer grant configuration; the
+ * remaining fields are the config-level shared group/role mapping, which is shared across
+ * SAML / OIDC / SCIM / XAA for the sso_id (NOT a per-issuer mapping). Role references are by name. */
+export type XAASettings = {
+  enabled?: boolean;
+  settings?: JWTBearerSettings;
+  roleMappings?: RoleMappings;
+  defaultSSORoles?: string[];
+  fgaMappings?: Record<string, XAAFGAGroupMapping>;
+  groupsPriority?: string[];
+  groupPriorityEnabled?: boolean;
+  allowOverrideRoles?: boolean;
+  providerID?: string;
+};
+
+/** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
+ * load to `{ roleName, groups }` (matching the SAML settings load transform) so it round-trips back
+ * into `configureXAASettings`. */
+export type XAASettingsResponse = {
+  ssoId?: string;
+  enabled?: boolean;
+  settings?: JWTBearerSettings;
+  groupsMapping?: RoleMappings;
+  defaultSSORoles?: string[];
+  fgaMappings?: Record<string, XAAFGAGroupMapping>;
+  groupsPriority?: string[];
+  groupPriorityEnabled?: boolean;
+  allowOverrideRoles?: boolean;
+  providerID?: string;
+};
+
 /** UpdateJWT response with a new JWT value with the added custom claims */
 export type UpdateJWTResponse = {
   jwt: string;
