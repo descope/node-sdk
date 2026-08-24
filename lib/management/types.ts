@@ -247,6 +247,12 @@ export type ClientAssertionResponse = {
 /** Represents a tenant in a project. It has an id, a name and an array of
  * self provisioning domains used to associate users with that tenant.
  */
+/** Authentication type of an SSO configuration. `none` means the configuration is disabled: it
+ * keeps its stored settings, mappings and domains, and serves no logins until it is set back to
+ * `saml` or `oidc`.
+ */
+export type SSOAuthType = 'none' | 'saml' | 'oidc';
+
 export type Tenant = {
   id: string;
   name: string;
@@ -254,7 +260,7 @@ export type Tenant = {
   createdTime: number;
   customAttributes?: Record<string, string | number | boolean | string[]>;
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enforceSSO?: boolean;
   disabled?: boolean;
   defaultRoles?: string[];
@@ -280,7 +286,7 @@ export type SSOSetupSuiteSettings = {
 export type TenantSettings = {
   selfProvisioningDomains: string[];
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enabled?: boolean;
   refreshTokenExpiration?: number;
   refreshTokenExpirationUnit?: ExpirationUnit;
