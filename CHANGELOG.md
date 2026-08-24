@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.15.0](https://github.com/descope/node-sdk/compare/v2.14.0...v2.15.0) (2026-08-24)
+
+
+### Features
+
+* **sso:** add configureAuthType to enable or disable an SSO configuration ([#800](https://github.com/descope/node-sdk/issues/800)) ([6f19ba8](https://github.com/descope/node-sdk/commit/6f19ba83766aebe96c8310efbbe4f31b41b7242c))
+* **xaa:** add cross-app access (ID-JAG) tenant config types incl. mapping ([#792](https://github.com/descope/node-sdk/issues/792)) ([8f3aca8](https://github.com/descope/node-sdk/commit/8f3aca8bc867140a8603fdb0fc7865ddffe0c92b))
+
 ## [2.14.0](https://github.com/descope/node-sdk/compare/v2.13.0...v2.14.0) (2026-08-07)
 
 
