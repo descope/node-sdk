@@ -996,6 +996,7 @@ describe('Management SSO', () => {
         groupsMapping: [{ role: { id: 'r1', name: 'role1' }, groups: ['g1'] }],
         defaultSSORoles: ['Member'],
         providerID: 'okta',
+        audience: 'https://api.descope.com/v1/apps/P1',
       };
       const httpResponse = {
         ok: true,
@@ -1010,6 +1011,8 @@ describe('Management SSO', () => {
       const resp = await management.sso.loadXAASettings('t1', 'somessoid');
       // providerID round-trips through transformXAASettingsResponse (no explicit copy needed).
       expect(resp.data?.providerID).toBe('okta');
+      // Read-only, project-level: no tenant segment - the tenant travels in the aud_tenant claim.
+      expect(resp.data?.audience).toBe('https://api.descope.com/v1/apps/P1');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
         queryParams: { tenantId: 't1', ssoId: 'somessoid' },
