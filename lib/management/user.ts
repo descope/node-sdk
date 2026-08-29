@@ -9,6 +9,7 @@ import {
 import {
   ProviderTokenResponse,
   AssociatedTenant,
+  AssociatedFamily,
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
@@ -65,6 +66,8 @@ type SearchRequest = {
   tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
   verifiedEmail?: boolean; // Filter by verified email status
   verifiedPhone?: boolean; // Filter by verified phone status
+  familyIds?: string[]; // Only return users that are members of at least one of these families
+  dependent?: boolean; // Filter by whether the user is a family dependent (no login credentials of their own)
 };
 
 type SingleUserResponse = {
@@ -459,6 +462,9 @@ const withUser = (httpClient: HttpClient) => {
     if (options.additionalIdentifiers !== undefined) {
       body.additionalIdentifiers = options.additionalIdentifiers;
     }
+    if (options.familyAssociations !== undefined) {
+      body.familyAssociations = options.familyAssociations;
+    }
 
     return body;
   }
@@ -819,6 +825,31 @@ const withUser = (httpClient: HttpClient) => {
     removeTenant: (loginIdOrUserId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.removeTenant, { loginId: loginIdOrUserId, tenantId }),
+        (data) => data.user,
+      ),
+    /**
+     * Add a user to one or more families. Each entry may also set the user's roles and
+     * family-scoped attributes for that family in the same call; omitting roleNames or
+     * familyScopedAttributes on a family the user already belongs to leaves them unchanged.
+     */
+    addFamilies: (
+      loginIdOrUserId: string,
+      familyAssociations: AssociatedFamily[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.addFamilies, {
+          loginId: loginIdOrUserId,
+          familyAssociations,
+        }),
+        (data) => data.user,
+      ),
+    /** Remove a user from one or more families. */
+    removeFamilies: (
+      loginIdOrUserId: string,
+      familyIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.removeFamilies, { loginId: loginIdOrUserId, familyIds }),
         (data) => data.user,
       ),
     setTenantRoles: (
@@ -1287,6 +1318,7 @@ export interface PatchUserOptions {
   scim?: boolean;
   status?: UserStatus;
   additionalIdentifiers?: string[];
+  familyAssociations?: AssociatedFamily[];
 }
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */

@@ -31,6 +31,8 @@ export default {
     removeSSOApps: '/v1/mgmt/user/update/ssoapp/remove',
     addTenant: '/v1/mgmt/user/update/tenant/add',
     removeTenant: '/v1/mgmt/user/update/tenant/remove',
+    addFamilies: '/v1/mgmt/user/update/family/add',
+    removeFamilies: '/v1/mgmt/user/update/family/remove',
     setPassword: '/v1/mgmt/user/password/set', // Deprecated
     setTemporaryPassword: '/v1/mgmt/user/password/set/temporary',
     setActivePassword: '/v1/mgmt/user/password/set/active',
@@ -90,6 +92,18 @@ export default {
     updateDefaultRoles: '/v1/mgmt/tenant/updateDefaultRoles',
     generateSSOConfigurationLink: '/v2/mgmt/tenant/adminlinks/sso/generate',
     revokeSSOConfigurationLink: '/v1/mgmt/tenant/adminlinks/sso/revoke',
+  },
+  family: {
+    create: '/v1/mgmt/family/create',
+    update: '/v1/mgmt/family/update',
+    delete: '/v1/mgmt/family/delete',
+    search: '/v1/mgmt/family/search',
+    dependent: {
+      create: '/v1/mgmt/family/dependent/create',
+      delete: '/v1/mgmt/family/dependent/delete',
+    },
+    impersonate: '/v1/mgmt/family/impersonate',
+    stopImpersonation: '/v1/mgmt/family/impersonate/stop',
   },
   ssoApplication: {
     oidcCreate: '/v1/mgmt/sso/idp/app/oidc/create',

@@ -702,6 +702,66 @@ const resWithActor = await descopeClient.management.tenant.generateSSOConfigurat
 console.log(resWithActor.adminSSOConfigurationLink);
 ```
 
+### Manage Families
+
+You can create, update, delete or search families, manage the users linked to them, and
+impersonate a family dependent (a shadow-profile user with no login credentials of their own):
+
+```typescript
+// Create a family. familyId is optional - a random one is generated when omitted.
+const family = await descopeClient.management.family.create('My Family', {
+  customAttributeName: 'val',
+});
+
+// Update will override all provided fields as is. Omitted fields are left unchanged.
+await descopeClient.management.family.update(family.data.id, 'My Family', {
+  customAttributeName: 'val2',
+});
+
+// Family deletion cannot be undone. Use carefully.
+await descopeClient.management.family.delete(family.data.id);
+
+// Search families according to various parameters. Called with no options, returns all families.
+const searchRes = await descopeClient.management.family.search({ freeText: 'My Family' });
+searchRes.data.forEach((f) => {
+  // do something
+});
+
+// Create a dependent (shadow profile) user in a family - a user with no login credentials of
+// their own. When loginId is omitted it is derived from name; email/phone are never used as the
+// login ID since they are not unique - a dependent may share them with their guardian.
+const dependent = await descopeClient.management.family.createDependent(family.data.id, {
+  name: 'My Dependent',
+});
+
+// Dependent deletion cannot be undone. The family is inferred from the dependent. Regular
+// (non-dependent) family members are removed via user.removeFamilies, not deleted.
+await descopeClient.management.family.deleteDependent(dependent.data.userId);
+
+// Add a user to one or more families. Each entry may also set the user's roles and family-scoped
+// attributes for that family in the same call; omitting roleNames or familyScopedAttributes on a
+// family the user already belongs to leaves them unchanged.
+await descopeClient.management.user.addFamilies('user-login-id', [
+  { familyId: family.data.id, roleNames: ['role1'] },
+]);
+
+// Remove a user from one or more families.
+await descopeClient.management.user.removeFamilies('user-login-id', [family.data.id]);
+
+// Impersonate a family dependent. The impersonator (by user ID or login ID) must be a member of
+// the dependent's family and hold the family impersonate-dependents permission there.
+const impersonateRes = await descopeClient.management.family.impersonateDependent(
+  'admin-user-id',
+  'dependent-login-id',
+  family.data.id, // optional - scopes the impersonated session to this family
+);
+console.log(impersonateRes.data.jwt);
+
+// Stop impersonating a family dependent and return to the acting admin's own session.
+const stopRes = await descopeClient.management.family.stopImpersonation(impersonateRes.data.jwt);
+console.log(stopRes.data.jwt);
+```
+
 ### Manage Password
 
 You can read and update any tenant password settings and policy:
