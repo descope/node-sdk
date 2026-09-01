@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.16.0](https://github.com/descope/node-sdk/compare/v2.15.0...v2.16.0) (2026-09-01)
+
+
+### Features
+
+* **tenant:** add patchTenant for partial tenant updates ([#804](https://github.com/descope/node-sdk/issues/804)) ([399397e](https://github.com/descope/node-sdk/commit/399397e1751bcad408193ee7f737421bea7cbf2d))
+* **xaa:** expose the read-only project-level audience on the XAA load response ([#801](https://github.com/descope/node-sdk/issues/801)) ([d9252cb](https://github.com/descope/node-sdk/commit/d9252cbb291a6a3d245ae1350613973fc572a59f))
+
 ## [2.15.0](https://github.com/descope/node-sdk/compare/v2.14.0...v2.15.0) (2026-08-24)
 
 
