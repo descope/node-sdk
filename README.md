@@ -1069,14 +1069,14 @@ const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenan
 // You can configure SSO settings manually by setting the required fields directly
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const tenantId = 'tenant-id'; // Which tenant this configuration is for
-const idpURL = 'https://idp.com';
-const entityID = 'my-idp-entity-id';
+const idpUrl = 'https://idp.com';
+const entityId = 'my-idp-entity-id';
 const idpCert = '<your-cert-here>';
 const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
 const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
 await descopeClient.management.sso.configureSAMLSettings(
   tenantID,
-  { idpURL, entityID, idpCert },
+  { idpUrl, entityId, idpCert },
   redirectURL,
   domains,
 );
@@ -1086,6 +1086,16 @@ await descopeClient.management.sso.configureSAMLSettings(
 await descopeClient.management.sso.configureSAMLByMetadata(
   tenantID,
   { idpMetadataUrl: 'https://idp.com/my-idp-metadata' },
+  redirectURL,
+  domains,
+);
+
+// Descope signs the SAML AuthnRequest it sends to the IdP. A few IdPs reject a signed request because
+// their trusted provider entry holds no signing certificate for Descope - pass disableSignRequest on the
+// settings (available on both variants above) to send the request unsigned for that configuration only.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, disableSignRequest: true },
   redirectURL,
   domains,
 );
