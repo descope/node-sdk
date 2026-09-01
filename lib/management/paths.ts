@@ -82,6 +82,7 @@ export default {
   tenant: {
     create: '/v1/mgmt/tenant/create',
     update: '/v1/mgmt/tenant/update',
+    patch: '/v1/mgmt/tenant/patch',
     delete: '/v1/mgmt/tenant/delete',
     load: '/v1/mgmt/tenant',
     settings: '/v1/mgmt/tenant/settings',

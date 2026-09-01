@@ -302,6 +302,77 @@ describe('Management Tenant', () => {
     });
   });
 
+  describe('patchTenant', () => {
+    it('should send the correct request and receive correct response for a full call', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+
+      const resp = await management.tenant.patchTenant('t1', {
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        authType: 'saml',
+        disabled: true,
+        enforceSSO: true,
+        enforceSSOExclusions: ['e1'],
+        federatedAppIds: ['app1'],
+        roleInheritance: 'none',
+      });
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.tenant.patch, {
+        id: 't1',
+        name: 'name',
+        selfProvisioningDomains: ['d1'],
+        customAttributes: { customAttr: 'value' },
+        authType: 'saml',
+        disabled: true,
+        enforceSSO: true,
+        enforceSSOExclusions: ['e1'],
+        federatedAppIds: ['app1'],
+        roleInheritance: 'none',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send only the id when no options are provided', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+
+      const resp = await management.tenant.patchTenant('t1');
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.tenant.patch, {
+        id: 't1',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('delete', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
