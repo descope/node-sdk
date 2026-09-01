@@ -77,6 +77,24 @@ const withTenant = (httpClient: HttpClient) => ({
     ),
   updateDefaultRoles: (id: string, defaultRoles: string[]): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.tenant.updateDefaultRoles, { id, defaultRoles })),
+  patchTenant: (id: string, options?: PatchTenantOptions): Promise<SdkResponse<never>> => {
+    const body: Record<string, unknown> = { id };
+    if (options?.name !== undefined) body.name = options.name;
+    if (options?.selfProvisioningDomains !== undefined) {
+      body.selfProvisioningDomains = options.selfProvisioningDomains;
+    }
+    if (options?.customAttributes !== undefined) body.customAttributes = options.customAttributes;
+    if (options?.authType !== undefined) body.authType = options.authType;
+    if (options?.disabled !== undefined) body.disabled = options.disabled;
+    if (options?.enforceSSO !== undefined) body.enforceSSO = options.enforceSSO;
+    if (options?.enforceSSOExclusions !== undefined) {
+      body.enforceSSOExclusions = options.enforceSSOExclusions;
+    }
+    if (options?.federatedAppIds !== undefined) body.federatedAppIds = options.federatedAppIds;
+    if (options?.roleInheritance !== undefined) body.roleInheritance = options.roleInheritance;
+
+    return transformResponse(httpClient.patch(apiPaths.tenant.patch, body));
+  },
   delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.tenant.delete, { id, cascade })),
   load: (id: string): Promise<SdkResponse<Tenant>> =>
@@ -145,5 +163,18 @@ const withTenant = (httpClient: HttpClient) => ({
       ),
     ),
 });
+
+export interface PatchTenantOptions {
+  name?: string;
+  selfProvisioningDomains?: string[];
+  customAttributes?: Record<string, unknown>;
+  /** @deprecated kept for compatibility */
+  authType?: string;
+  disabled?: boolean;
+  enforceSSO?: boolean;
+  enforceSSOExclusions?: string[];
+  federatedAppIds?: string[];
+  roleInheritance?: string;
+}
 
 export default withTenant;
