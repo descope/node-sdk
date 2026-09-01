@@ -167,14 +167,14 @@ const withTenant = (httpClient: HttpClient) => ({
 export interface PatchTenantOptions {
   name?: string;
   selfProvisioningDomains?: string[];
-  customAttributes?: Record<string, unknown>;
+  customAttributes?: Record<string, AttributesTypes>;
   /** @deprecated kept for compatibility */
   authType?: string;
   disabled?: boolean;
   enforceSSO?: boolean;
   enforceSSOExclusions?: string[];
   federatedAppIds?: string[];
-  roleInheritance?: string;
+  roleInheritance?: '' | 'none' | 'userOnly';
 }
 
 export default withTenant;
