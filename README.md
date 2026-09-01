@@ -639,6 +639,13 @@ await descopeClient.management.tenant.update(
   { customAttributeName: 'val' },
 );
 
+// Unlike update, patchTenant only changes the fields you provide - everything else
+// (domains, customAttributes, enforceSSO, ...) is left untouched.
+await descopeClient.management.tenant.patchTenant('my-custom-id', {
+  name: 'My Tenant',
+  disabled: true,
+});
+
 // Update the tenant's default roles by providing role names.
 // These are project-level roles that will be automatically assigned to users in this tenant.
 await descopeClient.management.tenant.updateDefaultRoles('my-custom-id', ['role1', 'role2']);
