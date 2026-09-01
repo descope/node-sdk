@@ -394,6 +394,67 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('configureSAMLSettings disableSignRequest', () => {
+    it.each([true, false])('should pass disableSignRequest=%s through', async (disable) => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureSAMLSettings('t1', {
+        idpUrl: 'https://idp.url',
+        entityId: 'eid',
+        idpCert: 'bsae64cert',
+        disableSignRequest: disable,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.configure, {
+        tenantId: 't1',
+        settings: {
+          idpUrl: 'https://idp.url',
+          entityId: 'eid',
+          idpCert: 'bsae64cert',
+          disableSignRequest: disable,
+        },
+        redirectUrl: undefined,
+        domains: undefined,
+      });
+    });
+
+    it.each([true, false])(
+      'should pass disableSignRequest=%s through the metadata variant',
+      async (disable) => {
+        const httpResponse = {
+          ok: true,
+          clone: () => ({
+            json: () => Promise.resolve(),
+          }),
+          status: 200,
+        };
+        mockHttpClient.post.mockResolvedValue(httpResponse);
+
+        await management.sso.configureSAMLByMetadata('t1', {
+          idpMetadataUrl: 'https://idp.url/metadata',
+          disableSignRequest: disable,
+        });
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.metadata, {
+          tenantId: 't1',
+          settings: {
+            idpMetadataUrl: 'https://idp.url/metadata',
+            disableSignRequest: disable,
+          },
+          redirectUrl: undefined,
+          domains: undefined,
+        });
+      },
+    );
+  });
+
   describe('configureSAMLByMetadata', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

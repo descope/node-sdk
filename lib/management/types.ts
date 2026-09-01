@@ -643,6 +643,8 @@ export type SSOSAMLSettingsResponse = {
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only) */
   lastSuccessTestTime?: number;
+  /** True when Descope sends the SAML AuthnRequest to this IdP unsigned */
+  disableSignRequest?: boolean;
 };
 
 export type SSOSettings = {
@@ -705,6 +707,12 @@ export type SSOSAMLSettings = {
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -718,6 +726,12 @@ export type SSOSAMLByMetadataSettings = {
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;

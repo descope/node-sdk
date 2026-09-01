@@ -1083,6 +1083,16 @@ await descopeClient.management.sso.configureSAMLByMetadata(
   domains,
 );
 
+// Descope signs the SAML AuthnRequest it sends to the IdP. A few IdPs reject a signed request because
+// their trusted provider entry holds no signing certificate for Descope - pass disableSignRequest on the
+// settings (available on both variants above) to send the request unsigned for that configuration only.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpURL, entityID, idpCert, disableSignRequest: true },
+  redirectURL,
+  domains,
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
