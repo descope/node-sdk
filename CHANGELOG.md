@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.17.0](https://github.com/descope/node-sdk/compare/v2.16.0...v2.17.0) (2026-09-01)
+
+
+### Features
+
+* **sso:** allow disabling SAML AuthnRequest signing per SSO configuration ([#805](https://github.com/descope/node-sdk/issues/805)) ([45ad931](https://github.com/descope/node-sdk/commit/45ad931115fabfb6a62b898c19e21b7d04a401fd))
+
 ## [2.16.0](https://github.com/descope/node-sdk/compare/v2.15.0...v2.16.0) (2026-09-01)
 
 
