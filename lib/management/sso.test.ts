@@ -600,6 +600,57 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('configureAuthenticationOnly', () => {
+    it('should classify a specific SSO configuration', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureAuthenticationOnly('t1', 'conf1', true);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
+        tenantId: 't1',
+        ssoId: 'conf1',
+        authenticationOnly: true,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+
+    // false has to be sent, not dropped as a falsy value, or the classification could never be
+    // cleared once set.
+    it('should send false when clearing the classification', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureAuthenticationOnly('t1', 'conf1', false);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
+        tenantId: 't1',
+        ssoId: 'conf1',
+        authenticationOnly: false,
+      });
+    });
+  });
+
   describe('newSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockResponse = {

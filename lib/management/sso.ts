@@ -177,6 +177,28 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         ...(ssoId ? { ssoId } : {}),
       }),
     ),
+  /**
+   * Classify a single SSO configuration as authentication only. Such a configuration verifies a
+   * person's identity without creating, updating or signing in a user, so it grants no
+   * application access - use it for a connection that exists to verify external people, alongside
+   * a separate connection for application login.
+   * @param tenantId the tenant the configuration belongs to
+   * @param ssoId the SSO configuration to classify; required, the tenant's default configuration
+   * cannot be marked authentication only
+   * @param authenticationOnly true to classify it, false to clear the classification
+   */
+  configureAuthenticationOnly: (
+    tenantId: string,
+    ssoId: string,
+    authenticationOnly: boolean,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.authenticationOnly, {
+        tenantId,
+        ssoId,
+        authenticationOnly,
+      }),
+    ),
   configureSAMLSettings: (
     tenantId: string,
     settings: SSOSAMLSettings,
