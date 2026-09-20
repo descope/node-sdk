@@ -653,7 +653,7 @@ export type SSOSettings = {
   oidc?: SSOOIDCSettings;
   ssoId?: string;
   /**
-   * True when the configuration verifies identity only: logins through it do not create, update
+   * True when the configuration verifies identity only: a login through it does not create, update
    * or sign in a user, so it grants no application access.
    */
   authenticationOnly?: boolean;

@@ -183,20 +183,19 @@ const withSSOSettings = (httpClient: HttpClient) => ({
    * application access - use it for a connection that exists to verify external people, alongside
    * a separate connection for application login.
    * @param tenantId the tenant the configuration belongs to
-   * @param ssoId the SSO configuration to classify; required, the tenant's default configuration
-   * cannot be marked authentication only
+   * @param ssoId the SSO configuration to classify; omit for the tenant's default configuration
    * @param authenticationOnly true to classify it, false to clear the classification
    */
   configureAuthenticationOnly: (
     tenantId: string,
-    ssoId: string,
     authenticationOnly: boolean,
+    ssoId?: string,
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.sso.authenticationOnly, {
         tenantId,
-        ssoId,
         authenticationOnly,
+        ...(ssoId ? { ssoId } : {}),
       }),
     ),
   configureSAMLSettings: (

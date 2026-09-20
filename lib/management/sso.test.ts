@@ -612,12 +612,12 @@ describe('Management SSO', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.sso.configureAuthenticationOnly('t1', 'conf1', true);
+      const resp = await management.sso.configureAuthenticationOnly('t1', true, 'conf1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
         tenantId: 't1',
-        ssoId: 'conf1',
         authenticationOnly: true,
+        ssoId: 'conf1',
       });
 
       expect(resp).toEqual({
@@ -625,6 +625,27 @@ describe('Management SSO', () => {
         ok: true,
         response: httpResponse,
         data: {},
+      });
+    });
+
+    // The classification lives on the configuration's settings rows, which the tenant's default
+    // configuration has too, so omitting the ssoId targets the default.
+    it('should target the default configuration when no ssoId is given', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureAuthenticationOnly('t1', true);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
+        tenantId: 't1',
+        authenticationOnly: true,
       });
     });
 
@@ -641,12 +662,12 @@ describe('Management SSO', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      await management.sso.configureAuthenticationOnly('t1', 'conf1', false);
+      await management.sso.configureAuthenticationOnly('t1', false, 'conf1');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
         tenantId: 't1',
-        ssoId: 'conf1',
         authenticationOnly: false,
+        ssoId: 'conf1',
       });
     });
   });
