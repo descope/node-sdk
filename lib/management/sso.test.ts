@@ -600,75 +600,89 @@ describe('Management SSO', () => {
     });
   });
 
-  describe('configureAuthenticationOnly', () => {
-    it('should classify a specific SSO configuration', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => {},
-        clone: () => ({
-          json: () => Promise.resolve({}),
-        }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
-
-      const resp = await management.sso.configureAuthenticationOnly('t1', true, 'conf1');
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
-        tenantId: 't1',
-        authenticationOnly: true,
-        ssoId: 'conf1',
-      });
-
-      expect(resp).toEqual({
-        code: 200,
-        ok: true,
-        response: httpResponse,
-        data: {},
-      });
+  describe('authenticationOnly on the SSO settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
     });
 
-    // The classification lives on the configuration's settings rows, which the tenant's default
-    // configuration has too, so omitting the ssoId targets the default.
-    it('should target the default configuration when no ssoId is given', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => {},
-        clone: () => ({
-          json: () => Promise.resolve({}),
+    const samlSettings = {
+      idpUrl: 'https://idp.example.com/sso',
+      entityId: 'entity-id',
+      idpCert: 'cert',
+    };
+
+    it('should classify a configuration through its SAML settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+          ssoId: 'conf1',
         }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
-
-      await management.sso.configureAuthenticationOnly('t1', true);
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
-        tenantId: 't1',
-        authenticationOnly: true,
-      });
+      );
     });
 
-    // false has to be sent, not dropped as a falsy value, or the classification could never be
-    // cleared once set.
+    // false has to be sent rather than dropped as a falsy value, or the classification could never
+    // be cleared once set.
     it('should send false when clearing the classification', async () => {
-      const httpResponse = {
-        ok: true,
-        json: () => {},
-        clone: () => ({
-          json: () => Promise.resolve({}),
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: false },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: false }),
         }),
-        status: 200,
-      };
-      mockHttpClient.post.mockResolvedValue(httpResponse);
+      );
+    });
 
-      await management.sso.configureAuthenticationOnly('t1', false, 'conf1');
+    // Left out it must not be sent at all, so an ordinary settings save keeps what is stored.
+    it('should omit it when the caller says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authenticationOnly, {
-        tenantId: 't1',
-        authenticationOnly: false,
-        ssoId: 'conf1',
-      });
+      await management.sso.configureSAMLSettings('t1', samlSettings, '', [], 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+      expect(sent.settings).not.toHaveProperty('authenticationOnly');
+    });
+
+    it('should classify a configuration through its OIDC settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureOIDCSettings(
+        't1',
+        { name: 'provider', clientId: 'client-id', authenticationOnly: true },
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.oidc.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
     });
   });
 

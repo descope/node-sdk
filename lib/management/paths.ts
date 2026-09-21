@@ -146,7 +146,6 @@ export default {
     settings: '/v1/mgmt/sso/settings',
     settingsNew: '/v1/mgmt/sso/settings/new',
     authType: '/v1/mgmt/sso/settings/authtype',
-    authenticationOnly: '/v1/mgmt/sso/settings/authenticationonly',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
     settingsv2: '/v2/mgmt/sso/settings',

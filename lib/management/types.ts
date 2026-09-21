@@ -703,6 +703,12 @@ export type SSOOIDCSettings = {
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
   lastSuccessTestTime?: number;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 };
 
 export type SSOSAMLSettings = {
@@ -718,6 +724,12 @@ export type SSOSAMLSettings = {
    * Defaults to false, i.e. requests are signed.
    */
   disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -737,6 +749,12 @@ export type SSOSAMLByMetadataSettings = {
    * Defaults to false, i.e. requests are signed.
    */
   disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
