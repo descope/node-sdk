@@ -1100,6 +1100,19 @@ await descopeClient.management.sso.configureSAMLSettings(
   domains,
 );
 
+// A configuration can be classified as authentication only: a login through it verifies the person's
+// identity and returns the IdP response, creating no user and issuing no session, so it grants no
+// access to your application. Omit authenticationOnly and the stored classification is kept, so an
+// ordinary settings edit cannot clear it by omission; pass false to clear it. The same field is on the
+// OIDC and Cross-App Access settings, and setting it through any one of them classifies the whole
+// configuration. Read it back from the load response's top-level authenticationOnly.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, authenticationOnly: true },
+  redirectURL,
+  domains,
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';

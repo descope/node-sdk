@@ -216,6 +216,16 @@ export type XAASettings = {
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
   providerID?: string;
+  /**
+   * Classifies the configuration as verifying identity only: a login through it creates no user and
+   * issues no session. Omit it and the stored classification is kept, so an ordinary settings save
+   * cannot clear it; send `false` to clear it. Setting it through any one protocol classifies the
+   * whole configuration, so this, the SAML field and the OIDC field all reach the same place.
+   *
+   * A Cross-App Access token exchange through a classified configuration is refused: its output is an
+   * access token bound to a user, so there is no user-less form of it to fall back to.
+   */
+  authenticationOnly?: boolean;
 };
 
 /** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on

@@ -684,6 +684,68 @@ describe('Management SSO', () => {
         }),
       );
     });
+
+    // The by-metadata save is its own endpoint, so it needs its own proof that the field travels.
+    it('should classify a configuration through its SAML-by-metadata settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLByMetadata(
+        't1',
+        { idpMetadataUrl: 'https://idp.example.com/metadata', authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.metadata,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
+    });
+
+    // configureXAASettings picks fields explicitly rather than passing the settings object through,
+    // so leaving it off that list drops the classification silently.
+    it('should classify a configuration through its Cross-App Access settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings(
+        't1',
+        { enabled: true, authenticationOnly: true },
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.xaa.settings,
+        expect.objectContaining({ authenticationOnly: true }),
+      );
+    });
+
+    it('should omit it from a Cross-App Access save that says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings('t1', { enabled: true }, 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as object;
+      expect(sent).not.toHaveProperty('authenticationOnly');
+    });
+
+    // transformSettingsResponse rebuilds the load response field by field, so the classification has
+    // to survive it or every caller reads false.
+    it('should decode authenticationOnly off a load response', async () => {
+      const loaded = { ssoId: 'conf1', authenticationOnly: true, saml: {}, oidc: {} };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.authenticationOnly).toBe(true);
+    });
   });
 
   describe('newSettings', () => {
