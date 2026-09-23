@@ -7,7 +7,14 @@ import { Group } from './types';
 const management = withManagement(mockHttpClient);
 
 const mockGroups = [
-  { id: 'id1', display: 'display1', members: [] },
+  {
+    id: 'id1',
+    display: 'display1',
+    members: [
+      { loginId: 'login1', userId: 'user1', display: 'member1', source: 'jit' },
+      { loginId: 'login2', userId: 'user2', display: 'member2', source: 'scim' },
+    ],
+  },
   { name: 'id2', display: 'display2', members: [] },
   { name: 'id3', display: 'display3', members: [] },
 ];
