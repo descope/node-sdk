@@ -653,8 +653,9 @@ export type SSOSettings = {
   oidc?: SSOOIDCSettings;
   ssoId?: string;
   /**
-   * True when the configuration verifies identity only: a login through it does not create, update
-   * or sign in a user, so it grants no application access.
+   * True when the configuration verifies identity only: a login through it creates no user and
+   * issues no session. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
    */
   authenticationOnly?: boolean;
 };
@@ -704,9 +705,12 @@ export type SSOOIDCSettings = {
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
   lastSuccessTestTime?: number;
   /**
-   * Classify the configuration as verifying identity only: a login through it does not create,
-   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
-   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   * Classify the configuration as verifying identity only: a login through it creates no user and
+   * issues no session, returning the identity provider response instead. Leave it out to keep
+   * whatever is stored, so an ordinary settings save cannot clear it by omission.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.authenticationOnly` there, which answers for the whole configuration.
    */
   authenticationOnly?: boolean;
 };
