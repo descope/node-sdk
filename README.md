@@ -760,6 +760,27 @@ console.log(impersonateRes.data.jwt);
 // Stop impersonating a family dependent and return to the acting admin's own session.
 const stopRes = await descopeClient.management.family.stopImpersonation(impersonateRes.data.jwt);
 console.log(stopRes.data.jwt);
+
+// Get and set the project's family account settings. Omitted fields are left unchanged.
+const settings = await descopeClient.management.family.getSettings();
+await descopeClient.management.family.setSettings({
+  enabled: true,
+  maxFamilyMembers: 5,
+  allowMultipleFamiliesUsers: false,
+});
+
+// Manage custom attribute definitions on the family entity itself.
+await descopeClient.management.family.createCustomAttributes([{ name: 'plan', type: 1 }]);
+const familyAttrs = await descopeClient.management.family.getCustomAttributes();
+await descopeClient.management.family.deleteCustomAttributes(['plan']);
+
+// Manage family-scoped user custom attribute definitions - user attributes whose values are held
+// per family membership (AssociatedFamily.familyScopedAttributes) rather than on the user.
+await descopeClient.management.user.createFamilyScopedCustomAttributes([
+  { name: 'nickname', type: 1 },
+]);
+const familyScopedAttrs = await descopeClient.management.user.getFamilyScopedCustomAttributes();
+await descopeClient.management.user.deleteFamilyScopedCustomAttributes(['nickname']);
 ```
 
 ### Manage Password

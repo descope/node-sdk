@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { Family, UpdateJWTResponse } from './types';
+import { CustomAttribute, Family, FamilySettings, UpdateJWTResponse } from './types';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
 
 const management = withManagement(mockHttpClient);
@@ -20,6 +20,14 @@ const mockFamilies: Family[] = [
   { id: 'f2', name: 'family2', createdTime: 1 },
   { id: 'f3', name: 'family3', createdTime: 1 },
 ];
+
+const mockCustomAttributes: CustomAttribute[] = [{ name: 'attr1', type: 1 }];
+
+const mockFamilySettings: FamilySettings = {
+  enabled: true,
+  maxFamilyMembers: 5,
+  allowMultipleFamiliesUsers: false,
+};
 
 const mockUserResponse = {
   userId: 'u1',
@@ -313,6 +321,144 @@ describe('Management Family', () => {
       expect(resp).toEqual({
         code: 200,
         data: { jwt: 'jwt123' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFamilySettings,
+        clone: () => ({
+          json: () => Promise.resolve(mockFamilySettings),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<FamilySettings> = await management.family.getSettings();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.family.settings);
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockFamilySettings,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('setSettings', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockFamilySettings,
+        clone: () => ({
+          json: () => Promise.resolve(mockFamilySettings),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<FamilySettings> = await management.family.setSettings(
+        mockFamilySettings,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.family.settings,
+        mockFamilySettings,
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockFamilySettings,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('getCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ data: mockCustomAttributes }),
+        clone: () => ({
+          json: () => Promise.resolve({ data: mockCustomAttributes }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CustomAttribute[]> = await management.family.getCustomAttributes();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.family.getCustomAttributes);
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockCustomAttributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('createCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ data: mockCustomAttributes }),
+        clone: () => ({
+          json: () => Promise.resolve({ data: mockCustomAttributes }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CustomAttribute[]> = await management.family.createCustomAttributes(
+        mockCustomAttributes,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.createCustomAttributes, {
+        attributes: mockCustomAttributes,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockCustomAttributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ data: [] }),
+        clone: () => ({
+          json: () => Promise.resolve({ data: [] }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CustomAttribute[]> = await management.family.deleteCustomAttributes([
+        'attr1',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.deleteCustomAttributes, {
+        names: ['attr1'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [],
         ok: true,
         response: httpResponse,
       });

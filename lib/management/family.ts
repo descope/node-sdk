@@ -3,6 +3,8 @@ import apiPaths from './paths';
 import {
   Family,
   AttributesTypes,
+  CustomAttribute,
+  FamilySettings,
   SearchFamiliesOptions,
   CreateFamilyDependentOptions,
   UpdateJWTResponse,
@@ -99,6 +101,59 @@ const withFamily = (httpClient: HttpClient) => ({
   ): Promise<SdkResponse<UpdateJWTResponse>> =>
     transformResponse(
       httpClient.post(apiPaths.family.stopImpersonation, { jwt, customClaims, refreshDuration }),
+    ),
+
+  /** Get the project's family account settings. */
+  getSettings: (): Promise<SdkResponse<FamilySettings>> =>
+    transformResponse<FamilySettings, FamilySettings>(
+      httpClient.get(apiPaths.family.settings),
+      (data) => data,
+    ),
+
+  /**
+   * Set the project's family account settings. Omitted fields are left unchanged.
+   * @param settings The settings to set
+   * @returns The updated settings
+   */
+  setSettings: (settings: FamilySettings): Promise<SdkResponse<FamilySettings>> =>
+    transformResponse<FamilySettings, FamilySettings>(
+      httpClient.post(apiPaths.family.settings, settings),
+      (data) => data,
+    ),
+
+  /**
+   * Get the custom attributes schema defined on the family entity itself. These are distinct from
+   * the family-scoped user attributes managed through `user.getFamilyScopedCustomAttributes`.
+   * @returns An array of CustomAttribute definitions
+   */
+  getCustomAttributes: (): Promise<SdkResponse<CustomAttribute[]>> =>
+    transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+      httpClient.get(apiPaths.family.getCustomAttributes),
+      (data) => data.data,
+    ),
+
+  /**
+   * Create custom attribute definitions on the family entity.
+   * @param attributes The custom attribute definitions to create
+   * @returns The updated array of CustomAttribute definitions
+   */
+  createCustomAttributes: (
+    attributes: CustomAttribute[],
+  ): Promise<SdkResponse<CustomAttribute[]>> =>
+    transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+      httpClient.post(apiPaths.family.createCustomAttributes, { attributes }),
+      (data) => data.data,
+    ),
+
+  /**
+   * Delete custom attribute definitions from the family entity by name.
+   * @param names The names of the custom attributes to delete
+   * @returns The updated array of CustomAttribute definitions
+   */
+  deleteCustomAttributes: (names: string[]): Promise<SdkResponse<CustomAttribute[]>> =>
+    transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+      httpClient.post(apiPaths.family.deleteCustomAttributes, { names }),
+      (data) => data.data,
     ),
 });
 

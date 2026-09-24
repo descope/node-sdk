@@ -1250,6 +1250,45 @@ const withUser = (httpClient: HttpClient) => {
       ),
 
     /**
+     * Get the family-scoped custom attributes schema defined for the project. These are user
+     * attributes whose values are held per family membership (see
+     * `AssociatedFamily.familyScopedAttributes`) rather than on the user, and their definitions are
+     * a separate set from the plain user custom attributes.
+     * @returns An array of CustomAttribute definitions
+     */
+    getFamilyScopedCustomAttributes: (): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.get(apiPaths.user.getFamilyScopedCustomAttributes),
+        (data) => data.data,
+      ),
+
+    /**
+     * Create family-scoped custom attribute definitions in the project's user schema.
+     * @param attributes The custom attribute definitions to create
+     * @returns The updated array of CustomAttribute definitions
+     */
+    createFamilyScopedCustomAttributes: (
+      attributes: CustomAttribute[],
+    ): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.post(apiPaths.user.createFamilyScopedCustomAttributes, { attributes }),
+        (data) => data.data,
+      ),
+
+    /**
+     * Delete family-scoped custom attribute definitions from the project's user schema by name.
+     * @param names The names of the custom attributes to delete
+     * @returns The updated array of CustomAttribute definitions
+     */
+    deleteFamilyScopedCustomAttributes: (
+      names: string[],
+    ): Promise<SdkResponse<CustomAttribute[]>> =>
+      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
+        httpClient.post(apiPaths.user.deleteFamilyScopedCustomAttributes, { names }),
+        (data) => data.data,
+      ),
+
+    /**
      * Remove a single passkey (WebAuthn credential) for the user with the given login ID.
      * @param loginId The login ID of the user
      * @param credentialId The credential ID of the passkey to remove

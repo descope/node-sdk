@@ -2791,6 +2791,95 @@ describe('Management User', () => {
     });
   });
 
+  describe('getFamilyScopedCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.getFamilyScopedCustomAttributes();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        apiPaths.user.getFamilyScopedCustomAttributes,
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('createFamilyScopedCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.createFamilyScopedCustomAttributes(attributes);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.createFamilyScopedCustomAttributes,
+        { attributes },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteFamilyScopedCustomAttributes', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const attributes = [{ name: 'attr1', type: 1 }];
+      const mockResponse = { data: attributes };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.deleteFamilyScopedCustomAttributes(['attr1']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.user.deleteFamilyScopedCustomAttributes,
+        { names: ['attr1'] },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: attributes,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('removePasskey', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

@@ -318,6 +318,16 @@ export type Family = {
   createdTime: number;
 };
 
+/** The project's family account settings. */
+export type FamilySettings = {
+  /** Whether family accounts are enabled for the project */
+  enabled?: boolean;
+  /** The maximum number of members allowed in a single family */
+  maxFamilyMembers?: number;
+  /** Whether a user is allowed to belong to more than one family */
+  allowMultipleFamiliesUsers?: boolean;
+};
+
 /** Options for searching families */
 export type SearchFamiliesOptions = {
   familyIds?: string[];
