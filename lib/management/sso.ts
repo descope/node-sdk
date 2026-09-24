@@ -262,6 +262,12 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         groupPriorityEnabled: settings.groupPriorityEnabled,
         allowOverrideRoles: settings.allowOverrideRoles,
         ...(settings.providerID ? { providerID: settings.providerID } : {}),
+        // this endpoint picks fields explicitly, so the classification has to be listed or it is
+        // dropped. Checked against undefined rather than truthiness: false must reach the server to
+        // clear the classification, while omitting it keeps what is stored.
+        ...(settings.authenticationOnly !== undefined
+          ? { authenticationOnly: settings.authenticationOnly }
+          : {}),
       }),
     ),
   loadXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<XAASettingsResponse>> =>

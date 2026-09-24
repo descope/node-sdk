@@ -600,6 +600,154 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('authenticationOnly on the SSO settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    });
+
+    const samlSettings = {
+      idpUrl: 'https://idp.example.com/sso',
+      entityId: 'entity-id',
+      idpCert: 'cert',
+    };
+
+    it('should classify a configuration through its SAML settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+          ssoId: 'conf1',
+        }),
+      );
+    });
+
+    // false has to be sent rather than dropped as a falsy value, or the classification could never
+    // be cleared once set.
+    it('should send false when clearing the classification', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: false },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: false }),
+        }),
+      );
+    });
+
+    // Left out it must not be sent at all, so an ordinary settings save keeps what is stored.
+    it('should omit it when the caller says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings('t1', samlSettings, '', [], 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+      expect(sent.settings).not.toHaveProperty('authenticationOnly');
+    });
+
+    it('should classify a configuration through its OIDC settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureOIDCSettings(
+        't1',
+        { name: 'provider', clientId: 'client-id', authenticationOnly: true },
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.oidc.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
+    });
+
+    // The by-metadata save is its own endpoint, so it needs its own proof that the field travels.
+    it('should classify a configuration through its SAML-by-metadata settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLByMetadata(
+        't1',
+        { idpMetadataUrl: 'https://idp.example.com/metadata', authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.metadata,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
+    });
+
+    // configureXAASettings picks fields explicitly rather than passing the settings object through,
+    // so leaving it off that list drops the classification silently.
+    it('should classify a configuration through its Cross-App Access settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings(
+        't1',
+        { enabled: true, authenticationOnly: true },
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.xaa.settings,
+        expect.objectContaining({ authenticationOnly: true }),
+      );
+    });
+
+    it('should omit it from a Cross-App Access save that says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings('t1', { enabled: true }, 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as object;
+      expect(sent).not.toHaveProperty('authenticationOnly');
+    });
+
+    // transformSettingsResponse rebuilds the load response field by field, so the classification has
+    // to survive it or every caller reads false.
+    it('should decode authenticationOnly off a load response', async () => {
+      const loaded = { ssoId: 'conf1', authenticationOnly: true, saml: {}, oidc: {} };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.authenticationOnly).toBe(true);
+    });
+  });
+
   describe('newSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockResponse = {
