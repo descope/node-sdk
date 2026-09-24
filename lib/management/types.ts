@@ -266,8 +266,10 @@ export type Tenant = {
   domains?: string[];
   authType?: SSOAuthType;
   enforceSSO?: boolean;
+  enforceSSOExclusions?: string[];
   disabled?: boolean;
   defaultRoles?: string[];
+  roleInheritance?: '' | 'none' | 'userOnly';
 };
 
 export type SSOSetupSuiteSettingsDisabledFeatures = {
