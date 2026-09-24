@@ -299,8 +299,8 @@ export type TenantSettings = {
   stepupTokenExpiration?: number;
   stepupTokenExpirationUnit?: ExpirationUnit;
   enableInactivity?: boolean;
-  InactivityTime?: number;
-  InactivityTimeUnit?: ExpirationUnit;
+  inactivityTime?: number;
+  inactivityTimeUnit?: ExpirationUnit;
   JITDisabled?: boolean;
   ssoSetupSuiteSettings?: SSOSetupSuiteSettings;
 };

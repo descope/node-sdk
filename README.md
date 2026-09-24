@@ -683,8 +683,8 @@ await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   sessionTokenExpirationUnit: 'minutes',
   enableInactivity: true,
   JITDisabled: false,
-  InactivityTime: 10,
-  InactivityTimeUnit: 'minutes',
+  inactivityTime: 10,
+  inactivityTimeUnit: 'minutes',
 });
 
 // Generate tenant admin self service link for SSO Suite (valid for 24 hours)
