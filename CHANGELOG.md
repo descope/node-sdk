@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.17.1](https://github.com/descope/node-sdk/compare/v2.17.0...v2.17.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* **tenant:** align tenant settings properties with rest api ([#809](https://github.com/descope/node-sdk/issues/809)) ([5f18ac2](https://github.com/descope/node-sdk/commit/5f18ac22fad4ba244a96bf88ef7e880cb126383b))
+
 ## [2.17.0](https://github.com/descope/node-sdk/compare/v2.16.0...v2.17.0) (2026-09-01)
 
 
