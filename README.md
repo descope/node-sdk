@@ -676,7 +676,7 @@ const tenantSettings = await descopeClient.management.tenant.getSettings('my-ten
 await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   domains: ['domain1.com'],
   selfProvisioningDomains: ['domain1.com'],
-  sessionSettingsEnabled: true,
+  enabled: true,
   refreshTokenExpiration: 12,
   refreshTokenExpirationUnit: 'days',
   sessionTokenExpiration: 10,
