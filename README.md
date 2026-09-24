@@ -676,15 +676,15 @@ const tenantSettings = await descopeClient.management.tenant.getSettings('my-ten
 await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   domains: ['domain1.com'],
   selfProvisioningDomains: ['domain1.com'],
-  sessionSettingsEnabled: true,
+  enabled: true,
   refreshTokenExpiration: 12,
   refreshTokenExpirationUnit: 'days',
   sessionTokenExpiration: 10,
   sessionTokenExpirationUnit: 'minutes',
   enableInactivity: true,
   JITDisabled: false,
-  InactivityTime: 10,
-  InactivityTimeUnit: 'minutes',
+  inactivityTime: 10,
+  inactivityTimeUnit: 'minutes',
 });
 
 // Generate tenant admin self service link for SSO Suite (valid for 24 hours)

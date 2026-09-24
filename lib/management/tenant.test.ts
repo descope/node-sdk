@@ -31,8 +31,8 @@ const mockSettings: TenantSettings = {
   sessionTokenExpirationUnit: 'minutes',
   enableInactivity: true,
   JITDisabled: false,
-  InactivityTime: 10,
-  InactivityTimeUnit: 'minutes',
+  inactivityTime: 10,
+  inactivityTimeUnit: 'minutes',
 };
 
 const mockAllTenantsResponse = {
