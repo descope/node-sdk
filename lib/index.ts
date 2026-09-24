@@ -52,7 +52,7 @@ const nodeSdk = ({
 }: NodeSdkArgs) => {
   const nodeHeaders = {
     'x-descope-sdk-name': 'nodejs',
-    'x-descope-sdk-node-version': process?.versions?.node || '',
+    'x-descope-sdk-node-version': globalThis.process?.versions?.node || '',
     'x-descope-sdk-version': BUILD_VERSION,
   };
 
