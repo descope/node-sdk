@@ -49,18 +49,30 @@ type FamilyUserFields = {
   userFamilies?: { familyId: string; roleNames?: string[]; familyScopedAttributes?: object }[];
 };
 
-/** Unwraps an SdkResponse, printing the result, and throws on failure. */
+/** Unwraps an SdkResponse, printing the result unless printResult is false, and throws on failure. */
 async function step<T extends ResponseData>(
   name: string,
   call: Promise<SdkResponse<T>>,
+  printResult = true,
 ): Promise<T> {
   const res = await call;
   if (!res.ok) {
     throw new Error(`${name} failed: ${JSON.stringify(res.error)}`);
   }
   console.log(`\n✔ ${name}`);
-  if (res.data !== undefined) console.dir(res.data, { depth: 5 });
+  if (printResult && res.data !== undefined) console.dir(res.data, { depth: 5 });
   return res.data as T;
+}
+
+/**
+ * Prints the identity claims of a session JWT: the subject, the acting user (set while
+ * impersonating) and the selected family. The token itself is a live session credential, so it is
+ * never printed. The payload is decoded without verifying the signature, which is fine for display
+ * only - validate tokens with the SDK before trusting them.
+ */
+function printSessionClaims(jwt: string) {
+  const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString());
+  console.dir({ sub: payload.sub, act: payload.act, dcf: payload.dcf }, { depth: 3 });
 }
 
 /** Same as step, but a failure is logged and swallowed (used for cleanup and optional steps). */
@@ -187,8 +199,17 @@ async function main() {
     const impersonation = await step(
       'family.impersonateDependent',
       family.impersonateDependent(guardianLoginId, dependent.loginIds[0], familyId),
+      false,
     );
-    await step('family.stopImpersonation', family.stopImpersonation(impersonation.jwt));
+    // sub is the dependent, act is the guardian acting on their behalf, dcf is the selected family
+    printSessionClaims(impersonation.jwt);
+    const stopped = await step(
+      'family.stopImpersonation',
+      family.stopImpersonation(impersonation.jwt),
+      false,
+    );
+    // Back to the guardian's own session: sub is the guardian and act is gone
+    printSessionClaims(stopped.jwt);
 
     // --- Membership removal -----------------------------------------------------------------------
     // Kept when skipping cleanup, so the family shows both the guardian and the dependent
