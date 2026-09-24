@@ -212,25 +212,24 @@ async function main() {
         },
         { depth: 3 },
       );
-      return;
+    } else {
+      // --- Cleanup, reverse order -------------------------------------------------------------------
+      console.log('\n--- cleanup ---');
+      if (dependentUserId)
+        await tryStep('family.deleteDependent', family.deleteDependent(dependentUserId));
+      if (guardianCreated) await tryStep('user.delete (guardian)', user.delete(guardianLoginId));
+      if (familyId) await tryStep('family.delete', family.delete(familyId));
+      if (familyScopedAttrCreated) {
+        await tryStep(
+          'user.deleteFamilyScopedCustomAttributes',
+          user.deleteFamilyScopedCustomAttributes([familyScopedAttr]),
+        );
+      }
+      if (familyAttrCreated) {
+        await tryStep('family.deleteCustomAttributes', family.deleteCustomAttributes([familyAttr]));
+      }
+      await tryStep('family.setSettings (restore original)', family.setSettings(originalSettings));
     }
-
-    // --- Cleanup, reverse order -------------------------------------------------------------------
-    console.log('\n--- cleanup ---');
-    if (dependentUserId)
-      await tryStep('family.deleteDependent', family.deleteDependent(dependentUserId));
-    if (guardianCreated) await tryStep('user.delete (guardian)', user.delete(guardianLoginId));
-    if (familyId) await tryStep('family.delete', family.delete(familyId));
-    if (familyScopedAttrCreated) {
-      await tryStep(
-        'user.deleteFamilyScopedCustomAttributes',
-        user.deleteFamilyScopedCustomAttributes([familyScopedAttr]),
-      );
-    }
-    if (familyAttrCreated) {
-      await tryStep('family.deleteCustomAttributes', family.deleteCustomAttributes([familyAttr]));
-    }
-    await tryStep('family.setSettings (restore original)', family.setSettings(originalSettings));
   }
 }
 
