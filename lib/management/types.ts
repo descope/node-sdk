@@ -216,6 +216,16 @@ export type XAASettings = {
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
   providerID?: string;
+  /**
+   * Classifies the configuration as verifying identity only: a login through it creates no user and
+   * issues no session. Omit it and the stored classification is kept, so an ordinary settings save
+   * cannot clear it; send `false` to clear it. Setting it through any one protocol classifies the
+   * whole configuration, so this, the SAML field and the OIDC field all reach the same place.
+   *
+   * A Cross-App Access token exchange through a classified configuration is refused: its output is an
+   * access token bound to a user, so there is no user-less form of it to fall back to.
+   */
+  authenticationOnly?: boolean;
 };
 
 /** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
@@ -652,6 +662,12 @@ export type SSOSettings = {
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
   ssoId?: string;
+  /**
+   * True when the configuration verifies identity only: a login through it creates no user and
+   * issues no session. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
+   */
+  authenticationOnly?: boolean;
 };
 
 export type OIDCAttributeMapping = {
@@ -698,6 +714,15 @@ export type SSOOIDCSettings = {
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
   lastSuccessTestTime?: number;
+  /**
+   * Classify the configuration as verifying identity only: a login through it creates no user and
+   * issues no session, returning the identity provider response instead. Leave it out to keep
+   * whatever is stored, so an ordinary settings save cannot clear it by omission.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.authenticationOnly` there, which answers for the whole configuration.
+   */
+  authenticationOnly?: boolean;
 };
 
 export type SSOSAMLSettings = {
@@ -713,6 +738,12 @@ export type SSOSAMLSettings = {
    * Defaults to false, i.e. requests are signed.
    */
   disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -732,6 +763,12 @@ export type SSOSAMLByMetadataSettings = {
    * Defaults to false, i.e. requests are signed.
    */
   disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
