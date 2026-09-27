@@ -62,23 +62,24 @@ const descopeClient = DescopeClient({
 Then, you can use that to work with the following functions:
 
 1. [Manage Tenants](#manage-tenants)
-2. [Manage Users](#manage-users)
-3. [Manage Access Keys](#manage-access-keys)
-4. [Manage SSO Setting](#manage-sso-setting)
-5. [Manage Permissions](#manage-permissions)
-6. [Manage Roles](#manage-roles)
-7. [Query SSO Groups](#query-sso-groups)
-8. [Manage Flows](#manage-flows)
-9. [Manage JWTs](#manage-jwts)
-10. [Impersonate](#impersonate)
-11. [Embedded Links](#embedded-links)
-12. [Audit](#audit)
-13. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
-14. [Manage Project](#manage-project)
-15. [Manage SSO applications](#manage-sso-applications)
-16. [Manage Management Keys](#manage-management-keys)
-17. [Manage Descopers](#manage-descopers)
-18. [Manage Engines](#manage-engines)
+2. [Manage Families](#manage-families)
+3. [Manage Users](#manage-users)
+4. [Manage Access Keys](#manage-access-keys)
+5. [Manage SSO Setting](#manage-sso-setting)
+6. [Manage Permissions](#manage-permissions)
+7. [Manage Roles](#manage-roles)
+8. [Query SSO Groups](#query-sso-groups)
+9. [Manage Flows](#manage-flows)
+10. [Manage JWTs](#manage-jwts)
+11. [Impersonate](#impersonate)
+12. [Embedded Links](#embedded-links)
+13. [Audit](#audit)
+14. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
+15. [Manage Project](#manage-project)
+16. [Manage SSO applications](#manage-sso-applications)
+17. [Manage Management Keys](#manage-management-keys)
+18. [Manage Descopers](#manage-descopers)
+19. [Manage Engines](#manage-engines)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -708,12 +709,16 @@ You can create, update, delete or search families, manage the users linked to th
 impersonate a family dependent (a shadow-profile user with no login credentials of their own):
 
 ```typescript
-// Create a family. familyId is optional - a random one is generated when omitted.
+// Create a family. The family ID is generated automatically.
 const family = await descopeClient.management.family.create('My Family', {
   customAttributeName: 'val',
 });
 
+// Create a family with a caller-supplied ID.
+await descopeClient.management.family.createWithId('my-family-id', 'My Other Family');
+
 // Update will override all provided fields as is. Omitted fields are left unchanged.
+// customAttributes replaces all of the family's custom attributes, it is not merged.
 await descopeClient.management.family.update(family.data.id, 'My Family', {
   customAttributeName: 'val2',
 });
@@ -722,7 +727,7 @@ await descopeClient.management.family.update(family.data.id, 'My Family', {
 await descopeClient.management.family.delete(family.data.id);
 
 // Search families according to various parameters. Called with no options, returns all families.
-const searchRes = await descopeClient.management.family.search({ freeText: 'My Family' });
+const searchRes = await descopeClient.management.family.searchAll({ text: 'My Family' });
 searchRes.data.forEach((f) => {
   // do something
 });
@@ -761,9 +766,9 @@ console.log(impersonateRes.data.jwt);
 const stopRes = await descopeClient.management.family.stopImpersonation(impersonateRes.data.jwt);
 console.log(stopRes.data.jwt);
 
-// Get and set the project's family account settings. Omitted fields are left unchanged.
+// Get and configure the project's family account settings. Omitted fields are left unchanged.
 const settings = await descopeClient.management.family.getSettings();
-await descopeClient.management.family.setSettings({
+await descopeClient.management.family.configureSettings({
   enabled: true,
   maxFamilyMembers: 5,
   allowMultipleFamiliesUsers: false,
@@ -953,7 +958,9 @@ await descopeClient.management.user.createBatch([
   },
 ]);
 
-// Update will override all fields as is. Use carefully.
+// Update will override all fields as is, including family memberships: omitting
+// familyAssociations removes the user from all of their families, and updating a dependent
+// requires familyAssociations with the dependent's family. Use carefully, or use patch instead.
 await descopeClient.management.user.update('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',

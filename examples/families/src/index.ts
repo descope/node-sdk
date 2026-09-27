@@ -22,7 +22,6 @@ const { DESCOPE_PROJECT_ID, DESCOPE_MANAGEMENT_KEY, DESCOPE_BASE_URL } = process
 // The default family role; it carries the "Family Impersonate Dependents" permission that
 // impersonateDependent requires
 const guardianRole = process.env.FAMILY_ROLE || 'Family Admin';
-// Keep everything the run created so it can be inspected in the console afterwards
 const skipCleanup = process.env.SKIP_CLEANUP === '1';
 
 if (!DESCOPE_PROJECT_ID || !DESCOPE_MANAGEMENT_KEY) {
@@ -42,12 +41,6 @@ const run = Date.now().toString(36);
 const familyAttr = `plan_${run}`;
 const familyScopedAttr = `nickname_${run}`;
 const guardianLoginId = `guardian-${run}@example.com`;
-
-/** Family membership details included on user responses */
-type FamilyUserFields = {
-  dependent?: boolean;
-  userFamilies?: { familyId: string; roleNames?: string[]; familyScopedAttributes?: object }[];
-};
 
 /** Unwraps an SdkResponse, printing the result unless printResult is false, and throws on failure. */
 async function step<T extends ResponseData>(
@@ -92,8 +85,8 @@ async function main() {
   // --- Settings ---------------------------------------------------------------------------------
   const originalSettings = await step('family.getSettings', family.getSettings());
   await step(
-    'family.setSettings (enable families)',
-    family.setSettings({ enabled: true, allowMultipleFamiliesUsers: true }),
+    'family.configureSettings (enable families)',
+    family.configureSettings({ enabled: true, allowMultipleFamiliesUsers: true }),
   );
 
   let familyId: string | undefined;
@@ -133,10 +126,10 @@ async function main() {
       'family.update (rename + change attribute)',
       family.update(familyId, `Demo Family ${run} (renamed)`, { [familyAttr]: 'premium' }),
     );
-    await step('family.search by id', family.search({ familyIds: [familyId] }));
+    await step('family.searchAll by id', family.searchAll({ ids: [familyId] }));
     await step(
-      'family.search by custom attribute',
-      family.search({
+      'family.searchAll by custom attribute',
+      family.searchAll({
         customAttributes: { [familyAttr]: 'premium' },
       }),
     );
@@ -166,7 +159,7 @@ async function main() {
         { familyId, familyScopedAttributes: { [familyScopedAttr]: 'Mommy' } },
       ]),
     );
-    console.log('  guardian.userFamilies ->', (guardian as FamilyUserFields).userFamilies);
+    console.log('  guardian.userFamilies ->', guardian.userFamilies);
 
     // --- Dependent (shadow profile, no credentials) -----------------------------------------------
     const dependent = await step(
@@ -174,11 +167,11 @@ async function main() {
       family.createDependent(familyId, {
         name: `Demo Kid ${run}`,
         givenName: 'Demo',
-        familyScopedAttributes: { [familyId]: { [familyScopedAttr]: 'Kiddo' } },
+        familyScopedAttributes: { [familyScopedAttr]: 'Kiddo' },
       }),
     );
     dependentUserId = dependent.userId;
-    console.log('  dependent.dependent ->', (dependent as FamilyUserFields).dependent);
+    console.log('  dependent.dependent ->', dependent.dependent);
 
     // --- Search users by family -------------------------------------------------------------------
     const members = await step(
@@ -249,7 +242,10 @@ async function main() {
       if (familyAttrCreated) {
         await tryStep('family.deleteCustomAttributes', family.deleteCustomAttributes([familyAttr]));
       }
-      await tryStep('family.setSettings (restore original)', family.setSettings(originalSettings));
+      await tryStep(
+        'family.configureSettings (restore original)',
+        family.configureSettings(originalSettings),
+      );
     }
   }
 }

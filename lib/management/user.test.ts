@@ -435,6 +435,7 @@ describe('Management User', () => {
         sendMail: true,
         templateOptions: { k1: 'v1' },
         locale: 'en-US',
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.create, {
@@ -442,6 +443,7 @@ describe('Management User', () => {
         email: 'a@b.c',
         roleNames: ['r1', 'r2'],
         invite: true,
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
         customAttributes: { a: 'a', b: 1, c: true },
         inviteUrl: 'https://invite.me',
         sendMail: true,
@@ -637,6 +639,7 @@ describe('Management User', () => {
           email: 'one@one',
           password: 'clear',
           seed: 'aaa',
+          familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
         },
         { loginIdOrUserId: 'two', roles: ['r1'], email: 'two@two', hashedPassword: hashed },
       ]);
@@ -649,6 +652,7 @@ describe('Management User', () => {
             email: 'one@one',
             password: 'clear',
             seed: 'aaa',
+            familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
           },
           {
             loginId: 'two',
@@ -717,11 +721,13 @@ describe('Management User', () => {
 
       const resp: SdkResponse<UserResponse> = await management.user.update('loginId', {
         email: 'a@b.c',
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.update, {
         loginId: 'loginId',
         email: 'a@b.c',
+        familyAssociations: [{ familyId: 'f1', roleNames: ['r1'] }],
       });
 
       expect(resp).toEqual({

@@ -328,14 +328,22 @@ export type FamilySettings = {
   allowMultipleFamiliesUsers?: boolean;
 };
 
+/** Response of management calls that return a single user */
+export type SingleUserResponse = {
+  user: UserResponse;
+};
+
 /** Options for searching families */
-export type SearchFamiliesOptions = {
-  familyIds?: string[];
-  freeText?: string;
-  familyNames?: string[];
-  page?: number;
-  size?: number;
+export type FamilySearchOptions = {
+  ids?: string[];
+  names?: string[];
+  /** Free text search among the families' attributes */
+  text?: string;
   customAttributes?: Record<string, AttributesTypes>;
+  /** Pages start at 0 */
+  page?: number;
+  /** Up to 1000 */
+  size?: number;
 };
 
 /** Options for creating a dependent (shadow profile) user in a family */
@@ -351,8 +359,8 @@ export type CreateFamilyDependentOptions = {
   familyName?: string;
   picture?: string;
   customAttributes?: Record<string, AttributesTypes>;
-  /** Per-family custom attribute values (familyId -> { attrName -> value }) */
-  familyScopedAttributes?: Record<string, Record<string, AttributesTypes>>;
+  /** The dependent's family-scoped custom attribute values in this family (attrName -> value) */
+  familyScopedAttributes?: Record<string, AttributesTypes>;
 };
 
 /** Represents password settings of a tenant in a project. It has the password policy details. */

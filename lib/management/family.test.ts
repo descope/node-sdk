@@ -59,7 +59,6 @@ describe('Management Family', () => {
         { customAttr: 'value' },
         'http://dummy.com/photo.png',
         false,
-        'f1',
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.create, {
@@ -67,7 +66,43 @@ describe('Management Family', () => {
         customAttributes: { customAttr: 'value' },
         photo: 'http://dummy.com/photo.png',
         disabled: false,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockFamily,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('createWithId', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ family: mockFamily }),
+        clone: () => ({
+          json: () => Promise.resolve({ family: mockFamily }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Family> = await management.family.createWithId(
+        'f1',
+        'family1',
+        { customAttr: 'value' },
+        'http://dummy.com/photo.png',
+        false,
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.create, {
         familyId: 'f1',
+        name: 'family1',
+        customAttributes: { customAttr: 'value' },
+        photo: 'http://dummy.com/photo.png',
+        disabled: false,
       });
 
       expect(resp).toEqual({
@@ -141,7 +176,7 @@ describe('Management Family', () => {
     });
   });
 
-  describe('search', () => {
+  describe('searchAll', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -153,7 +188,16 @@ describe('Management Family', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<Family[]> = await management.family.search({
+      const resp: SdkResponse<Family[]> = await management.family.searchAll({
+        ids: ['f1'],
+        text: 'fam',
+        names: ['family1'],
+        page: 0,
+        size: 10,
+        customAttributes: { customAttr: 'value' },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.search, {
         familyIds: ['f1'],
         freeText: 'fam',
         familyNames: ['family1'],
@@ -161,19 +205,6 @@ describe('Management Family', () => {
         size: 10,
         customAttributes: { customAttr: 'value' },
       });
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        apiPaths.family.search,
-        {
-          familyIds: ['f1'],
-          freeText: 'fam',
-          familyNames: ['family1'],
-          page: 0,
-          size: 10,
-          customAttributes: { customAttr: 'value' },
-        },
-        {},
-      );
 
       expect(resp).toEqual({
         code: 200,
@@ -194,9 +225,9 @@ describe('Management Family', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      await management.family.search();
+      await management.family.searchAll();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.search, {}, {});
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.search, {});
     });
   });
 
@@ -215,7 +246,7 @@ describe('Management Family', () => {
       const resp = await management.family.createDependent('f1', {
         name: 'dependent',
         email: 'dependent@example.com',
-        familyScopedAttributes: { f1: { customAttr: 'value' } },
+        familyScopedAttributes: { customAttr: 'value' },
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.dependent.create, {
@@ -352,7 +383,7 @@ describe('Management Family', () => {
     });
   });
 
-  describe('setSettings', () => {
+  describe('configureSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
         ok: true,
@@ -364,7 +395,7 @@ describe('Management Family', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<FamilySettings> = await management.family.setSettings(
+      const resp: SdkResponse<FamilySettings> = await management.family.configureSettings(
         mockFamilySettings,
       );
 
