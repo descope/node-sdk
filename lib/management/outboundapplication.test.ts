@@ -246,6 +246,43 @@ describe('Management OutboundApplication', () => {
         response: httpResponse,
       });
     });
+
+    it('should pass through DCR fields (useDcr/dcrUrl) without a cast', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.updateApplication({
+        id: 'app1',
+        name: 'dcr app',
+        description: 'custom MCP server with dynamic client registration',
+        useDcr: true,
+        dcrUrl: 'https://mcp.example.com/register',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.update, {
+        app: {
+          id: 'app1',
+          name: 'dcr app',
+          description: 'custom MCP server with dynamic client registration',
+          useDcr: true,
+          dcrUrl: 'https://mcp.example.com/register',
+        },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('deleteOutboundApplication', () => {
