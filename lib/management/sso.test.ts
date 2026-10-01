@@ -545,6 +545,94 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('replaceDefaultSSORoles', () => {
+    const roleCases: [string, string[] | undefined, boolean][] = [
+      ['an empty array', [], true],
+      ['omitted roles', undefined, false],
+      ['a non-empty array', ['aa'], false],
+    ];
+
+    beforeEach(() => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      });
+    });
+
+    const expectFlag = (body: Record<string, unknown>, expected: boolean) => {
+      if (expected) {
+        expect(body.replaceDefaultSSORoles).toBe(true);
+      } else {
+        expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+      }
+    };
+
+    it.each(roleCases)('configureMapping with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureMapping('t1', undefined, undefined, defaultSSORoles);
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.mapping);
+      expect(body.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body, expected);
+    });
+
+    it.each(roleCases)('configureOIDCSettings with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureOIDCSettings('t1', {
+        clientId: 'cid',
+        name: 'cn',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.oidc.configure);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it.each(roleCases)('configureSAMLSettings with %s', async (_, defaultSSORoles, expected) => {
+      const settings = {
+        idpUrl: 'https://idp.url',
+        entityId: 'eid',
+        idpCert: 'bsae64cert',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      };
+      await management.sso.configureSAMLSettings('t1', settings);
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.saml.configure);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+      // the caller's settings object is never mutated
+      expect(settings).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it.each(roleCases)('configureSAMLByMetadata with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureSAMLByMetadata('t1', {
+        idpMetadataUrl: 'https://metadata.com',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.saml.metadata);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it('configureXAASettings never sends the flag', async () => {
+      await management.sso.configureXAASettings('t1', { defaultSSORoles: [] });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.xaa.settings);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+  });
+
   describe('configureAuthType', () => {
     it('should disable a specific SSO configuration', async () => {
       const httpResponse = {

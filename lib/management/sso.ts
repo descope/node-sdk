@@ -60,6 +60,16 @@ function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
   return ((data.XAASettings as XAASettingsResponse[]) ?? []).map(transformXAASettingsResponse);
 }
 
+// The API cannot tell an empty defaultSSORoles from an omitted one and keeps the stored roles for
+// both, so an explicit empty list is flagged with replaceDefaultSSORoles to clear them. The flag is
+// added only then: servers that predate it reject unknown fields.
+function withReplaceDefaultSSORoles<T extends { defaultSSORoles?: string[] }>(body: T): T {
+  if (Array.isArray(body.defaultSSORoles) && body.defaultSSORoles.length === 0) {
+    return { ...body, replaceDefaultSSORoles: true };
+  }
+  return body;
+}
+
 const withSSOSettings = (httpClient: HttpClient) => ({
   /**
    * @deprecated  Use loadSettings instead
@@ -133,12 +143,15 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     defaultSSORoles?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      httpClient.post(apiPaths.sso.mapping, {
-        tenantId,
-        roleMappings,
-        attributeMapping,
-        defaultSSORoles,
-      }),
+      httpClient.post(
+        apiPaths.sso.mapping,
+        withReplaceDefaultSSORoles({
+          tenantId,
+          roleMappings,
+          attributeMapping,
+          defaultSSORoles,
+        }),
+      ),
     ),
   configureOIDCSettings: (
     tenantId: string,
@@ -146,7 +159,10 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     domains?: string[],
     ssoId?: string,
   ): Promise<SdkResponse<never>> => {
-    const readySettings = { ...settings, userAttrMapping: settings.attributeMapping };
+    const readySettings = withReplaceDefaultSSORoles({
+      ...settings,
+      userAttrMapping: settings.attributeMapping,
+    });
     delete readySettings.attributeMapping;
     return transformResponse(
       httpClient.post(apiPaths.sso.oidc.configure, {
@@ -187,7 +203,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.configure, {
         tenantId,
-        settings,
+        settings: withReplaceDefaultSSORoles(settings),
         redirectUrl,
         domains,
         ...(ssoId ? { ssoId } : {}),
@@ -203,7 +219,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.metadata, {
         tenantId,
-        settings,
+        settings: withReplaceDefaultSSORoles(settings),
         redirectUrl,
         domains,
         ...(ssoId ? { ssoId } : {}),
