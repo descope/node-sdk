@@ -5,7 +5,10 @@ for a backend written in Node.js. You can read more on the [Descope Website](htt
 
 ## Requirements
 
-The SDK supports Node version 16 and above.
+The SDK supports Node version 18 and above.
+
+The SDK uses the runtime's native `fetch` and requires no Node built-in modules, so it also runs
+on Cloudflare Workers and other edge runtimes.
 
 ## Installing the SDK
 
