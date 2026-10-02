@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.18.0](https://github.com/descope/node-sdk/compare/v2.17.0...v2.18.0) (2026-10-02)
+
+
+### Features
+
+* **sso:** classify an SSO configuration as authentication only ([#807](https://github.com/descope/node-sdk/issues/807)) ([6f94db8](https://github.com/descope/node-sdk/commit/6f94db8d192e3cfaebeb70e9cd30ddd79c1bd670))
+
+
+### Bug Fixes
+
+* **sso:** allow clearing default SSO roles ([#812](https://github.com/descope/node-sdk/issues/812)) ([1710e66](https://github.com/descope/node-sdk/commit/1710e66f8d5a2bc67b62c59a3426af0b7d423051))
+* **tenant:** align tenant settings properties with rest api ([#809](https://github.com/descope/node-sdk/issues/809)) ([5f18ac2](https://github.com/descope/node-sdk/commit/5f18ac22fad4ba244a96bf88ef7e880cb126383b))
+
 ## [2.17.0](https://github.com/descope/node-sdk/compare/v2.16.0...v2.17.0) (2026-09-01)
 
 
