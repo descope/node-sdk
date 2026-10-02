@@ -710,6 +710,8 @@ export type SSOOIDCSettings = {
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
   roleMappings?: OIDCRoleMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
+  defaultSSORoles?: string[];
   providerID?: string;
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
@@ -731,6 +733,7 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
   /**
    * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
@@ -756,6 +759,7 @@ export type SSOSAMLByMetadataSettings = {
   entityId?: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
   /**
    * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
