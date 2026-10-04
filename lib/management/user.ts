@@ -9,6 +9,7 @@ import {
 import {
   ProviderTokenResponse,
   AssociatedTenant,
+  AssociatedFamily,
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
@@ -22,14 +23,14 @@ import {
   ProviderTokenOptions,
   UserOptions,
   UserSearchResponse,
-  CustomAttribute,
   UserPasskey,
   UserTrustedDevice,
   UserImportResponse,
+  SingleUserResponse,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
-import { transformUsersForBatch } from './helpers';
+import { transformUsersForBatch, withCustomAttributes } from './helpers';
 
 type SearchSort = {
   field: string;
@@ -65,10 +66,8 @@ type SearchRequest = {
   tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
   verifiedEmail?: boolean; // Filter by verified email status
   verifiedPhone?: boolean; // Filter by verified phone status
-};
-
-type SingleUserResponse = {
-  user: UserResponse;
+  familyIds?: string[]; // Only return users that are members of at least one of these families
+  dependent?: boolean; // Filter by whether the user is a family dependent (no login credentials of their own)
 };
 
 type MultipleUsersResponse = {
@@ -330,6 +329,12 @@ const withUser = (httpClient: HttpClient) => {
   /* Invite User End */
 
   /* Update User */
+  /**
+   * Update an existing user. All fields are overridden as is, including family memberships:
+   * omitting familyAssociations removes the user from all of their families, and updating a
+   * dependent requires familyAssociations with the dependent's family. Use patch to change only
+   * some fields.
+   */
   function update(
     loginIdOrUserId: string,
     options?: UserOptions,
@@ -459,6 +464,9 @@ const withUser = (httpClient: HttpClient) => {
     if (options.additionalIdentifiers !== undefined) {
       body.additionalIdentifiers = options.additionalIdentifiers;
     }
+    if (options.familyAssociations !== undefined) {
+      body.familyAssociations = options.familyAssociations;
+    }
 
     return body;
   }
@@ -505,6 +513,18 @@ const withUser = (httpClient: HttpClient) => {
       (data) => data,
     );
   }
+
+  const userCustomAttributes = withCustomAttributes(httpClient, {
+    get: apiPaths.user.getCustomAttributes,
+    create: apiPaths.user.createCustomAttributes,
+    delete: apiPaths.user.deleteCustomAttributes,
+  });
+
+  const familyScopedCustomAttributes = withCustomAttributes(httpClient, {
+    get: apiPaths.user.getFamilyScopedCustomAttributes,
+    create: apiPaths.user.createFamilyScopedCustomAttributes,
+    delete: apiPaths.user.deleteFamilyScopedCustomAttributes,
+  });
 
   return {
     create,
@@ -819,6 +839,31 @@ const withUser = (httpClient: HttpClient) => {
     removeTenant: (loginIdOrUserId: string, tenantId: string): Promise<SdkResponse<UserResponse>> =>
       transformResponse<SingleUserResponse, UserResponse>(
         httpClient.post(apiPaths.user.removeTenant, { loginId: loginIdOrUserId, tenantId }),
+        (data) => data.user,
+      ),
+    /**
+     * Add a user to one or more families. Each entry may also set the user's roles and
+     * family-scoped attributes for that family in the same call; omitting roleNames or
+     * familyScopedAttributes on a family the user already belongs to leaves them unchanged.
+     */
+    addFamilies: (
+      loginIdOrUserId: string,
+      familyAssociations: AssociatedFamily[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.addFamilies, {
+          loginId: loginIdOrUserId,
+          familyAssociations,
+        }),
+        (data) => data.user,
+      ),
+    /** Remove a user from one or more families. */
+    removeFamilies: (
+      loginIdOrUserId: string,
+      familyIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.removeFamilies, { loginId: loginIdOrUserId, familyIds }),
         (data) => data.user,
       ),
     setTenantRoles: (
@@ -1188,35 +1233,44 @@ const withUser = (httpClient: HttpClient) => {
      * Get the custom attributes schema defined for the project.
      * @returns An array of CustomAttribute definitions
      */
-    getCustomAttributes: (): Promise<SdkResponse<CustomAttribute[]>> =>
-      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
-        httpClient.get(apiPaths.user.getCustomAttributes),
-        (data) => data.data,
-      ),
+    getCustomAttributes: userCustomAttributes.get,
 
     /**
      * Create custom attributes in the project's user schema.
      * @param attributes The custom attribute definitions to create
      * @returns The updated array of CustomAttribute definitions
      */
-    createCustomAttributes: (
-      attributes: CustomAttribute[],
-    ): Promise<SdkResponse<CustomAttribute[]>> =>
-      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
-        httpClient.post(apiPaths.user.createCustomAttributes, { attributes }),
-        (data) => data.data,
-      ),
+    createCustomAttributes: userCustomAttributes.create,
 
     /**
      * Delete custom attributes from the project's user schema by name.
      * @param names The names of the custom attributes to delete
      * @returns The updated array of CustomAttribute definitions
      */
-    deleteCustomAttributes: (names: string[]): Promise<SdkResponse<CustomAttribute[]>> =>
-      transformResponse<{ data: CustomAttribute[] }, CustomAttribute[]>(
-        httpClient.post(apiPaths.user.deleteCustomAttributes, { names }),
-        (data) => data.data,
-      ),
+    deleteCustomAttributes: userCustomAttributes.delete,
+
+    /**
+     * Get the family-scoped custom attributes schema defined for the project. These are user
+     * attributes whose values are held per family membership (see
+     * `AssociatedFamily.familyScopedAttributes`) rather than on the user, and their definitions are
+     * a separate set from the plain user custom attributes.
+     * @returns An array of CustomAttribute definitions
+     */
+    getFamilyScopedCustomAttributes: familyScopedCustomAttributes.get,
+
+    /**
+     * Create family-scoped custom attribute definitions in the project's user schema.
+     * @param attributes The custom attribute definitions to create
+     * @returns The updated array of CustomAttribute definitions
+     */
+    createFamilyScopedCustomAttributes: familyScopedCustomAttributes.create,
+
+    /**
+     * Delete family-scoped custom attribute definitions from the project's user schema by name.
+     * @param names The names of the custom attributes to delete
+     * @returns The updated array of CustomAttribute definitions
+     */
+    deleteFamilyScopedCustomAttributes: familyScopedCustomAttributes.delete,
 
     /**
      * Remove a single passkey (WebAuthn credential) for the user with the given login ID.
@@ -1287,6 +1341,7 @@ export interface PatchUserOptions {
   scim?: boolean;
   status?: UserStatus;
   additionalIdentifiers?: string[];
+  familyAssociations?: AssociatedFamily[];
 }
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */

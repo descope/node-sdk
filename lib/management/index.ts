@@ -2,6 +2,7 @@ import { HttpClient } from '@descope/core-js-sdk';
 import withUser from './user';
 import withProject from './project';
 import withTenant from './tenant';
+import withFamily from './family';
 import withJWT from './jwt';
 import withPermission from './permission';
 import withRole from './role';
@@ -32,6 +33,7 @@ const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   project: withProject(client),
   accessKey: withAccessKey(client),
   tenant: withTenant(client),
+  family: withFamily(client),
   ssoApplication: withSSOApplication(client),
   inboundApplication: withInboundApplication(client),
   outboundApplication: withOutboundApplication(client),

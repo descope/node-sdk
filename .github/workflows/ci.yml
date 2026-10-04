@@ -39,6 +39,8 @@ jobs:
         run: cd examples/commonjs && npm i
       - name: Examples - Management CLI
         run: cd examples/managementCli && npm i && npm run build
+      - name: Families example
+        run: cd examples/families && npm i && npm run typecheck
 
   eslint:
     name: 🪥 ESLint
