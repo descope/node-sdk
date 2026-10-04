@@ -87,6 +87,7 @@ export default {
   tenant: {
     create: '/v1/mgmt/tenant/create',
     update: '/v1/mgmt/tenant/update',
+    patch: '/v1/mgmt/tenant/patch',
     delete: '/v1/mgmt/tenant/delete',
     load: '/v1/mgmt/tenant',
     settings: '/v1/mgmt/tenant/settings',
@@ -165,6 +166,7 @@ export default {
   sso: {
     settings: '/v1/mgmt/sso/settings',
     settingsNew: '/v1/mgmt/sso/settings/new',
+    authType: '/v1/mgmt/sso/settings/authtype',
     metadata: '/v1/mgmt/sso/metadata',
     mapping: '/v1/mgmt/sso/mapping',
     settingsv2: '/v2/mgmt/sso/settings',

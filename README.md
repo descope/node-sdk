@@ -640,6 +640,13 @@ await descopeClient.management.tenant.update(
   { customAttributeName: 'val' },
 );
 
+// Unlike update, patchTenant only changes the fields you provide - everything else
+// (domains, customAttributes, enforceSSO, ...) is left untouched.
+await descopeClient.management.tenant.patchTenant('my-custom-id', {
+  name: 'My Tenant',
+  disabled: true,
+});
+
 // Update the tenant's default roles by providing role names.
 // These are project-level roles that will be automatically assigned to users in this tenant.
 await descopeClient.management.tenant.updateDefaultRoles('my-custom-id', ['role1', 'role2']);
@@ -670,15 +677,15 @@ const tenantSettings = await descopeClient.management.tenant.getSettings('my-ten
 await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   domains: ['domain1.com'],
   selfProvisioningDomains: ['domain1.com'],
-  sessionSettingsEnabled: true,
+  enabled: true,
   refreshTokenExpiration: 12,
   refreshTokenExpirationUnit: 'days',
   sessionTokenExpiration: 10,
   sessionTokenExpirationUnit: 'minutes',
   enableInactivity: true,
   JITDisabled: false,
-  InactivityTime: 10,
-  InactivityTimeUnit: 'minutes',
+  inactivityTime: 10,
+  inactivityTimeUnit: 'minutes',
 });
 
 // Generate tenant admin self service link for SSO Suite (valid for 24 hours)
@@ -1150,14 +1157,14 @@ const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenan
 // You can configure SSO settings manually by setting the required fields directly
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const tenantId = 'tenant-id'; // Which tenant this configuration is for
-const idpURL = 'https://idp.com';
-const entityID = 'my-idp-entity-id';
+const idpUrl = 'https://idp.com';
+const entityId = 'my-idp-entity-id';
 const idpCert = '<your-cert-here>';
 const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
 const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
 await descopeClient.management.sso.configureSAMLSettings(
   tenantID,
-  { idpURL, entityID, idpCert },
+  { idpUrl, entityId, idpCert },
   redirectURL,
   domains,
 );
@@ -1167,6 +1174,29 @@ await descopeClient.management.sso.configureSAMLSettings(
 await descopeClient.management.sso.configureSAMLByMetadata(
   tenantID,
   { idpMetadataUrl: 'https://idp.com/my-idp-metadata' },
+  redirectURL,
+  domains,
+);
+
+// Descope signs the SAML AuthnRequest it sends to the IdP. A few IdPs reject a signed request because
+// their trusted provider entry holds no signing certificate for Descope - pass disableSignRequest on the
+// settings (available on both variants above) to send the request unsigned for that configuration only.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, disableSignRequest: true },
+  redirectURL,
+  domains,
+);
+
+// A configuration can be classified as authentication only: a login through it verifies the person's
+// identity and returns the IdP response, creating no user and issuing no session, so it grants no
+// access to your application. Omit authenticationOnly and the stored classification is kept, so an
+// ordinary settings edit cannot clear it by omission; pass false to clear it. The same field is on the
+// OIDC and Cross-App Access settings, and setting it through any one of them classifies the whole
+// configuration. Read it back from the load response's top-level authenticationOnly.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, authenticationOnly: true },
   redirectURL,
   domains,
 );
@@ -1190,6 +1220,13 @@ await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
 // You can delete existing SSO configuration
 // You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
 await descopeClient.management.sso.deleteSettings(tenantID);
+
+// You can disable an SSO configuration without deleting it, and enable it again later.
+// Its settings, mappings and domains are kept, so re-enabling needs no payload.
+// You can pass ssoId in case using multi SSO and you want to disable a specific SSO configuration
+await descopeClient.management.sso.configureAuthType(tenantID, 'none', ssoId);
+// Enable it again on the protocol it is configured for ('saml' or 'oidc')
+await descopeClient.management.sso.configureAuthType(tenantID, 'saml', ssoId);
 ```
 
 Note: Certificates should have a similar structure to:

@@ -394,6 +394,67 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('configureSAMLSettings disableSignRequest', () => {
+    it.each([true, false])('should pass disableSignRequest=%s through', async (disable) => {
+      const httpResponse = {
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.sso.configureSAMLSettings('t1', {
+        idpUrl: 'https://idp.url',
+        entityId: 'eid',
+        idpCert: 'bsae64cert',
+        disableSignRequest: disable,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.configure, {
+        tenantId: 't1',
+        settings: {
+          idpUrl: 'https://idp.url',
+          entityId: 'eid',
+          idpCert: 'bsae64cert',
+          disableSignRequest: disable,
+        },
+        redirectUrl: undefined,
+        domains: undefined,
+      });
+    });
+
+    it.each([true, false])(
+      'should pass disableSignRequest=%s through the metadata variant',
+      async (disable) => {
+        const httpResponse = {
+          ok: true,
+          clone: () => ({
+            json: () => Promise.resolve(),
+          }),
+          status: 200,
+        };
+        mockHttpClient.post.mockResolvedValue(httpResponse);
+
+        await management.sso.configureSAMLByMetadata('t1', {
+          idpMetadataUrl: 'https://idp.url/metadata',
+          disableSignRequest: disable,
+        });
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.saml.metadata, {
+          tenantId: 't1',
+          settings: {
+            idpMetadataUrl: 'https://idp.url/metadata',
+            disableSignRequest: disable,
+          },
+          redirectUrl: undefined,
+          domains: undefined,
+        });
+      },
+    );
+  });
+
   describe('configureSAMLByMetadata', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -481,6 +542,297 @@ describe('Management SSO', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+  });
+
+  describe('replaceDefaultSSORoles', () => {
+    const roleCases: [string, string[] | undefined, boolean][] = [
+      ['an empty array', [], true],
+      ['omitted roles', undefined, false],
+      ['a non-empty array', ['aa'], false],
+    ];
+
+    beforeEach(() => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      });
+    });
+
+    const expectFlag = (body: Record<string, unknown>, expected: boolean) => {
+      if (expected) {
+        expect(body.replaceDefaultSSORoles).toBe(true);
+      } else {
+        expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+      }
+    };
+
+    it.each(roleCases)('configureMapping with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureMapping('t1', undefined, undefined, defaultSSORoles);
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.mapping);
+      expect(body.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body, expected);
+    });
+
+    it.each(roleCases)('configureOIDCSettings with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureOIDCSettings('t1', {
+        clientId: 'cid',
+        name: 'cn',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.oidc.configure);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it.each(roleCases)('configureSAMLSettings with %s', async (_, defaultSSORoles, expected) => {
+      const settings = {
+        idpUrl: 'https://idp.url',
+        entityId: 'eid',
+        idpCert: 'bsae64cert',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      };
+      await management.sso.configureSAMLSettings('t1', settings);
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.saml.configure);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+      // the caller's settings object is never mutated
+      expect(settings).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it.each(roleCases)('configureSAMLByMetadata with %s', async (_, defaultSSORoles, expected) => {
+      await management.sso.configureSAMLByMetadata('t1', {
+        idpMetadataUrl: 'https://metadata.com',
+        ...(defaultSSORoles ? { defaultSSORoles } : {}),
+      });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.saml.metadata);
+      expect(body.settings.defaultSSORoles).toEqual(defaultSSORoles);
+      expectFlag(body.settings, expected);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+
+    it('configureXAASettings never sends the flag', async () => {
+      await management.sso.configureXAASettings('t1', { defaultSSORoles: [] });
+
+      const [path, body] = mockHttpClient.post.mock.calls[0];
+      expect(path).toBe(apiPaths.sso.xaa.settings);
+      expect(body).not.toHaveProperty('replaceDefaultSSORoles');
+    });
+  });
+
+  describe('configureAuthType', () => {
+    it('should disable a specific SSO configuration', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureAuthType('t1', 'none', 'conf1');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authType, {
+        tenantId: 't1',
+        authType: 'none',
+        ssoId: 'conf1',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+
+    it('should target the default configuration when no ssoId is given', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.sso.configureAuthType('t1', 'saml');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.authType, {
+        tenantId: 't1',
+        authType: 'saml',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        ok: true,
+        response: httpResponse,
+        data: {},
+      });
+    });
+  });
+
+  describe('authenticationOnly on the SSO settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    });
+
+    const samlSettings = {
+      idpUrl: 'https://idp.example.com/sso',
+      entityId: 'entity-id',
+      idpCert: 'cert',
+    };
+
+    it('should classify a configuration through its SAML settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+          ssoId: 'conf1',
+        }),
+      );
+    });
+
+    // false has to be sent rather than dropped as a falsy value, or the classification could never
+    // be cleared once set.
+    it('should send false when clearing the classification', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings(
+        't1',
+        { ...samlSettings, authenticationOnly: false },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: false }),
+        }),
+      );
+    });
+
+    // Left out it must not be sent at all, so an ordinary settings save keeps what is stored.
+    it('should omit it when the caller says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLSettings('t1', samlSettings, '', [], 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+      expect(sent.settings).not.toHaveProperty('authenticationOnly');
+    });
+
+    it('should classify a configuration through its OIDC settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureOIDCSettings(
+        't1',
+        { name: 'provider', clientId: 'client-id', authenticationOnly: true },
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.oidc.configure,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
+    });
+
+    // The by-metadata save is its own endpoint, so it needs its own proof that the field travels.
+    it('should classify a configuration through its SAML-by-metadata settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureSAMLByMetadata(
+        't1',
+        { idpMetadataUrl: 'https://idp.example.com/metadata', authenticationOnly: true },
+        '',
+        [],
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.saml.metadata,
+        expect.objectContaining({
+          settings: expect.objectContaining({ authenticationOnly: true }),
+        }),
+      );
+    });
+
+    // configureXAASettings picks fields explicitly rather than passing the settings object through,
+    // so leaving it off that list drops the classification silently.
+    it('should classify a configuration through its Cross-App Access settings', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings(
+        't1',
+        { enabled: true, authenticationOnly: true },
+        'conf1',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.sso.xaa.settings,
+        expect.objectContaining({ authenticationOnly: true }),
+      );
+    });
+
+    it('should omit it from a Cross-App Access save that says nothing', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+
+      await management.sso.configureXAASettings('t1', { enabled: true }, 'conf1');
+
+      const sent = mockHttpClient.post.mock.calls[0][1] as object;
+      expect(sent).not.toHaveProperty('authenticationOnly');
+    });
+
+    // transformSettingsResponse rebuilds the load response field by field, so the classification has
+    // to survive it or every caller reads false.
+    it('should decode authenticationOnly off a load response', async () => {
+      const loaded = { ssoId: 'conf1', authenticationOnly: true, saml: {}, oidc: {} };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.authenticationOnly).toBe(true);
     });
   });
 
@@ -941,6 +1293,7 @@ describe('Management SSO', () => {
         groupsMapping: [{ role: { id: 'r1', name: 'role1' }, groups: ['g1'] }],
         defaultSSORoles: ['Member'],
         providerID: 'okta',
+        audience: 'https://api.descope.com/v1/apps/P1',
       };
       const httpResponse = {
         ok: true,
@@ -955,6 +1308,8 @@ describe('Management SSO', () => {
       const resp = await management.sso.loadXAASettings('t1', 'somessoid');
       // providerID round-trips through transformXAASettingsResponse (no explicit copy needed).
       expect(resp.data?.providerID).toBe('okta');
+      // Read-only, project-level: no tenant segment - the tenant travels in the aud_tenant claim.
+      expect(resp.data?.audience).toBe('https://api.descope.com/v1/apps/P1');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.sso.xaa.settings, {
         queryParams: { tenantId: 't1', ssoId: 'somessoid' },

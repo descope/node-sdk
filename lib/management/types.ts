@@ -216,6 +216,16 @@ export type XAASettings = {
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
   providerID?: string;
+  /**
+   * Classifies the configuration as verifying identity only: a login through it creates no user and
+   * issues no session. Omit it and the stored classification is kept, so an ordinary settings save
+   * cannot clear it; send `false` to clear it. Setting it through any one protocol classifies the
+   * whole configuration, so this, the SAML field and the OIDC field all reach the same place.
+   *
+   * A Cross-App Access token exchange through a classified configuration is refused: its output is an
+   * access token bound to a user, so there is no user-less form of it to fall back to.
+   */
+  authenticationOnly?: boolean;
 };
 
 /** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
@@ -232,6 +242,10 @@ export type XAASettingsResponse = {
   groupPriorityEnabled?: boolean;
   allowOverrideRoles?: boolean;
   providerID?: string;
+  /** Read-only: the project-level audience a requesting application must present in its ID-JAG token.
+   * It carries no tenant segment - it equals the issuer the project publishes - so the identity
+   * provider must send the tenant id in the token's `aud_tenant` claim. */
+  audience?: string;
 };
 
 /** UpdateJWT response with a new JWT value with the added custom claims */
@@ -247,6 +261,12 @@ export type ClientAssertionResponse = {
 /** Represents a tenant in a project. It has an id, a name and an array of
  * self provisioning domains used to associate users with that tenant.
  */
+/** Authentication type of an SSO configuration. `none` means the configuration is disabled: it
+ * keeps its stored settings, mappings and domains, and serves no logins until it is set back to
+ * `saml` or `oidc`.
+ */
+export type SSOAuthType = 'none' | 'saml' | 'oidc';
+
 export type Tenant = {
   id: string;
   name: string;
@@ -254,7 +274,7 @@ export type Tenant = {
   createdTime: number;
   customAttributes?: Record<string, string | number | boolean | string[]>;
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enforceSSO?: boolean;
   disabled?: boolean;
   defaultRoles?: string[];
@@ -280,7 +300,7 @@ export type SSOSetupSuiteSettings = {
 export type TenantSettings = {
   selfProvisioningDomains: string[];
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enabled?: boolean;
   refreshTokenExpiration?: number;
   refreshTokenExpirationUnit?: ExpirationUnit;
@@ -289,8 +309,8 @@ export type TenantSettings = {
   stepupTokenExpiration?: number;
   stepupTokenExpirationUnit?: ExpirationUnit;
   enableInactivity?: boolean;
-  InactivityTime?: number;
-  InactivityTimeUnit?: ExpirationUnit;
+  inactivityTime?: number;
+  inactivityTimeUnit?: ExpirationUnit;
   JITDisabled?: boolean;
   ssoSetupSuiteSettings?: SSOSetupSuiteSettings;
 };
@@ -702,6 +722,8 @@ export type SSOSAMLSettingsResponse = {
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only) */
   lastSuccessTestTime?: number;
+  /** True when Descope sends the SAML AuthnRequest to this IdP unsigned */
+  disableSignRequest?: boolean;
 };
 
 export type SSOSettings = {
@@ -709,6 +731,12 @@ export type SSOSettings = {
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
   ssoId?: string;
+  /**
+   * True when the configuration verifies identity only: a login through it creates no user and
+   * issues no session. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
+   */
+  authenticationOnly?: boolean;
 };
 
 export type OIDCAttributeMapping = {
@@ -751,10 +779,21 @@ export type SSOOIDCSettings = {
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
   roleMappings?: OIDCRoleMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
+  defaultSSORoles?: string[];
   providerID?: string;
   scimProviderID?: string;
   /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
   lastSuccessTestTime?: number;
+  /**
+   * Classify the configuration as verifying identity only: a login through it creates no user and
+   * issues no session, returning the identity provider response instead. Leave it out to keep
+   * whatever is stored, so an ordinary settings save cannot clear it by omission.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.authenticationOnly` there, which answers for the whole configuration.
+   */
+  authenticationOnly?: boolean;
 };
 
 export type SSOSAMLSettings = {
@@ -763,7 +802,20 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -776,7 +828,20 @@ export type SSOSAMLByMetadataSettings = {
   entityId?: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;

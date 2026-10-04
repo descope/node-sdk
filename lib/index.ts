@@ -530,3 +530,4 @@ export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
 export type { VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
+export type { PatchTenantOptions } from './management/tenant';

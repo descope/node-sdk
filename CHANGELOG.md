@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.17.0](https://github.com/descope/node-sdk/compare/v2.16.0...v2.17.0) (2026-09-01)
+
+
+### Features
+
+* **sso:** allow disabling SAML AuthnRequest signing per SSO configuration ([#805](https://github.com/descope/node-sdk/issues/805)) ([45ad931](https://github.com/descope/node-sdk/commit/45ad931115fabfb6a62b898c19e21b7d04a401fd))
+
+## [2.16.0](https://github.com/descope/node-sdk/compare/v2.15.0...v2.16.0) (2026-09-01)
+
+
+### Features
+
+* **tenant:** add patchTenant for partial tenant updates ([#804](https://github.com/descope/node-sdk/issues/804)) ([399397e](https://github.com/descope/node-sdk/commit/399397e1751bcad408193ee7f737421bea7cbf2d))
+* **xaa:** expose the read-only project-level audience on the XAA load response ([#801](https://github.com/descope/node-sdk/issues/801)) ([d9252cb](https://github.com/descope/node-sdk/commit/d9252cbb291a6a3d245ae1350613973fc572a59f))
+
+## [2.15.0](https://github.com/descope/node-sdk/compare/v2.14.0...v2.15.0) (2026-08-24)
+
+
+### Features
+
+* **sso:** add configureAuthType to enable or disable an SSO configuration ([#800](https://github.com/descope/node-sdk/issues/800)) ([6f19ba8](https://github.com/descope/node-sdk/commit/6f19ba83766aebe96c8310efbbe4f31b41b7242c))
+* **xaa:** add cross-app access (ID-JAG) tenant config types incl. mapping ([#792](https://github.com/descope/node-sdk/issues/792)) ([8f3aca8](https://github.com/descope/node-sdk/commit/8f3aca8bc867140a8603fdb0fc7865ddffe0c92b))
+
 ## [2.14.0](https://github.com/descope/node-sdk/compare/v2.13.0...v2.14.0) (2026-08-07)
 
 
