@@ -10,6 +10,17 @@ import {
   sessionTokenCookieName,
 } from './constants';
 import { getCookieValue } from './helpers';
+import fetchPolyfill from './fetch-polyfill';
+
+// The federated client_credentials flow calls the fetch polyfill directly (not via the
+// core HTTP client), so mock the polyfill to control those requests deterministically.
+// This avoids relying on a global `fetch`, which is not present in jest's sandbox.
+jest.mock('./fetch-polyfill', () => {
+  const actual = jest.requireActual('./fetch-polyfill');
+  return { __esModule: true, ...actual, default: jest.fn() };
+});
+
+const mockFetch = fetchPolyfill as unknown as jest.Mock;
 
 let validToken: string;
 let validTokenIssuerURL: string;
@@ -530,6 +541,210 @@ describe('sdk', () => {
         'could not exchange access key - failed to validate jwt',
       );
       expect(spyExchange).toHaveBeenCalledWith('key', undefined);
+    });
+  });
+
+  describe('exchangeClientCredentials', () => {
+    const mockTokenResponse = (body: Record<string, any>, ok = true, statusText = '') =>
+      ({
+        ok,
+        statusText,
+        json: () => Promise.resolve(body),
+      } as Response);
+
+    afterEach(() => {
+      // Reset calls and implementation so a persistent mock doesn't leak between tests.
+      mockFetch.mockReset();
+    });
+
+    it('should fail when client id is empty', async () => {
+      await expect(sdk.exchangeClientCredentials('', 'secret')).rejects.toThrow(
+        'client id must not be empty',
+      );
+    });
+    it('should fail when client secret is empty', async () => {
+      await expect(sdk.exchangeClientCredentials('client', '')).rejects.toThrow(
+        'client secret must not be empty',
+      );
+    });
+    it('should fail when the server call throws', async () => {
+      mockFetch.mockRejectedValueOnce('error');
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials - Failed to exchange',
+      );
+    });
+    it('should fail when getting an error response from the server', async () => {
+      mockFetch.mockResolvedValueOnce(
+        mockTokenResponse({ error: 'invalid_client', error_description: 'bad secret' }, false),
+      );
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials - bad secret',
+      );
+    });
+    it('should fail when getting an unexpected response from the server', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({}));
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials',
+      );
+    });
+    it('should fail when the access token the server returns is invalid', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: expiredToken }));
+      await expect(sdk.exchangeClientCredentials('client', 'secret')).rejects.toThrow(
+        'could not exchange client credentials',
+      );
+    });
+    it('should send a form-urlencoded request with grant params for inbound apps', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+      const spyPost = jest.spyOn(sdk.httpClient, 'post');
+      const expected: AuthenticationInfo = {
+        jwt: validToken,
+        token: { exp: 1981398111, iss: 'project-id' },
+      };
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', { scope: 'openid email' }),
+      ).resolves.toMatchObject(expected);
+
+      // The JSON core client must not be used; the token request is form-encoded
+      expect(spyPost).not.toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [url, init] = mockFetch.mock.calls[0];
+      expect(url).toBe('https://api.descope.com/oauth2/v1/apps/token');
+      expect(init.method).toBe('POST');
+      expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+      expect(init.headers['x-descope-project-id']).toBe('project-id');
+      expect(init.body).toBe(
+        'grant_type=client_credentials&scope=openid+email&client_id=client&client_secret=secret',
+      );
+    });
+    it('should send both audience and resource grant params when provided', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', {
+          audience: 'my-api',
+          resource: 'https://api.example.com',
+        }),
+      ).resolves.toHaveProperty('jwt', validToken);
+      const [, init] = mockFetch.mock.calls[0];
+      // Parse the body so the assertion is independent of param order/encoding
+      const body = new URLSearchParams(init.body);
+      expect(body.get('grant_type')).toBe('client_credentials');
+      expect(body.get('audience')).toBe('my-api');
+      expect(body.get('resource')).toBe('https://api.example.com');
+    });
+    it('should enforce audience when provided (match)', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudA }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
+      ).resolves.toHaveProperty('jwt', tokenAudA);
+    });
+    it('should fail when audience mismatches', async () => {
+      mockFetch.mockResolvedValueOnce(mockTokenResponse({ access_token: tokenAudB }));
+      await expect(
+        sdk.exchangeClientCredentials('client', 'secret', undefined, { audience: 'aud-a' }),
+      ).rejects.toThrow('could not exchange client credentials - failed to validate jwt');
+    });
+
+    describe('federated apps', () => {
+      // The federated flow resolves the token endpoint from the discovery document,
+      // caching it per discovery URL. Use a distinct URL per test to avoid cache reuse.
+      const tokenEndpoint = 'https://auth.example.com/sso-app-id/oauth2/v1/token';
+
+      it('should fail when discoveryUrl is missing for a federated app', async () => {
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated' }),
+        ).rejects.toThrow('discoveryUrl is required for federated apps');
+        expect(mockFetch).not.toHaveBeenCalled();
+      });
+
+      it('should resolve the token endpoint from discovery and use basic auth + a form body', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s1/.well-known/openid-configuration';
+        mockFetch
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockResolvedValueOnce(mockTokenResponse({ access_token: validToken }));
+        const spyPost = jest.spyOn(sdk.httpClient, 'post');
+        const expected: AuthenticationInfo = {
+          jwt: validToken,
+          token: { exp: 1981398111, iss: 'project-id' },
+        };
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', {
+            appType: 'federated',
+            discoveryUrl,
+            scope: 'openid email',
+          }),
+        ).resolves.toMatchObject(expected);
+
+        // The inbound (JSON) client must not be used for federated apps
+        expect(spyPost).not.toHaveBeenCalled();
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        // First call fetches the discovery document
+        const [discoveryReqUrl, discoveryInit] = mockFetch.mock.calls[0];
+        expect(discoveryReqUrl).toBe(discoveryUrl);
+        expect(discoveryInit.method).toBe('GET');
+        // Second call hits the token_endpoint from the discovery document
+        const [url, init] = mockFetch.mock.calls[1];
+        expect(url).toBe(tokenEndpoint);
+        expect(init.method).toBe('POST');
+        expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+        // base64('client:secret')
+        expect(init.headers.Authorization).toBe('Basic Y2xpZW50OnNlY3JldA==');
+        expect(init.body).toBe('grant_type=client_credentials&scope=openid+email');
+      });
+
+      it('should cache the discovery document across calls with the same discoveryUrl', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s2/.well-known/openid-configuration';
+        mockFetch
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockResolvedValue(mockTokenResponse({ access_token: validToken }));
+        const opts = { appType: 'federated' as const, discoveryUrl };
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', opts),
+        ).resolves.toHaveProperty('jwt', validToken);
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', opts),
+        ).resolves.toHaveProperty('jwt', validToken);
+        // discovery (1) + two token requests (2) = 3, i.e. discovery was fetched only once
+        expect(mockFetch).toHaveBeenCalledTimes(3);
+      });
+
+      it('should fail when the discovery document has no token_endpoint', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s3/.well-known/openid-configuration';
+        mockFetch.mockResolvedValueOnce(mockTokenResponse({}));
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - token_endpoint missing');
+      });
+
+      it('should fail when the federated token endpoint returns an error', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s4/.well-known/openid-configuration';
+        mockFetch
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockResolvedValueOnce(
+            mockTokenResponse({ error: 'invalid_client', error_description: 'nope' }, false),
+          );
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - nope');
+      });
+
+      it('should fail when the discovery fetch throws', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s5/.well-known/openid-configuration';
+        mockFetch.mockRejectedValueOnce('boom');
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - failed to fetch discovery');
+      });
+
+      it('should fail when the federated token call throws', async () => {
+        const discoveryUrl = 'https://auth.example.com/p/s6/.well-known/openid-configuration';
+        mockFetch
+          .mockResolvedValueOnce(mockTokenResponse({ token_endpoint: tokenEndpoint }))
+          .mockRejectedValueOnce('boom');
+        await expect(
+          sdk.exchangeClientCredentials('client', 'secret', { appType: 'federated', discoveryUrl }),
+        ).rejects.toThrow('could not exchange client credentials - Failed to exchange');
+      });
     });
   });
 
