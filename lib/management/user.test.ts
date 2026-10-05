@@ -1257,6 +1257,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.searchTestUsers, {
@@ -1276,6 +1278,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(resp).toEqual({
@@ -1314,6 +1318,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
@@ -1331,6 +1337,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(resp).toEqual({
