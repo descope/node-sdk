@@ -1349,6 +1349,26 @@ describe('Management User', () => {
       });
     });
 
+    it('should return the lock fields of searched users', async () => {
+      const lockedUser = {
+        ...mockUserResponse,
+        lockReason: 'password',
+        tempLockExpiration: 1791105360,
+      };
+      const body = { users: [lockedUser], total: 1 };
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        json: () => body,
+        clone: () => ({ json: () => Promise.resolve(body) }),
+        status: 200,
+      });
+
+      const resp = await management.user.search({ tempLockReasons: ['password'] });
+
+      expect(resp.data?.users[0].lockReason).toEqual('password');
+      expect(resp.data?.users[0].tempLockExpiration).toEqual(1791105360);
+    });
+
     it('should pass verifiedEmail and verifiedPhone filters', async () => {
       const httpResponse = {
         ok: true,
