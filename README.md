@@ -1206,9 +1206,10 @@ await descopeClient.management.sso.configureSAMLSettings(
 const name = 'some-name';
 const clientId = 'client id of OIDC';
 const clientSecret = 'client secret';
+// usePkce sends a PKCE code challenge to the IdP; omit it to keep the stored value
 await descopeClient.management.sso.configureOIDCSettings(
   tenantID,
-  { name, clientId, clientSecret, redirectUrl },
+  { name, clientId, clientSecret, redirectUrl, usePkce: true },
   domains,
 );
 

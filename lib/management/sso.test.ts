@@ -300,6 +300,31 @@ describe('Management SSO', () => {
         response: httpResponse,
       });
     });
+
+    // false has to be sent rather than dropped as a falsy value, or PKCE could never be turned off.
+    it.each([true, false])('should send usePkce %s when set', async (usePkce) => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        clone: () => ({
+          json: () => Promise.resolve(),
+        }),
+        status: 200,
+      });
+
+      await management.sso.configureOIDCSettings(
+        't1',
+        { clientId: 'cid', name: 'cn', usePkce },
+        [],
+        'somessoid',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.sso.oidc.configure, {
+        tenantId: 't1',
+        ssoId: 'somessoid',
+        settings: { clientId: 'cid', name: 'cn', usePkce },
+        domains: [],
+      });
+    });
   });
 
   describe('configureSAMLSettings', () => {
@@ -907,6 +932,7 @@ describe('Management SSO', () => {
           providerID: 'pidoidc',
           scimProviderID: 'scimidoidc',
           lastSuccessTestTime: 888,
+          usePkce: true,
         },
         saml: {
           groupsMapping: [{ groups: ['g1', 'g2'], role: { id: 'rid', name: 'rname' } }],
@@ -948,6 +974,7 @@ describe('Management SSO', () => {
             providerID: 'pidoidc',
             scimProviderID: 'scimidoidc',
             lastSuccessTestTime: 888,
+            usePkce: true,
           },
           saml: {
             groupsMapping: [{ groups: ['g1', 'g2'], roleName: 'rname' }],
