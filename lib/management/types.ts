@@ -878,18 +878,8 @@ export type PatchUserBatchResponse = {
   additionalErrors: Record<string, string>;
 };
 
-/** A user returned by search, with the brute-force lock fields core-js-sdk's UserResponse doesn't declare yet. */
-export type UserSearchResult = UserResponse & {
-  // Auth method that triggered brute-force protection:
-  // 'password' | 'totp' | 'recovery_codes' | 'security_questions', empty when none
-  lockReason?: string;
-  // When a temporary lock ends, in unix seconds (0 when none). The user is temporarily
-  // locked while tempLockExpiration is greater than now
-  tempLockExpiration?: number;
-};
-
 export type UserSearchResponse = {
-  users: UserSearchResult[];
+  users: UserResponse[];
   total: number;
 };
 
