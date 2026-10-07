@@ -794,6 +794,11 @@ export type SSOOIDCSettings = {
    * it - read `SSOSettings.authenticationOnly` there, which answers for the whole configuration.
    */
   authenticationOnly?: boolean;
+  /**
+   * Send a PKCE (S256) code challenge to the IdP and the code verifier on the code exchange. Leave it
+   * out to keep the stored value, pass false to turn it off. Not allowed with the implicit grant type.
+   */
+  usePkce?: boolean;
 };
 
 export type SSOSAMLSettings = {
