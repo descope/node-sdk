@@ -68,6 +68,12 @@ type SearchRequest = {
   verifiedPhone?: boolean; // Filter by verified phone status
   familyIds?: string[]; // Only return users that are members of at least one of these families
   dependent?: boolean; // Filter by whether the user is a family dependent (no login credentials of their own)
+  // Users disabled by brute-force protection with one of these lock reasons:
+  // 'password' | 'totp' | 'recovery_codes' | 'security_questions'
+  lockReasons?: string[];
+  // Users currently temporarily locked (tempLockExpiration, unix seconds, greater than now) with one of
+  // these lock reasons: 'password' | 'recovery_codes' | 'security_questions' (TOTP has no temporary lock)
+  tempLockReasons?: string[];
 };
 
 type MultipleUsersResponse = {

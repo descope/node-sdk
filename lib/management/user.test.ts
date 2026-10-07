@@ -1257,6 +1257,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.searchTestUsers, {
@@ -1276,6 +1278,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(resp).toEqual({
@@ -1314,6 +1318,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.search, {
@@ -1331,6 +1337,8 @@ describe('Management User', () => {
         sort: [{ field: 'aa', desc: true }, { field: 'bb' }],
         tenantRoleIds: { tenant1: { values: ['roleA', 'roleB'] } },
         tenantRoleNames: { tenant2: { values: ['admin', 'user'] } },
+        lockReasons: ['password', 'totp'],
+        tempLockReasons: ['recovery_codes'],
       });
 
       expect(resp).toEqual({
@@ -1339,6 +1347,26 @@ describe('Management User', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+
+    it('should return the lock fields of searched users', async () => {
+      const lockedUser = {
+        ...mockUserResponse,
+        lockReason: 'password',
+        tempLockExpiration: 1791105360,
+      };
+      const body = { users: [lockedUser], total: 1 };
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        json: () => body,
+        clone: () => ({ json: () => Promise.resolve(body) }),
+        status: 200,
+      });
+
+      const resp = await management.user.search({ tempLockReasons: ['password'] });
+
+      expect(resp.data?.users[0].lockReason).toEqual('password');
+      expect(resp.data?.users[0].tempLockExpiration).toEqual(1791105360);
     });
 
     it('should pass verifiedEmail and verifiedPhone filters', async () => {
