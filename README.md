@@ -1201,6 +1201,19 @@ await descopeClient.management.sso.configureSAMLSettings(
   domains,
 );
 
+// JIT provisioning can be turned off per SSO configuration: a login through it then signs in only
+// users who already exist (invited, or provisioned through SCIM) and refuses anyone else. It applies to
+// the configuration named by ssoId, or to the tenant's default configuration when ssoId is omitted.
+// Omit jitDisabled to keep the stored value; pass false to turn JIT back on. The same field is on the
+// OIDC settings. Read it back from the load response's top-level jitDisabled.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, jitDisabled: true },
+  redirectURL,
+  domains,
+  ssoId,
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
