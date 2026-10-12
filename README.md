@@ -1211,7 +1211,7 @@ await descopeClient.management.sso.configureSAMLSettings(
   { idpUrl, entityId, idpCert, jitDisabled: true },
   redirectURL,
   domains,
-  ssoId,
+  'my-sso-id', // ssoId: omit for the tenant's default SSO configuration
 );
 
 // In case SSO is configured to work with OIDC use the following
