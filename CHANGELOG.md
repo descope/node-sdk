@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.19.0](https://github.com/descope/node-sdk/compare/v2.18.0...v2.19.0) (2026-10-13)
+
+
+### Features
+
+* **sso:** turn off JIT provisioning per SSO configuration ([#817](https://github.com/descope/node-sdk/issues/817)) ([b436599](https://github.com/descope/node-sdk/commit/b4365993032819740611d8491481e35aad76e9c9))
+* **sso:** usePkce on tenant OIDC SSO settings ([#814](https://github.com/descope/node-sdk/issues/814)) ([dd325b0](https://github.com/descope/node-sdk/commit/dd325b09f9a366fb123644eee94b7399ea112b12))
+* support lock reason in user search ([#813](https://github.com/descope/node-sdk/issues/813)) ([9f4b6d4](https://github.com/descope/node-sdk/commit/9f4b6d4c645c1701d0197762790995b25fd141bd))
+
 ## [2.18.0](https://github.com/descope/node-sdk/compare/v2.17.0...v2.18.0) (2026-10-04)
 
 
