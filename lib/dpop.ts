@@ -1,4 +1,3 @@
-import { createHash } from 'crypto';
 import { calculateJwkThumbprint, compactVerify, importJWK } from 'jose';
 
 const ALLOWED_ALGS = new Set([
@@ -42,6 +41,13 @@ function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
     throw new Error('DPoP replay store at capacity; proof rejected');
   }
   store.set(jti, nowMs + JTI_TTL_MS);
+}
+
+async function sha256Base64url(input: string): Promise<string> {
+  // Edge runtimes and Node 20+ have global WebCrypto; Node 16 and 18 need the crypto module
+  const subtle = globalThis.crypto?.subtle ?? (await import('crypto')).webcrypto.subtle;
+  const digest = await subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Buffer.from(digest).toString('base64url');
 }
 
 /** RFC 9449 §4.3 htu comparison form without query/fragment; '' if hostless or with userinfo */
@@ -162,7 +168,7 @@ export async function verifyDPoPProof(
   if (!ath || typeof ath !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string ath claim');
   }
-  const expectedAth = createHash('sha256').update(sessionToken).digest('base64url');
+  const expectedAth = await sha256Base64url(sessionToken);
   if (ath !== expectedAth) {
     throw new Error('DPoP proof ath claim does not match the session token hash');
   }
