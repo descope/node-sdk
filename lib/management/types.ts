@@ -737,6 +737,12 @@ export type SSOSettings = {
    * write-only and the server never sets it.
    */
   authenticationOnly?: boolean;
+  /**
+   * True when JIT provisioning is off for this configuration: a login through it signs in only users
+   * who already exist. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
+   */
+  jitDisabled?: boolean;
 };
 
 export type OIDCAttributeMapping = {
@@ -799,6 +805,16 @@ export type SSOOIDCSettings = {
    * out to keep the stored value, pass false to turn it off. Not allowed with the implicit grant type.
    */
   usePkce?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.jitDisabled` there.
+   */
+  jitDisabled?: boolean;
 };
 
 export type SSOSAMLSettings = {
@@ -821,6 +837,13 @@ export type SSOSAMLSettings = {
    * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
    */
   authenticationOnly?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   */
+  jitDisabled?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -847,6 +870,13 @@ export type SSOSAMLByMetadataSettings = {
    * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
    */
   authenticationOnly?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   */
+  jitDisabled?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;

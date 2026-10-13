@@ -861,6 +861,105 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('jitDisabled on the SSO settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    });
+
+    const saves = {
+      saml: {
+        path: apiPaths.sso.saml.configure,
+        send: (jitDisabled?: boolean) =>
+          management.sso.configureSAMLSettings(
+            't1',
+            {
+              idpUrl: 'https://idp.example.com/sso',
+              entityId: 'entity-id',
+              idpCert: 'cert',
+              ...(jitDisabled !== undefined ? { jitDisabled } : {}),
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+      'saml metadata': {
+        path: apiPaths.sso.saml.metadata,
+        send: (jitDisabled?: boolean) =>
+          management.sso.configureSAMLByMetadata(
+            't1',
+            {
+              idpMetadataUrl: 'https://idp.example.com/metadata',
+              ...(jitDisabled !== undefined ? { jitDisabled } : {}),
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+      oidc: {
+        path: apiPaths.sso.oidc.configure,
+        send: (jitDisabled?: boolean) =>
+          management.sso.configureOIDCSettings(
+            't1',
+            {
+              name: 'provider',
+              clientId: 'client-id',
+              ...(jitDisabled !== undefined ? { jitDisabled } : {}),
+            },
+            [],
+            'conf1',
+          ),
+      },
+    };
+
+    // false has to be sent rather than dropped as a falsy value, or JIT could never be turned back on.
+    describe.each(Object.entries(saves))('%s', (_, { path, send }) => {
+      it.each([true, false])('should send jitDisabled %s', async (jitDisabled) => {
+        mockHttpClient.post.mockResolvedValue(okResponse());
+
+        await send(jitDisabled);
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(
+          path,
+          expect.objectContaining({
+            settings: expect.objectContaining({ jitDisabled }),
+            ssoId: 'conf1',
+          }),
+        );
+      });
+
+      // Left out it must not be sent at all, so an ordinary settings save keeps what is stored.
+      it('should omit jitDisabled when the caller says nothing', async () => {
+        mockHttpClient.post.mockResolvedValue(okResponse());
+
+        await send();
+
+        const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+        expect(sent.settings).not.toHaveProperty('jitDisabled');
+      });
+    });
+
+    it('should decode jitDisabled off a load response', async () => {
+      const loaded = { ssoId: 'conf1', jitDisabled: true, saml: {}, oidc: {} };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.jitDisabled).toBe(true);
+    });
+  });
+
   describe('newSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockResponse = {
