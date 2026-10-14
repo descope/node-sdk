@@ -1832,6 +1832,8 @@ const { id, cleartext: secret } =
       },
     ],
     loginPageUrl: 'http://dummy.com/login',
+    clientType: 'public', // optional, 'confidential' or 'public'
+    forceDpop: true, // optional, require a DPoP proof at the token endpoint (needs clientType)
   });
 
 // Update an inbound application.
