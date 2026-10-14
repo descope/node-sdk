@@ -529,7 +529,7 @@ await sdk.validateDPoP(
 >
 > // Raw Node.js http/https using X-Forwarded-Proto:
 > const scheme =
->   req.headers['x-forwarded-proto'] ?? (req.socket as any).encrypted ? 'https' : 'http';
+>   req.headers['x-forwarded-proto'] ?? ((req.socket as any).encrypted ? 'https' : 'http');
 > const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
 > ```
 
@@ -539,20 +539,9 @@ If the token has no `cnf.jkt` claim (i.e. it is a regular Bearer token), `valida
 The `DPoP` Authorization scheme is treated identically to `Bearer` — the session JWT that follows
 the scheme prefix is the same Descope-issued token in both cases.
 
-> **Note on jti replay protection (RFC 9449 §11.1):** `validateDPoP` does not implement jti replay
-> protection because a stateless SDK has no shared storage to persist seen jti values across
-> requests. If your application requires replay protection, maintain a server-side jti store (e.g.
-> a Redis set keyed by jti with TTL equal to the iat window, approximately 60 s) and reject
-> duplicate jti values before or after calling `validateDPoP`.
-
-You can also import the standalone helpers directly:
-
-```typescript
-import { validateDPoPProof, getDPoPThumbprint } from '@descope/node-sdk';
-
-// Extract cnf.jkt from already-parsed token claims
-const jkt = getDPoPThumbprint(authInfo.token);
-```
+> **Replay protection (RFC 9449 §11.1):** `validateDPoP` rejects a proof whose `jti` was already
+> accepted by the same SDK instance in the last 120 seconds. The store is in memory, so when you run
+> several server instances, a proof replayed against a different instance is not detected.
 
 #### Session Validation Using Middleware
 

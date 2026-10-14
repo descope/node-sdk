@@ -26,7 +26,7 @@ import withManagement from './management';
 import withLicense from './management/license';
 import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
 import descopeErrors from './errors';
-import { validateDPoPProof } from './dpop';
+import { DPoPJtiStore, validateDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 
@@ -173,6 +173,8 @@ const nodeSdk = ({
         logger?.warn?.('License handshake failed', e);
       });
   }
+
+  const dpopJtiStore: DPoPJtiStore = new Map();
 
   const sdk = {
     ...coreSdk,
@@ -367,6 +369,8 @@ const nodeSdk = ({
      *
      * Call this after `validateSession` when your server receives requests that may carry
      * a `DPoP` header. If the session token does not have a `cnf.jkt` claim this is a no-op.
+     * A proof whose `jti` was already accepted by this SDK instance in the last 120 seconds is
+     * rejected as a replay.
      *
      * @param sessionToken - The validated session JWT string returned by `validateSession`
      * @param dpopProof - The value of the `DPoP` header from the incoming request
@@ -380,7 +384,7 @@ const nodeSdk = ({
       method: string,
       requestUrl: string,
     ): Promise<void> {
-      return validateDPoPProof(sessionToken, dpopProof, method, requestUrl);
+      return validateDPoPProof(sessionToken, dpopProof, method, requestUrl, dpopJtiStore);
     },
 
     /**
@@ -553,4 +557,3 @@ export type { VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
 export type { PatchTenantOptions } from './management/tenant';
-export { validateDPoPProof, getDPoPThumbprint } from './dpop';

@@ -24,6 +24,32 @@ const IAT_BACKWARD_WINDOW = 60;
 /** Forward clock skew tolerance in seconds */
 const IAT_FORWARD_WINDOW = 5;
 
+/** Retention of seen jti values, in ms: twice the backward iat window */
+const JTI_TTL_MS = 2 * IAT_BACKWARD_WINDOW * 1000;
+
+/** Maximum jti length, caps memory per replay store entry */
+const MAX_JTI_LEN = 128;
+
+/** Replay store size at which new proofs are rejected (fail closed) */
+const MAX_JTI_ENTRIES = 100_000;
+
+/** Seen DPoP proof jti values mapped to their expiry time in ms (RFC 9449 §11.1) */
+type DPoPJtiStore = Map<string, number>;
+
+/** Record a jti, rejecting it if it was already seen within the retention window. */
+function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
+  store.forEach((expiry, seenJti) => {
+    if (expiry <= nowMs) store.delete(seenJti);
+  });
+  if (store.has(jti)) {
+    throw new Error('DPoP proof replayed: jti already seen');
+  }
+  if (store.size >= MAX_JTI_ENTRIES) {
+    throw new Error('DPoP replay store at capacity; proof rejected');
+  }
+  store.set(jti, nowMs + JTI_TTL_MS);
+}
+
 /**
  * Normalize a URL for DPoP `htu` comparison per RFC 9449 §4.2:
  * - Lowercase scheme and host
@@ -67,23 +93,20 @@ function base64urlNoPad(buf: Buffer): string {
  * @param dpopProof - The value of the `DPoP` HTTP header from the incoming request
  * @param method - HTTP method of the request, uppercase (e.g. "GET", "POST")
  * @param requestUrl - Absolute URL of the request (e.g. "https://api.example.com/resource")
+ * @param jtiStore - Replay store; a proof whose jti was already accepted is rejected
  *
  * @throws Error if DPoP validation fails for any reason
  * @returns void — resolves successfully if the proof is valid, or is a no-op when the session
  *   token has no `cnf.jkt` claim (i.e. is not DPoP-bound)
- *
- * @note jti replay protection (RFC 9449 §11.1) is intentionally NOT implemented here.
- *   A stateless SDK has no shared storage in which to persist seen jti values across requests.
- *   Integrators who require replay protection should maintain a server-side jti store (e.g.
- *   a Redis set keyed by jti with TTL equal to the iat window) and reject duplicate jti values
- *   before or after calling this function.
  */
 export async function validateDPoPProof(
   sessionToken: string,
   dpopProof: string | undefined,
   method: string,
   requestUrl: string,
+  jtiStore: DPoPJtiStore,
 ): Promise<void> {
+  const nowMs = Date.now();
   // Decode the session JWT claims to check for cnf.jkt (no signature verification needed here —
   // the caller has already validated the session token via validateSession).
   // Fail closed: if the session token is malformed we cannot determine whether it is DPoP-bound,
@@ -180,6 +203,9 @@ export async function validateDPoPProof(
   if (!payload.jti || typeof payload.jti !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string jti claim');
   }
+  if (payload.jti.length > MAX_JTI_LEN) {
+    throw new Error('DPoP proof jti exceeds maximum length');
+  }
   if (!payload.htm || typeof payload.htm !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string htm claim');
   }
@@ -204,8 +230,7 @@ export async function validateDPoPProof(
   if (typeof iat !== 'number') {
     throw new Error('DPoP proof payload must contain a numeric iat claim');
   }
-  const now = Date.now() / 1000;
-  const diff = now - iat;
+  const diff = nowMs / 1000 - iat;
   if (diff <= -IAT_FORWARD_WINDOW || diff >= IAT_BACKWARD_WINDOW) {
     throw new Error(`DPoP proof iat is outside the acceptable window (diff=${diff.toFixed(2)}s)`);
   }
@@ -236,13 +261,9 @@ export async function validateDPoPProof(
       `DPoP proof JWK thumbprint "${thumbprint}" does not match session cnf.jkt "${storedJKT}"`,
     );
   }
+
+  // Burn the jti only after every other check passes, so invalid proofs cannot fill the store
+  burnJti(jtiStore, payload.jti, nowMs);
 }
 
-/**
- * Extract the DPoP JWK thumbprint from token claims.
- * Returns an empty string if the token is not DPoP-bound.
- */
-export function getDPoPThumbprint(claims: Record<string, unknown>): string {
-  const cnf = claims?.cnf as Record<string, unknown> | undefined;
-  return (cnf?.jkt as string) || '';
-}
+export type { DPoPJtiStore };
