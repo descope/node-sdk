@@ -1,7 +1,6 @@
 import { createHash } from 'crypto';
 import { calculateJwkThumbprint, compactVerify, importJWK } from 'jose';
 
-/** Allowed DPoP proof signing algorithms per RFC 9449 */
 const ALLOWED_ALGS = new Set([
   'RS256',
   'RS384',
@@ -15,28 +14,21 @@ const ALLOWED_ALGS = new Set([
   'EdDSA',
 ]);
 
-/** Maximum DPoP proof JWT size in bytes */
 const MAX_PROOF_LEN = 8192;
 
-/** Backward clock skew tolerance in seconds */
 const IAT_BACKWARD_WINDOW = 60;
 
-/** Forward clock skew tolerance in seconds */
 const IAT_FORWARD_WINDOW = 5;
 
-/** Retention of seen jti values, in ms: twice the backward iat window */
 const JTI_TTL_MS = 2 * IAT_BACKWARD_WINDOW * 1000;
 
-/** Maximum jti length, caps memory per replay store entry */
 const MAX_JTI_LEN = 128;
 
-/** Replay store size at which new proofs are rejected (fail closed) */
 const MAX_JTI_ENTRIES = 100_000;
 
-/** Seen DPoP proof jti values mapped to their expiry time in ms (RFC 9449 §11.1) */
+/** jti mapped to its expiry time in ms */
 type DPoPJtiStore = Map<string, number>;
 
-/** Record a jti, rejecting it if it was already seen within the retention window. */
 function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
   store.forEach((expiry, seenJti) => {
     if (expiry <= nowMs) store.delete(seenJti);
@@ -50,10 +42,7 @@ function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
   store.set(jti, nowMs + JTI_TTL_MS);
 }
 
-/**
- * Normalize a URL for DPoP `htu` comparison per RFC 9449 §4.2: `URL` lowercases the scheme and
- * host and drops default ports; query string and fragment are stripped. Returns '' when unusable.
- */
+/** RFC 9449 §4.3 htu comparison form: query and fragment dropped; '' when there is no host */
 function normalizeHtu(raw: string): string {
   try {
     const { protocol, host, pathname } = new URL(raw);
@@ -63,19 +52,7 @@ function normalizeHtu(raw: string): string {
   }
 }
 
-/**
- * Validate a DPoP proof JWT against the provided session token, HTTP method, and request URL.
- *
- * @param sessionToken - The validated session JWT string (used for `ath` claim verification)
- * @param dpopProof - The value of the `DPoP` HTTP header from the incoming request
- * @param method - HTTP method of the request, uppercase (e.g. "GET", "POST")
- * @param requestUrl - Absolute URL of the request (e.g. "https://api.example.com/resource")
- * @param jtiStore - Replay store; a proof whose jti was already accepted is rejected
- *
- * @throws Error if DPoP validation fails for any reason
- * @returns void — resolves successfully if the proof is valid, or is a no-op when the session
- *   token has no `cnf.jkt` claim (i.e. is not DPoP-bound)
- */
+/** RFC 9449 §4.3 proof validation behind `sdk.validateDPoP`; no-op for a token without cnf.jkt */
 export async function validateDPoPProof(
   sessionToken: string,
   dpopProof: string | undefined,
@@ -84,10 +61,8 @@ export async function validateDPoPProof(
   jtiStore: DPoPJtiStore,
 ): Promise<void> {
   const nowMs = Date.now();
-  // Decode the session JWT claims to check for cnf.jkt (no signature verification needed here —
-  // the caller has already validated the session token via validateSession).
-  // Fail closed: if the session token is malformed we cannot determine whether it is DPoP-bound,
-  // so we throw rather than silently treating it as a plain Bearer token.
+  // The caller already verified the token's signature with validateSession. A malformed token
+  // throws instead of passing as unbound.
   const parts = sessionToken.split('.');
   if (parts.length < 2) {
     throw new Error('Session token is invalid: not a valid JWT');
@@ -102,11 +77,8 @@ export async function validateDPoPProof(
   const cnf = claims?.cnf as Record<string, unknown> | undefined;
   const storedJKT = (cnf?.jkt as string) || '';
   if (!storedJKT) {
-    // Token is not DPoP-bound — nothing to validate
     return;
   }
-
-  // --- From here on, the token IS DPoP-bound. Proof is required. ---
 
   const proof = (dpopProof ?? '').trim();
 
@@ -118,7 +90,6 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof required: access token is DPoP-bound (cnf.jkt present)');
   }
 
-  // Step 4-5: Parse protected header (first part of JWS compact serialization)
   const proofParts = proof.split('.');
   if (proofParts.length !== 3) {
     throw new Error('DPoP proof must be a compact JWS with exactly 3 parts');
@@ -131,34 +102,28 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof header is not valid base64url-encoded JSON');
   }
 
-  // Step 6: typ must be "dpop+jwt"
   if (header.typ !== 'dpop+jwt') {
     throw new Error('DPoP proof header typ must be "dpop+jwt"');
   }
 
-  // Step 7: alg must be in ALLOWED_ALGS
   const alg = header.alg as string;
   if (!alg || !ALLOWED_ALGS.has(alg)) {
     throw new Error('DPoP proof algorithm is not allowed');
   }
 
-  // Step 8: extract embedded JWK
   const jwk = header.jwk as Record<string, unknown>;
   if (!jwk || typeof jwk !== 'object') {
     throw new Error('DPoP proof header must contain a jwk claim');
   }
 
-  // Step 9: no symmetric keys
   if (jwk.kty === 'oct') {
     throw new Error('DPoP proof JWK must not use symmetric key type (oct)');
   }
 
-  // Step 10: no private key components
   if ('d' in jwk) {
     throw new Error('DPoP proof JWK must not contain private key components');
   }
 
-  // Step 11: verify JWS signature using the embedded JWK
   let payloadBytes: Uint8Array;
   try {
     const cryptoKey = await importJWK(jwk as Parameters<typeof importJWK>[0], alg);
@@ -168,7 +133,6 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof signature verification failed');
   }
 
-  // Step 12: parse JWT payload
   let payload: Record<string, unknown>;
   try {
     payload = JSON.parse(Buffer.from(payloadBytes).toString('utf8'));
@@ -176,7 +140,6 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof payload is not valid JSON');
   }
 
-  // Steps 13-15: required string claims
   if (!payload.jti || typeof payload.jti !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string jti claim');
   }
@@ -190,19 +153,16 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof payload must contain a non-empty string htu claim');
   }
 
-  // Step 16: htm must match the HTTP method
   if (payload.htm !== method) {
     throw new Error('DPoP proof htm does not match the request method');
   }
 
-  // Step 17: htu must match the request URL (scheme+host+path, ignore query/fragment)
   const normalizedHtu = normalizeHtu(payload.htu as string);
   const normalizedUrl = normalizeHtu(requestUrl);
   if (!normalizedHtu || !normalizedUrl || normalizedHtu !== normalizedUrl) {
     throw new Error('DPoP proof htu does not match the request URL');
   }
 
-  // Steps 18-21: iat window check (no exp in DPoP proofs)
   const { iat } = payload;
   if (typeof iat !== 'number') {
     throw new Error('DPoP proof payload must contain a numeric iat claim');
@@ -212,7 +172,6 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof iat is outside the acceptable window');
   }
 
-  // Steps 22-24: ath claim — sha256(sessionToken) as base64url without padding
   const { ath } = payload;
   if (!ath || typeof ath !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string ath claim');
@@ -222,7 +181,6 @@ export async function validateDPoPProof(
     throw new Error('DPoP proof ath claim does not match the session token hash');
   }
 
-  // Steps 25-26: JWK thumbprint must match cnf.jkt in the session token
   const thumbprint = await calculateJwkThumbprint(
     jwk as Parameters<typeof calculateJwkThumbprint>[0],
     'sha256',

@@ -519,7 +519,7 @@ await sdk.validateDPoP(
 ```
 
 > **Important:** The URL passed to `validateDPoP` must exactly match the `htu` claim in the DPoP
-> proof — same scheme, host, and path (query string and fragment are ignored). In environments
+> proof: same scheme, host, and path (query string and fragment are ignored). In environments
 > behind a reverse proxy or load balancer, the scheme seen by Node.js may be `http` even when the
 > client used `https`. Reconstruct the URL from request context to ensure they match:
 >

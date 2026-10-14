@@ -367,10 +367,9 @@ const nodeSdk = ({
     /**
      * Validate a DPoP proof JWT for a DPoP-bound session token (RFC 9449).
      *
-     * Call this after `validateSession` when your server receives requests that may carry
-     * a `DPoP` header. If the session token does not have a `cnf.jkt` claim this is a no-op.
-     * A proof whose `jti` was already accepted by this SDK instance in the last 120 seconds is
-     * rejected as a replay.
+     * Call this after `validateSession` on every request: a DPoP-bound token passes
+     * `validateSession` without a proof. No-op when the token has no `cnf.jkt` claim. A proof whose
+     * `jti` this SDK instance accepted in the last 120 seconds is rejected as a replay.
      *
      * @param sessionToken - The validated session JWT string returned by `validateSession`
      * @param dpopProof - The value of the `DPoP` header from the incoming request
