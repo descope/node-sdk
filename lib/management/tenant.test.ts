@@ -65,6 +65,7 @@ describe('Management Tenant', () => {
         true,
         'p',
         'none',
+        ['excluded@example.com'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
@@ -72,6 +73,7 @@ describe('Management Tenant', () => {
         selfProvisioningDomains: ['d1'],
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
+        enforceSSOExclusions: ['excluded@example.com'],
         disabled: true,
         parent: 'p',
         roleInheritance: 'none',
@@ -146,6 +148,7 @@ describe('Management Tenant', () => {
         true,
         'p',
         '',
+        ['excluded@example.com'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.create, {
@@ -154,6 +157,7 @@ describe('Management Tenant', () => {
         selfProvisioningDomains: ['d1'],
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
+        enforceSSOExclusions: ['excluded@example.com'],
         disabled: true,
         parent: 'p',
         roleInheritance: '',
@@ -227,6 +231,7 @@ describe('Management Tenant', () => {
         true,
         true,
         'none',
+        ['excluded@example.com'],
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.tenant.update, {
@@ -235,6 +240,7 @@ describe('Management Tenant', () => {
         selfProvisioningDomains: ['d1'],
         customAttributes: { customAttr: 'value' },
         enforceSSO: true,
+        enforceSSOExclusions: ['excluded@example.com'],
         disabled: true,
         roleInheritance: 'none',
       });
