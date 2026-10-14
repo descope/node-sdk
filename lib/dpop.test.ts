@@ -137,12 +137,14 @@ describe('validateDPoPProof', () => {
     await expect(validate(await makeProof({ claims: { htm: 'GET' } }))).rejects.toThrow('htm');
   });
 
-  it.each(['https://other.example.com/resource', 'https://api.example.com/other', 'not a url'])(
-    'rejects htu %s',
-    async (htu) => {
-      await expect(validate(await makeProof({ claims: { htu } }))).rejects.toThrow('htu');
-    },
-  );
+  it.each([
+    'https://other.example.com/resource',
+    'https://api.example.com/other',
+    'not a url',
+    'urn:example:resource',
+  ])('rejects htu %s', async (htu) => {
+    await expect(validate(await makeProof({ claims: { htu } }))).rejects.toThrow('htu');
+  });
 
   it.each(['https://API.example.com:443/resource', 'https://api.example.com/resource?q=1#frag'])(
     'accepts equivalent htu %s',
@@ -186,6 +188,33 @@ describe('validateDPoPProof', () => {
     );
   });
 
+  describe('iat window edges', () => {
+    const nowSec = 1_700_000_000;
+    beforeEach(() => jest.spyOn(Date, 'now').mockReturnValue(nowSec * 1000));
+
+    it.each([59, -4])('accepts an iat %ss old', async (age) => {
+      const proof = await makeProof({ claims: { iat: nowSec - age } });
+      await expect(validate(proof)).resolves.toBeUndefined();
+    });
+
+    it.each([60, -5])('rejects an iat %ss old', async (age) => {
+      const proof = await makeProof({ claims: { iat: nowSec - age } });
+      await expect(validate(proof)).rejects.toThrow('outside the acceptable window');
+    });
+  });
+
+  it('does not echo request or proof data in errors', async () => {
+    const proof = await makeProof({ claims: { htu: 'https://evil.example.com/x', htm: 'GET' } });
+    const err = await validateDPoPProof(
+      sessionToken,
+      proof,
+      'POST',
+      `${URL}?code=secret`,
+      new Map(),
+    ).catch((e: Error) => e);
+    expect(String(err)).not.toMatch(/secret|evil|GET/);
+  });
+
   it('rejects a missing ath', async () => {
     await expect(validate(await makeProof({ claims: { ath: undefined } }))).rejects.toThrow(
       'string ath claim',
@@ -202,7 +231,7 @@ describe('validateDPoPProof', () => {
     const other = await generateKeyPair('ES256');
     const jwk = await exportJWK(other.publicKey);
     const proof = await makeProof({ header: { jwk }, key: other.privateKey });
-    await expect(validate(proof)).rejects.toThrow('does not match session cnf.jkt');
+    await expect(validate(proof)).rejects.toThrow('does not match the session cnf.jkt');
   });
 
   describe('replay store', () => {

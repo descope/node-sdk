@@ -527,21 +527,26 @@ await sdk.validateDPoP(
 > // Express with trust proxy enabled (app.set('trust proxy', true)):
 > const requestUrl = `${req.protocol}://${req.get('host')}${req.path}`;
 >
-> // Raw Node.js http/https using X-Forwarded-Proto:
-> const scheme =
->   req.headers['x-forwarded-proto'] ?? ((req.socket as any).encrypted ? 'https' : 'http');
+> // Raw Node.js http/https using X-Forwarded-Proto (only when set by a proxy you trust):
+> const forwardedProto = (req.headers['x-forwarded-proto'] as string | undefined)
+>   ?.split(',')[0]
+>   .trim();
+> const scheme = forwardedProto ?? ((req.socket as any).encrypted ? 'https' : 'http');
 > const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
 > ```
 
 If the token is DPoP-bound and the proof is missing or invalid, `validateDPoP` throws an error.
 If the token has no `cnf.jkt` claim (i.e. it is a regular Bearer token), `validateDPoP` is a no-op.
 
-The `DPoP` Authorization scheme is treated identically to `Bearer` — the session JWT that follows
-the scheme prefix is the same Descope-issued token in both cases.
+> **Warning:** `validateSession` on its own does not check DPoP. A DPoP-bound token passes
+> `validateSession` without any proof, so call `validateDPoP` on every request that accepts session
+> tokens, not only on requests that carry a `DPoP` header.
 
 > **Replay protection (RFC 9449 §11.1):** `validateDPoP` rejects a proof whose `jti` was already
 > accepted by the same SDK instance in the last 120 seconds. The store is in memory, so when you run
-> several server instances, a proof replayed against a different instance is not detected.
+> several server instances, a proof replayed against a different instance is not detected. The
+> store holds at most 100,000 entries; when it is full, new proofs are rejected until entries
+> expire.
 
 #### Session Validation Using Middleware
 

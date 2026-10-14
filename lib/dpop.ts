@@ -51,39 +51,16 @@ function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
 }
 
 /**
- * Normalize a URL for DPoP `htu` comparison per RFC 9449 §4.2:
- * - Lowercase scheme and host
- * - Strip default ports (443 for https, 80 for http)
- * - Strip query string and fragment
+ * Normalize a URL for DPoP `htu` comparison per RFC 9449 §4.2: `URL` lowercases the scheme and
+ * host and drops default ports; query string and fragment are stripped. Returns '' when unusable.
  */
 function normalizeHtu(raw: string): string {
-  let parsed: URL;
   try {
-    parsed = new URL(raw);
+    const { protocol, host, pathname } = new URL(raw);
+    return host ? `${protocol}//${host}${pathname}` : '';
   } catch {
     return '';
   }
-  const scheme = parsed.protocol.replace(/:$/, '').toLowerCase();
-  const host = parsed.hostname.toLowerCase();
-  const { port } = parsed;
-  let defaultPort: string;
-  if (scheme === 'https') {
-    defaultPort = '443';
-  } else if (scheme === 'http') {
-    defaultPort = '80';
-  } else {
-    defaultPort = '';
-  }
-
-  const portStr = port && port !== defaultPort ? `:${port}` : '';
-  return `${scheme}://${host}${portStr}${parsed.pathname}`;
-}
-
-/**
- * Base64url-encode a buffer without padding characters.
- */
-function base64urlNoPad(buf: Buffer): string {
-  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 /**
@@ -156,13 +133,13 @@ export async function validateDPoPProof(
 
   // Step 6: typ must be "dpop+jwt"
   if (header.typ !== 'dpop+jwt') {
-    throw new Error(`DPoP proof header typ must be "dpop+jwt", got "${header.typ}"`);
+    throw new Error('DPoP proof header typ must be "dpop+jwt"');
   }
 
   // Step 7: alg must be in ALLOWED_ALGS
   const alg = header.alg as string;
   if (!alg || !ALLOWED_ALGS.has(alg)) {
-    throw new Error(`DPoP proof algorithm "${alg}" is not allowed`);
+    throw new Error('DPoP proof algorithm is not allowed');
   }
 
   // Step 8: extract embedded JWK
@@ -187,8 +164,8 @@ export async function validateDPoPProof(
     const cryptoKey = await importJWK(jwk as Parameters<typeof importJWK>[0], alg);
     const result = await compactVerify(proof, cryptoKey);
     payloadBytes = result.payload;
-  } catch (err) {
-    throw new Error(`DPoP proof signature verification failed: ${err}`);
+  } catch {
+    throw new Error('DPoP proof signature verification failed');
   }
 
   // Step 12: parse JWT payload
@@ -215,14 +192,14 @@ export async function validateDPoPProof(
 
   // Step 16: htm must match the HTTP method
   if (payload.htm !== method) {
-    throw new Error(`DPoP proof htm "${payload.htm}" does not match request method "${method}"`);
+    throw new Error('DPoP proof htm does not match the request method');
   }
 
   // Step 17: htu must match the request URL (scheme+host+path, ignore query/fragment)
   const normalizedHtu = normalizeHtu(payload.htu as string);
   const normalizedUrl = normalizeHtu(requestUrl);
   if (!normalizedHtu || !normalizedUrl || normalizedHtu !== normalizedUrl) {
-    throw new Error(`DPoP proof htu "${payload.htu}" does not match request URL "${requestUrl}"`);
+    throw new Error('DPoP proof htu does not match the request URL');
   }
 
   // Steps 18-21: iat window check (no exp in DPoP proofs)
@@ -232,7 +209,7 @@ export async function validateDPoPProof(
   }
   const diff = nowMs / 1000 - iat;
   if (diff <= -IAT_FORWARD_WINDOW || diff >= IAT_BACKWARD_WINDOW) {
-    throw new Error(`DPoP proof iat is outside the acceptable window (diff=${diff.toFixed(2)}s)`);
+    throw new Error('DPoP proof iat is outside the acceptable window');
   }
 
   // Steps 22-24: ath claim — sha256(sessionToken) as base64url without padding
@@ -240,26 +217,18 @@ export async function validateDPoPProof(
   if (!ath || typeof ath !== 'string') {
     throw new Error('DPoP proof payload must contain a non-empty string ath claim');
   }
-  const expectedAth = base64urlNoPad(createHash('sha256').update(sessionToken).digest());
+  const expectedAth = createHash('sha256').update(sessionToken).digest('base64url');
   if (ath !== expectedAth) {
     throw new Error('DPoP proof ath claim does not match the session token hash');
   }
 
   // Steps 25-26: JWK thumbprint must match cnf.jkt in the session token
-  let thumbprint: string;
-  try {
-    thumbprint = await calculateJwkThumbprint(
-      jwk as Parameters<typeof calculateJwkThumbprint>[0],
-      'sha256',
-    );
-  } catch (err) {
-    throw new Error(`Failed to compute DPoP JWK thumbprint: ${err}`);
-  }
-
+  const thumbprint = await calculateJwkThumbprint(
+    jwk as Parameters<typeof calculateJwkThumbprint>[0],
+    'sha256',
+  );
   if (thumbprint !== storedJKT) {
-    throw new Error(
-      `DPoP proof JWK thumbprint "${thumbprint}" does not match session cnf.jkt "${storedJKT}"`,
-    );
+    throw new Error('DPoP proof JWK thumbprint does not match the session cnf.jkt');
   }
 
   // Burn the jti only after every other check passes, so invalid proofs cannot fill the store
