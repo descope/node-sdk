@@ -2,12 +2,19 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
-import { Group } from './types';
+import { Group, GroupMember } from './types';
 
 const management = withManagement(mockHttpClient);
 
+// Typed so the round-trip of the new `source` field is actually checked; the whole fixture cannot be
+// Group[] because the other entries use a pre-existing `name` key.
+const mockMembers: GroupMember[] = [
+  { loginId: 'login1', userId: 'user1', display: 'member1', source: 'jit' },
+  { loginId: 'login2', userId: 'user2', display: 'member2', source: 'scim' },
+];
+
 const mockGroups = [
-  { id: 'id1', display: 'display1', members: [] },
+  { id: 'id1', display: 'display1', members: mockMembers },
   { name: 'id2', display: 'display2', members: [] },
   { name: 'id3', display: 'display3', members: [] },
 ];
