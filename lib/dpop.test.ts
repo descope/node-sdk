@@ -305,7 +305,7 @@ describe('DPoP enforcement in session validation', () => {
     await expect(sdk.validateAndRefreshSession(sessionToken, 'r')).resolves.toMatchObject({
       jwt: sessionToken,
     });
-    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('next major version'));
   });
 

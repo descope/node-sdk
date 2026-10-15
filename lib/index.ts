@@ -181,6 +181,7 @@ const nodeSdk = ({
   }
 
   const dpopJtiStore: DPoPJtiStore = new Map();
+  let warnedMissingDPoP = false;
 
   const enforceDPoP = async (
     sessionToken: string,
@@ -193,9 +194,12 @@ const nodeSdk = ({
     }
     if (!jkt) return;
     if (!dpop) {
-      logger?.warn?.(
-        'DPoP-bound session token validated without the dpop option; this will be rejected in the next major version',
-      );
+      if (!warnedMissingDPoP) {
+        warnedMissingDPoP = true;
+        logger?.warn?.(
+          'DPoP-bound session token validated without the dpop option; this will be rejected in the next major version',
+        );
+      }
       return;
     }
     if (!sessionToken)
