@@ -44,11 +44,11 @@ function burnJti(store: DPoPJtiStore, jti: string, nowMs: number): void {
   store.set(jti, nowMs + JTI_TTL_MS);
 }
 
-/** RFC 9449 §4.3 htu comparison form: query and fragment dropped; '' when there is no host */
+/** RFC 9449 §4.3 htu comparison form without query/fragment; '' if hostless or with userinfo */
 function normalizeHtu(raw: string): string {
   try {
-    const { protocol, host, pathname } = new URL(raw);
-    return host ? `${protocol}//${host}${pathname}` : '';
+    const { protocol, username, password, host, pathname } = new URL(raw);
+    return host && !username && !password ? `${protocol}//${host}${pathname}` : '';
   } catch {
     return '';
   }
@@ -82,6 +82,7 @@ export async function verifyDPoPProof(
   let header: Record<string, unknown>;
   try {
     header = JSON.parse(Buffer.from(proofParts[0], 'base64url').toString('utf8'));
+    if (!header || typeof header !== 'object') throw Error();
   } catch {
     throw new Error('DPoP proof header is not valid base64url-encoded JSON');
   }
@@ -120,6 +121,7 @@ export async function verifyDPoPProof(
   let payload: Record<string, unknown>;
   try {
     payload = JSON.parse(Buffer.from(payloadBytes).toString('utf8'));
+    if (!payload || typeof payload !== 'object') throw Error();
   } catch {
     throw new Error('DPoP proof payload is not valid JSON');
   }

@@ -66,9 +66,18 @@ describe('verifyDPoPProof', () => {
     ['too long', () => 'a'.repeat(8193), 'exceeds maximum length'],
     ['not 3 parts', () => 'a.b', 'exactly 3 parts'],
     ['bad header', () => '!!!.b.c', 'header is not valid'],
+    [
+      'null header',
+      () => `${Buffer.from('null').toString('base64url')}.b.c`,
+      'header is not valid',
+    ],
+    ['pair of joined', async () => `${await makeProof()}, ${await makeProof()}`, 'exactly 3 parts'],
     ['wrong typ', () => makeProof({ header: { typ: 'jwt' } }), 'typ'],
-    ['alg none', () => raw({ alg: 'none', jwk: publicJwk }), 'is not allowed'],
-    ['alg HS256', () => raw({ alg: 'HS256', jwk: publicJwk }), 'is not allowed'],
+    ...['none', 'HS256', 'HS384', 'HS512', 'unknown'].map((alg): [string, () => string, string] => [
+      `alg ${alg}`,
+      () => raw({ alg, jwk: publicJwk }),
+      'is not allowed',
+    ]),
     ['missing jwk', () => raw({ alg: 'ES256' }), 'must contain a jwk'],
     ['symmetric jwk', () => raw({ alg: 'ES256', jwk: { kty: 'oct', k: 'AA' } }), 'symmetric'],
     ['private jwk', () => makeProof({ header: { jwk: { ...publicJwk, d: 'AA' } } }), 'private key'],
@@ -76,6 +85,14 @@ describe('verifyDPoPProof', () => {
       'non-JSON payload',
       () =>
         new CompactSign(new TextEncoder().encode('not json'))
+          .setProtectedHeader({ typ: 'dpop+jwt', alg: 'ES256', jwk: publicJwk })
+          .sign(privateKey),
+      'payload is not valid JSON',
+    ],
+    [
+      'null payload',
+      () =>
+        new CompactSign(new TextEncoder().encode('null'))
           .setProtectedHeader({ typ: 'dpop+jwt', alg: 'ES256', jwk: publicJwk })
           .sign(privateKey),
       'payload is not valid JSON',
@@ -103,7 +120,17 @@ describe('verifyDPoPProof', () => {
     [{ htm: undefined }, 'string htm claim'],
     [{ htu: undefined }, 'string htu claim'],
     [{ ath: undefined }, 'string ath claim'],
+    [{ jti: '' }, 'string jti claim'],
+    [{ htm: '' }, 'string htm claim'],
+    [{ htu: '' }, 'string htu claim'],
+    [{ ath: '' }, 'string ath claim'],
+    [{ jti: 1 }, 'string jti claim'],
+    [{ htm: 1 }, 'string htm claim'],
+    [{ htu: 1 }, 'string htu claim'],
+    [{ ath: 1 }, 'string ath claim'],
     [{ iat: undefined }, 'numeric iat'],
+    [{ iat: String(Math.floor(Date.now() / 1000)) }, 'numeric iat'],
+    [{ htm: 'post' }, 'htm'],
     [{ jti: 'j'.repeat(129) }, 'jti exceeds maximum length'],
     [{ htm: 'GET' }, 'htm'],
     [{ ath: athOf('other') }, 'ath claim does not match'],
@@ -120,6 +147,9 @@ describe('verifyDPoPProof', () => {
     ['https://api.example.com/resource?q=1#frag', URL],
     ['http://api.example.com:8080/resource', 'http://api.example.com:8080/resource'],
     ['wss://api.example.com/resource', 'wss://api.example.com/resource'],
+    ['http://api.example.com:80/resource', 'http://api.example.com/resource'],
+    // RFC 9449 §4.3: servers SHOULD apply RFC 3986 syntax-based normalization (dot segments)
+    ['https://api.example.com/a/../resource', URL],
   ])('accepts htu %s for request %s', async (htu, url) => {
     const proof = await makeProof({ claims: { htu } });
     await expect(
@@ -127,18 +157,35 @@ describe('verifyDPoPProof', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('compares non-default ports', async () => {
-    const proof = await makeProof({ claims: { htu: 'http://api.example.com:8080/resource' } });
+  it.each([
+    ['http://api.example.com:8080/resource', 'http://api.example.com/resource'],
+    ['https://api.example.com/foo%2Dbar', 'https://api.example.com/foo-bar'],
+    ['https://api.example.com/foo%2Fbar', 'https://api.example.com/foo/bar'],
+    ['https://api.example.com/foo/', 'https://api.example.com/foo'],
+    ['/resource', URL],
+    [URL, '/resource'],
+    ['https://u:p@api.example.com/resource', URL],
+    [URL, 'https://u@api.example.com/resource'],
+  ])('rejects htu %s for request %s', async (htu, url) => {
+    const proof = await makeProof({ claims: { htu } });
+    await expect(verifyDPoPProof(sessionToken, proof, 'POST', url, jkt, new Map())).rejects.toThrow(
+      'htu',
+    );
+  });
+
+  it('trims whitespace around the proof', async () => {
+    await expect(validate(` ${await makeProof()} \n`)).resolves.toBeUndefined();
+  });
+
+  it.each(['EdDSA', 'RS256', 'PS384', 'ES512'])('accepts an %s proof', async (alg) => {
+    const pair = await generateKeyPair(alg);
+    const jwk = await exportJWK(pair.publicKey);
+    const thumb = await calculateJwkThumbprint(jwk);
+    const token = tokenWithClaims({ sub: 'u1', cnf: { jkt: thumb } });
+    const proof = await makeProof({ header: { alg, jwk }, key: pair.privateKey, token });
     await expect(
-      verifyDPoPProof(
-        sessionToken,
-        proof,
-        'POST',
-        'http://api.example.com/resource',
-        jkt,
-        new Map(),
-      ),
-    ).rejects.toThrow('htu');
+      verifyDPoPProof(token, proof, 'POST', URL, thumb, new Map()),
+    ).resolves.toBeUndefined();
   });
 
   describe('iat window edges', () => {
@@ -177,14 +224,24 @@ describe('verifyDPoPProof', () => {
       await expect(validate(proof, store)).rejects.toThrow('replayed');
     });
 
-    it('does not burn the jti of an invalid proof', async () => {
+    it('does not burn the jti of a proof that fails a late check', async () => {
       const store = new Map<string, number>();
       const jti = 'shared-jti';
       await expect(
-        validate(await makeProof({ claims: { jti, htm: 'GET' } }), store),
-      ).rejects.toThrow('htm');
+        validate(await makeProof({ claims: { jti, ath: athOf('other') } }), store),
+      ).rejects.toThrow('ath claim does not match');
       expect(store.size).toBe(0);
       await expect(validate(await makeProof({ claims: { jti } }), store)).resolves.toBeUndefined();
+    });
+
+    it('still rejects the jti while the proof iat is in the window', async () => {
+      const store = new Map<string, number>();
+      const start = 1_700_000_000_000;
+      const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(start);
+      const proof = await makeProof({ claims: { iat: start / 1000 + 3 } });
+      await validate(proof, store);
+      nowSpy.mockReturnValue(start + 61_000);
+      await expect(validate(proof, store)).rejects.toThrow('replayed');
     });
 
     it('accepts a jti again after it expires', async () => {
