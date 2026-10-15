@@ -32,7 +32,7 @@ import {
   VerifyOptions,
 } from './types';
 import descopeErrors from './errors';
-import { DPoPJtiStore, validateDPoPProof, verifyDPoPProof } from './dpop';
+import { DPoPJtiStore, verifyDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 
@@ -388,28 +388,6 @@ const nodeSdk = ({
         logger?.error('failed to parse jwt from access key', error);
         throw Error(`could not exchange access key - failed to validate jwt. Error: ${error}`);
       }
-    },
-
-    /**
-     * Validate a DPoP proof JWT for a DPoP-bound session token (RFC 9449).
-     *
-     * The `dpop` option of `validateSession` runs the same check. No-op when the token has no
-     * `cnf.jkt` claim. A proof whose `jti` this SDK instance accepted in the last 120 seconds is
-     * rejected as a replay.
-     *
-     * @param sessionToken - The validated session JWT string returned by `validateSession`
-     * @param dpopProof - The value of the `DPoP` header from the incoming request
-     * @param method - HTTP method of the request in uppercase, e.g. `"GET"` or `"POST"`
-     * @param requestUrl - Absolute URL of the request, e.g. `"https://api.example.com/resource"`
-     * @throws Error if the DPoP proof is missing, invalid, or does not match the session token
-     */
-    async validateDPoP(
-      sessionToken: string,
-      dpopProof: string | undefined,
-      method: string,
-      requestUrl: string,
-    ): Promise<void> {
-      return validateDPoPProof(sessionToken, dpopProof, method, requestUrl, dpopJtiStore);
     },
 
     /**

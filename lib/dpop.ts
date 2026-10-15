@@ -54,7 +54,7 @@ function normalizeHtu(raw: string): string {
   }
 }
 
-/** Checks a proof against `storedJKT`, which must come from a verified token */
+/** RFC 9449 §4.3 proof check; `storedJKT` must come from a verified token */
 export async function verifyDPoPProof(
   sessionToken: string,
   dpopProof: string | undefined,
@@ -175,35 +175,6 @@ export async function verifyDPoPProof(
 
   // Burn the jti only after every other check passes, so invalid proofs cannot fill the store
   burnJti(jtiStore, payload.jti, nowMs);
-}
-
-/** RFC 9449 §4.3 proof validation behind `sdk.validateDPoP`; no-op for a token without cnf.jkt */
-export async function validateDPoPProof(
-  sessionToken: string,
-  dpopProof: string | undefined,
-  method: string,
-  requestUrl: string,
-  jtiStore: DPoPJtiStore,
-): Promise<void> {
-  // The caller already verified the token's signature with validateSession. A malformed token
-  // throws instead of passing as unbound.
-  const parts = sessionToken.split('.');
-  if (parts.length < 2) {
-    throw new Error('Session token is invalid: not a valid JWT');
-  }
-  let claims: Record<string, unknown>;
-  try {
-    claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-  } catch {
-    throw new Error('Session token is invalid: could not decode JWT payload');
-  }
-
-  const cnf = claims?.cnf as Record<string, unknown> | undefined;
-  const storedJKT = (cnf?.jkt as string) || '';
-  if (!storedJKT) {
-    return;
-  }
-  await verifyDPoPProof(sessionToken, dpopProof, method, requestUrl, storedJKT, jtiStore);
 }
 
 export type { DPoPJtiStore };

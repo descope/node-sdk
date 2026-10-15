@@ -523,9 +523,6 @@ session is bound to, with `ath` computed over the session token you passed; with
 a bound refreshed session is rejected. The refresh happens before this check, so a rejected proof
 does not undo a refresh token rotation.
 
-You can also check a proof on its own with
-`sdk.validateDPoP(sessionToken, dpopProof, method, requestUrl)`.
-
 > **Important:** The URL passed for DPoP must exactly match the `htu` claim in the DPoP
 > proof: same scheme, host, and path (query string and fragment are ignored). In environments
 > behind a reverse proxy or load balancer, the scheme seen by Node.js may be `http` even when the
@@ -534,13 +531,6 @@ You can also check a proof on its own with
 > ```typescript
 > // Express with trust proxy enabled (app.set('trust proxy', true)):
 > const requestUrl = `${req.protocol}://${req.get('host')}${req.path}`;
->
-> // Raw Node.js http/https using X-Forwarded-Proto (only when set by a proxy you trust):
-> const forwardedProto = (req.headers['x-forwarded-proto'] as string | undefined)
->   ?.split(',')[0]
->   .trim();
-> const scheme = forwardedProto ?? ((req.socket as any).encrypted ? 'https' : 'http');
-> const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
 > ```
 
 > **Replay protection (RFC 9449 §11.1):** DPoP validation rejects a proof whose `jti` was already

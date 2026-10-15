@@ -9,13 +9,14 @@ import {
   generateKeyPair,
 } from 'jose';
 import createSdk from '.';
-import { validateDPoPProof } from './dpop';
+import { verifyDPoPProof } from './dpop';
 
 const URL = 'https://api.example.com/resource';
 
 let privateKey: KeyLike;
 let publicJwk: JWK;
 let sessionToken: string;
+let jkt: string;
 
 const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
 const tokenWithClaims = (claims: object) => `${b64({ alg: 'none' })}.${b64(claims)}.sig`;
@@ -41,36 +42,21 @@ const makeProof = ({ header = {}, claims = {}, key = privateKey, token }: ProofO
     .sign(key);
 
 const validate = (proof: string | undefined, store = new Map<string, number>()) =>
-  validateDPoPProof(sessionToken, proof, 'POST', URL, store);
+  verifyDPoPProof(sessionToken, proof, 'POST', URL, jkt, store);
 
 beforeAll(async () => {
   const pair = await generateKeyPair('ES256');
   privateKey = pair.privateKey;
   publicJwk = await exportJWK(pair.publicKey);
-  sessionToken = tokenWithClaims({
-    sub: 'u1',
-    cnf: { jkt: await calculateJwkThumbprint(publicJwk) },
-  });
+  jkt = await calculateJwkThumbprint(publicJwk);
+  sessionToken = tokenWithClaims({ sub: 'u1', cnf: { jkt } });
 });
 
 afterEach(() => jest.restoreAllMocks());
 
-describe('validateDPoPProof', () => {
+describe('verifyDPoPProof', () => {
   it('accepts a valid proof', async () => {
     await expect(validate(await makeProof())).resolves.toBeUndefined();
-  });
-
-  it('is a no-op for a token without cnf.jkt', async () => {
-    await expect(
-      validateDPoPProof(tokenWithClaims({ sub: 'u1' }), undefined, 'POST', URL, new Map()),
-    ).resolves.toBeUndefined();
-  });
-
-  it.each([
-    ['not a JWT', 'abc', 'not a valid JWT'],
-    ['bad payload', 'a.!!!.c', 'could not decode JWT payload'],
-  ])('rejects a malformed session token (%s)', async (_, token, msg) => {
-    await expect(validateDPoPProof(token, undefined, 'POST', URL, new Map())).rejects.toThrow(msg);
   });
 
   it.each([
@@ -157,10 +143,17 @@ describe('validateDPoPProof', () => {
     const htu = 'http://api.example.com:8080/resource';
     const proof = await makeProof({ claims: { htu } });
     await expect(
-      validateDPoPProof(sessionToken, proof, 'POST', htu, new Map()),
+      verifyDPoPProof(sessionToken, proof, 'POST', htu, jkt, new Map()),
     ).resolves.toBeUndefined();
     await expect(
-      validateDPoPProof(sessionToken, proof, 'POST', 'http://api.example.com/resource', new Map()),
+      verifyDPoPProof(
+        sessionToken,
+        proof,
+        'POST',
+        'http://api.example.com/resource',
+        jkt,
+        new Map(),
+      ),
     ).rejects.toThrow('htu');
   });
 
@@ -168,7 +161,7 @@ describe('validateDPoPProof', () => {
     const htu = 'wss://api.example.com/resource';
     const proof = await makeProof({ claims: { htu } });
     await expect(
-      validateDPoPProof(sessionToken, proof, 'POST', htu, new Map()),
+      verifyDPoPProof(sessionToken, proof, 'POST', htu, jkt, new Map()),
     ).resolves.toBeUndefined();
   });
 
@@ -205,11 +198,12 @@ describe('validateDPoPProof', () => {
 
   it('does not echo request or proof data in errors', async () => {
     const proof = await makeProof({ claims: { htu: 'https://evil.example.com/x', htm: 'GET' } });
-    const err = await validateDPoPProof(
+    const err = await verifyDPoPProof(
       sessionToken,
       proof,
       'POST',
       `${URL}?code=secret`,
+      jkt,
       new Map(),
     ).catch((e: Error) => e);
     expect(String(err)).not.toMatch(/secret|evil|GET/);
@@ -269,15 +263,6 @@ describe('validateDPoPProof', () => {
       const store = new Map(Array.from({ length: 100_000 }, (_, i) => [`j${i}`, far]));
       await expect(validate(await makeProof(), store)).rejects.toThrow('at capacity');
     });
-  });
-});
-
-describe('sdk.validateDPoP', () => {
-  it('rejects a replayed proof within one SDK instance', async () => {
-    const sdk = createSdk({ projectId: 'project-id' });
-    const proof = await makeProof();
-    await expect(sdk.validateDPoP(sessionToken, proof, 'POST', URL)).resolves.toBeUndefined();
-    await expect(sdk.validateDPoP(sessionToken, proof, 'POST', URL)).rejects.toThrow('replayed');
   });
 });
 
@@ -392,6 +377,13 @@ describe('DPoP enforcement in session validation', () => {
         'does not match the session cnf.jkt',
       );
     });
+  });
+
+  it('rejects a proof replayed on the same SDK instance', async () => {
+    const sdk = newSdk();
+    const opts = { dpop: await dpop() };
+    await sdk.validateSession(sessionToken, opts);
+    await expect(sdk.validateSession(sessionToken, opts)).rejects.toThrow('replayed');
   });
 
   it('passes verify options without dpop to the inner calls', async () => {
