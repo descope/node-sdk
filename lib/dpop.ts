@@ -143,7 +143,7 @@ export async function verifyDPoPProof(
     throw new Error('DPoP proof htm does not match the request method');
   }
 
-  const normalizedHtu = normalizeHtu(payload.htu as string);
+  const normalizedHtu = normalizeHtu(payload.htu);
   const normalizedUrl = normalizeHtu(requestUrl);
   if (!normalizedHtu || !normalizedUrl || normalizedHtu !== normalizedUrl) {
     throw new Error('DPoP proof htu does not match the request URL');
