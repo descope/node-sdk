@@ -44,7 +44,7 @@ export interface DPoPRequest {
 /** Options for token verification (extensible). */
 export interface VerifyOptions {
   audience?: string | string[];
-  /** Request details for the DPoP proof; a DPoP-bound session token is rejected without them */
+  /** Request details for the DPoP proof; a DPoP-bound session token without them only logs a warning */
   dpop?: DPoPRequest;
 }
 

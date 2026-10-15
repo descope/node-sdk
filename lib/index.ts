@@ -192,10 +192,15 @@ const nodeSdk = ({
       throw Error('DPoP scheme used but token is not DPoP-bound (missing cnf.jkt)');
     }
     if (!jkt) return;
+    if (!dpop) {
+      logger?.warn?.(
+        'DPoP-bound session token validated without the dpop option; this will be rejected in the next major version',
+      );
+      return;
+    }
     if (!sessionToken)
       throw Error('DPoP-bound session requires the session token the proof was made for');
-    const { proof, method = '', url = '' } = dpop ?? {};
-    await verifyDPoPProof(sessionToken, proof, method, url, jkt, dpopJtiStore);
+    await verifyDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, jkt, dpopJtiStore);
   };
 
   const sdk = {

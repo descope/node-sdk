@@ -295,12 +295,23 @@ describe('DPoP enforcement in session validation', () => {
     ).rejects.toThrow('DPoP proof required');
   });
 
-  it('rejects a bound token when the dpop option is absent', async () => {
-    const sdk = newSdk();
-    await expect(sdk.validateSession(sessionToken)).rejects.toThrow('DPoP proof required');
-    await expect(sdk.validateAndRefreshSession(sessionToken, 'r')).rejects.toThrow(
-      'DPoP proof required',
-    );
+  it('warns and accepts a bound token when the dpop option is absent', async () => {
+    const warn = jest.fn();
+    const sdk = createSdk({ projectId: 'project-id', logger: { ...console, warn } });
+    jest
+      .spyOn(sdk, 'validateJwt')
+      .mockImplementation(async (jwt) => ({ jwt, token: claimsOf(jwt) }));
+    await expect(sdk.validateSession(sessionToken)).resolves.toMatchObject({ jwt: sessionToken });
+    await expect(sdk.validateAndRefreshSession(sessionToken, 'r')).resolves.toMatchObject({
+      jwt: sessionToken,
+    });
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('next major version'));
+  });
+
+  it('rejects a bound token with an invalid proof', async () => {
+    const opts = { dpop: await dpop({ claims: { htm: 'GET' } }) };
+    await expect(newSdk().validateSession(sessionToken, opts)).rejects.toThrow('htm');
   });
 
   it('leaves unbound tokens unchanged without the dpop option', async () => {
