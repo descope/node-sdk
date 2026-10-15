@@ -280,3 +280,85 @@ describe('sdk.validateDPoP', () => {
     await expect(sdk.validateDPoP(sessionToken, proof, 'POST', URL)).rejects.toThrow('replayed');
   });
 });
+
+describe('DPoP enforcement in session validation', () => {
+  const unbound = tokenWithClaims({ sub: 'u1' });
+  const claimsOf = (t: string) => JSON.parse(Buffer.from(t.split('.')[1], 'base64url').toString());
+
+  const newSdk = () => {
+    const sdk = createSdk({ projectId: 'project-id' });
+    jest
+      .spyOn(sdk, 'validateJwt')
+      .mockImplementation(async (jwt) => ({ jwt, token: claimsOf(jwt) }));
+    return sdk;
+  };
+  const dpop = async (opts: ProofOpts = {}) => ({
+    proof: await makeProof(opts),
+    method: 'POST',
+    url: URL,
+  });
+
+  it('accepts a bound token with a valid proof', async () => {
+    const sdk = newSdk();
+    await expect(sdk.validateSession(sessionToken, { dpop: await dpop() })).resolves.toMatchObject({
+      jwt: sessionToken,
+    });
+  });
+
+  it('rejects a bound token without a proof', async () => {
+    const sdk = newSdk();
+    await expect(
+      sdk.validateSession(sessionToken, { dpop: { method: 'POST', url: URL } }),
+    ).rejects.toThrow('DPoP proof required');
+  });
+
+  it('does not check DPoP when the dpop option is absent', async () => {
+    await expect(newSdk().validateSession(sessionToken)).resolves.toMatchObject({
+      jwt: sessionToken,
+    });
+  });
+
+  it.each([
+    ['DPoP', 'not DPoP-bound'],
+    ['dpop', 'not DPoP-bound'],
+  ])('rejects the %s scheme with an unbound token', async (authorizationScheme, msg) => {
+    const opts = { dpop: { method: 'POST', url: URL, authorizationScheme } };
+    await expect(newSdk().validateSession(unbound, opts)).rejects.toThrow(msg);
+  });
+
+  it('accepts the Bearer scheme with an unbound token', async () => {
+    const opts = { dpop: { method: 'POST', url: URL, authorizationScheme: 'Bearer' } };
+    await expect(newSdk().validateSession(unbound, opts)).resolves.toMatchObject({ jwt: unbound });
+  });
+
+  it('does not refresh around a failed proof', async () => {
+    const sdk = newSdk();
+    const refresh = jest.spyOn(sdk, 'refreshSession');
+    const opts = { dpop: await dpop({ claims: { htm: 'GET' } }) };
+    await expect(sdk.validateAndRefreshSession(sessionToken, 'refresh', opts)).rejects.toThrow(
+      'htm',
+    );
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('checks the proof against the session token after a refresh', async () => {
+    const sdk = newSdk();
+    jest.spyOn(sdk, 'validateSession').mockRejectedValue(new Error('expired'));
+    jest
+      .spyOn(sdk, 'refreshSession')
+      .mockResolvedValue({ jwt: 'new', token: claimsOf(sessionToken) });
+    const good = { dpop: await dpop() };
+    await expect(sdk.validateAndRefreshSession(sessionToken, 'r', good)).resolves.toMatchObject({
+      jwt: 'new',
+    });
+    const bad = { dpop: await dpop({ claims: { htm: 'GET' } }) };
+    await expect(sdk.validateAndRefreshSession(sessionToken, 'r', bad)).rejects.toThrow('htm');
+  });
+
+  it('passes verify options without dpop to the inner calls', async () => {
+    const sdk = newSdk();
+    const validateSpy = jest.spyOn(sdk, 'validateSession');
+    await sdk.validateAndRefreshSession(sessionToken, 'r', { audience: 'a', dpop: await dpop() });
+    expect(validateSpy).toHaveBeenCalledWith(sessionToken, { audience: 'a' });
+  });
+});

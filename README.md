@@ -495,7 +495,8 @@ Descope supports DPoP (Demonstrated Proof of Possession) sender-constrained toke
 token contains a `cnf.jkt` claim, the client must prove possession of the corresponding private key
 on every request by sending a `DPoP` header containing a signed proof JWT.
 
-After validating the session with `validateSession`, call `validateDPoP` to verify the DPoP proof:
+Pass the request's DPoP details to `validateSession` or `validateAndRefreshSession` with the `dpop`
+option:
 
 ```typescript
 import descopeClient from '@descope/node-sdk';
@@ -503,22 +504,27 @@ import descopeClient from '@descope/node-sdk';
 const sdk = descopeClient({ projectId: 'YOUR_PROJECT_ID' });
 
 // In your request handler:
-const sessionToken = req.headers.authorization?.replace(/^(Bearer|DPoP)\s+/i, '');
-const dpopProof = req.headers['dpop'] as string | undefined;
+const [authorizationScheme, sessionToken] = (req.headers.authorization ?? '').split(' ');
 
-// First validate the session token
-const authInfo = await sdk.validateSession(sessionToken);
-
-// Then validate the DPoP proof (no-op if token is not DPoP-bound)
-await sdk.validateDPoP(
-  authInfo.jwt, // the raw session JWT string
-  dpopProof, // value of the DPoP header
-  req.method, // HTTP method in uppercase, e.g. "GET"
-  `https://${req.headers.host}${req.url}`, // absolute request URL
-);
+const authInfo = await sdk.validateSession(sessionToken, {
+  dpop: {
+    proof: req.headers['dpop'] as string | undefined, // value of the DPoP header
+    method: req.method, // HTTP method in uppercase, e.g. "GET"
+    url: `https://${req.headers.host}${req.url}`, // absolute request URL
+    authorizationScheme, // "Bearer" or "DPoP"
+  },
+});
 ```
 
-> **Important:** The URL passed to `validateDPoP` must exactly match the `htu` claim in the DPoP
+With `dpop` set, a DPoP-bound token without a valid proof is rejected, and so is the `DPoP`
+authorization scheme with a token that has no `cnf.jkt`. Without `dpop`, these methods do not check
+DPoP, so a DPoP-bound token passes without a proof. `validateAndRefreshSession` checks the proof
+against the session token you pass, also when the session was refreshed.
+
+You can also check a proof on its own with
+`sdk.validateDPoP(sessionToken, dpopProof, method, requestUrl)`.
+
+> **Important:** The URL passed for DPoP must exactly match the `htu` claim in the DPoP
 > proof: same scheme, host, and path (query string and fragment are ignored). In environments
 > behind a reverse proxy or load balancer, the scheme seen by Node.js may be `http` even when the
 > client used `https`. Reconstruct the URL from request context to ensure they match:
@@ -535,14 +541,7 @@ await sdk.validateDPoP(
 > const requestUrl = `${scheme}://${req.headers.host}${req.url}`;
 > ```
 
-If the token is DPoP-bound and the proof is missing or invalid, `validateDPoP` throws an error.
-If the token has no `cnf.jkt` claim (i.e. it is a regular Bearer token), `validateDPoP` is a no-op.
-
-> **Warning:** `validateSession` on its own does not check DPoP. A DPoP-bound token passes
-> `validateSession` without any proof, so call `validateDPoP` on every request that accepts session
-> tokens, not only on requests that carry a `DPoP` header.
-
-> **Replay protection (RFC 9449 §11.1):** `validateDPoP` rejects a proof whose `jti` was already
+> **Replay protection (RFC 9449 §11.1):** DPoP validation rejects a proof whose `jti` was already
 > accepted by the same SDK instance in the last 120 seconds. The store is in memory, so when you run
 > several server instances, a proof replayed against a different instance is not detected. The
 > store holds at most 100,000 entries; when it is full, new proofs are rejected until entries

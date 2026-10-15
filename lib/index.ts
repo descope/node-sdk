@@ -24,7 +24,13 @@ import {
 } from './helpers';
 import withManagement from './management';
 import withLicense from './management/license';
-import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
+import {
+  AuthenticationInfo,
+  DPoPRequest,
+  IDPResponse,
+  RefreshAuthenticationInfo,
+  VerifyOptions,
+} from './types';
 import descopeErrors from './errors';
 import { DPoPJtiStore, validateDPoPProof } from './dpop';
 
@@ -176,6 +182,19 @@ const nodeSdk = ({
 
   const dpopJtiStore: DPoPJtiStore = new Map();
 
+  const enforceDPoP = async (
+    sessionToken: string,
+    info: AuthenticationInfo,
+    dpop?: DPoPRequest,
+  ) => {
+    if (!dpop) return;
+    const jkt = (info.token.cnf as { jkt?: string } | undefined)?.jkt;
+    if (dpop.authorizationScheme?.toLowerCase() === 'dpop' && !jkt) {
+      throw Error('DPoP scheme used but token is not DPoP-bound (missing cnf.jkt)');
+    }
+    await validateDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, dpopJtiStore);
+  };
+
   const sdk = {
     ...coreSdk,
 
@@ -247,6 +266,7 @@ const nodeSdk = ({
 
       try {
         const token = await sdk.validateJwt(sessionToken, options);
+        await enforceDPoP(sessionToken, token, options?.dpop);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -311,15 +331,18 @@ const nodeSdk = ({
     ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
+      // DPoP is enforced after the fallback so a bad proof cannot be bypassed by refreshing
+      const { dpop, ...verifyOptions } = options ?? {};
+      let token: RefreshAuthenticationInfo;
       try {
-        const token = await sdk.validateSession(sessionToken, options);
-        return token;
+        token = await sdk.validateSession(sessionToken, verifyOptions);
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
+        token = await sdk.refreshSession(refreshToken, verifyOptions);
       }
-
-      return sdk.refreshSession(refreshToken, options);
+      if (sessionToken) await enforceDPoP(sessionToken, token, dpop);
+      return token;
     },
 
     /**
@@ -367,9 +390,9 @@ const nodeSdk = ({
     /**
      * Validate a DPoP proof JWT for a DPoP-bound session token (RFC 9449).
      *
-     * Call this after `validateSession` on every request: a DPoP-bound token passes
-     * `validateSession` without a proof. No-op when the token has no `cnf.jkt` claim. A proof whose
-     * `jti` this SDK instance accepted in the last 120 seconds is rejected as a replay.
+     * The `dpop` option of `validateSession` runs the same check. No-op when the token has no
+     * `cnf.jkt` claim. A proof whose `jti` this SDK instance accepted in the last 120 seconds is
+     * rejected as a replay.
      *
      * @param sessionToken - The validated session JWT string returned by `validateSession`
      * @param dpopProof - The value of the `DPoP` header from the incoming request
@@ -552,7 +575,7 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
-export type { VerifyOptions } from './types';
+export type { DPoPRequest, VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
 export type { PatchTenantOptions } from './management/tenant';

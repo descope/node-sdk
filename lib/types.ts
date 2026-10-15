@@ -29,9 +29,23 @@ export interface RefreshAuthenticationInfo extends AuthenticationInfo {
   refreshJwt?: string;
 }
 
-/** Options for token verification (extensible). For now only audience. */
+/** Request details for DPoP enforcement (RFC 9449) */
+export interface DPoPRequest {
+  /** Value of the request's `DPoP` header */
+  proof?: string;
+  /** HTTP method, uppercase */
+  method: string;
+  /** Absolute request URL */
+  url: string;
+  /** Scheme of the `Authorization` header (`Bearer` or `DPoP`); `DPoP` with an unbound token is rejected */
+  authorizationScheme?: string;
+}
+
+/** Options for token verification (extensible). */
 export interface VerifyOptions {
   audience?: string | string[];
+  /** When set, a DPoP-bound session token requires a valid proof for this request */
+  dpop?: DPoPRequest;
 }
 
 /** Descope core SDK type */
