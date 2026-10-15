@@ -295,10 +295,22 @@ describe('DPoP enforcement in session validation', () => {
     ).rejects.toThrow('DPoP proof required');
   });
 
-  it('does not check DPoP when the dpop option is absent', async () => {
-    await expect(newSdk().validateSession(sessionToken)).resolves.toMatchObject({
-      jwt: sessionToken,
+  it('rejects a bound token when the dpop option is absent', async () => {
+    const sdk = newSdk();
+    await expect(sdk.validateSession(sessionToken)).rejects.toThrow('DPoP proof required');
+    await expect(sdk.validateAndRefreshSession(sessionToken, 'r')).rejects.toThrow(
+      'DPoP proof required',
+    );
+  });
+
+  it('leaves unbound tokens unchanged without the dpop option', async () => {
+    const sdk = newSdk();
+    const refresh = jest.spyOn(sdk, 'refreshSession');
+    await expect(sdk.validateSession(unbound)).resolves.toMatchObject({ jwt: unbound });
+    await expect(sdk.validateAndRefreshSession(unbound, 'r')).resolves.toMatchObject({
+      jwt: unbound,
     });
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it.each(['DPoP', 'dpop'])('rejects the %s scheme with an unbound token', async (scheme) => {
@@ -323,7 +335,7 @@ describe('DPoP enforcement in session validation', () => {
 
   it('checks the proof against the session token after a refresh', async () => {
     const sdk = newSdk();
-    jest.spyOn(sdk, 'validateSession').mockRejectedValue(new Error('expired'));
+    jest.spyOn(sdk, 'validateJwt').mockRejectedValue(new Error('expired'));
     jest
       .spyOn(sdk, 'refreshSession')
       .mockResolvedValue({ jwt: 'new', token: claimsOf(sessionToken) });
@@ -338,7 +350,7 @@ describe('DPoP enforcement in session validation', () => {
   describe('after a refresh, the key comes from the refreshed token', () => {
     const refreshedSdk = () => {
       const sdk = newSdk();
-      jest.spyOn(sdk, 'validateSession').mockRejectedValue(new Error('expired'));
+      jest.spyOn(sdk, 'validateJwt').mockRejectedValue(new Error('expired'));
       jest
         .spyOn(sdk, 'refreshSession')
         .mockResolvedValue({ jwt: 'new', token: claimsOf(sessionToken) });
@@ -383,8 +395,7 @@ describe('DPoP enforcement in session validation', () => {
 
   it('passes verify options without dpop to the inner calls', async () => {
     const sdk = newSdk();
-    const validateSpy = jest.spyOn(sdk, 'validateSession');
     await sdk.validateAndRefreshSession(sessionToken, 'r', { audience: 'a', dpop: await dpop() });
-    expect(validateSpy).toHaveBeenCalledWith(sessionToken, { audience: 'a' });
+    expect(sdk.validateJwt).toHaveBeenCalledWith(sessionToken, { audience: 'a' });
   });
 });

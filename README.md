@@ -492,7 +492,8 @@ Note: if refresh token rotation is enabled in Descope - `refreshSession` / `vali
 #### DPoP Sender-Constrained Tokens (RFC 9449)
 
 When a session token is DPoP-bound (has a `cnf.jkt` claim), pass the request's DPoP details to
-`validateSession` or `validateAndRefreshSession`. Without the `dpop` option, DPoP is not checked.
+`validateSession` or `validateAndRefreshSession`. A DPoP-bound token is always checked, so it is
+rejected when the `dpop` option or its proof is missing. Unbound tokens are not affected.
 `validateAndRefreshSession` checks the proof after refreshing, so a rejected proof does not undo a
 refresh token rotation.
 

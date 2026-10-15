@@ -187,15 +187,15 @@ const nodeSdk = ({
     info: AuthenticationInfo,
     dpop?: DPoPRequest,
   ) => {
-    if (!dpop) return;
     const jkt = (info.token.cnf as { jkt?: string } | undefined)?.jkt;
-    if (dpop.authorizationScheme?.toLowerCase() === 'dpop' && !jkt) {
+    if (dpop?.authorizationScheme?.toLowerCase() === 'dpop' && !jkt) {
       throw Error('DPoP scheme used but token is not DPoP-bound (missing cnf.jkt)');
     }
     if (!jkt) return;
     if (!sessionToken)
       throw Error('DPoP-bound session requires the session token the proof was made for');
-    await verifyDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, jkt, dpopJtiStore);
+    const { proof, method = '', url = '' } = dpop ?? {};
+    await verifyDPoPProof(sessionToken, proof, method, url, jkt, dpopJtiStore);
   };
 
   const sdk = {
@@ -338,7 +338,7 @@ const nodeSdk = ({
       const { dpop, ...verifyOptions } = options ?? {};
       let token: RefreshAuthenticationInfo;
       try {
-        token = await sdk.validateSession(sessionToken, verifyOptions);
+        token = await sdk.validateJwt(sessionToken, verifyOptions);
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
