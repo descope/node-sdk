@@ -59,92 +59,76 @@ describe('verifyDPoPProof', () => {
     await expect(validate(await makeProof())).resolves.toBeUndefined();
   });
 
-  it.each([
-    ['missing', undefined, 'DPoP proof required'],
-    ['too long', 'a'.repeat(8193), 'exceeds maximum length'],
-    ['not 3 parts', 'a.b', 'exactly 3 parts'],
-    ['bad header', '!!!.b.c', 'header is not valid'],
-  ])('rejects a %s proof', async (_, proof, msg) => {
-    await expect(validate(proof)).rejects.toThrow(msg);
-  });
+  const raw = (header: object) => `${b64({ typ: 'dpop+jwt', ...header })}.${b64({})}.sig`;
 
-  it('rejects a wrong typ', async () => {
-    await expect(validate(await makeProof({ header: { typ: 'jwt' } }))).rejects.toThrow('typ');
-  });
-
-  it.each(['none', 'HS256'])('rejects alg %s', async (alg) => {
-    const proof = `${b64({ typ: 'dpop+jwt', alg, jwk: publicJwk })}.${b64({})}.`;
-    await expect(validate(proof)).rejects.toThrow('is not allowed');
-  });
-
-  it('rejects a missing jwk', async () => {
-    const proof = `${b64({ typ: 'dpop+jwt', alg: 'ES256' })}.${b64({})}.sig`;
-    await expect(validate(proof)).rejects.toThrow('must contain a jwk');
-  });
-
-  it('rejects a symmetric jwk', async () => {
-    const proof = `${b64({ typ: 'dpop+jwt', alg: 'ES256', jwk: { kty: 'oct', k: 'AA' } })}.${b64(
-      {},
-    )}.sig`;
-    await expect(validate(proof)).rejects.toThrow('symmetric');
-  });
-
-  it('rejects a jwk with private components', async () => {
-    const jwk = { ...publicJwk, d: 'AA' };
-    await expect(validate(await makeProof({ header: { jwk } }))).rejects.toThrow('private key');
-  });
-
-  it('rejects a proof signed by a key other than the embedded jwk', async () => {
-    const other = await generateKeyPair('ES256');
-    await expect(validate(await makeProof({ key: other.privateKey }))).rejects.toThrow(
+  it.each<[string, () => Promise<string | undefined> | string | undefined, string]>([
+    ['missing', () => undefined, 'DPoP proof required'],
+    ['too long', () => 'a'.repeat(8193), 'exceeds maximum length'],
+    ['not 3 parts', () => 'a.b', 'exactly 3 parts'],
+    ['bad header', () => '!!!.b.c', 'header is not valid'],
+    ['wrong typ', () => makeProof({ header: { typ: 'jwt' } }), 'typ'],
+    ['alg none', () => raw({ alg: 'none', jwk: publicJwk }), 'is not allowed'],
+    ['alg HS256', () => raw({ alg: 'HS256', jwk: publicJwk }), 'is not allowed'],
+    ['missing jwk', () => raw({ alg: 'ES256' }), 'must contain a jwk'],
+    ['symmetric jwk', () => raw({ alg: 'ES256', jwk: { kty: 'oct', k: 'AA' } }), 'symmetric'],
+    ['private jwk', () => makeProof({ header: { jwk: { ...publicJwk, d: 'AA' } } }), 'private key'],
+    [
+      'non-JSON payload',
+      () =>
+        new CompactSign(new TextEncoder().encode('not json'))
+          .setProtectedHeader({ typ: 'dpop+jwt', alg: 'ES256', jwk: publicJwk })
+          .sign(privateKey),
+      'payload is not valid JSON',
+    ],
+    [
+      'signer other than the jwk',
+      async () => makeProof({ key: (await generateKeyPair('ES256')).privateKey }),
       'signature verification failed',
-    );
+    ],
+    [
+      'key other than cnf.jkt',
+      async () => {
+        const other = await generateKeyPair('ES256');
+        const jwk = await exportJWK(other.publicKey);
+        return makeProof({ header: { jwk }, key: other.privateKey });
+      },
+      'does not match the session cnf.jkt',
+    ],
+  ])('rejects a %s proof', async (_, build, msg) => {
+    await expect(validate(await build())).rejects.toThrow(msg);
   });
 
-  it('rejects a non-JSON payload', async () => {
-    const proof = await new CompactSign(new TextEncoder().encode('not json'))
-      .setProtectedHeader({ typ: 'dpop+jwt', alg: 'ES256', jwk: publicJwk })
-      .sign(privateKey);
-    await expect(validate(proof)).rejects.toThrow('payload is not valid JSON');
-  });
-
-  it.each(['jti', 'htm', 'htu'])('rejects a missing %s', async (claim) => {
-    await expect(validate(await makeProof({ claims: { [claim]: undefined } }))).rejects.toThrow(
-      `string ${claim} claim`,
-    );
-  });
-
-  it('rejects a jti longer than 128 chars', async () => {
-    const proof = await makeProof({ claims: { jti: 'j'.repeat(129) } });
-    await expect(validate(proof)).rejects.toThrow('jti exceeds maximum length');
-  });
-
-  it('rejects an htm mismatch', async () => {
-    await expect(validate(await makeProof({ claims: { htm: 'GET' } }))).rejects.toThrow('htm');
+  it.each<[Record<string, unknown>, string]>([
+    [{ jti: undefined }, 'string jti claim'],
+    [{ htm: undefined }, 'string htm claim'],
+    [{ htu: undefined }, 'string htu claim'],
+    [{ ath: undefined }, 'string ath claim'],
+    [{ iat: undefined }, 'numeric iat'],
+    [{ jti: 'j'.repeat(129) }, 'jti exceeds maximum length'],
+    [{ htm: 'GET' }, 'htm'],
+    [{ ath: athOf('other') }, 'ath claim does not match'],
+    [{ htu: 'https://other.example.com/resource' }, 'htu'],
+    [{ htu: 'https://api.example.com/other' }, 'htu'],
+    [{ htu: 'not a url' }, 'htu'],
+    [{ htu: 'urn:example:resource' }, 'htu'],
+  ])('rejects claims %j', async (claims, msg) => {
+    await expect(validate(await makeProof({ claims }))).rejects.toThrow(msg);
   });
 
   it.each([
-    'https://other.example.com/resource',
-    'https://api.example.com/other',
-    'not a url',
-    'urn:example:resource',
-  ])('rejects htu %s', async (htu) => {
-    await expect(validate(await makeProof({ claims: { htu } }))).rejects.toThrow('htu');
-  });
-
-  it.each(['https://API.example.com:443/resource', 'https://api.example.com/resource?q=1#frag'])(
-    'accepts equivalent htu %s',
-    async (htu) => {
-      await expect(validate(await makeProof({ claims: { htu } }))).resolves.toBeUndefined();
-    },
-  );
-
-  it('compares non-default ports and http', async () => {
-    const htu = 'http://api.example.com:8080/resource';
+    ['https://API.example.com:443/resource', URL],
+    ['https://api.example.com/resource?q=1#frag', URL],
+    ['http://api.example.com:8080/resource', 'http://api.example.com:8080/resource'],
+    ['wss://api.example.com/resource', 'wss://api.example.com/resource'],
+  ])('accepts htu %s for request %s', async (htu, url) => {
     const proof = await makeProof({ claims: { htu } });
     await expect(
-      verifyDPoPProof(sessionToken, proof, 'POST', htu, jkt, new Map()),
+      verifyDPoPProof(sessionToken, proof, 'POST', url, jkt, new Map()),
     ).resolves.toBeUndefined();
+  });
+
+  it('compares non-default ports', async () => {
+    const proof = await makeProof({ claims: { htu: 'http://api.example.com:8080/resource' } });
     await expect(
       verifyDPoPProof(
         sessionToken,
@@ -155,30 +139,6 @@ describe('verifyDPoPProof', () => {
         new Map(),
       ),
     ).rejects.toThrow('htu');
-  });
-
-  it('compares htu for non-http schemes', async () => {
-    const htu = 'wss://api.example.com/resource';
-    const proof = await makeProof({ claims: { htu } });
-    await expect(
-      verifyDPoPProof(sessionToken, proof, 'POST', htu, jkt, new Map()),
-    ).resolves.toBeUndefined();
-  });
-
-  it('rejects a missing iat', async () => {
-    await expect(validate(await makeProof({ claims: { iat: undefined } }))).rejects.toThrow(
-      'numeric iat',
-    );
-  });
-
-  it.each([
-    ['too old', -61],
-    ['in the future', 6],
-  ])('rejects an iat that is %s', async (_, offset) => {
-    const iat = Math.floor(Date.now() / 1000) + offset;
-    await expect(validate(await makeProof({ claims: { iat } }))).rejects.toThrow(
-      'outside the acceptable window',
-    );
   });
 
   describe('iat window edges', () => {
@@ -207,25 +167,6 @@ describe('verifyDPoPProof', () => {
       new Map(),
     ).catch((e: Error) => e);
     expect(String(err)).not.toMatch(/secret|evil|GET/);
-  });
-
-  it('rejects a missing ath', async () => {
-    await expect(validate(await makeProof({ claims: { ath: undefined } }))).rejects.toThrow(
-      'string ath claim',
-    );
-  });
-
-  it('rejects an ath for a different token', async () => {
-    await expect(validate(await makeProof({ token: 'other' }))).rejects.toThrow(
-      'ath claim does not match',
-    );
-  });
-
-  it('rejects a proof key that does not match cnf.jkt', async () => {
-    const other = await generateKeyPair('ES256');
-    const jwk = await exportJWK(other.publicKey);
-    const proof = await makeProof({ header: { jwk }, key: other.privateKey });
-    await expect(validate(proof)).rejects.toThrow('does not match the session cnf.jkt');
   });
 
   describe('replay store', () => {
@@ -303,12 +244,9 @@ describe('DPoP enforcement in session validation', () => {
     });
   });
 
-  it.each([
-    ['DPoP', 'not DPoP-bound'],
-    ['dpop', 'not DPoP-bound'],
-  ])('rejects the %s scheme with an unbound token', async (authorizationScheme, msg) => {
-    const opts = { dpop: { method: 'POST', url: URL, authorizationScheme } };
-    await expect(newSdk().validateSession(unbound, opts)).rejects.toThrow(msg);
+  it.each(['DPoP', 'dpop'])('rejects the %s scheme with an unbound token', async (scheme) => {
+    const opts = { dpop: { method: 'POST', url: URL, authorizationScheme: scheme } };
+    await expect(newSdk().validateSession(unbound, opts)).rejects.toThrow('not DPoP-bound');
   });
 
   it('accepts the Bearer scheme with an unbound token', async () => {

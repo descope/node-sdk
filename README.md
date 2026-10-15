@@ -491,53 +491,30 @@ Note: if refresh token rotation is enabled in Descope - `refreshSession` / `vali
 
 #### DPoP Sender-Constrained Tokens (RFC 9449)
 
-Descope supports DPoP (Demonstrated Proof of Possession) sender-constrained tokens. When a session
-token contains a `cnf.jkt` claim, the client must prove possession of the corresponding private key
-on every request by sending a `DPoP` header containing a signed proof JWT.
-
-Pass the request's DPoP details to `validateSession` or `validateAndRefreshSession` with the `dpop`
-option:
+When a session token is DPoP-bound (has a `cnf.jkt` claim), pass the request's DPoP details to
+`validateSession` or `validateAndRefreshSession`. Without the `dpop` option, DPoP is not checked.
+`validateAndRefreshSession` checks the proof after refreshing, so a rejected proof does not undo a
+refresh token rotation.
 
 ```typescript
-import descopeClient from '@descope/node-sdk';
-
-const sdk = descopeClient({ projectId: 'YOUR_PROJECT_ID' });
-
-// In your request handler:
 const [authorizationScheme, sessionToken] = (req.headers.authorization ?? '').split(' ');
 
-const authInfo = await sdk.validateSession(sessionToken, {
+const authInfo = await descopeClient.validateSession(sessionToken, {
   dpop: {
     proof: req.headers['dpop'] as string | undefined, // value of the DPoP header
-    method: req.method, // HTTP method in uppercase, e.g. "GET"
-    url: `https://${req.headers.host}${req.url}`, // absolute request URL
+    method: req.method,
+    url: `${req.protocol}://${req.get('host')}${req.path}`, // must match the proof's htu
     authorizationScheme, // "Bearer" or "DPoP"
   },
 });
 ```
 
-With `dpop` set, a DPoP-bound token without a valid proof is rejected, and so is the `DPoP`
-authorization scheme with a token that has no `cnf.jkt`. Without `dpop`, these methods do not check
-DPoP, so a DPoP-bound token passes without a proof. After a refresh, `validateAndRefreshSession` requires a proof signed by the key the refreshed
-session is bound to, with `ath` computed over the session token you passed; with no session token,
-a bound refreshed session is rejected. The refresh happens before this check, so a rejected proof
-does not undo a refresh token rotation.
+> **Behind a proxy:** `url` must match the proof's `htu` (scheme, host, path). Node.js may see
+> `http` when the client used `https`, so enable Express `trust proxy` or rebuild the URL yourself.
 
-> **Important:** The URL passed for DPoP must exactly match the `htu` claim in the DPoP
-> proof: same scheme, host, and path (query string and fragment are ignored). In environments
-> behind a reverse proxy or load balancer, the scheme seen by Node.js may be `http` even when the
-> client used `https`. Reconstruct the URL from request context to ensure they match:
->
-> ```typescript
-> // Express with trust proxy enabled (app.set('trust proxy', true)):
-> const requestUrl = `${req.protocol}://${req.get('host')}${req.path}`;
-> ```
-
-> **Replay protection (RFC 9449 §11.1):** DPoP validation rejects a proof whose `jti` was already
-> accepted by the same SDK instance in the last 120 seconds. The store is in memory, so when you run
-> several server instances, a proof replayed against a different instance is not detected. The
-> store holds at most 100,000 entries; when it is full, new proofs are rejected until entries
-> expire.
+> **Replay protection:** a proof whose `jti` was accepted by the same SDK instance in the last
+> 120 seconds is rejected. The store is in memory (max 100,000 entries, new proofs are rejected
+> when full), so replays across server instances are not detected.
 
 #### Session Validation Using Middleware
 
