@@ -355,6 +355,45 @@ describe('DPoP enforcement in session validation', () => {
     await expect(sdk.validateAndRefreshSession(sessionToken, 'r', bad)).rejects.toThrow('htm');
   });
 
+  describe('after a refresh, the key comes from the refreshed token', () => {
+    const refreshedSdk = () => {
+      const sdk = newSdk();
+      jest.spyOn(sdk, 'validateSession').mockRejectedValue(new Error('expired'));
+      jest
+        .spyOn(sdk, 'refreshSession')
+        .mockResolvedValue({ jwt: 'new', token: claimsOf(sessionToken) });
+      return sdk;
+    };
+
+    it('rejects an empty session token', async () => {
+      const opts = { dpop: await dpop() };
+      await expect(refreshedSdk().validateAndRefreshSession('', 'r', opts)).rejects.toThrow(
+        'requires the session token',
+      );
+    });
+
+    it('rejects a forged unbound session token without a proof', async () => {
+      const opts = { dpop: { method: 'POST', url: URL } };
+      await expect(refreshedSdk().validateAndRefreshSession(unbound, 'r', opts)).rejects.toThrow(
+        'DPoP proof required',
+      );
+    });
+
+    it("rejects a forged session token bound to the caller's own key", async () => {
+      const other = await generateKeyPair('ES256');
+      const jwk = await exportJWK(other.publicKey);
+      const forged = tokenWithClaims({
+        sub: 'u1',
+        cnf: { jkt: await calculateJwkThumbprint(jwk) },
+      });
+      const proof = await makeProof({ header: { jwk }, key: other.privateKey, token: forged });
+      const opts = { dpop: { proof, method: 'POST', url: URL } };
+      await expect(refreshedSdk().validateAndRefreshSession(forged, 'r', opts)).rejects.toThrow(
+        'does not match the session cnf.jkt',
+      );
+    });
+  });
+
   it('passes verify options without dpop to the inner calls', async () => {
     const sdk = newSdk();
     const validateSpy = jest.spyOn(sdk, 'validateSession');

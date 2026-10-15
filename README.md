@@ -518,8 +518,10 @@ const authInfo = await sdk.validateSession(sessionToken, {
 
 With `dpop` set, a DPoP-bound token without a valid proof is rejected, and so is the `DPoP`
 authorization scheme with a token that has no `cnf.jkt`. Without `dpop`, these methods do not check
-DPoP, so a DPoP-bound token passes without a proof. `validateAndRefreshSession` checks the proof
-against the session token you pass, also when the session was refreshed.
+DPoP, so a DPoP-bound token passes without a proof. After a refresh, `validateAndRefreshSession` requires a proof signed by the key the refreshed
+session is bound to, with `ath` computed over the session token you passed; with no session token,
+a bound refreshed session is rejected. The refresh happens before this check, so a rejected proof
+does not undo a refresh token rotation.
 
 You can also check a proof on its own with
 `sdk.validateDPoP(sessionToken, dpopProof, method, requestUrl)`.

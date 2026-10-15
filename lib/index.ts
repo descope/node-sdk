@@ -32,7 +32,7 @@ import {
   VerifyOptions,
 } from './types';
 import descopeErrors from './errors';
-import { DPoPJtiStore, validateDPoPProof } from './dpop';
+import { DPoPJtiStore, validateDPoPProof, verifyDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 
@@ -192,7 +192,10 @@ const nodeSdk = ({
     if (dpop.authorizationScheme?.toLowerCase() === 'dpop' && !jkt) {
       throw Error('DPoP scheme used but token is not DPoP-bound (missing cnf.jkt)');
     }
-    await validateDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, dpopJtiStore);
+    if (!jkt) return;
+    if (!sessionToken)
+      throw Error('DPoP-bound session requires the session token the proof was made for');
+    await verifyDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, jkt, dpopJtiStore);
   };
 
   const sdk = {
@@ -341,7 +344,7 @@ const nodeSdk = ({
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
         token = await sdk.refreshSession(refreshToken, verifyOptions);
       }
-      if (sessionToken) await enforceDPoP(sessionToken, token, dpop);
+      await enforceDPoP(sessionToken, token, dpop);
       return token;
     },
 
