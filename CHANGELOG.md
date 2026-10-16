@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-16)
+
+
+### Features
+
+* add DPoP proof validation (RFC 9449) ([#818](https://github.com/descope/node-sdk/issues/818)) ([577303c](https://github.com/descope/node-sdk/commit/577303ccbeb01be92e059eddd3383a61741e0c13))
+
 ## [2.19.0](https://github.com/descope/node-sdk/compare/v2.18.0...v2.19.0) (2026-10-13)
 
 
