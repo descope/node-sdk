@@ -96,6 +96,8 @@ describe('Management InboundApplication', () => {
             },
           ],
           description: 'test',
+          clientType: 'public',
+          forceDpop: true,
         });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplication.create, {
@@ -108,6 +110,8 @@ describe('Management InboundApplication', () => {
           },
         ],
         description: 'test',
+        clientType: 'public',
+        forceDpop: true,
       });
 
       expect(resp).toEqual({

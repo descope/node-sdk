@@ -489,6 +489,35 @@ for more information.
 
 Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
 
+#### DPoP Sender-Constrained Tokens (RFC 9449)
+
+When a session token is DPoP-bound (has a `cnf.jkt` claim), pass the request's DPoP details to
+`validateSession` or `validateAndRefreshSession`. When the `dpop` option is passed, a missing or
+invalid proof is rejected. Without it, a DPoP-bound token logs a warning and is accepted; the next
+major version will reject it. Unbound tokens are not affected.
+`validateAndRefreshSession` checks the proof after refreshing, so a rejected proof does not undo a
+refresh token rotation.
+
+```typescript
+const [authorizationScheme, sessionToken] = (req.headers.authorization ?? '').split(' ');
+
+const authInfo = await descopeClient.validateSession(sessionToken, {
+  dpop: {
+    proof: req.headers['dpop'] as string | undefined, // value of the DPoP header
+    method: req.method,
+    url: `${req.protocol}://${req.get('host')}${req.path}`, // must match the proof's htu
+    authorizationScheme, // "Bearer" or "DPoP"
+  },
+});
+```
+
+> **Behind a proxy:** `url` must match the proof's `htu` (scheme, host, path). Node.js may see
+> `http` when the client used `https`, so enable Express `trust proxy` or rebuild the URL yourself.
+
+> **Replay protection:** a proof whose `jti` was accepted by the same SDK instance in the last
+> 120 seconds is rejected. The store is in memory (max 100,000 entries, new proofs are rejected
+> when full), so replays across server instances are not detected.
+
 #### Session Validation Using Middleware
 
 Alternatively, you can create a simple middleware function that internally uses the `validateSession` function.
@@ -1778,6 +1807,8 @@ const { id, cleartext: secret } =
       },
     ],
     loginPageUrl: 'http://dummy.com/login',
+    clientType: 'public', // optional, 'confidential' or 'public'
+    forceDpop: true, // optional, require a DPoP proof at the token endpoint (needs clientType)
   });
 
 // Update an inbound application.

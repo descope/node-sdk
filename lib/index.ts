@@ -24,8 +24,15 @@ import {
 } from './helpers';
 import withManagement from './management';
 import withLicense from './management/license';
-import { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo, VerifyOptions } from './types';
+import {
+  AuthenticationInfo,
+  DPoPRequest,
+  IDPResponse,
+  RefreshAuthenticationInfo,
+  VerifyOptions,
+} from './types';
 import descopeErrors from './errors';
+import { DPoPJtiStore, verifyDPoPProof } from './dpop';
 
 declare const BUILD_VERSION: string;
 
@@ -173,6 +180,33 @@ const nodeSdk = ({
       });
   }
 
+  const dpopJtiStore: DPoPJtiStore = new Map();
+  let warnedMissingDPoP = false;
+
+  const enforceDPoP = async (
+    sessionToken: string,
+    info: AuthenticationInfo,
+    dpop?: DPoPRequest,
+  ) => {
+    const jkt = (info.token.cnf as { jkt?: string } | undefined)?.jkt;
+    if (dpop?.authorizationScheme?.toLowerCase() === 'dpop' && !jkt) {
+      throw Error('DPoP scheme used but token is not DPoP-bound (missing cnf.jkt)');
+    }
+    if (!jkt) return;
+    if (!dpop) {
+      if (!warnedMissingDPoP) {
+        warnedMissingDPoP = true;
+        logger?.warn?.(
+          'DPoP-bound session token validated without the dpop option; this will be rejected in the next major version',
+        );
+      }
+      return;
+    }
+    if (!sessionToken)
+      throw Error('DPoP-bound session requires the session token the proof was made for');
+    await verifyDPoPProof(sessionToken, dpop.proof, dpop.method, dpop.url, jkt, dpopJtiStore);
+  };
+
   const sdk = {
     ...coreSdk,
 
@@ -244,6 +278,7 @@ const nodeSdk = ({
 
       try {
         const token = await sdk.validateJwt(sessionToken, options);
+        await enforceDPoP(sessionToken, token, options?.dpop);
         return token;
       } catch (error) {
         /* istanbul ignore next */
@@ -308,15 +343,18 @@ const nodeSdk = ({
     ): Promise<RefreshAuthenticationInfo> {
       if (!sessionToken && !refreshToken) throw Error('both session and refresh tokens are empty');
 
+      // DPoP is enforced after the fallback so a bad proof cannot be bypassed by refreshing
+      const { dpop, ...verifyOptions } = options ?? {};
+      let token: RefreshAuthenticationInfo;
       try {
-        const token = await sdk.validateSession(sessionToken, options);
-        return token;
+        token = await sdk.validateJwt(sessionToken, verifyOptions);
       } catch (error) {
         /* istanbul ignore next */
         logger?.log(`session validation failed with error ${error} - trying to refresh it`);
+        token = await sdk.refreshSession(refreshToken, verifyOptions);
       }
-
-      return sdk.refreshSession(refreshToken, options);
+      await enforceDPoP(sessionToken, token, dpop);
+      return token;
     },
 
     /**
@@ -527,7 +565,7 @@ export type {
   SdkResponse,
 } from '@descope/core-js-sdk';
 export type { AuthenticationInfo, IDPResponse, RefreshAuthenticationInfo };
-export type { VerifyOptions } from './types';
+export type { DPoPRequest, VerifyOptions } from './types';
 export * from './management/types';
 export type { PatchUserOptions } from './management/user';
 export type { PatchTenantOptions } from './management/tenant';

@@ -1336,6 +1336,9 @@ export type InboundApplicationOptions = {
   approvedCallbackUrls?: string[];
   permissionsScopes: InboundApplicationScope[];
   attributesScopes?: InboundApplicationScope[];
+  clientType?: 'confidential' | 'public';
+  /** Require a valid DPoP proof at the token endpoint. Needs a `clientType`. */
+  forceDpop?: boolean;
 };
 
 /**
