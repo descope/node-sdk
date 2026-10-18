@@ -54,6 +54,16 @@ const withList = (httpClient: HttpClient) => ({
       (data) => data.exists,
     ),
 
+  /**
+   * Check multiple texts against a text list in one call (up to 100 texts).
+   * By default returns true if any of the texts is in the list; with matchAll, only if all are.
+   */
+  checkTexts: (id: string, texts: string[], matchAll = false) =>
+    transformResponse(
+      httpClient.post(apiPaths.list.checkText, { id, texts, matchAll }),
+      (data) => data.exists,
+    ),
+
   clear: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.list.clear, { id })),
 });

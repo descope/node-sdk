@@ -139,6 +139,28 @@ describe('Management Lists', () => {
     expect(resp.data).toEqual(false);
   });
 
+  it('checkTexts sends matchAll false by default and returns the exists flag', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({ exists: true }));
+    const resp = await management.list.checkTexts('l1', ['a', 'b']);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.checkText, {
+      id: 'l1',
+      texts: ['a', 'b'],
+      matchAll: false,
+    });
+    expect(resp.data).toEqual(true);
+  });
+
+  it('checkTexts sends matchAll true', async () => {
+    mockHttpClient.post.mockResolvedValue(okResponse({ exists: false }));
+    const resp = await management.list.checkTexts('l1', ['a', 'b'], true);
+    expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.list.checkText, {
+      id: 'l1',
+      texts: ['a', 'b'],
+      matchAll: true,
+    });
+    expect(resp.data).toEqual(false);
+  });
+
   it('clear sends the id', async () => {
     mockHttpClient.post.mockResolvedValue(okResponse({}));
     await management.list.clear('l1');
