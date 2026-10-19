@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-19)
+
+
+### Features
+
+* add DPoP proof validation (RFC 9449) ([#818](https://github.com/descope/node-sdk/issues/818)) ([577303c](https://github.com/descope/node-sdk/commit/577303ccbeb01be92e059eddd3383a61741e0c13))
+* **list:** check multiple texts in a text list in one call ([#821](https://github.com/descope/node-sdk/issues/821)) ([d54a10d](https://github.com/descope/node-sdk/commit/d54a10d6290c1ca8315346f3cfd72f96139893ae))
+
 ## [2.19.0](https://github.com/descope/node-sdk/compare/v2.18.0...v2.19.0) (2026-10-13)
 
 
