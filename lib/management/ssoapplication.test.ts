@@ -1,7 +1,7 @@
 import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
-import { CreateSSOApplicationResponse, SSOApplication } from './types';
+import { CreateSSOApplicationResponse, SSOApplication, SSOApplicationOIDCSettings } from './types';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
 
 const management = withManagement(mockHttpClient);
@@ -303,6 +303,32 @@ describe('Management SSOApplication', () => {
         name: 'name',
         loginPageUrl: 'http://dummy.com',
         clientType: 'public',
+      });
+    });
+
+    it('should accept the client type of a loaded app, including legacy', async () => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      });
+      const loaded: Pick<SSOApplicationOIDCSettings, 'clientType'> = { clientType: '' };
+
+      await management.ssoApplication.updateOidcApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        clientType: loaded.clientType,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcUpdate, {
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        clientType: '',
       });
     });
   });
