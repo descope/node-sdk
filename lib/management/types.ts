@@ -34,6 +34,10 @@ export type OidcApplicationOptions = {
   logo?: string;
   enabled?: boolean;
   forceAuthentication?: boolean;
+  /** The OAuth client type of the app: 'confidential' or 'public'. Leaving it empty uses the
+   * legacy mode, which newer accounts can't use. Update replaces the whole app, so on update
+   * pass the app's current client type to keep it. */
+  clientType?: 'confidential' | 'public';
 };
 
 /**
@@ -405,6 +409,8 @@ export type SSOApplicationOIDCSettings = {
   issuer: string;
   discoveryUrl: string;
   forceAuthentication: boolean;
+  /** The OAuth client type of the app: 'confidential', 'public', or empty for legacy apps. */
+  clientType?: string;
 };
 
 /** Represents SAML settings of an SSO application in a project. */

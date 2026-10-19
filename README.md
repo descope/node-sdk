@@ -858,6 +858,7 @@ You can create, update, delete or load SSO applications:
 await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
+  clientType: 'confidential', // 'confidential' or 'public', required for newer accounts
 });
 
 // Create SAML SSO application
@@ -882,6 +883,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   id: 'my-app-id',
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
+  clientType: 'confidential', // pass the app's current client type to keep it
 });
 
 // Update SAML SSO application.
