@@ -87,6 +87,126 @@ describe('Management OutboundApplication', () => {
         response: httpResponse,
       });
     });
+
+    it('should pass through DCR fields (useDcr/dcrUrl) without a cast', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplication({
+          name: 'dcr app',
+          description: 'custom MCP server with dynamic client registration',
+          useDcr: true,
+          dcrUrl: 'https://mcp.example.com/register',
+          pkce: true,
+          defaultRedirectUrl: 'https://api.descope.com/v1/outbound/oauth/callback',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.create, {
+        name: 'dcr app',
+        description: 'custom MCP server with dynamic client registration',
+        useDcr: true,
+        dcrUrl: 'https://mcp.example.com/register',
+        pkce: true,
+        defaultRedirectUrl: 'https://api.descope.com/v1/outbound/oauth/callback',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('createOutboundApplicationByTemplate', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplicationByTemplate({
+          templateId: 'hubspot',
+          id: 'hubspot',
+          clientId: 'client-id',
+          clientSecret: 'shhh..',
+          tenantId: 'tenant789',
+          overrides: {
+            name: 'HubSpot',
+            defaultScopes: ['crm.objects.contacts.read'],
+            pkce: true,
+          },
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.createByTemplate,
+        {
+          templateId: 'hubspot',
+          id: 'hubspot',
+          clientId: 'client-id',
+          clientSecret: 'shhh..',
+          tenantId: 'tenant789',
+          overrides: {
+            name: 'HubSpot',
+            defaultScopes: ['crm.objects.contacts.read'],
+            pkce: true,
+          },
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should work with only templateId', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<OutboundApplication> =
+        await management.outboundApplication.createApplicationByTemplate({
+          templateId: 'google',
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.createByTemplate,
+        {
+          templateId: 'google',
+        },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
   });
 
   describe('updateOutboundApplication', () => {
@@ -116,6 +236,43 @@ describe('Management OutboundApplication', () => {
           logo: 'logo',
           description: 'desc',
           clientSecret: 'shhh..',
+        },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockOutboundApplicationResponse.app,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should pass through DCR fields (useDcr/dcrUrl) without a cast', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockOutboundApplicationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockOutboundApplicationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.outboundApplication.updateApplication({
+        id: 'app1',
+        name: 'dcr app',
+        description: 'custom MCP server with dynamic client registration',
+        useDcr: true,
+        dcrUrl: 'https://mcp.example.com/register',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.outboundApplication.update, {
+        app: {
+          id: 'app1',
+          name: 'dcr app',
+          description: 'custom MCP server with dynamic client registration',
+          useDcr: true,
+          dcrUrl: 'https://mcp.example.com/register',
         },
       });
 
@@ -603,6 +760,205 @@ describe('Management OutboundApplication', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+  });
+
+  describe('listAppsWithUserToken', () => {
+    it('should send the correct request and return the app ids', async () => {
+      const listResponse = { appIds: ['app1', 'app2'] };
+      const httpResponse = {
+        ok: true,
+        json: () => listResponse,
+        clone: () => ({ json: () => Promise.resolve(listResponse) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<string[]> =
+        await management.outboundApplication.listAppsWithUserToken('user456', 'tenant789');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.listAppsWithUserToken,
+        { queryParams: { userId: 'user456', tenantId: 'tenant789' } },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: ['app1', 'app2'],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit tenantId when not provided', async () => {
+      const listResponse = { appIds: ['app1'] };
+      const httpResponse = {
+        ok: true,
+        json: () => listResponse,
+        clone: () => ({ json: () => Promise.resolve(listResponse) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.listAppsWithUserToken('user456');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.listAppsWithUserToken,
+        { queryParams: { userId: 'user456' } },
+      );
+    });
+  });
+
+  describe('uploadUserApiKey', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadUserApiKey(
+        'app123',
+        'user456',
+        'secret-key',
+        'tenant789',
+      );
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadUserApiKey,
+        { appId: 'app123', userId: 'user456', apiKey: 'secret-key', tenantId: 'tenant789' },
+      );
+    });
+  });
+
+  describe('uploadTenantApiKey', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadTenantApiKey('app123', 'tenant789', 'secret-key');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadTenantApiKey,
+        { appId: 'app123', tenantId: 'tenant789', apiKey: 'secret-key' },
+      );
+    });
+  });
+
+  describe('uploadUserToken', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadUserToken({
+        appId: 'app123',
+        userId: 'user456',
+        refreshToken: 'refresh',
+        scopes: ['read'],
+        verifyRefresh: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadUserToken,
+        {
+          appId: 'app123',
+          userId: 'user456',
+          refreshToken: 'refresh',
+          scopes: ['read'],
+          verifyRefresh: true,
+        },
+      );
+    });
+  });
+
+  describe('uploadTenantToken', () => {
+    it('should send the correct request', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({}),
+        clone: () => ({ json: () => Promise.resolve({}) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.outboundApplication.uploadTenantToken({
+        appId: 'app123',
+        tenantId: 'tenant789',
+        accessToken: 'access',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.uploadTenantToken,
+        { appId: 'app123', tenantId: 'tenant789', accessToken: 'access' },
+      );
+    });
+  });
+
+  describe('batchUploadUserTokens', () => {
+    it('should send the tokens and return failures', async () => {
+      const batchResponse = {
+        failures: [{ appId: 'app123', userId: 'user2', errorCode: 'E152110', reason: 'bad token' }],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => batchResponse,
+        clone: () => ({ json: () => Promise.resolve(batchResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tokens = [
+        { appId: 'app123', userId: 'user1', accessToken: 'a1' },
+        { appId: 'app123', userId: 'user2', accessToken: 'a2' },
+      ];
+      const resp = await management.outboundApplication.batchUploadUserTokens(tokens);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.batchUploadUserTokens,
+        { tokens },
+      );
+
+      expect(resp).toEqual({
+        code: 200,
+        data: batchResponse,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('batchUploadTenantTokens', () => {
+    it('should send the tokens', async () => {
+      const batchResponse = { failures: [] };
+      const httpResponse = {
+        ok: true,
+        json: () => batchResponse,
+        clone: () => ({ json: () => Promise.resolve(batchResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tokens = [{ appId: 'app123', tenantId: 'tenant1', accessToken: 'a1' }];
+      const resp = await management.outboundApplication.batchUploadTenantTokens(tokens);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.outboundApplication.batchUploadTenantTokens,
+        { tokens },
+      );
+
+      expect(resp.data).toEqual(batchResponse);
     });
   });
 });

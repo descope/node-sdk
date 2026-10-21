@@ -1,5 +1,137 @@
 # Changelog
 
+## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-19)
+
+
+### Features
+
+* add DPoP proof validation (RFC 9449) ([#818](https://github.com/descope/node-sdk/issues/818)) ([577303c](https://github.com/descope/node-sdk/commit/577303ccbeb01be92e059eddd3383a61741e0c13))
+* **list:** check multiple texts in a text list in one call ([#821](https://github.com/descope/node-sdk/issues/821)) ([d54a10d](https://github.com/descope/node-sdk/commit/d54a10d6290c1ca8315346f3cfd72f96139893ae))
+
+## [2.19.0](https://github.com/descope/node-sdk/compare/v2.18.0...v2.19.0) (2026-10-13)
+
+
+### Features
+
+* **sso:** turn off JIT provisioning per SSO configuration ([#817](https://github.com/descope/node-sdk/issues/817)) ([b436599](https://github.com/descope/node-sdk/commit/b4365993032819740611d8491481e35aad76e9c9))
+* **sso:** usePkce on tenant OIDC SSO settings ([#814](https://github.com/descope/node-sdk/issues/814)) ([dd325b0](https://github.com/descope/node-sdk/commit/dd325b09f9a366fb123644eee94b7399ea112b12))
+* support lock reason in user search ([#813](https://github.com/descope/node-sdk/issues/813)) ([9f4b6d4](https://github.com/descope/node-sdk/commit/9f4b6d4c645c1701d0197762790995b25fd141bd))
+
+## [2.18.0](https://github.com/descope/node-sdk/compare/v2.17.0...v2.18.0) (2026-10-04)
+
+
+### Features
+
+* add family account management API ([#793](https://github.com/descope/node-sdk/issues/793)) ([c1a2a2b](https://github.com/descope/node-sdk/commit/c1a2a2bcc49df389b1c5696c9a2a4a2abe425415))
+* **sso:** classify an SSO configuration as authentication only ([#807](https://github.com/descope/node-sdk/issues/807)) ([6f94db8](https://github.com/descope/node-sdk/commit/6f94db8d192e3cfaebeb70e9cd30ddd79c1bd670))
+
+
+### Bug Fixes
+
+* **sso:** allow clearing default SSO roles ([#812](https://github.com/descope/node-sdk/issues/812)) ([1710e66](https://github.com/descope/node-sdk/commit/1710e66f8d5a2bc67b62c59a3426af0b7d423051))
+* **tenant:** align tenant settings properties with rest api ([#809](https://github.com/descope/node-sdk/issues/809)) ([5f18ac2](https://github.com/descope/node-sdk/commit/5f18ac22fad4ba244a96bf88ef7e880cb126383b))
+
+## [2.17.0](https://github.com/descope/node-sdk/compare/v2.16.0...v2.17.0) (2026-09-01)
+
+
+### Features
+
+* **sso:** allow disabling SAML AuthnRequest signing per SSO configuration ([#805](https://github.com/descope/node-sdk/issues/805)) ([45ad931](https://github.com/descope/node-sdk/commit/45ad931115fabfb6a62b898c19e21b7d04a401fd))
+
+## [2.16.0](https://github.com/descope/node-sdk/compare/v2.15.0...v2.16.0) (2026-09-01)
+
+
+### Features
+
+* **tenant:** add patchTenant for partial tenant updates ([#804](https://github.com/descope/node-sdk/issues/804)) ([399397e](https://github.com/descope/node-sdk/commit/399397e1751bcad408193ee7f737421bea7cbf2d))
+* **xaa:** expose the read-only project-level audience on the XAA load response ([#801](https://github.com/descope/node-sdk/issues/801)) ([d9252cb](https://github.com/descope/node-sdk/commit/d9252cbb291a6a3d245ae1350613973fc572a59f))
+
+## [2.15.0](https://github.com/descope/node-sdk/compare/v2.14.0...v2.15.0) (2026-08-24)
+
+
+### Features
+
+* **sso:** add configureAuthType to enable or disable an SSO configuration ([#800](https://github.com/descope/node-sdk/issues/800)) ([6f19ba8](https://github.com/descope/node-sdk/commit/6f19ba83766aebe96c8310efbbe4f31b41b7242c))
+* **xaa:** add cross-app access (ID-JAG) tenant config types incl. mapping ([#792](https://github.com/descope/node-sdk/issues/792)) ([8f3aca8](https://github.com/descope/node-sdk/commit/8f3aca8bc867140a8603fdb0fc7865ddffe0c92b))
+
+## [2.14.0](https://github.com/descope/node-sdk/compare/v2.13.0...v2.14.0) (2026-08-07)
+
+
+### Features
+
+* add removeRecoveryCodes user management method ([#784](https://github.com/descope/node-sdk/issues/784)) ([be33d9d](https://github.com/descope/node-sdk/commit/be33d9d376373e7862e9a90801dc65590db3790d))
+* add templateId parameter to management user create ([#773](https://github.com/descope/node-sdk/issues/773)) ([897fbe0](https://github.com/descope/node-sdk/commit/897fbe0af54167ea33716ff154ec06a5b8ce3083))
+* **mgmt:** load external groups scoped to a specific SSO config ([#783](https://github.com/descope/node-sdk/issues/783)) ([f9553b8](https://github.com/descope/node-sdk/commit/f9553b8411c3d9a3aab9959d56102df48ecf6cf9))
+
+## [2.13.0](https://github.com/descope/node-sdk/compare/v2.12.1...v2.13.0) (2026-07-15)
+
+
+### Features
+
+* expose external-group source on the Group model ([#770](https://github.com/descope/node-sdk/issues/770)) ([3a503b8](https://github.com/descope/node-sdk/commit/3a503b843142c7ec6819763e48468690184ca2ec))
+* expose lastSuccessTestTime on SSO settings load response ([#768](https://github.com/descope/node-sdk/issues/768)) ([6b50a44](https://github.com/descope/node-sdk/commit/6b50a44edda75e349ff3a27400477f72d31b769a))
+
+## [2.12.1](https://github.com/descope/node-sdk/compare/v2.12.0...v2.12.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **mgmt:** add id and private fields to Role type ([#766](https://github.com/descope/node-sdk/issues/766)) ([747d8f6](https://github.com/descope/node-sdk/commit/747d8f6a4e1a901aa8a5fbbbcf88169e8c02beaf))
+
+## [2.12.0](https://github.com/descope/node-sdk/compare/v2.11.0...v2.12.0) (2026-07-06)
+
+
+### Features
+
+* **sdk:** implement management sdk parity between node-sdk and go-sdk ([#760](https://github.com/descope/node-sdk/issues/760)) ([83f08bb](https://github.com/descope/node-sdk/commit/83f08bbc214d8922ede975a26435a0ca4c6441ce))
+
+## [2.11.0](https://github.com/descope/node-sdk/compare/v2.10.0...v2.11.0) (2026-06-28)
+
+
+### Features
+
+* **mgmt:** add engine management API ([#757](https://github.com/descope/node-sdk/issues/757)) ([e0bc769](https://github.com/descope/node-sdk/commit/e0bc769e5bd228cf8ccf5517ec94c2ee703e8962))
+
+## [2.10.0](https://github.com/descope/node-sdk/compare/v2.9.0...v2.10.0) (2026-06-28)
+
+
+### Features
+
+* **outbound:** add token/api-key upload and connection-status list methods ([#754](https://github.com/descope/node-sdk/issues/754)) ([dad7907](https://github.com/descope/node-sdk/commit/dad7907d2d5a3f65c76382365efa6ca57b74d7df))
+
+## [2.9.0](https://github.com/descope/node-sdk/compare/v2.8.0...v2.9.0) (2026-06-22)
+
+
+### Features
+
+* create outbound app from template ([#744](https://github.com/descope/node-sdk/issues/744)) ([868a081](https://github.com/descope/node-sdk/commit/868a081bcef17767c4753680ce9262c182656d64))
+
+
+### Bug Fixes
+
+* **deps:** update @descope/core-js-sdk to ^2.64.0 ([#751](https://github.com/descope/node-sdk/issues/751)) ([b55fdb1](https://github.com/descope/node-sdk/commit/b55fdb1d6cc01017589a3a4d3d3c2d0b057d645f))
+* **outbound:** add useDcr/dcrUrl to OutboundApplication type ([#747](https://github.com/descope/node-sdk/issues/747)) ([9d4c506](https://github.com/descope/node-sdk/commit/9d4c506cdc9eb140ac33790ac10096e345875bd7))
+
+## [2.8.0](https://github.com/descope/node-sdk/compare/v2.7.0...v2.8.0) (2026-06-18)
+
+
+### Features
+
+* **tenant:** add optional userId/loginId actor to generateSSOConfigurationLink ([#740](https://github.com/descope/node-sdk/issues/740)) ([c7351cf](https://github.com/descope/node-sdk/commit/c7351cff304a2008c731b14336294a8142aa472e))
+
+
+### Bug Fixes
+
+* **fetch:** prefer native fetch to avoid node-fetch premature close ([#742](https://github.com/descope/node-sdk/issues/742)) ([5c85f1f](https://github.com/descope/node-sdk/commit/5c85f1fda193b8ee4e436ce336168793db3eecb4))
+
+## [2.7.0](https://github.com/descope/node-sdk/compare/v2.6.0...v2.7.0) (2026-06-12)
+
+
+### Features
+
+* **sso:** add entityId to configureSAMLByMetadata settings ([#739](https://github.com/descope/node-sdk/issues/739)) ([c822975](https://github.com/descope/node-sdk/commit/c8229759ab2ad0ea095b75d10972ec8edc0fcabc))
+* **user:** add locale option to invite and invite-batch ([#735](https://github.com/descope/node-sdk/issues/735)) ([60c63e6](https://github.com/descope/node-sdk/commit/60c63e69e1eeac1c71923dc82e8767fea820bafc))
+
 ## [2.6.0](https://github.com/descope/node-sdk/compare/v2.5.0...v2.6.0) (2026-05-17)
 
 

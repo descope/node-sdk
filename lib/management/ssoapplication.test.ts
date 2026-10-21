@@ -528,4 +528,58 @@ describe('Management SSOApplication', () => {
       });
     });
   });
+
+  describe('getApplicationSecret', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ cleartext: 'secret1' }),
+        clone: () => ({
+          json: () => Promise.resolve({ cleartext: 'secret1' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const resp = await management.ssoApplication.getApplicationSecret('app1');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.ssoApplication.secret, {
+        queryParams: { id: 'app1' },
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { cleartext: 'secret1' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('rotateApplicationSecret', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ cleartext: 'secret2' }),
+        clone: () => ({
+          json: () => Promise.resolve({ cleartext: 'secret2' }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.ssoApplication.rotateApplicationSecret('app1');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.rotate, {
+        id: 'app1',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: { cleartext: 'secret2' },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
 });

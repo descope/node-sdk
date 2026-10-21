@@ -8,6 +8,11 @@ import {
   FGAResourceDetails,
   FGAResourceIdentifier,
   FGAConfig,
+  FGASchemaDryRunResponse,
+  FGAMappableSchema,
+  FGAMappableResources,
+  FGAMappableResourcesQuery,
+  FGAMappableResourcesOptions,
 } from './types';
 
 const DEFAULT_CACHE_TIMEOUT_MS = 30000;
@@ -65,6 +70,27 @@ const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
     saveSchema: (schema: FGASchema): Promise<SdkResponse<never>> =>
       transformResponse(postWithOptionalCache(apiPaths.fga.schema, schema)),
     /**
+     * Load the schema for the project.
+     *
+     * @returns the schema associated with the project
+     */
+    loadSchema: (): Promise<SdkResponse<FGASchema>> =>
+      transformResponse<FGASchema, FGASchema>(
+        httpClient.get(apiPaths.fga.schema, {}),
+        (data) => data,
+      ),
+    /**
+     * Validate the given schema without saving it and return what would be deleted from the current schema.
+     *
+     * @param schema the schema to dry run
+     * @returns the dry run response describing what would be deleted
+     */
+    dryRunSchema: (schema: FGASchema): Promise<SdkResponse<FGASchemaDryRunResponse>> =>
+      transformResponse<FGASchemaDryRunResponse, FGASchemaDryRunResponse>(
+        httpClient.post(apiPaths.fga.dryRunSchema, schema),
+        (data) => data,
+      ),
+    /**
      * Delete the schema for the project which will also delete all relations.
      *
      * @returns standard success or failure response
@@ -107,6 +133,27 @@ const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
       ),
 
     /**
+     * Check if the given relations exist, additionally threading a caller-supplied context map
+     * to CEL conditions defined in the schema.
+     * This is a read-only operation and will not create any relations.
+     *
+     * @param relations to check.
+     * @param context extra context to supply to condition evaluation (optional).
+     * @returns array of relations with the boolean flag indicating if relation exists
+     */
+    checkWithContext: (
+      relations: FGARelation[],
+      context?: Record<string, any>,
+    ): Promise<SdkResponse<CheckResponseRelation[]>> =>
+      transformResponse(
+        postWithOptionalCache(apiPaths.fga.check, {
+          tuples: relations,
+          ...(context && Object.keys(context).length > 0 ? { context } : {}),
+        }),
+        (data) => data.tuples,
+      ),
+
+    /**
      * Load details for the given resource identifiers.
      * @param resourceIdentifiers the resource identifiers (resourceId and resourceType tuples) to load details for
      */
@@ -124,6 +171,54 @@ const WithFGA = (httpClient: HttpClient, config?: FGAConfig) => {
      */
     saveResourcesDetails: (resourcesDetails: FGAResourceDetails[]): Promise<SdkResponse<never>> =>
       transformResponse(httpClient.post(apiPaths.fga.resourcesSave, { resourcesDetails })),
+
+    /**
+     * Load the mappable schema for the project (only listing the relation definitions for a namespace),
+     * along with a list of mappable resources.
+     *
+     * @param tenantId the tenant to load the mappable schema for
+     * @param options optional settings such as the resources limit
+     * @returns the mappable schema and mappable resources
+     */
+    loadMappableSchema: (
+      tenantId: string,
+      options?: FGAMappableResourcesOptions,
+    ): Promise<SdkResponse<FGAMappableSchema>> =>
+      transformResponse<FGAMappableSchema, FGAMappableSchema>(
+        httpClient.get(apiPaths.fga.mappableSchema, {
+          queryParams: {
+            tenantId,
+            ...(options?.resourcesLimit && options.resourcesLimit > 0
+              ? { resourcesLimit: options.resourcesLimit.toString() }
+              : {}),
+          },
+        }),
+        (data) => data,
+      ),
+
+    /**
+     * Search for mappable resources based on the given queries.
+     *
+     * @param tenantId the tenant to search mappable resources for
+     * @param resourcesQueries the queries (per type) to search with
+     * @param options optional settings such as the resources limit
+     * @returns array of mappable resources matching the given queries
+     */
+    searchMappableResources: (
+      tenantId: string,
+      resourcesQueries: FGAMappableResourcesQuery[],
+      options?: FGAMappableResourcesOptions,
+    ): Promise<SdkResponse<FGAMappableResources[]>> =>
+      transformResponse(
+        httpClient.post(apiPaths.fga.mappableResources, {
+          tenantId,
+          resourcesQueries,
+          ...(options?.resourcesLimit && options.resourcesLimit > 0
+            ? { resourcesLimit: options.resourcesLimit.toString() }
+            : {}),
+        }),
+        (data) => data.mappableResources,
+      ),
 
     /**
      * Delete all relations.

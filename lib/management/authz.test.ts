@@ -474,6 +474,53 @@ describe('Management Authz', () => {
     });
   });
 
+  describe('resourceRelationsWithTargetSetsFilter', () => {
+    it('should load the relations for the given resource with the target sets filter', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRelationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRelationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AuthzRelation[]> =
+        await management.authz.resourceRelationsWithTargetSetsFilter('r', false);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.resource, {
+        resource: 'r',
+        ignoreTargetSetRelations: true,
+      });
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockRelation],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should default to including target set relations', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRelationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRelationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.authz.resourceRelationsWithTargetSetsFilter('r');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.resource, {
+        resource: 'r',
+        ignoreTargetSetRelations: false,
+      });
+    });
+  });
+
   describe('targetsRelations', () => {
     it('should load the relations for the given targets', async () => {
       const httpResponse = {
@@ -500,6 +547,53 @@ describe('Management Authz', () => {
         data: [mockRelation],
         ok: true,
         response: httpResponse,
+      });
+    });
+  });
+
+  describe('targetsRelationsWithTargetSetsFilter', () => {
+    it('should load the relations for the given targets with the target sets filter', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRelationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRelationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AuthzRelation[]> =
+        await management.authz.targetsRelationsWithTargetSetsFilter(['t'], true);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targets, {
+        targets: ['t'],
+        includeTargetSetRelations: true,
+      });
+      expect(resp).toEqual({
+        code: 200,
+        data: [mockRelation],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should default to excluding target set relations', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRelationResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockRelationResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await management.authz.targetsRelationsWithTargetSetsFilter(['t']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.authz.targets, {
+        targets: ['t'],
+        includeTargetSetRelations: false,
       });
     });
   });

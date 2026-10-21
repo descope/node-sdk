@@ -8,6 +8,9 @@ import {
   SSOSAMLSettings,
   SSOSAMLByMetadataSettings,
   SSOSettings,
+  SSOAuthType,
+  XAASettings,
+  XAASettingsResponse,
 } from './types';
 
 function transformSettingsResponse(data) {
@@ -35,6 +38,36 @@ function transformAllSettingsResponse(data) {
   const res = [];
   readySettings.forEach((setting) => res.push(transformSettingsResponse(setting)));
   return res;
+}
+
+// Rename each loaded group->role mapping's `role.name` to `roleName` (dropping `role`), matching the
+// SAML transform above, so a loaded XAA config's groupsMapping round-trips back into configureXAASettings.
+function transformXAASettingsResponse(setting: any): XAASettingsResponse {
+  const ready = setting;
+  if (ready?.groupsMapping) {
+    ready.groupsMapping = ready.groupsMapping.map((gm: any) => {
+      const rm = gm;
+      rm.roleName = rm.role.name;
+      delete rm.role;
+      return rm;
+    });
+  }
+  // providerID passes through unchanged (ready === setting); no transform needed.
+  return ready;
+}
+
+function transformAllXAASettingsResponse(data): XAASettingsResponse[] {
+  return ((data.XAASettings as XAASettingsResponse[]) ?? []).map(transformXAASettingsResponse);
+}
+
+// The API cannot tell an empty defaultSSORoles from an omitted one and keeps the stored roles for
+// both, so an explicit empty list is flagged with replaceDefaultSSORoles to clear them. The flag is
+// added only then: servers that predate it reject unknown fields.
+function withReplaceDefaultSSORoles<T extends { defaultSSORoles?: string[] }>(body: T): T {
+  if (Array.isArray(body.defaultSSORoles) && body.defaultSSORoles.length === 0) {
+    return { ...body, replaceDefaultSSORoles: true };
+  }
+  return body;
 }
 
 const withSSOSettings = (httpClient: HttpClient) => ({
@@ -110,12 +143,15 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     defaultSSORoles?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
-      httpClient.post(apiPaths.sso.mapping, {
-        tenantId,
-        roleMappings,
-        attributeMapping,
-        defaultSSORoles,
-      }),
+      httpClient.post(
+        apiPaths.sso.mapping,
+        withReplaceDefaultSSORoles({
+          tenantId,
+          roleMappings,
+          attributeMapping,
+          defaultSSORoles,
+        }),
+      ),
     ),
   configureOIDCSettings: (
     tenantId: string,
@@ -123,7 +159,10 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     domains?: string[],
     ssoId?: string,
   ): Promise<SdkResponse<never>> => {
-    const readySettings = { ...settings, userAttrMapping: settings.attributeMapping };
+    const readySettings = withReplaceDefaultSSORoles({
+      ...settings,
+      userAttrMapping: settings.attributeMapping,
+    });
     delete readySettings.attributeMapping;
     return transformResponse(
       httpClient.post(apiPaths.sso.oidc.configure, {
@@ -134,6 +173,26 @@ const withSSOSettings = (httpClient: HttpClient) => ({
       }),
     );
   },
+  /**
+   * Set the authentication type of a single SSO configuration, leaving its stored SAML/OIDC
+   * settings, mappings and domains untouched. `none` disables the configuration without deleting
+   * it, `saml`/`oidc` enable it on that protocol.
+   * @param tenantId the tenant the configuration belongs to
+   * @param authType `none` to disable, `saml` or `oidc` to enable on that protocol
+   * @param ssoId the SSO configuration to change; omit for the tenant's default configuration
+   */
+  configureAuthType: (
+    tenantId: string,
+    authType: SSOAuthType,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.authType, {
+        tenantId,
+        authType,
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
   configureSAMLSettings: (
     tenantId: string,
     settings: SSOSAMLSettings,
@@ -144,7 +203,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.configure, {
         tenantId,
-        settings,
+        settings: withReplaceDefaultSSORoles(settings),
         redirectUrl,
         domains,
         ...(ssoId ? { ssoId } : {}),
@@ -160,9 +219,30 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.metadata, {
         tenantId,
-        settings,
+        settings: withReplaceDefaultSSORoles(settings),
         redirectUrl,
         domains,
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
+  configureSSORedirectURL: (
+    tenantId: string,
+    samlRedirectUrl?: string,
+    oauthRedirectUrl?: string,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.redirect, {
+        tenantId,
+        ...(samlRedirectUrl !== undefined ? { samlRedirectUrl } : {}),
+        ...(oauthRedirectUrl !== undefined ? { oauthRedirectUrl } : {}),
+        ...(ssoId ? { ssoId } : {}),
+      }),
+    ),
+  recalculateSSOMappings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.recalculateMappings, {
+        tenantId,
         ...(ssoId ? { ssoId } : {}),
       }),
     ),
@@ -179,6 +259,52 @@ const withSSOSettings = (httpClient: HttpClient) => ({
         queryParams: { tenantId },
       }),
       (data) => transformAllSettingsResponse(data),
+    ),
+  configureXAASettings: (
+    tenantId: string,
+    settings: XAASettings,
+    ssoId?: string,
+  ): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(apiPaths.sso.xaa.settings, {
+        tenantId,
+        ...(ssoId ? { ssoId } : {}),
+        enabled: settings.enabled,
+        settings: settings.settings,
+        roleMappings: settings.roleMappings,
+        defaultSSORoles: settings.defaultSSORoles,
+        fgaMappings: settings.fgaMappings,
+        groupsPriority: settings.groupsPriority,
+        groupPriorityEnabled: settings.groupPriorityEnabled,
+        allowOverrideRoles: settings.allowOverrideRoles,
+        ...(settings.providerID ? { providerID: settings.providerID } : {}),
+        // this endpoint picks fields explicitly, so the classification has to be listed or it is
+        // dropped. Checked against undefined rather than truthiness: false must reach the server to
+        // clear the classification, while omitting it keeps what is stored.
+        ...(settings.authenticationOnly !== undefined
+          ? { authenticationOnly: settings.authenticationOnly }
+          : {}),
+      }),
+    ),
+  loadXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<XAASettingsResponse>> =>
+    transformResponse<XAASettingsResponse>(
+      httpClient.get(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
+      (data) => transformXAASettingsResponse(data),
+    ),
+  loadAllXAASettings: (tenantId: string): Promise<SdkResponse<XAASettingsResponse[]>> =>
+    transformResponse<XAASettingsResponse[]>(
+      httpClient.get(apiPaths.sso.xaa.settingsAll, {
+        queryParams: { tenantId },
+      }),
+      (data) => transformAllXAASettingsResponse(data),
+    ),
+  deleteXAASettings: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.delete(apiPaths.sso.xaa.settings, {
+        queryParams: { tenantId, ...(ssoId ? { ssoId } : {}) },
+      }),
     ),
 });
 

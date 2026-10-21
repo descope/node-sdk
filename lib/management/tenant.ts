@@ -77,6 +77,24 @@ const withTenant = (httpClient: HttpClient) => ({
     ),
   updateDefaultRoles: (id: string, defaultRoles: string[]): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.tenant.updateDefaultRoles, { id, defaultRoles })),
+  patchTenant: (id: string, options?: PatchTenantOptions): Promise<SdkResponse<never>> => {
+    const body: Record<string, unknown> = { id };
+    if (options?.name !== undefined) body.name = options.name;
+    if (options?.selfProvisioningDomains !== undefined) {
+      body.selfProvisioningDomains = options.selfProvisioningDomains;
+    }
+    if (options?.customAttributes !== undefined) body.customAttributes = options.customAttributes;
+    if (options?.authType !== undefined) body.authType = options.authType;
+    if (options?.disabled !== undefined) body.disabled = options.disabled;
+    if (options?.enforceSSO !== undefined) body.enforceSSO = options.enforceSSO;
+    if (options?.enforceSSOExclusions !== undefined) {
+      body.enforceSSOExclusions = options.enforceSSOExclusions;
+    }
+    if (options?.federatedAppIds !== undefined) body.federatedAppIds = options.federatedAppIds;
+    if (options?.roleInheritance !== undefined) body.roleInheritance = options.roleInheritance;
+
+    return transformResponse(httpClient.patch(apiPaths.tenant.patch, body));
+  },
   delete: (id: string, cascade?: boolean): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.tenant.delete, { id, cascade })),
   load: (id: string): Promise<SdkResponse<Tenant>> =>
@@ -123,15 +141,40 @@ const withTenant = (httpClient: HttpClient) => ({
     ssoId?: string,
     email?: string,
     templateId?: string,
+    // When provided, actorId is recorded as the audit actor for actions performed inside the
+    // SSO Setup Suite (instead of the temporary user). It is used as-is for audit attribution
+    // and is not validated.
+    actorId?: string,
   ): Promise<SdkResponse<GenerateSSOConfigurationLinkResponse>> =>
     transformResponse<GenerateSSOConfigurationLinkResponse, GenerateSSOConfigurationLinkResponse>(
       httpClient.post(
         apiPaths.tenant.generateSSOConfigurationLink,
-        { tenantId, expireTime: expireDuration, ssoId, email, templateId },
+        { tenantId, expireTime: expireDuration, ssoId, email, templateId, actorId },
         {},
       ),
       (data) => data,
     ),
+  revokeSSOConfigurationLink: (tenantId: string, ssoId?: string): Promise<SdkResponse<never>> =>
+    transformResponse(
+      httpClient.post(
+        apiPaths.tenant.revokeSSOConfigurationLink,
+        { tenantId, ...(ssoId ? { ssoId } : {}) },
+        {},
+      ),
+    ),
 });
+
+export interface PatchTenantOptions {
+  name?: string;
+  selfProvisioningDomains?: string[];
+  customAttributes?: Record<string, AttributesTypes>;
+  /** @deprecated kept for compatibility */
+  authType?: string;
+  disabled?: boolean;
+  enforceSSO?: boolean;
+  enforceSSOExclusions?: string[];
+  federatedAppIds?: string[];
+  roleInheritance?: '' | 'none' | 'userOnly';
+}
 
 export default withTenant;

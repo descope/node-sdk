@@ -62,22 +62,24 @@ const descopeClient = DescopeClient({
 Then, you can use that to work with the following functions:
 
 1. [Manage Tenants](#manage-tenants)
-2. [Manage Users](#manage-users)
-3. [Manage Access Keys](#manage-access-keys)
-4. [Manage SSO Setting](#manage-sso-setting)
-5. [Manage Permissions](#manage-permissions)
-6. [Manage Roles](#manage-roles)
-7. [Query SSO Groups](#query-sso-groups)
-8. [Manage Flows](#manage-flows)
-9. [Manage JWTs](#manage-jwts)
-10. [Impersonate](#impersonate)
-11. [Embedded Links](#embedded-links)
-12. [Audit](#audit)
-13. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
-14. [Manage Project](#manage-project)
-15. [Manage SSO applications](#manage-sso-applications)
-16. [Manage Management Keys](#manage-management-keys)
-17. [Manage Descopers](#manage-descopers)
+2. [Manage Families](#manage-families)
+3. [Manage Users](#manage-users)
+4. [Manage Access Keys](#manage-access-keys)
+5. [Manage SSO Setting](#manage-sso-setting)
+6. [Manage Permissions](#manage-permissions)
+7. [Manage Roles](#manage-roles)
+8. [Query SSO Groups](#query-sso-groups)
+9. [Manage Flows](#manage-flows)
+10. [Manage JWTs](#manage-jwts)
+11. [Impersonate](#impersonate)
+12. [Embedded Links](#embedded-links)
+13. [Audit](#audit)
+14. [Manage FGA (Fine-grained Authorization)](#manage-fga-fine-grained-authorization)
+15. [Manage Project](#manage-project)
+16. [Manage SSO applications](#manage-sso-applications)
+17. [Manage Management Keys](#manage-management-keys)
+18. [Manage Descopers](#manage-descopers)
+19. [Manage Engines](#manage-engines)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -362,6 +364,14 @@ Provide the `loginId` to the function to remove the user's TOTP seed.
 const response = await descopeClient.management.user.removeTOTPSeed(loginId);
 ```
 
+#### Deleting Recovery Codes
+
+Provide a login ID or user ID to the function to remove all of the user's recovery codes.
+
+```typescript
+const response = await descopeClient.management.user.removeRecoveryCodes(loginIdOrUserId);
+```
+
 ### Passwords
 
 The user can also authenticate with a password, though it's recommended to
@@ -478,6 +488,35 @@ If Roles & Permissions are used, validate them immediately after validating the 
 for more information.
 
 Note: if refresh token rotation is enabled in Descope - `refreshSession` / `validateAndRefreshSession` will return a new refresh token, and the old one will be invalidated.
+
+#### DPoP Sender-Constrained Tokens (RFC 9449)
+
+When a session token is DPoP-bound (has a `cnf.jkt` claim), pass the request's DPoP details to
+`validateSession` or `validateAndRefreshSession`. When the `dpop` option is passed, a missing or
+invalid proof is rejected. Without it, a DPoP-bound token logs a warning and is accepted; the next
+major version will reject it. Unbound tokens are not affected.
+`validateAndRefreshSession` checks the proof after refreshing, so a rejected proof does not undo a
+refresh token rotation.
+
+```typescript
+const [authorizationScheme, sessionToken] = (req.headers.authorization ?? '').split(' ');
+
+const authInfo = await descopeClient.validateSession(sessionToken, {
+  dpop: {
+    proof: req.headers['dpop'] as string | undefined, // value of the DPoP header
+    method: req.method,
+    url: `${req.protocol}://${req.get('host')}${req.path}`, // must match the proof's htu
+    authorizationScheme, // "Bearer" or "DPoP"
+  },
+});
+```
+
+> **Behind a proxy:** `url` must match the proof's `htu` (scheme, host, path). Node.js may see
+> `http` when the client used `https`, so enable Express `trust proxy` or rebuild the URL yourself.
+
+> **Replay protection:** a proof whose `jti` was accepted by the same SDK instance in the last
+> 120 seconds is rejected. The store is in memory (max 100,000 entries, new proofs are rejected
+> when full), so replays across server instances are not detected.
 
 #### Session Validation Using Middleware
 
@@ -630,6 +669,13 @@ await descopeClient.management.tenant.update(
   { customAttributeName: 'val' },
 );
 
+// Unlike update, patchTenant only changes the fields you provide - everything else
+// (domains, customAttributes, enforceSSO, ...) is left untouched.
+await descopeClient.management.tenant.patchTenant('my-custom-id', {
+  name: 'My Tenant',
+  disabled: true,
+});
+
 // Update the tenant's default roles by providing role names.
 // These are project-level roles that will be automatically assigned to users in this tenant.
 await descopeClient.management.tenant.updateDefaultRoles('my-custom-id', ['role1', 'role2']);
@@ -660,15 +706,15 @@ const tenantSettings = await descopeClient.management.tenant.getSettings('my-ten
 await descopeClient.management.tenant.configureSettings('my-tenant-id', {
   domains: ['domain1.com'],
   selfProvisioningDomains: ['domain1.com'],
-  sessionSettingsEnabled: true,
+  enabled: true,
   refreshTokenExpiration: 12,
   refreshTokenExpirationUnit: 'days',
   sessionTokenExpiration: 10,
   sessionTokenExpirationUnit: 'minutes',
   enableInactivity: true,
   JITDisabled: false,
-  InactivityTime: 10,
-  InactivityTimeUnit: 'minutes',
+  inactivityTime: 10,
+  inactivityTimeUnit: 'minutes',
 });
 
 // Generate tenant admin self service link for SSO Suite (valid for 24 hours)
@@ -679,6 +725,103 @@ const res = await descopeClient.management.tenant.generateSSOConfigurationLink(
   60 * 60 * 24,
 );
 console.log(res.adminSSOConfigurationLink);
+
+// Optionally set an actor id, recorded as the audit actor for actions taken inside the SSO
+// Suite (instead of the temporary user). It is used as-is for audit attribution and is not validated.
+const resWithActor = await descopeClient.management.tenant.generateSSOConfigurationLink(
+  'my-tenant-id',
+  60 * 60 * 24,
+  undefined, // ssoId
+  undefined, // email
+  undefined, // templateId
+  'my-admin-actor-id', // actorId
+);
+console.log(resWithActor.adminSSOConfigurationLink);
+```
+
+### Manage Families
+
+You can create, update, delete or search families, manage the users linked to them, and
+impersonate a family dependent (a shadow-profile user with no login credentials of their own):
+
+```typescript
+// Create a family. The family ID is generated automatically.
+const family = await descopeClient.management.family.create('My Family', {
+  customAttributeName: 'val',
+});
+
+// Create a family with a caller-supplied ID.
+await descopeClient.management.family.createWithId('my-family-id', 'My Other Family');
+
+// Update will override all provided fields as is. Omitted fields are left unchanged.
+// customAttributes replaces all of the family's custom attributes, it is not merged.
+await descopeClient.management.family.update(family.data.id, 'My Family', {
+  customAttributeName: 'val2',
+});
+
+// Family deletion cannot be undone. Use carefully.
+await descopeClient.management.family.delete(family.data.id);
+
+// Search families according to various parameters. Called with no options, returns all families.
+const searchRes = await descopeClient.management.family.searchAll({ text: 'My Family' });
+searchRes.data.forEach((f) => {
+  // do something
+});
+
+// Create a dependent (shadow profile) user in a family - a user with no login credentials of
+// their own. When loginId is omitted it is derived from name; email/phone are never used as the
+// login ID since they are not unique - a dependent may share them with their guardian.
+const dependent = await descopeClient.management.family.createDependent(family.data.id, {
+  name: 'My Dependent',
+});
+
+// Dependent deletion cannot be undone. The family is inferred from the dependent. Regular
+// (non-dependent) family members are removed via user.removeFamilies, not deleted.
+await descopeClient.management.family.deleteDependent(dependent.data.userId);
+
+// Add a user to one or more families. Each entry may also set the user's roles and family-scoped
+// attributes for that family in the same call; omitting roleNames or familyScopedAttributes on a
+// family the user already belongs to leaves them unchanged.
+await descopeClient.management.user.addFamilies('user-login-id', [
+  { familyId: family.data.id, roleNames: ['role1'] },
+]);
+
+// Remove a user from one or more families.
+await descopeClient.management.user.removeFamilies('user-login-id', [family.data.id]);
+
+// Impersonate a family dependent. The impersonator (by user ID or login ID) must be a member of
+// the dependent's family and hold the family impersonate-dependents permission there.
+const impersonateRes = await descopeClient.management.family.impersonateDependent(
+  'admin-user-id',
+  'dependent-login-id',
+  family.data.id, // optional - scopes the impersonated session to this family
+);
+console.log(impersonateRes.data.jwt);
+
+// Stop impersonating a family dependent and return to the acting admin's own session.
+const stopRes = await descopeClient.management.family.stopImpersonation(impersonateRes.data.jwt);
+console.log(stopRes.data.jwt);
+
+// Get and configure the project's family account settings. Omitted fields are left unchanged.
+const settings = await descopeClient.management.family.getSettings();
+await descopeClient.management.family.configureSettings({
+  enabled: true,
+  maxFamilyMembers: 5,
+  allowMultipleFamiliesUsers: false,
+});
+
+// Manage custom attribute definitions on the family entity itself.
+await descopeClient.management.family.createCustomAttributes([{ name: 'plan', type: 1 }]);
+const familyAttrs = await descopeClient.management.family.getCustomAttributes();
+await descopeClient.management.family.deleteCustomAttributes(['plan']);
+
+// Manage family-scoped user custom attribute definitions - user attributes whose values are held
+// per family membership (AssociatedFamily.familyScopedAttributes) rather than on the user.
+await descopeClient.management.user.createFamilyScopedCustomAttributes([
+  { name: 'nickname', type: 1 },
+]);
+const familyScopedAttrs = await descopeClient.management.user.getFamilyScopedCustomAttributes();
+await descopeClient.management.user.deleteFamilyScopedCustomAttributes(['nickname']);
 ```
 
 ### Manage Password
@@ -851,7 +994,9 @@ await descopeClient.management.user.createBatch([
   },
 ]);
 
-// Update will override all fields as is. Use carefully.
+// Update will override all fields as is, including family memberships: omitting
+// familyAssociations removes the user from all of their families, and updating a dependent
+// requires familyAssociations with the dependent's family. Use carefully, or use patch instead.
 await descopeClient.management.user.update('desmond@descope.com', {
   email: 'desmond@descope.com',
   displayName: 'Desmond Copeland',
@@ -1041,14 +1186,14 @@ const allSSOSettings = await descopeClient.management.sso.loadAllSettings('tenan
 // You can configure SSO settings manually by setting the required fields directly
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const tenantId = 'tenant-id'; // Which tenant this configuration is for
-const idpURL = 'https://idp.com';
-const entityID = 'my-idp-entity-id';
+const idpUrl = 'https://idp.com';
+const entityId = 'my-idp-entity-id';
 const idpCert = '<your-cert-here>';
 const redirectURL = 'https://my-app.com/handle-sso'; // Global redirect URL for SSO/SAML
 const domains = ['tenant-users.com']; // Users authentication with this domain will be logged in to this tenant
 await descopeClient.management.sso.configureSAMLSettings(
   tenantID,
-  { idpURL, entityID, idpCert },
+  { idpUrl, entityId, idpCert },
   redirectURL,
   domains,
 );
@@ -1062,14 +1207,51 @@ await descopeClient.management.sso.configureSAMLByMetadata(
   domains,
 );
 
+// Descope signs the SAML AuthnRequest it sends to the IdP. A few IdPs reject a signed request because
+// their trusted provider entry holds no signing certificate for Descope - pass disableSignRequest on the
+// settings (available on both variants above) to send the request unsigned for that configuration only.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, disableSignRequest: true },
+  redirectURL,
+  domains,
+);
+
+// A configuration can be classified as authentication only: a login through it verifies the person's
+// identity and returns the IdP response, creating no user and issuing no session, so it grants no
+// access to your application. Omit authenticationOnly and the stored classification is kept, so an
+// ordinary settings edit cannot clear it by omission; pass false to clear it. The same field is on the
+// OIDC and Cross-App Access settings, and setting it through any one of them classifies the whole
+// configuration. Read it back from the load response's top-level authenticationOnly.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, authenticationOnly: true },
+  redirectURL,
+  domains,
+);
+
+// JIT provisioning can be turned off per SSO configuration: a login through it then signs in only
+// users who already exist (invited, or provisioned through SCIM) and refuses anyone else. It applies to
+// the configuration named by ssoId, or to the tenant's default configuration when ssoId is omitted.
+// Omit jitDisabled to keep the stored value; pass false to turn JIT back on. The same field is on the
+// OIDC settings. Read it back from the load response's top-level jitDisabled.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, jitDisabled: true },
+  redirectURL,
+  domains,
+  'my-sso-id', // ssoId: omit for the tenant's default SSO configuration
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';
 const clientId = 'client id of OIDC';
 const clientSecret = 'client secret';
+// usePkce sends a PKCE code challenge to the IdP; omit it to keep the stored value
 await descopeClient.management.sso.configureOIDCSettings(
   tenantID,
-  { name, clientId, clientSecret, redirectUrl },
+  { name, clientId, clientSecret, redirectUrl, usePkce: true },
   domains,
 );
 
@@ -1081,6 +1263,13 @@ await descopeClient.management.sso.newSettings(tenantID, ssoId, displayName);
 // You can delete existing SSO configuration
 // You can pass ssoId in case using multi SSO and you want to delete specific SSO configuration
 await descopeClient.management.sso.deleteSettings(tenantID);
+
+// You can disable an SSO configuration without deleting it, and enable it again later.
+// Its settings, mappings and domains are kept, so re-enabling needs no payload.
+// You can pass ssoId in case using multi SSO and you want to disable a specific SSO configuration
+await descopeClient.management.sso.configureAuthType(tenantID, 'none', ssoId);
+// Enable it again on the protocol it is configured for ('saml' or 'oidc')
+await descopeClient.management.sso.configureAuthType(tenantID, 'saml', ssoId);
 ```
 
 Note: Certificates should have a similar structure to:
@@ -1456,11 +1645,28 @@ You can create, update, delete or load outbound applications:
 
 ```typescript
 // Create an outbound application.
+// For DCR-based apps (e.g. custom MCP servers that support RFC 7591 dynamic
+// client registration), pass `useDcr: true` and `dcrUrl`.
 const { id } =
   await descopeClient.management.outboundApplication.createApplication({
     name: 'my new app',
     description: 'my desc',
     ...
+  });
+
+// Create an outbound application from a preconfigured app library template.
+// The template (e.g. "hubspot", "google", "slack") prepopulates the provider's
+// OAuth config - authorization/token endpoints, default scopes, pkce, etc.
+// Any field set in `overrides` takes precedence over the template default.
+const { id: templatedId } =
+  await descopeClient.management.outboundApplication.createApplicationByTemplate({
+    templateId: 'hubspot',
+    clientId: 'my-client-id',
+    clientSecret: 'my-client-secret',
+    overrides: {
+      name: 'HubSpot',
+      // authorizationUrl / tokenUrl / defaultScopes / pkce inherited from the template
+    },
   });
 
 // Update an outbound application.
@@ -1530,6 +1736,48 @@ await descopeClient.management.outboundApplication.deleteUserTokens(undefined, '
 // Delete a specific token by its ID
 // Token deletion cannot be undone. Use carefully.
 await descopeClient.management.outboundApplication.deleteTokenById('token-id');
+
+// List the IDs of the outbound apps a user currently holds a valid token for.
+// Use this for connection-status UIs instead of calling fetchToken once per app.
+const connectedApps = await descopeClient.management.outboundApplication.listAppsWithUserToken(
+  'user-id',
+  'tenant-id' // optional
+);
+// connectedApps.data => ['app-1', 'app-2']
+
+// Store a static API key for a user / tenant on an apikey-type outbound app
+await descopeClient.management.outboundApplication.uploadUserApiKey(
+  'my-app-id',
+  'user-id',
+  'the-users-api-key',
+  'tenant-id' // optional
+);
+await descopeClient.management.outboundApplication.uploadTenantApiKey(
+  'my-app-id',
+  'tenant-id',
+  'the-tenants-api-key'
+);
+
+// Upload (migrate) an existing OAuth token for a user / tenant on an oauth-type outbound app,
+// without requiring the user to re-run the OAuth flow.
+await descopeClient.management.outboundApplication.uploadUserToken({
+  appId: 'my-app-id',
+  userId: 'user-id',
+  refreshToken: 'the-refresh-token',
+  scopes: ['read', 'write'],
+});
+await descopeClient.management.outboundApplication.uploadTenantToken({
+  appId: 'my-app-id',
+  tenantId: 'tenant-id',
+  accessToken: 'the-access-token',
+});
+
+// Batch upload OAuth tokens (all-or-nothing): inspect `failures` to see rejected items
+const batchRes = await descopeClient.management.outboundApplication.batchUploadUserTokens([
+  { appId: 'my-app-id', userId: 'user-1', accessToken: 'token-1' },
+  { appId: 'my-app-id', userId: 'user-2', accessToken: 'token-2' },
+]);
+// batchRes.data.failures => [{ appId, userId, errorCode, reason }, ...]
 ```
 
 ### Manage Inbound Applications
@@ -1559,6 +1807,8 @@ const { id, cleartext: secret } =
       },
     ],
     loginPageUrl: 'http://dummy.com/login',
+    clientType: 'public', // optional, 'confidential' or 'public'
+    forceDpop: true, // optional, require a DPoP proof at the token endpoint (needs clientType)
   });
 
 // Update an inbound application.
@@ -1613,6 +1863,54 @@ await descopeClient.management.inboundApplication.deleteConsents({
   userIds: ['user'],
 });
 ```
+
+### Manage Cross-App Access (XAA / ID-JAG)
+
+Cross-App Access (XAA), built on the OAuth identity-assertion authorization grant (ID-JAG), lets a tenant trust external OIDC issuers so a token minted by a trusted issuer can be exchanged for a Descope token (the RFC 7523 `jwt-bearer` grant). XAA trust is configured **per SSO configuration** of a tenant through the SSO management API, addressed by its `ssoId` (pass an empty string for the tenant's default SSO configuration).
+
+Configure the trusted issuers together with the config-level shared group/role mapping. Each issuer supports just-in-time provisioning with the same attribute mapping as the SSO login JIT:
+
+```typescript
+import type { XAASettings } from '@descope/node-sdk';
+
+const settings: XAASettings = {
+  enabled: true,
+  settings: {
+    // Trusted issuers keyed by issuer URL.
+    issuers: {
+      'https://issuer.example.com': {
+        jwksUri: 'https://issuer.example.com/.well-known/jwks.json',
+        signAlgorithm: 'RS256',
+        userInfoUri: 'https://issuer.example.com/userinfo',
+        externalIdFieldName: 'sub', // assertion claim used as the login id
+        jitDisabled: false,
+        attributeMapping: {
+          email: 'email',
+          name: 'name',
+          group: 'groups', // assertion claim that carries the user's groups
+        },
+      },
+    },
+  },
+  // Config-level shared group/role mapping (shared across SAML / OIDC / SCIM / XAA for this ssoId).
+  roleMappings: [{ groups: ['admins'], roleName: 'Tenant Admin' }],
+  defaultSSORoles: ['Member'],
+};
+
+// Configure XAA for a single SSO configuration (omit ssoId for the default SSO configuration).
+await descopeClient.management.sso.configureXAASettings('my-tenant-id', settings);
+
+// Load the XAA settings for a single SSO configuration.
+const { data: xaa } = await descopeClient.management.sso.loadXAASettings('my-tenant-id', '');
+
+// Load the XAA settings for every SSO configuration of the tenant.
+const { data: allXaa } = await descopeClient.management.sso.loadAllXAASettings('my-tenant-id');
+
+// Delete the XAA settings of a single SSO configuration (removes its trusted issuers from the tenant).
+await descopeClient.management.sso.deleteXAASettings('my-tenant-id', '');
+```
+
+> Group-to-role mapping is **not** configured per issuer. `roleMappings`, `defaultSSORoles`, and `fgaMappings` passed to `configureXAASettings` are the config-level shared mapping: the same mapping is shared across SAML / OIDC / SCIM / XAA for that `ssoId`. Each issuer only maps the assertion's groups claim (via `attributeMapping.group`); how those group names resolve to roles is defined once, per SSO configuration. On load, this shared mapping is returned as `groupsMapping`, where each entry is rewritten to `{ roleName, groups }` (the loaded `role` object is replaced by its `name` as `roleName` and the role id is dropped), mirroring the SAML settings load shape.
 
 ### Manage Management Keys
 
@@ -1707,6 +2005,36 @@ await descopeClient.management.descoper.update(
 
 // Descoper deletion cannot be undone. Use carefully.
 await descopeClient.management.descoper.delete('descoper-id');
+```
+
+### Manage Engines
+
+You can create, update, delete, load engines, and rotate their secrets. The engine secret
+is returned only on create and rotate — store it securely, as it cannot be retrieved again.
+
+```typescript
+// Create an engine. The response includes the generated id and secret.
+const createRes = await descopeClient.management.engine.create('My Engine');
+const { id, secret } = createRes.data; // save `secret` securely!
+
+// Update an engine's name (the response does not include the secret).
+await descopeClient.management.engine.update(id, 'Updated Engine Name');
+
+// Load a specific engine by id (the secret is always empty).
+const engineRes = await descopeClient.management.engine.load(id);
+
+// Load all engines (secrets are always empty).
+const enginesRes = await descopeClient.management.engine.loadAll();
+enginesRes.data.forEach((engine) => {
+  // do something
+});
+
+// Rotate an engine's secret. The previous secret is invalidated and the new one returned.
+const rotateRes = await descopeClient.management.engine.rotateSecret(id);
+const newSecret = rotateRes.data.secret;
+
+// Engine deletion cannot be undone. Use carefully.
+await descopeClient.management.engine.delete(id);
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests

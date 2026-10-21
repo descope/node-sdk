@@ -35,6 +35,24 @@ const withJWT = (httpClient: HttpClient) => ({
         refreshDuration,
       }),
     ),
+  impersonateStepup: (
+    impersonatorId: string,
+    loginId: string,
+    validateConsent: boolean,
+    customClaims?: Record<string, any>,
+    selectedTenant?: string,
+    refreshDuration?: number,
+  ): Promise<SdkResponse<UpdateJWTResponse>> =>
+    transformResponse(
+      httpClient.post(apiPaths.jwt.impersonateStepup, {
+        impersonatorId,
+        loginId,
+        validateConsent,
+        customClaims,
+        selectedTenant,
+        refreshDuration,
+      }),
+    ),
   stopImpersonation: (
     jwt: string,
     customClaims?: Record<string, any>,

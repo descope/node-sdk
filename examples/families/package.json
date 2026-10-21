@@ -1,0 +1,29 @@
+{
+  "name": "node-sdk-families-example",
+  "version": "1.0.0",
+  "description": "Walks through the Descope family account management API end to end",
+  "main": "src/index.ts",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/descope/node-sdk.git"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "descope",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/descope/node-sdk/issues"
+  },
+  "homepage": "https://github.com/descope/node-sdk#readme",
+  "dependencies": {
+    "@descope/node-sdk": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.0"
+  }
+}

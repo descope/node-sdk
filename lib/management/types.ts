@@ -168,6 +168,86 @@ export type AttributeMapping = {
   customAttributes?: Record<string, string>;
 };
 
+/** Cross-App Access (XAA / ID-JAG) trusted-issuer settings, including per-issuer JIT provisioning and
+ * user attribute mapping (parity with the SSO login JIT). Group-to-role mapping reuses the tenant's
+ * shared SSO group mapping. */
+export type XAAIssuerSettings = {
+  jwksUri?: string;
+  signAlgorithm?: string;
+  userInfoUri?: string;
+  externalIdFieldName?: string;
+  /** When true, the exchange only signs in an already-provisioned user (no JIT creation). */
+  jitDisabled?: boolean;
+  /** Maps assertion claims to Descope user fields. */
+  attributeMapping?: AttributeMapping;
+};
+
+/** Cross-App Access (XAA / ID-JAG) trust config: the set of trusted issuers, keyed by issuer URL. */
+export type JWTBearerSettings = {
+  issuers?: Record<string, XAAIssuerSettings>;
+  jwtBearerGrantTypeAudienceToUse?: string;
+  jwtBearerGrantTypeScopeToUse?: string;
+  jwtBearerGrantTypeCustomClaimsToUse?: string;
+};
+
+/** A single ReBAC/FGA relation grant. */
+export type XAAFGAGroupMappingRelation = {
+  resource: string;
+  relationDefinition: string;
+  namespace: string;
+};
+
+/** ReBAC/FGA group grants for a single group. */
+export type XAAFGAGroupMapping = {
+  relations: XAAFGAGroupMappingRelation[];
+};
+
+/** Cross-App Access (XAA / ID-JAG) write payload for a single SSO configuration of a tenant.
+ * `settings` holds the trusted issuers (keyed by issuer URL) and jwt-bearer grant configuration; the
+ * remaining fields are the config-level shared group/role mapping, which is shared across
+ * SAML / OIDC / SCIM / XAA for the sso_id (NOT a per-issuer mapping). Role references are by name. */
+export type XAASettings = {
+  enabled?: boolean;
+  settings?: JWTBearerSettings;
+  roleMappings?: RoleMappings;
+  defaultSSORoles?: string[];
+  fgaMappings?: Record<string, XAAFGAGroupMapping>;
+  groupsPriority?: string[];
+  groupPriorityEnabled?: boolean;
+  allowOverrideRoles?: boolean;
+  providerID?: string;
+  /**
+   * Classifies the configuration as verifying identity only: a login through it creates no user and
+   * issues no session. Omit it and the stored classification is kept, so an ordinary settings save
+   * cannot clear it; send `false` to clear it. Setting it through any one protocol classifies the
+   * whole configuration, so this, the SAML field and the OIDC field all reach the same place.
+   *
+   * A Cross-App Access token exchange through a classified configuration is refused: its output is an
+   * access token bound to a user, so there is no user-less form of it to fall back to.
+   */
+  authenticationOnly?: boolean;
+};
+
+/** Load-shape of a single SSO configuration's XAA (ID-JAG) settings. `groupsMapping` is normalized on
+ * load to `{ roleName, groups }` (matching the SAML settings load transform) so it round-trips back
+ * into `configureXAASettings`. */
+export type XAASettingsResponse = {
+  ssoId?: string;
+  enabled?: boolean;
+  settings?: JWTBearerSettings;
+  groupsMapping?: RoleMappings;
+  defaultSSORoles?: string[];
+  fgaMappings?: Record<string, XAAFGAGroupMapping>;
+  groupsPriority?: string[];
+  groupPriorityEnabled?: boolean;
+  allowOverrideRoles?: boolean;
+  providerID?: string;
+  /** Read-only: the project-level audience a requesting application must present in its ID-JAG token.
+   * It carries no tenant segment - it equals the issuer the project publishes - so the identity
+   * provider must send the tenant id in the token's `aud_tenant` claim. */
+  audience?: string;
+};
+
 /** UpdateJWT response with a new JWT value with the added custom claims */
 export type UpdateJWTResponse = {
   jwt: string;
@@ -181,6 +261,12 @@ export type ClientAssertionResponse = {
 /** Represents a tenant in a project. It has an id, a name and an array of
  * self provisioning domains used to associate users with that tenant.
  */
+/** Authentication type of an SSO configuration. `none` means the configuration is disabled: it
+ * keeps its stored settings, mappings and domains, and serves no logins until it is set back to
+ * `saml` or `oidc`.
+ */
+export type SSOAuthType = 'none' | 'saml' | 'oidc';
+
 export type Tenant = {
   id: string;
   name: string;
@@ -188,7 +274,7 @@ export type Tenant = {
   createdTime: number;
   customAttributes?: Record<string, string | number | boolean | string[]>;
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enforceSSO?: boolean;
   disabled?: boolean;
   defaultRoles?: string[];
@@ -214,7 +300,7 @@ export type SSOSetupSuiteSettings = {
 export type TenantSettings = {
   selfProvisioningDomains: string[];
   domains?: string[];
-  authType?: 'none' | 'saml' | 'oidc';
+  authType?: SSOAuthType;
   enabled?: boolean;
   refreshTokenExpiration?: number;
   refreshTokenExpirationUnit?: ExpirationUnit;
@@ -223,10 +309,78 @@ export type TenantSettings = {
   stepupTokenExpiration?: number;
   stepupTokenExpirationUnit?: ExpirationUnit;
   enableInactivity?: boolean;
-  InactivityTime?: number;
-  InactivityTimeUnit?: ExpirationUnit;
+  inactivityTime?: number;
+  inactivityTimeUnit?: ExpirationUnit;
   JITDisabled?: boolean;
   ssoSetupSuiteSettings?: SSOSetupSuiteSettings;
+};
+
+/**
+ * Represents a family association for a user. The familyId is required to denote which family
+ * the user belongs to. roleNames is an optional list of the user's roles within that family, and
+ * familyScopedAttributes is an optional map of the user's custom attribute values scoped to that family.
+ */
+export type AssociatedFamily = {
+  familyId: string;
+  roleNames?: string[];
+  familyScopedAttributes?: Record<string, AttributesTypes>;
+};
+
+/** Represents a family in a project. A family groups a set of users (e.g. a guardian and their
+ * dependents) that can share access and family-scoped custom attributes.
+ */
+export type Family = {
+  id: string;
+  name: string;
+  customAttributes?: Record<string, AttributesTypes>;
+  disabled?: boolean;
+  photo?: string;
+  createdTime: number;
+};
+
+/** The project's family account settings. */
+export type FamilySettings = {
+  /** Whether family accounts are enabled for the project */
+  enabled?: boolean;
+  /** The maximum number of members allowed in a single family */
+  maxFamilyMembers?: number;
+  /** Whether a user is allowed to belong to more than one family */
+  allowMultipleFamiliesUsers?: boolean;
+};
+
+/** Response of management calls that return a single user */
+export type SingleUserResponse = {
+  user: UserResponse;
+};
+
+/** Options for searching families */
+export type FamilySearchOptions = {
+  ids?: string[];
+  names?: string[];
+  /** Free text search among the families' attributes */
+  text?: string;
+  customAttributes?: Record<string, AttributesTypes>;
+  /** Pages start at 0 */
+  page?: number;
+  /** Up to 1000 */
+  size?: number;
+};
+
+/** Options for creating a dependent (shadow profile) user in a family */
+export type CreateFamilyDependentOptions = {
+  /** When missing, the login ID is derived from name; email/phone are never used as the login ID
+   * since they are not unique - a dependent may share them with their guardian. */
+  loginId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  givenName?: string;
+  middleName?: string;
+  familyName?: string;
+  picture?: string;
+  customAttributes?: Record<string, AttributesTypes>;
+  /** The dependent's family-scoped custom attribute values in this family (attrName -> value) */
+  familyScopedAttributes?: Record<string, AttributesTypes>;
 };
 
 /** Represents password settings of a tenant in a project. It has the password policy details. */
@@ -310,6 +464,10 @@ export type SSOApplication = {
   wsfedSettings?: SSOApplicationWSFedSettings;
 };
 
+export type SSOApplicationSecretResponse = {
+  cleartext: string;
+};
+
 /** Represents a permission in a project. It has a name and optionally a description.
  * It also has a flag indicating whether it is system default or not.
  */
@@ -329,6 +487,8 @@ export type Role = {
   createdTime: number;
   tenantId?: string;
   default?: boolean;
+  private?: boolean;
+  id?: string;
 };
 
 /** Search roles based on the parameters */
@@ -345,6 +505,14 @@ export type Group = {
   id: string;
   display: string;
   members?: GroupMember[];
+  /** Origin of the group: "scim" (default) or "jit" (SSO SAML/OIDC assertion groups). */
+  source?: string;
+  /**
+   * The SSO configuration the group came from (the ssoId bound to the SCIM token that created it,
+   * or the SSO configuration used at the JIT login that persisted it). Groups from the tenant's
+   * default SSO configuration report the reserved id "default_ssoid".
+   */
+  ssoId?: string;
 };
 
 /** Represents a group member. It has loginId, userId and display. */
@@ -437,6 +605,7 @@ export type User = {
   verifiedPhone?: boolean;
   test?: boolean;
   additionalLoginIds?: string[];
+  familyAssociations?: AssociatedFamily[];
   password?: string; // a cleartext password to set for the user
   hashedPassword?: UserPasswordHashed; // a prehashed password to set for the user
   seed?: string; // a TOTP seed to set for the user in case of batch invite
@@ -551,6 +720,10 @@ export type SSOSAMLSettingsResponse = {
   redirectUrl: string;
   providerID?: string;
   scimProviderID?: string;
+  /** Epoch seconds of the last successful SSO test login on this configuration (read-only) */
+  lastSuccessTestTime?: number;
+  /** True when Descope sends the SAML AuthnRequest to this IdP unsigned */
+  disableSignRequest?: boolean;
 };
 
 export type SSOSettings = {
@@ -558,6 +731,18 @@ export type SSOSettings = {
   saml?: SSOSAMLSettingsResponse;
   oidc?: SSOOIDCSettings;
   ssoId?: string;
+  /**
+   * True when the configuration verifies identity only: a login through it creates no user and
+   * issues no session. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
+   */
+  authenticationOnly?: boolean;
+  /**
+   * True when JIT provisioning is off for this configuration: a login through it signs in only users
+   * who already exist. This is the field to read on a load response; the one nested under `oidc` is
+   * write-only and the server never sets it.
+   */
+  jitDisabled?: boolean;
 };
 
 export type OIDCAttributeMapping = {
@@ -600,8 +785,36 @@ export type SSOOIDCSettings = {
   grantType?: 'authorization_code' | 'implicit';
   issuer?: string;
   roleMappings?: OIDCRoleMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
+  defaultSSORoles?: string[];
   providerID?: string;
   scimProviderID?: string;
+  /** Epoch seconds of the last successful SSO test login on this configuration (read-only, ignored on configure) */
+  lastSuccessTestTime?: number;
+  /**
+   * Classify the configuration as verifying identity only: a login through it creates no user and
+   * issues no session, returning the identity provider response instead. Leave it out to keep
+   * whatever is stored, so an ordinary settings save cannot clear it by omission.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.authenticationOnly` there, which answers for the whole configuration.
+   */
+  authenticationOnly?: boolean;
+  /**
+   * Send a PKCE (S256) code challenge to the IdP and the code verifier on the code exchange. Leave it
+   * out to keep the stored value, pass false to turn it off. Not allowed with the implicit grant type.
+   */
+  usePkce?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   *
+   * Write-only. This type is also the `oidc` field of the load response, where the server never sets
+   * it - read `SSOSettings.jitDisabled` there.
+   */
+  jitDisabled?: boolean;
 };
 
 export type SSOSAMLSettings = {
@@ -610,7 +823,27 @@ export type SSOSAMLSettings = {
   entityId: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   */
+  jitDisabled?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -619,9 +852,31 @@ export type SSOSAMLSettings = {
 
 export type SSOSAMLByMetadataSettings = {
   idpMetadataUrl: string;
+  /** IdP entity ID - set so IdP-initiated login can resolve the tenant by the SAML response issuer */
+  entityId?: string;
   roleMappings?: RoleMappings;
   attributeMapping?: AttributeMapping;
+  /** Default SSO roles. Omit to keep the stored roles, pass an empty array to clear them. */
   defaultSSORoles?: string[];
+  /**
+   * Leave the SAML AuthnRequest Descope sends to the IdP unsigned. Set it only for IdPs that reject a
+   * signed request because their trusted provider entry holds no signing certificate for Descope.
+   * Defaults to false, i.e. requests are signed.
+   */
+  disableSignRequest?: boolean;
+  /**
+   * Classify the configuration as verifying identity only: a login through it does not create,
+   * update or sign in a user, and returns the IdP response instead of a session. Leave it out to
+   * keep whatever is stored, so an ordinary settings save cannot clear it by omission.
+   */
+  authenticationOnly?: boolean;
+  /**
+   * Turn off JIT provisioning for this SSO configuration: a login through it signs in only users who
+   * already exist and refuses anyone else instead of creating them. Applies to the configuration named
+   * by `ssoId`, or to the tenant's default configuration when `ssoId` is omitted. Leave it out to keep
+   * whatever is stored; pass false to turn JIT back on.
+   */
+  jitDisabled?: boolean;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -708,6 +963,50 @@ export type AuditRecord = {
   loginIds: string[];
   tenants: string[];
   data: Record<string, any>;
+};
+
+/** Response for the searchAll audit method, including the total number of matching records. */
+export type AuditSearchAllResponse = {
+  audits: AuditRecord[];
+  total: number;
+};
+
+/** Basic authentication for an HTTP connector. */
+export type ConnectorHTTPBasicAuthentication = {
+  username?: string;
+  password?: string;
+};
+
+/** API key authentication for an HTTP connector. */
+export type ConnectorHTTPAPIKeyAuthentication = {
+  key?: string;
+  token?: string;
+};
+
+/** Authentication configuration for an HTTP connector. */
+export type ConnectorHTTPAuthentication = {
+  bearerToken?: string;
+  basic?: ConnectorHTTPBasicAuthentication;
+  apiKey?: ConnectorHTTPAPIKeyAuthentication;
+};
+
+/** Filters that determine which audit events are streamed by an audit webhook. */
+export type AuditFilters = {
+  key?: string;
+  operator?: string;
+  values?: string[];
+};
+
+/** Configuration for an audit webhook connector. */
+export type AuditWebhook = {
+  name: string;
+  description?: string;
+  url?: string;
+  authentication?: ConnectorHTTPAuthentication;
+  hmacSecret?: string;
+  headers?: Record<string, string>;
+  insecure?: boolean;
+  filters?: AuditFilters[];
 };
 
 export type UserStatus = 'enabled' | 'disabled' | 'invited' | 'expired';
@@ -931,6 +1230,37 @@ export interface FGAResourceDetails {
   displayName: string;
 }
 
+export type FGASchemaDryRunResponse = {
+  deletesPreview?: {
+    hasDeletes: boolean;
+    relations?: string[];
+    types?: string[];
+  };
+};
+
+export type FGAMappableResource = {
+  resource: string;
+};
+
+export type FGAMappableResources = {
+  type: string;
+  resources: FGAMappableResource[];
+};
+
+export type FGAMappableSchema = {
+  schema?: AuthzSchema | null;
+  mappableResources?: FGAMappableResources[];
+};
+
+export type FGAMappableResourcesQuery = {
+  type: string;
+  queries: string[];
+};
+
+export type FGAMappableResourcesOptions = {
+  resourcesLimit?: number;
+};
+
 /**
  * Configuration for FGA cache proxy support.
  * When fgaCacheUrl is provided along with managementKey, certain FGA operations
@@ -974,11 +1304,18 @@ export interface UserOptions {
   password?: string;
   hashedPassword?: UserPasswordHashed;
   seed?: string;
+  familyAssociations?: AssociatedFamily[];
 }
 
 export type MgmtUserOptions = Omit<
   UserOptions,
-  'roles' | 'userTenants' | 'customAttributes' | 'picture' | 'additionalLoginIds' | 'displayName'
+  | 'roles'
+  | 'userTenants'
+  | 'customAttributes'
+  | 'picture'
+  | 'additionalLoginIds'
+  | 'displayName'
+  | 'familyAssociations'
 > & {
   name?: string;
 };
@@ -1002,6 +1339,9 @@ export type InboundApplicationOptions = {
   approvedCallbackUrls?: string[];
   permissionsScopes: InboundApplicationScope[];
   attributesScopes?: InboundApplicationScope[];
+  clientType?: 'confidential' | 'public';
+  /** Require a valid DPoP proof at the token endpoint. Needs a `clientType`. */
+  forceDpop?: boolean;
 };
 
 /**
@@ -1047,6 +1387,12 @@ export type InboundApplicationConsentDeleteOptions = {
   userIds?: string[];
 };
 
+export type InboundApplicationTenantConsentDeleteOptions = {
+  consentIds?: string[];
+  appId?: string;
+  tenantId?: string;
+};
+
 export type PromptType = 'none' | 'login' | 'consent' | 'select_account';
 export type AccessType = 'offline' | 'online';
 
@@ -1068,6 +1414,43 @@ export type OutboundApplication = {
   pkce?: boolean;
   accessType?: AccessType;
   prompt?: Array<PromptType>;
+  useDcr?: boolean;
+  dcrUrl?: string;
+};
+
+// Fields of an outbound application that can override a template's
+// prepopulated values when creating an application from the app library.
+export type OutboundAppTemplateOverrides = {
+  name?: string;
+  description?: string;
+  logo?: string;
+  discoveryUrl?: string;
+  authorizationUrl?: string;
+  authorizationUrlParams?: URLParam[];
+  tokenUrl?: string;
+  tokenUrlParams?: URLParam[];
+  revocationUrl?: string;
+  defaultScopes?: string[];
+  defaultRedirectUrl?: string;
+  callbackDomain?: string;
+  pkce?: boolean;
+  accessType?: AccessType;
+  prompt?: Array<PromptType>;
+  useDcr?: boolean;
+  dcrUrl?: string;
+};
+
+// Options for creating an outbound application from a preconfigured
+// app library template. The template prepopulates the provider's OAuth
+// config (endpoints, scopes, pkce, etc.); any field set in `overrides`
+// takes precedence over the template default.
+export type CreateOutboundAppByTemplateOptions = {
+  templateId: string;
+  id?: string;
+  clientId?: string;
+  clientSecret?: string;
+  tenantId?: string;
+  overrides?: OutboundAppTemplateOverrides;
 };
 
 // Example for URLParam type (adjust as needed)
@@ -1124,6 +1507,74 @@ export type FetchLatestOutboundAppTenantTokenRequest = {
   appId: string;
   tenantId: string;
   options?: FetchOutboundAppTokenOptions;
+};
+
+/**
+ * A single OAuth token to upload (migrate) for a user. At least one of `refreshToken` or
+ * `accessToken` must be provided. `accessTokenExpiry` is in epoch seconds (0/absent means unknown).
+ * Used both as a single-upload payload and as a batch item.
+ */
+export type OutboundAppUserTokenToUpload = {
+  appId: string;
+  userId: string;
+  tenantId?: string;
+  refreshToken?: string;
+  accessToken?: string;
+  accessTokenExpiry?: number;
+  accessTokenType?: string;
+  scopes?: string[];
+  externalIdentifier?: string;
+  idToken?: string;
+  grantedBy?: string;
+};
+
+/**
+ * A single OAuth token to upload (migrate) for a tenant. At least one of `refreshToken` or
+ * `accessToken` must be provided.
+ */
+export type OutboundAppTenantTokenToUpload = {
+  appId: string;
+  tenantId: string;
+  refreshToken?: string;
+  accessToken?: string;
+  accessTokenExpiry?: number;
+  accessTokenType?: string;
+  scopes?: string[];
+  externalIdentifier?: string;
+  idToken?: string;
+  grantedBy?: string;
+};
+
+/**
+ * Single-upload payload for a user OAuth token. When `verifyRefresh` is true, the refresh token is
+ * verified against the provider before persisting; nothing is written if verification fails.
+ */
+export type UploadOutboundAppUserTokenRequest = OutboundAppUserTokenToUpload & {
+  verifyRefresh?: boolean;
+};
+
+/**
+ * Single-upload payload for a tenant OAuth token. See `UploadOutboundAppUserTokenRequest`.
+ */
+export type UploadOutboundAppTenantTokenRequest = OutboundAppTenantTokenToUpload & {
+  verifyRefresh?: boolean;
+};
+
+/** A single per-item failure returned by the batch upload endpoints. */
+export type OutboundAppTokenUploadFailure = {
+  appId: string;
+  userId?: string;
+  tenantId?: string;
+  errorCode: string;
+  reason: string;
+};
+
+/**
+ * Response from the batch upload endpoints. Batch upload is all-or-nothing: a non-empty `failures`
+ * array means no tokens were committed.
+ */
+export type BatchUploadOutboundAppTokensResponse = {
+  failures: OutboundAppTokenUploadFailure[];
 };
 
 export type ManagementFlowOptions = {
@@ -1209,4 +1660,192 @@ export type MgmtKeyCreateResponse = {
 
 export type License = {
   rateLimitTier: string;
+};
+
+/** Represents an engine in a project. `secret` is populated only on create and
+ * rotateSecret; it is always empty on load/loadAll. */
+export type Engine = {
+  id: string;
+  name: string;
+  secret?: string;
+  createdTime?: number; // epoch seconds
+};
+
+/** Response of an engine secret rotation. */
+export type EngineSecretResponse = {
+  secret: string;
+};
+
+/** A single option for a custom attribute of type "select". */
+export type CustomAttributeOption = {
+  value?: string;
+  label?: string;
+};
+
+/** Represents a custom attribute definition in the project schema. */
+export type CustomAttribute = {
+  name?: string;
+  type?: number;
+  options?: CustomAttributeOption[];
+  displayName?: string;
+  defaultValue?: any;
+  viewPermissions?: string[];
+  editPermissions?: string[];
+};
+
+/** A registered passkey (WebAuthn credential) for a user. */
+export type UserPasskey = {
+  id?: string;
+  rpId?: string;
+  kind?: string;
+  displayName?: string;
+  createdTime?: number;
+};
+
+/** A trusted device associated with a user. */
+export type UserTrustedDevice = {
+  id?: string;
+  name?: string;
+  deviceType?: string;
+  lastLoginTime?: number;
+  expirationTime?: number;
+  lastLocation?: string;
+};
+
+/** A single failure entry returned from a user import. */
+export type UserImportFailure = {
+  user: string;
+  reason: string;
+};
+
+/** Response of a user import operation. */
+export type UserImportResponse = {
+  users?: UserResponse[];
+  failures?: UserImportFailure[];
+};
+
+/** Request to update an existing permission by its ID as part of a batch update. */
+export type PermissionUpdateRequest = {
+  id: string;
+  newName: string;
+  description?: string;
+};
+
+/** Request to update an existing role by its ID as part of a batch update. */
+export type RoleUpdateRequest = {
+  id: string;
+  newName: string;
+  description?: string;
+  permissionNames?: string[];
+  tenantId?: string;
+  default?: boolean;
+};
+
+/** The type of a project list (currently "ip" or "text"). */
+export type ListType = string;
+
+/** Represents a project list of IPs or texts. */
+export type List = {
+  id?: string;
+  name?: string;
+  description?: string;
+  type?: ListType;
+  data?: any;
+};
+
+/** Request payload for creating or updating a list. */
+export type ListRequest = {
+  name: string;
+  description?: string;
+  type: ListType;
+  data?: any;
+};
+
+/** Represents a JWT template configuration. */
+export type JWTTemplate = {
+  id?: string;
+  name?: string;
+  description?: string;
+  template?: Record<string, any>;
+  source?: string;
+  tags?: string[];
+  authSchema?: string;
+  type?: string;
+  conformanceIssuer?: boolean;
+  autoDCT?: boolean;
+  enforceIssuer?: boolean;
+  emptyClaimPolicy?: string;
+  overrideSubject?: boolean;
+  issuerType?: string;
+  omitCustomClaimsFromDSR?: boolean;
+  addJti?: boolean;
+  excludePermissions?: boolean;
+};
+
+/** A single validation issue found while validating a JWT template. */
+export type JWTTemplateValidationIssue = {
+  message?: string;
+  severity?: string;
+  path?: string;
+};
+
+/** Result of validating a JWT template. */
+export type JWTTemplateValidationResult = {
+  valid: boolean;
+  issues?: JWTTemplateValidationIssue[];
+};
+
+/** A JWT template entry available in the shared template library. */
+export type JWTTemplateLibraryEntry = JWTTemplate & {
+  experimental?: boolean;
+  logoLight?: string;
+  logoDark?: string;
+};
+
+/** Request payload for applying a JWT template from the library. */
+export type ApplyJWTTemplateFromLibraryRequest = {
+  libraryEntryId: string;
+  nameOverride?: string;
+  descriptionOverride?: string;
+  tagsOverride?: string[];
+  templateOverride?: Record<string, any>;
+};
+
+/** A single scope-to-claims mapping entry. */
+export type ScopeClaimMappingEntry = {
+  scope?: string;
+  claims?: Record<string, string>;
+  description?: string;
+};
+
+/** Options for searching analytics records. Time fields are epoch milliseconds. */
+export type AnalyticsSearchOptions = {
+  actions?: string[];
+  excludedActions?: string[];
+  from?: number;
+  to?: number;
+  devices?: string[];
+  methods?: string[];
+  geos?: string[];
+  tenants?: string[];
+  groupByAction?: boolean;
+  groupByDevice?: boolean;
+  groupByMethod?: boolean;
+  groupByGeo?: boolean;
+  groupByTenant?: boolean;
+  groupByReferrer?: boolean;
+  groupByCreated?: string;
+};
+
+/** A single analytics record returned from an analytics search. */
+export type AnalyticRecord = {
+  projectId?: string;
+  action?: string;
+  created?: string;
+  device?: string;
+  method?: string;
+  geo?: string;
+  tenant?: string;
+  referrer?: string;
+  cnt?: string;
 };

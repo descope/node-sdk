@@ -42,6 +42,27 @@ describe('Management group', () => {
         data: mockGroups,
       });
     });
+
+    it('should send the ssoId filter when provided', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockGroups,
+        clone: () => ({
+          json: () => Promise.resolve(mockGroups),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const tenantId = 'tenant-id';
+      const ssoId = 'sso-config-1';
+      await management.group.loadAllGroups(tenantId, ssoId);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.group.loadAllGroups, {
+        tenantId,
+        ssoId,
+      });
+    });
   });
 
   describe('loadAllGroupsForMember', () => {

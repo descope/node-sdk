@@ -9,6 +9,7 @@ import {
 import {
   ProviderTokenResponse,
   AssociatedTenant,
+  AssociatedFamily,
   GenerateEnchantedLinkForTestResponse,
   GenerateMagicLinkForTestResponse,
   GenerateOTPForTestResponse,
@@ -22,10 +23,14 @@ import {
   ProviderTokenOptions,
   UserOptions,
   UserSearchResponse,
+  UserPasskey,
+  UserTrustedDevice,
+  UserImportResponse,
+  SingleUserResponse,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
-import { transformUsersForBatch } from './helpers';
+import { transformUsersForBatch, withCustomAttributes } from './helpers';
 
 type SearchSort = {
   field: string;
@@ -61,10 +66,14 @@ type SearchRequest = {
   tenantRoleNames?: Record<string, RolesList>; // Search users based on tenants and role names
   verifiedEmail?: boolean; // Filter by verified email status
   verifiedPhone?: boolean; // Filter by verified phone status
-};
-
-type SingleUserResponse = {
-  user: UserResponse;
+  familyIds?: string[]; // Only return users that are members of at least one of these families
+  dependent?: boolean; // Filter by whether the user is a family dependent (no login credentials of their own)
+  // Users disabled by brute-force protection with one of these lock reasons:
+  // 'password' | 'totp' | 'recovery_codes' | 'security_questions'
+  lockReasons?: string[];
+  // Users currently temporarily locked (tempLockExpiration, unix seconds, greater than now) with one of
+  // these lock reasons: 'password' | 'recovery_codes' | 'security_questions' (TOTP has no temporary lock)
+  tempLockReasons?: string[];
 };
 
 type MultipleUsersResponse = {
@@ -73,7 +82,12 @@ type MultipleUsersResponse = {
 
 const withUser = (httpClient: HttpClient) => {
   /* Create User */
-  function create(loginId: string, options?: UserOptions): Promise<SdkResponse<UserResponse>>;
+  function create(
+    loginId: string,
+    options?: UserOptions & {
+      templateId?: string;
+    },
+  ): Promise<SdkResponse<UserResponse>>;
   function create(
     loginId: string,
     email?: string,
@@ -89,6 +103,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>>;
 
   function create(
@@ -106,6 +121,7 @@ const withUser = (httpClient: HttpClient) => {
     middleName?: string,
     familyName?: string,
     additionalLoginIds?: string[],
+    templateId?: string,
   ): Promise<SdkResponse<UserResponse>> {
     // We support both the old and new parameters forms of create user
     // 1. The new form - create(loginId, { email, phone, ... }})
@@ -127,6 +143,7 @@ const withUser = (httpClient: HttpClient) => {
             verifiedEmail,
             verifiedPhone,
             additionalLoginIds,
+            templateId,
           }
         : {
             loginId,
@@ -318,6 +335,12 @@ const withUser = (httpClient: HttpClient) => {
   /* Invite User End */
 
   /* Update User */
+  /**
+   * Update an existing user. All fields are overridden as is, including family memberships:
+   * omitting familyAssociations removes the user from all of their families, and updating a
+   * dependent requires familyAssociations with the dependent's family. Use patch to change only
+   * some fields.
+   */
   function update(
     loginIdOrUserId: string,
     options?: UserOptions,
@@ -447,6 +470,9 @@ const withUser = (httpClient: HttpClient) => {
     if (options.additionalIdentifiers !== undefined) {
       body.additionalIdentifiers = options.additionalIdentifiers;
     }
+    if (options.familyAssociations !== undefined) {
+      body.familyAssociations = options.familyAssociations;
+    }
 
     return body;
   }
@@ -493,6 +519,18 @@ const withUser = (httpClient: HttpClient) => {
       (data) => data,
     );
   }
+
+  const userCustomAttributes = withCustomAttributes(httpClient, {
+    get: apiPaths.user.getCustomAttributes,
+    create: apiPaths.user.createCustomAttributes,
+    delete: apiPaths.user.deleteCustomAttributes,
+  });
+
+  const familyScopedCustomAttributes = withCustomAttributes(httpClient, {
+    get: apiPaths.user.getFamilyScopedCustomAttributes,
+    create: apiPaths.user.createFamilyScopedCustomAttributes,
+    delete: apiPaths.user.deleteFamilyScopedCustomAttributes,
+  });
 
   return {
     create,
@@ -809,6 +847,31 @@ const withUser = (httpClient: HttpClient) => {
         httpClient.post(apiPaths.user.removeTenant, { loginId: loginIdOrUserId, tenantId }),
         (data) => data.user,
       ),
+    /**
+     * Add a user to one or more families. Each entry may also set the user's roles and
+     * family-scoped attributes for that family in the same call; omitting roleNames or
+     * familyScopedAttributes on a family the user already belongs to leaves them unchanged.
+     */
+    addFamilies: (
+      loginIdOrUserId: string,
+      familyAssociations: AssociatedFamily[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.addFamilies, {
+          loginId: loginIdOrUserId,
+          familyAssociations,
+        }),
+        (data) => data.user,
+      ),
+    /** Remove a user from one or more families. */
+    removeFamilies: (
+      loginIdOrUserId: string,
+      familyIds: string[],
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.removeFamilies, { loginId: loginIdOrUserId, familyIds }),
+        (data) => data.user,
+      ),
     setTenantRoles: (
       loginIdOrUserId: string,
       tenantId: string,
@@ -1064,12 +1127,204 @@ const withUser = (httpClient: HttpClient) => {
       ),
 
     /**
+     * Removes all recovery codes for the user with the given login ID or user ID.
+     * Note: The user will no longer be able to sign in with any previously
+     * generated recovery codes.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     */
+    removeRecoveryCodes: (loginIdOrUserId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removeRecoveryCodes, { loginId: loginIdOrUserId }),
+        (data) => data,
+      ),
+
+    /**
      * Retrieve users' authentication history, by the given user's ids.
      * @param userIds The user IDs
      */
     history: (userIds: string[]): Promise<SdkResponse<UserHistoryResponse[]>> =>
       transformResponse<UserHistoryResponse[]>(
         httpClient.post(apiPaths.user.history, userIds),
+        (data) => data,
+      ),
+
+    /**
+     * Import users and their password hashes from a source system.
+     * @param source The name of the source system (e.g. "Auth0")
+     * @param users The exported users payload as a raw byte/string buffer
+     * @param hashes The exported password hashes payload as a raw byte/string buffer
+     * @param dryrun When true, validate the import without persisting any users
+     * @returns The UserImportResponse with the imported users and any failures
+     */
+    import: (
+      source: string,
+      users?: string | Uint8Array,
+      hashes?: string | Uint8Array,
+      dryrun?: boolean,
+    ): Promise<SdkResponse<UserImportResponse>> =>
+      transformResponse<UserImportResponse, UserImportResponse>(
+        httpClient.post(apiPaths.user.import, {
+          source,
+          users,
+          hashes,
+          dryrun: dryrun ?? false,
+        }),
+        (data) => data,
+      ),
+
+    /**
+     * Update the recovery email for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param email The recovery email to set for the user
+     * @param isVerified Whether the recovery email is verified
+     */
+    updateRecoveryEmail: (
+      loginIdOrUserId: string,
+      email: string,
+      isVerified?: boolean,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateRecoveryEmail, {
+          loginId: loginIdOrUserId,
+          recoveryEmail: email,
+          verified: isVerified,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Update the recovery phone for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param phone The recovery phone to set for the user
+     * @param isVerified Whether the recovery phone is verified
+     */
+    updateRecoveryPhone: (
+      loginIdOrUserId: string,
+      phone: string,
+      isVerified?: boolean,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateRecoveryPhone, {
+          loginId: loginIdOrUserId,
+          recoveryPhone: phone,
+          verified: isVerified,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Update the given/middle/family names for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param givenName The given name to set for the user
+     * @param middleName The middle name to set for the user
+     * @param familyName The family name to set for the user
+     */
+    updateUserNames: (
+      loginIdOrUserId: string,
+      givenName?: string,
+      middleName?: string,
+      familyName?: string,
+    ): Promise<SdkResponse<UserResponse>> =>
+      transformResponse<SingleUserResponse, UserResponse>(
+        httpClient.post(apiPaths.user.updateName, {
+          loginId: loginIdOrUserId,
+          givenName,
+          middleName,
+          familyName,
+        }),
+        (data) => data.user,
+      ),
+
+    /**
+     * Get the custom attributes schema defined for the project.
+     * @returns An array of CustomAttribute definitions
+     */
+    getCustomAttributes: userCustomAttributes.get,
+
+    /**
+     * Create custom attributes in the project's user schema.
+     * @param attributes The custom attribute definitions to create
+     * @returns The updated array of CustomAttribute definitions
+     */
+    createCustomAttributes: userCustomAttributes.create,
+
+    /**
+     * Delete custom attributes from the project's user schema by name.
+     * @param names The names of the custom attributes to delete
+     * @returns The updated array of CustomAttribute definitions
+     */
+    deleteCustomAttributes: userCustomAttributes.delete,
+
+    /**
+     * Get the family-scoped custom attributes schema defined for the project. These are user
+     * attributes whose values are held per family membership (see
+     * `AssociatedFamily.familyScopedAttributes`) rather than on the user, and their definitions are
+     * a separate set from the plain user custom attributes.
+     * @returns An array of CustomAttribute definitions
+     */
+    getFamilyScopedCustomAttributes: familyScopedCustomAttributes.get,
+
+    /**
+     * Create family-scoped custom attribute definitions in the project's user schema.
+     * @param attributes The custom attribute definitions to create
+     * @returns The updated array of CustomAttribute definitions
+     */
+    createFamilyScopedCustomAttributes: familyScopedCustomAttributes.create,
+
+    /**
+     * Delete family-scoped custom attribute definitions from the project's user schema by name.
+     * @param names The names of the custom attributes to delete
+     * @returns The updated array of CustomAttribute definitions
+     */
+    deleteFamilyScopedCustomAttributes: familyScopedCustomAttributes.delete,
+
+    /**
+     * Remove a single passkey (WebAuthn credential) for the user with the given login ID.
+     * @param loginId The login ID of the user
+     * @param credentialId The credential ID of the passkey to remove
+     */
+    removePasskey: (loginId: string, credentialId: string): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removePasskey, { loginId, credentialId }),
+        (data) => data,
+      ),
+
+    /**
+     * List the passkeys (WebAuthn credentials) for the user with the given login ID.
+     * @param loginId The login ID of the user
+     * @returns An array of UserPasskey belonging to the user
+     */
+    listPasskeys: (loginId: string): Promise<SdkResponse<UserPasskey[]>> =>
+      transformResponse<{ passkeys: UserPasskey[] }, UserPasskey[]>(
+        httpClient.post(apiPaths.user.listPasskeys, { loginId }),
+        (data) => data.passkeys,
+      ),
+
+    /**
+     * List the trusted devices for the given login IDs or user IDs.
+     * @param loginIdsOrUserIds The login IDs or user IDs of the users
+     * @returns An array of UserTrustedDevice
+     */
+    listTrustedDevices: (loginIdsOrUserIds: string[]): Promise<SdkResponse<UserTrustedDevice[]>> =>
+      transformResponse<{ devices: UserTrustedDevice[] }, UserTrustedDevice[]>(
+        httpClient.post(apiPaths.user.listTrustedDevices, { identifiers: loginIdsOrUserIds }),
+        (data) => data.devices,
+      ),
+
+    /**
+     * Remove trusted devices for the given login ID or user ID.
+     * @param loginIdOrUserId The login ID or user ID of the user
+     * @param deviceIds The IDs of the trusted devices to remove
+     */
+    removeTrustedDevices: (
+      loginIdOrUserId: string,
+      deviceIds: string[],
+    ): Promise<SdkResponse<never>> =>
+      transformResponse<never>(
+        httpClient.post(apiPaths.user.removeTrustedDevices, {
+          identifier: loginIdOrUserId,
+          deviceIds,
+        }),
         (data) => data,
       ),
   };
@@ -1092,6 +1347,7 @@ export interface PatchUserOptions {
   scim?: boolean;
   status?: UserStatus;
   additionalIdentifiers?: string[];
+  familyAssociations?: AssociatedFamily[];
 }
 
 /** User options for batch patch operations, identifying the user by loginIdOrUserId or loginId */

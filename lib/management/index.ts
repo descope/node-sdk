@@ -2,6 +2,7 @@ import { HttpClient } from '@descope/core-js-sdk';
 import withUser from './user';
 import withProject from './project';
 import withTenant from './tenant';
+import withFamily from './family';
 import withJWT from './jwt';
 import withPermission from './permission';
 import withRole from './role';
@@ -19,6 +20,11 @@ import withInboundApplication from './inboundapplication';
 import withOutboundApplication from './outboundapplication';
 import withDescoper from './descoper';
 import withManagementKey from './managementKey';
+import withEngine from './engine';
+import withList from './list';
+import withJWTTemplate from './jwttemplate';
+import withScopeClaimMapping from './scopeclaimmapping';
+import withAnalytics from './analytics';
 import { FGAConfig } from './types';
 
 /** Constructs a higher level Management API that wraps the functions from code-js-sdk */
@@ -27,6 +33,7 @@ const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   project: withProject(client),
   accessKey: withAccessKey(client),
   tenant: withTenant(client),
+  family: withFamily(client),
   ssoApplication: withSSOApplication(client),
   inboundApplication: withInboundApplication(client),
   outboundApplication: withOutboundApplication(client),
@@ -43,6 +50,11 @@ const withManagement = (client: HttpClient, fgaConfig?: FGAConfig) => ({
   fga: WithFGA(client, fgaConfig),
   descoper: withDescoper(client),
   managementKey: withManagementKey(client),
+  engine: withEngine(client),
+  list: withList(client),
+  jwtTemplate: withJWTTemplate(client),
+  scopeClaimMapping: withScopeClaimMapping(client),
+  analytics: withAnalytics(client),
 });
 
 export default withManagement;

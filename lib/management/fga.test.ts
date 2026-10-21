@@ -177,6 +177,195 @@ describe('Management FGA', () => {
     });
   });
 
+  describe('loadSchema', () => {
+    it('should load the schema', async () => {
+      const mockSchema = { dsl: 'model AuthZ 1.0' };
+      const httpResponse = {
+        ok: true,
+        json: () => mockSchema,
+        clone: () => ({ json: () => Promise.resolve(mockSchema) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const response = await WithFGA(mockHttpClient).loadSchema();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.fga.schema, {});
+      expect(response).toEqual({
+        code: 200,
+        data: mockSchema,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('dryRunSchema', () => {
+    it('should dry run the schema', async () => {
+      const schema = { dsl: 'model AuthZ 1.0' };
+      const mockDryRun = {
+        deletesPreview: { hasDeletes: true, relations: ['owner'], types: ['doc'] },
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockDryRun,
+        clone: () => ({ json: () => Promise.resolve(mockDryRun) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const response = await WithFGA(mockHttpClient).dryRunSchema(schema);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.dryRunSchema, schema);
+      expect(response).toEqual({
+        code: 200,
+        data: mockDryRun,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('checkWithContext', () => {
+    it('should check the relations with extra context', async () => {
+      const relations = [relation1, relation2];
+      const context = { ip: '1.2.3.4' };
+      const httpResponse = {
+        ok: true,
+        json: () => mockCheckResponse,
+        clone: () => ({ json: () => Promise.resolve(mockCheckResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const response = await WithFGA(mockHttpClient).checkWithContext(relations, context);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.check, {
+        tuples: relations,
+        context,
+      });
+      expect(response).toEqual({
+        code: 200,
+        data: mockCheckResponseRelations,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit context when empty', async () => {
+      const relations = [relation1];
+      const httpResponse = {
+        ok: true,
+        json: () => mockCheckResponse,
+        clone: () => ({ json: () => Promise.resolve(mockCheckResponse) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await WithFGA(mockHttpClient).checkWithContext(relations);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.check, {
+        tuples: relations,
+      });
+    });
+  });
+
+  describe('loadMappableSchema', () => {
+    it('should load the mappable schema for the tenant', async () => {
+      const mockMappable = {
+        schema: { name: 'mock', namespaces: [] },
+        mappableResources: [{ type: 'doc', resources: [{ resource: 'r1' }] }],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockMappable,
+        clone: () => ({ json: () => Promise.resolve(mockMappable) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      const response = await WithFGA(mockHttpClient).loadMappableSchema('tenant1', {
+        resourcesLimit: 10,
+      });
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.fga.mappableSchema, {
+        queryParams: { tenantId: 'tenant1', resourcesLimit: '10' },
+      });
+      expect(response).toEqual({
+        code: 200,
+        data: mockMappable,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit resourcesLimit when not provided', async () => {
+      const mockMappable = { schema: null, mappableResources: [] };
+      const httpResponse = {
+        ok: true,
+        json: () => mockMappable,
+        clone: () => ({ json: () => Promise.resolve(mockMappable) }),
+        status: 200,
+      };
+      mockHttpClient.get.mockResolvedValue(httpResponse);
+
+      await WithFGA(mockHttpClient).loadMappableSchema('tenant1');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(apiPaths.fga.mappableSchema, {
+        queryParams: { tenantId: 'tenant1' },
+      });
+    });
+  });
+
+  describe('searchMappableResources', () => {
+    it('should search mappable resources', async () => {
+      const queries = [{ type: 'doc', queries: ['road'] }];
+      const mockResources = [{ type: 'doc', resources: [{ resource: 'roadmap.ppt' }] }];
+      const httpResponse = {
+        ok: true,
+        json: () => ({ mappableResources: mockResources }),
+        clone: () => ({ json: () => Promise.resolve({ mappableResources: mockResources }) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const response = await WithFGA(mockHttpClient).searchMappableResources('tenant1', queries, {
+        resourcesLimit: 5,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.mappableResources, {
+        tenantId: 'tenant1',
+        resourcesQueries: queries,
+        resourcesLimit: '5',
+      });
+      expect(response).toEqual({
+        code: 200,
+        data: mockResources,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit resourcesLimit when not provided', async () => {
+      const queries = [{ type: 'doc', queries: ['road'] }];
+      const mockResources = [{ type: 'doc', resources: [] }];
+      const httpResponse = {
+        ok: true,
+        json: () => ({ mappableResources: mockResources }),
+        clone: () => ({ json: () => Promise.resolve({ mappableResources: mockResources }) }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      await WithFGA(mockHttpClient).searchMappableResources('tenant1', queries);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.fga.mappableResources, {
+        tenantId: 'tenant1',
+        resourcesQueries: queries,
+      });
+    });
+  });
+
   describe('FGA Cache URL support', () => {
     const fgaCacheUrl = 'https://my-fga-cache.example.com';
     const projectId = 'test-project-id';

@@ -205,6 +205,36 @@ describe('Management Access Keys', () => {
     });
   });
 
+  describe('deactivateBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AccessKey> = await management.accessKey.deactivateBatch([
+        'id1',
+        'id2',
+      ]);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.deactivateBatch, {
+        ids: ['id1', 'id2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('activate', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -220,6 +250,33 @@ describe('Management Access Keys', () => {
       const resp: SdkResponse<AccessKey> = await management.accessKey.activate('id');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.activate, { id: 'id' });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('activateBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AccessKey> = await management.accessKey.activateBatch(['id1', 'id2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.activateBatch, {
+        ids: ['id1', 'id2'],
+      });
 
       expect(resp).toEqual({
         code: 200,
@@ -249,6 +306,62 @@ describe('Management Access Keys', () => {
       expect(resp).toEqual({
         code: 200,
         data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteBatch', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<AccessKey> = await management.accessKey.deleteBatch(['id1', 'id2']);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.deleteBatch, {
+        ids: ['id1', 'id2'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('rotate', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockMgmtCreatedAccessKeyResponse = {
+        cleartext: 'newcleartext',
+        key: mockAccessKeyResponse,
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockMgmtCreatedAccessKeyResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockMgmtCreatedAccessKeyResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<CreatedAccessKeyResponse> = await management.accessKey.rotate('id');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.accessKey.rotate, { id: 'id' });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockMgmtCreatedAccessKeyResponse,
         ok: true,
         response: httpResponse,
       });
