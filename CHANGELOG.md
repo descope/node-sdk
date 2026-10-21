@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.0](https://github.com/descope/node-sdk/compare/v2.20.0...v2.21.0) (2026-10-21)
+
+
+### Features
+
+* **user:** add password and hashed password fields to create user options ([#738](https://github.com/descope/node-sdk/issues/738)) ([8737faf](https://github.com/descope/node-sdk/commit/8737faffdadd1b53d19acb68c31e2c8b72e489c4))
+
 ## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-19)
 
 
