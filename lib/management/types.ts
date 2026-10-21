@@ -1307,6 +1307,9 @@ export interface UserOptions {
   familyName?: string;
   additionalLoginIds?: string[];
   ssoAppIds?: string[];
+  password?: string;
+  hashedPassword?: UserPasswordHashed;
+  seed?: string;
   familyAssociations?: AssociatedFamily[];
 }
 
