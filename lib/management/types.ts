@@ -35,9 +35,9 @@ export type OidcApplicationOptions = {
   enabled?: boolean;
   forceAuthentication?: boolean;
   /** The OAuth client type of the app: 'confidential' or 'public' (empty is the legacy mode).
-   * If omitted on create, newer accounts get 'confidential' and older accounts the legacy mode.
-   * Newer accounts can't switch an app to the legacy mode. Update replaces the whole app, so
-   * pass the current client type when updating. */
+   * If omitted on create, the account's default client type is used; the created app's
+   * `oidcSettings.clientType` shows which one it got. Update replaces the whole app, so pass
+   * the app's current client type when updating. */
   clientType?: 'confidential' | 'public' | '';
 };
 
