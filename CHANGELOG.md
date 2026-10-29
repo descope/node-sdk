@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.21.0](https://github.com/descope/node-sdk/compare/v2.20.0...v2.21.0) (2026-10-29)
+
+
+### Features
+
+* **mgmt:** support client type on OIDC applications ([#822](https://github.com/descope/node-sdk/issues/822)) ([73eeeab](https://github.com/descope/node-sdk/commit/73eeeab9a9eaca5250cfba1cb3c554f423e4d1de))
+* **user:** add password and hashed password fields to create user options ([#738](https://github.com/descope/node-sdk/issues/738)) ([8737faf](https://github.com/descope/node-sdk/commit/8737faffdadd1b53d19acb68c31e2c8b72e489c4))
+
 ## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-19)
 
 
