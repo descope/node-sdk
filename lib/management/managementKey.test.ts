@@ -89,6 +89,43 @@ describe('Management Management Keys', () => {
         permittedIps: ['1.1.1.1'],
         status: 'inactive',
       });
+      expect(mockHttpClient.patch.mock.calls[0][1]).not.toHaveProperty('reBac');
+      expect(resp.data).toEqual(mockMgmtKey);
+    });
+
+    it('should send reBac when provided', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => ({ key: mockMgmtKey }),
+        clone: () => ({
+          json: () => Promise.resolve({ key: mockMgmtKey }),
+        }),
+        status: 200,
+      };
+      mockHttpClient.patch.mockResolvedValue(httpResponse);
+
+      const reBac = {
+        companyRoles: ['role1'],
+        projectRoles: [{ projectIds: ['p1'], roles: ['role2'] }],
+        tagRoles: [{ tags: ['t1'], roles: ['role3'] }],
+      };
+      const resp = await management.managementKey.update(
+        'mk1',
+        'updated-key',
+        'updated-desc',
+        'active',
+        ['1.1.1.1'],
+        reBac,
+      );
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(apiPaths.managementKey.update, {
+        id: 'mk1',
+        name: 'updated-key',
+        description: 'updated-desc',
+        permittedIps: ['1.1.1.1'],
+        status: 'active',
+        reBac,
+      });
       expect(resp.data).toEqual(mockMgmtKey);
     });
   });
