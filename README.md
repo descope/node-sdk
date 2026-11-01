@@ -1945,13 +1945,29 @@ searchRes.data.keys.forEach((key) => {
 });
 
 // Update an existing management key.
-// IMPORTANT: All parameters will override whatever values are currently set in the existing key.
+// IMPORTANT: All parameters will override whatever values are currently set in the existing key,
+// except reBac: when it is omitted, the key keeps its current roles.
 await descopeClient.management.managementKey.update(
   'key-id',
   'updated-key-name',
   'Updated description',
-  ['1.2.3.4'], // updated permitted IPs
   'active', // status: 'active' or 'inactive'
+  ['1.2.3.4'], // updated permitted IPs
+);
+
+// Update the roles of an existing management key.
+// When reBac is provided it replaces the key's current roles. The key secret is not rotated.
+await descopeClient.management.managementKey.update(
+  'key-id',
+  'updated-key-name',
+  'Updated description',
+  'active',
+  ['1.2.3.4'],
+  {
+    companyRoles: ['Admin'],
+    projectRoles: [{ projectIds: ['project-id'], roles: ['Project Admin'] }],
+    tagRoles: [{ tags: ['production'], roles: ['Read Only'] }],
+  },
 );
 
 // Delete management keys by IDs.

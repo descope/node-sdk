@@ -26,6 +26,7 @@ const withManagementKey = (httpClient: HttpClient) => ({
     description: string,
     status: MgmtKeyStatus,
     permittedIps?: string[],
+    reBac?: MgmtKeyReBac,
   ): Promise<SdkResponse<MgmtKey>> =>
     transformResponse(
       httpClient.patch(apiPaths.managementKey.update, {
@@ -34,6 +35,8 @@ const withManagementKey = (httpClient: HttpClient) => ({
         description,
         permittedIps,
         status,
+        // reBac is sent only when provided, so omitting it keeps the key's current roles
+        ...(reBac !== undefined ? { reBac } : {}),
       }),
       (data) => data.key,
     ),
