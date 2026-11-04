@@ -1719,6 +1719,14 @@ export type UserTrustedDevice = {
   lastLocation?: string;
 };
 
+/** A time range of session creation times whose sessions are logged out. */
+export type LogoutSessionRange = {
+  id: string;
+  after: Date;
+  before: Date;
+  sessionTypes: string[];
+};
+
 /** A single failure entry returned from a user import. */
 export type UserImportFailure = {
   user: string;
