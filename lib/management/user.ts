@@ -27,6 +27,8 @@ import {
   UserTrustedDevice,
   UserImportResponse,
   SingleUserResponse,
+  LogoutSessionRange,
+  LogoutSessionsCreatedBetweenOptions,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -75,6 +77,24 @@ type SearchRequest = {
   // these lock reasons: 'password' | 'recovery_codes' | 'security_questions' (TOTP has no temporary lock)
   tempLockReasons?: string[];
 };
+
+type LogoutSessionRangeResponse = {
+  id: string;
+  after: string;
+  before: string;
+  sessionTypes?: string[];
+};
+
+type LogoutSessionRangesResponse = {
+  ranges?: LogoutSessionRangeResponse[];
+};
+
+const toLogoutSessionRange = (data: LogoutSessionRangeResponse): LogoutSessionRange => ({
+  id: data.id,
+  after: new Date(data.after),
+  before: new Date(data.before),
+  sessionTypes: data.sessionTypes || [],
+});
 
 type MultipleUsersResponse = {
   users: UserResponse[];
@@ -633,6 +653,59 @@ const withUser = (httpClient: HttpClient) => {
      */
     logoutUserByUserId: (userId: string): Promise<SdkResponse<never>> =>
       transformResponse(httpClient.post(apiPaths.user.logout, { userId })),
+    /**
+     * Logs out sessions created in the given time range (optionally only the given session types).
+     * Each session is logged out on its next refresh or validation. before defaults to the server's
+     * current time when omitted; prefer omitting it over passing new Date(), since a before in the
+     * future is rejected. The range stays active for a year. Deleting it stops it from logging out
+     * matching sessions it hasn't logged out yet; sessions already logged out stay logged out.
+     * At least one of before or after is required.
+     * @param options.before optionally logout only sessions created before this time
+     * @param options.after optionally logout only sessions created after this time
+     * @param options.sessionTypes optionally logout only sessions of these types
+     * @returns The created LogoutSessionRange. It is the range the server stored, which may have
+     * a later after than requested.
+     */
+    logoutSessionsCreatedBetween: (
+      options: LogoutSessionsCreatedBetweenOptions,
+    ): Promise<SdkResponse<LogoutSessionRange>> => {
+      const { before, after, sessionTypes } = options;
+      if (!before && !after) {
+        return Promise.reject(
+          new Error('logoutSessionsCreatedBetween: at least one of before or after is required'),
+        );
+      }
+      const body: Record<string, unknown> = {};
+      if (before) {
+        body.sessionsCreatedBefore = before.toISOString();
+      }
+      if (after) {
+        body.sessionsCreatedAfter = after.toISOString();
+      }
+      if (sessionTypes) {
+        body.sessionTypes = sessionTypes;
+      }
+      return transformResponse<LogoutSessionRangeResponse, LogoutSessionRange>(
+        httpClient.post(apiPaths.user.logoutSessions, body),
+        toLogoutSessionRange,
+      );
+    },
+    /**
+     * List the active session logout ranges.
+     * @returns An array of LogoutSessionRange
+     */
+    listLogoutSessionRanges: (): Promise<SdkResponse<LogoutSessionRange[]>> =>
+      transformResponse<LogoutSessionRangesResponse, LogoutSessionRange[]>(
+        httpClient.post(apiPaths.user.listLogoutSessionRanges, {}),
+        (data) => (data.ranges || []).map(toLogoutSessionRange),
+      ),
+    /**
+     * Deletes a logout sessions range. It stops logging out matching sessions it hasn't logged out
+     * yet; sessions already logged out stay logged out.
+     * @param id the ID of the range to delete
+     */
+    deleteLogoutSessionRange: (id: string): Promise<SdkResponse<never>> =>
+      transformResponse(httpClient.post(apiPaths.user.deleteLogoutSessionRange, { id })),
     /**
      * loadUsers by their user IDs.
      * @param userIds list of user IDs to load
