@@ -50,13 +50,9 @@ export default [
     external,
   },
   {
-    input: './dist/lib/index.d.ts',
+    input: './dist/cjs/types/lib/index.d.ts',
     output: [{ file: packageJson.types, format: 'esm' }],
-    plugins: [
-      dts(),
-      del({ hook: 'buildEnd', targets: ['./dist/lib', './dist/cjs/lib'] }),
-      cjsPackage(),
-    ],
+    plugins: [dts(), del({ hook: 'buildEnd', targets: ['./dist/cjs/types'] }), cjsPackage()],
   },
 ];
 
