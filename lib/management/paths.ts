@@ -138,6 +138,7 @@ export default {
     deleteBatch: '/v1/mgmt/thirdparty/app/delete/batch',
   },
   inboundApplicationConsents: {
+    create: '/v1/mgmt/thirdparty/consents/create',
     delete: '/v1/mgmt/thirdparty/consents/delete',
     deleteTenant: '/v1/mgmt/thirdparty/consents/delete/tenant',
     search: '/v1/mgmt/thirdparty/consents/search',

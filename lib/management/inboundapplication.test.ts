@@ -368,6 +368,97 @@ describe('Management InboundApplication', () => {
     });
   });
 
+  describe('createInboundApplicationConsent', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockConsent: InboundApplicationConsent = {
+        id: 'consent1',
+        appId: 'app1',
+        userId: 'user1',
+        scopes: ['scope1', 'scope2'],
+        grantedBy: 'user1',
+        createdTime: 1700000000,
+        tenantId: 'tenant1',
+        ExpireTime: 1800000000,
+        modifiedTime: 1700000001,
+      };
+      const mockResponse = { consent: mockConsent };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<InboundApplicationConsent> =
+        await management.inboundApplication.createConsent({
+          appId: 'app1',
+          userId: 'user1',
+          scopes: ['scope1', 'scope2'],
+          tenantId: 'tenant1',
+          expireTime: 1800000000,
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplicationConsents.create, {
+        appId: 'app1',
+        userId: 'user1',
+        scopes: ['scope1', 'scope2'],
+        tenantId: 'tenant1',
+        expireTime: 1800000000,
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockConsent,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should send only the required fields when optional ones are omitted', async () => {
+      const mockConsent: InboundApplicationConsent = {
+        id: 'consent1',
+        appId: 'app1',
+        userId: 'user1',
+        scopes: ['scope1'],
+        grantedBy: 'user1',
+        createdTime: 1700000000,
+      };
+      const mockResponse = { consent: mockConsent };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<InboundApplicationConsent> =
+        await management.inboundApplication.createConsent({
+          appId: 'app1',
+          userId: 'user1',
+          scopes: ['scope1'],
+        });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.inboundApplicationConsents.create, {
+        appId: 'app1',
+        userId: 'user1',
+        scopes: ['scope1'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: mockConsent,
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('searchInboundApplicationConsents', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

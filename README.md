@@ -1853,6 +1853,18 @@ const { cleartext } = await descopeClient.management.inboundApplication.rotateAp
   'my-app-id',
 );
 
+// Create a user consent, e.g. to migrate consents a user already granted in another system
+// so the user is not asked to consent again. The scopes must be defined by the application
+// and include its mandatory scopes. They are merged into the user's existing consent for
+// the same application and tenant. Consents of agentic applications cannot be created.
+const { data: consent } = await descopeClient.management.inboundApplication.createConsent({
+  appId: 'my-app-id',
+  userId: 'user-id',
+  scopes: ['read_support'],
+  tenantId: 'tenant-id', // optional, the user must be a member of this tenant
+  expireTime: 1767225600, // optional, seconds since the epoch, 0 means never expires
+});
+
 // Search in all consents. search consents by the given app id and offset to the third page.
 const consentsRes = await descopeClient.management.inboundApplication.searchConsents({
   appId: 'my-app',
