@@ -1727,6 +1727,16 @@ export type LogoutSessionRange = {
   sessionTypes: string[];
 };
 
+/** Options for logging out sessions by creation time. At least one of before or after is required. */
+export type LogoutSessionsCreatedBetweenOptions = {
+  /** Logout sessions created before this time. Defaults to the server's current time. */
+  before?: Date;
+  /** Logout sessions created after this time. */
+  after?: Date;
+  /** Logout only sessions of these types. */
+  sessionTypes?: string[];
+};
+
 /** A single failure entry returned from a user import. */
 export type UserImportFailure = {
   user: string;

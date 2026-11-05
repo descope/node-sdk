@@ -28,6 +28,7 @@ import {
   UserImportResponse,
   SingleUserResponse,
   LogoutSessionRange,
+  LogoutSessionsCreatedBetweenOptions,
 } from './types';
 import { DeliveryMethodForTestUser } from '../types';
 import apiPaths from './paths';
@@ -654,19 +655,30 @@ const withUser = (httpClient: HttpClient) => {
       transformResponse(httpClient.post(apiPaths.user.logout, { userId })),
     /**
      * Logs out sessions created in the given time range (optionally only the given session types).
-     * Each session is logged out on its next refresh or validation. The range stays active for a year;
-     * delete it to stop applying it to new sessions, sessions already logged out stay logged out.
-     * @param before logout sessions created before this time
-     * @param after optionally logout only sessions created after this time, leave out for an open-ended range
-     * @param sessionTypes optionally logout only sessions of these types
-     * @returns The created LogoutSessionRange
+     * Each session is logged out on its next refresh or validation. before defaults to the server's
+     * current time when omitted; prefer omitting it over passing new Date(), since a before in the
+     * future is rejected. The range stays active for a year. Deleting it stops it from logging out
+     * matching sessions it hasn't logged out yet; sessions already logged out stay logged out.
+     * At least one of before or after is required.
+     * @param options.before optionally logout only sessions created before this time
+     * @param options.after optionally logout only sessions created after this time
+     * @param options.sessionTypes optionally logout only sessions of these types
+     * @returns The created LogoutSessionRange. It is the range the server stored, which may have
+     * a later after than requested.
      */
     logoutSessionsCreatedBetween: (
-      before: Date,
-      after?: Date,
-      sessionTypes?: string[],
+      options: LogoutSessionsCreatedBetweenOptions,
     ): Promise<SdkResponse<LogoutSessionRange>> => {
-      const body: Record<string, unknown> = { sessionsCreatedBefore: before.toISOString() };
+      const { before, after, sessionTypes } = options;
+      if (!before && !after) {
+        return Promise.reject(
+          new Error('logoutSessionsCreatedBetween: at least one of before or after is required'),
+        );
+      }
+      const body: Record<string, unknown> = {};
+      if (before) {
+        body.sessionsCreatedBefore = before.toISOString();
+      }
       if (after) {
         body.sessionsCreatedAfter = after.toISOString();
       }
@@ -688,8 +700,8 @@ const withUser = (httpClient: HttpClient) => {
         (data) => (data.ranges || []).map(toLogoutSessionRange),
       ),
     /**
-     * Delete a session logout range so it no longer applies to new sessions.
-     * Sessions already logged out by it stay logged out.
+     * Deletes a logout sessions range. It stops logging out matching sessions it hasn't logged out
+     * yet; sessions already logged out stay logged out.
      * @param id the ID of the range to delete
      */
     deleteLogoutSessionRange: (id: string): Promise<SdkResponse<never>> =>

@@ -1053,11 +1053,15 @@ await descopeClient.management.user.logoutUser('my-custom-id');
 await descopeClient.management.user.logoutUserByUserId('<user-ID>');
 
 // Logout sessions by creation time. Each matching session is logged out on its next refresh or validation.
-// Omit `after` for an open-ended range, and optionally limit to specific session types.
-const rangeRes = await descopeClient.management.user.logoutSessionsCreatedBetween(
-  new Date('2026-01-02T00:00:00Z'), // before
-  new Date('2026-01-01T00:00:00Z'), // after (optional)
-);
+// At least one of `before` or `after` is required. `before` defaults to the server's current time; prefer
+// omitting it over passing new Date(), since a `before` in the future is rejected. Optionally limit to
+// specific session types with `sessionTypes`. The range stays active for a year. Deleting it stops it from
+// logging out matching sessions it hasn't logged out yet; sessions already logged out stay logged out.
+// The returned range is what the server stored, which may have a later `after` than requested.
+// For example, log out sessions created in the last hour:
+const rangeRes = await descopeClient.management.user.logoutSessionsCreatedBetween({
+  after: new Date(Date.now() - 3600 * 1000),
+});
 const rangesRes = await descopeClient.management.user.listLogoutSessionRanges();
 await descopeClient.management.user.deleteLogoutSessionRange(rangeRes.data.id);
 

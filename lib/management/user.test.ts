@@ -1151,11 +1151,11 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.user.logoutSessionsCreatedBetween(
-        new Date('2026-01-02T00:00:00Z'),
-        new Date('2026-01-01T00:00:00Z'),
-        ['web'],
-      );
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        before: new Date('2026-01-02T00:00:00Z'),
+        after: new Date('2026-01-01T00:00:00Z'),
+        sessionTypes: ['web'],
+      });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.logoutSessions, {
         sessionsCreatedBefore: '2026-01-02T00:00:00.000Z',
@@ -1192,9 +1192,9 @@ describe('Management User', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp = await management.user.logoutSessionsCreatedBetween(
-        new Date('2026-01-02T00:00:00Z'),
-      );
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        before: new Date('2026-01-02T00:00:00Z'),
+      });
 
       const body = mockHttpClient.post.mock.calls[0][1];
       expect(body).toStrictEqual({ sessionsCreatedBefore: '2026-01-02T00:00:00.000Z' });
@@ -1211,6 +1211,44 @@ describe('Management User', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+    it('should omit before from the request when not given', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRange,
+        clone: () => ({
+          json: () => Promise.resolve(mockRange),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        after: new Date('2026-01-01T00:00:00Z'),
+      });
+
+      const body = mockHttpClient.post.mock.calls[0][1];
+      expect(body).toStrictEqual({ sessionsCreatedAfter: '2026-01-01T00:00:00.000Z' });
+      expect(body).not.toHaveProperty('sessionsCreatedBefore');
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {
+          id: 'range-id',
+          after: new Date('2026-01-01T00:00:00Z'),
+          before: new Date('2026-01-02T00:00:00Z'),
+          sessionTypes: ['web'],
+        },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should reject when neither before nor after is given', async () => {
+      await expect(management.user.logoutSessionsCreatedBetween({})).rejects.toThrow(
+        'at least one of before or after is required',
+      );
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
     });
   });
 
