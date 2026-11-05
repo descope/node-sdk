@@ -3,6 +3,7 @@ import apiPaths from './paths';
 import {
   InboundApplication,
   InboundApplicationConsent,
+  InboundApplicationConsentCreateOptions,
   InboundApplicationConsentDeleteOptions,
   InboundApplicationTenantConsentDeleteOptions,
   InboundApplicationConsentSearchOptions,
@@ -17,6 +18,10 @@ type MultipleInboundApplicationResponse = {
 
 type MultipleInboundApplicationConsentsResponse = {
   consents: InboundApplicationConsent[];
+};
+
+type InboundApplicationConsentResponse = {
+  consent: InboundApplicationConsent;
 };
 
 const withInboundApplication = (httpClient: HttpClient) => ({
@@ -61,6 +66,21 @@ const withInboundApplication = (httpClient: HttpClient) => ({
     ),
   rotateApplicationSecret: (id: string): Promise<SdkResponse<never>> =>
     transformResponse(httpClient.post(apiPaths.inboundApplication.rotate, { id })),
+  /**
+   * Create a user consent for an inbound application, e.g. to migrate consents a user
+   * already granted in another system so the user is not asked to consent again.
+   * The scopes are merged into the user's existing consent for the same application and tenant.
+   * Consents of agentic applications cannot be created.
+   * @param options the consent to create
+   * @returns the created or updated consent
+   */
+  createConsent: (
+    options: InboundApplicationConsentCreateOptions,
+  ): Promise<SdkResponse<InboundApplicationConsent>> =>
+    transformResponse<InboundApplicationConsentResponse, InboundApplicationConsent>(
+      httpClient.post(apiPaths.inboundApplicationConsents.create, { ...options }),
+      (data) => data.consent,
+    ),
   searchConsents: (
     options?: InboundApplicationConsentSearchOptions,
   ): Promise<SdkResponse<InboundApplicationConsent[]>> =>

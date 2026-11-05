@@ -1379,6 +1379,33 @@ export type InboundApplicationConsent = {
   scopes: string[];
   grantedBy: string;
   createdTime: number;
+  tenantId?: string;
+  /** Expiration time in seconds since the epoch, 0 or missing means the consent never expires */
+  ExpireTime?: number;
+  modifiedTime?: number;
+  authMethod?: string;
+  blocked?: boolean;
+};
+
+/**
+ * Options for creating a user consent for an inbound application,
+ * e.g. to migrate consents a user already granted in another system.
+ */
+export type InboundApplicationConsentCreateOptions = {
+  /** The inbound application ID */
+  appId: string;
+  /** The ID of the user who granted the consent */
+  userId: string;
+  /**
+   * The consented scopes. Each scope must be defined by the application, and the
+   * application's mandatory scopes must be included (all of its scopes when it
+   * does not allow partial scopes)
+   */
+  scopes: string[];
+  /** Optional tenant the consent is bound to, the user must be a member of this tenant */
+  tenantId?: string;
+  /** Optional expiration time in seconds since the epoch, 0 means the consent never expires */
+  expireTime?: number;
 };
 
 export type InboundApplicationConsentSearchOptions = {
