@@ -34,9 +34,7 @@ jobs:
 
       - name: Use Next Version
         run: |
-          git config --global user.email "info@descope.com"
-          git config --global user.name "Descope"
-          yarn version --new-version ${NEW_VERSION}
+          npm version "${NEW_VERSION}" --no-git-tag-version
           cat package.json
 
       - name: Install dependencies
