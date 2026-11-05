@@ -395,9 +395,8 @@ describe('Management Family', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<FamilySettings> = await management.family.configureSettings(
-        mockFamilySettings,
-      );
+      const resp: SdkResponse<FamilySettings> =
+        await management.family.configureSettings(mockFamilySettings);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.family.settings,
@@ -450,9 +449,8 @@ describe('Management Family', () => {
       };
       mockHttpClient.post.mockResolvedValue(httpResponse);
 
-      const resp: SdkResponse<CustomAttribute[]> = await management.family.createCustomAttributes(
-        mockCustomAttributes,
-      );
+      const resp: SdkResponse<CustomAttribute[]> =
+        await management.family.createCustomAttributes(mockCustomAttributes);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.family.createCustomAttributes, {
         attributes: mockCustomAttributes,

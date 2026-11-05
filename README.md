@@ -1844,14 +1844,12 @@ appsRes.data.forEach((app) => {
 });
 
 // Get an inbound application secret by application id.
-const { cleartext } = await descopeClient.management.inboundApplication.getApplicationSecret(
-  'my-app-id',
-);
+const { cleartext } =
+  await descopeClient.management.inboundApplication.getApplicationSecret('my-app-id');
 
 // Rotate an inbound application secret by application id.
-const { cleartext } = await descopeClient.management.inboundApplication.rotateApplicationSecret(
-  'my-app-id',
-);
+const { cleartext } =
+  await descopeClient.management.inboundApplication.rotateApplicationSecret('my-app-id');
 
 // Create a user consent, e.g. to migrate consents a user already granted in another system
 // so the user is not asked to consent again. The scopes must be defined by the application

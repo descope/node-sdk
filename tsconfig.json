@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "declaration": true,
-    "declarationDir": "dts",
+    "declarationDir": "dist/cjs/types",
     "typeRoots": ["./node_modules/@types"],
     "noEmitOnError": true
   },
