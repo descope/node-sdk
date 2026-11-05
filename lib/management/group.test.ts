@@ -2,14 +2,36 @@ import { SdkResponse } from '@descope/core-js-sdk';
 import withManagement from '.';
 import apiPaths from './paths';
 import { mockHttpClient, resetMockHttpClient } from './testutils';
-import { Group } from './types';
+import { Group, GroupMember } from './types';
 
 const management = withManagement(mockHttpClient);
 
+// Typed so the round-trip of the new `source` field is actually checked; the whole fixture cannot be
+// Group[] because the other entries use a pre-existing `name` key.
+const mockMembers: GroupMember[] = [
+  { loginId: 'login1', userId: 'user1', display: 'member1', source: 'jit' },
+  { loginId: 'login2', userId: 'user2', display: 'member2', source: 'scim' },
+];
+
 const mockGroups = [
-  { id: 'id1', display: 'display1', members: [] },
+  { id: 'id1', display: 'display1', members: mockMembers },
   { name: 'id2', display: 'display2', members: [] },
   { name: 'id3', display: 'display3', members: [] },
+];
+
+// The fixtures above are the SDK's own objects, and the assertions compare the response to the very
+// same object, so they hold whatever shape the types declare. This payload is written as the server
+// sends it, so decoding it is what actually checks the field names reach the typed response.
+const serverGroupsPayload = [
+  {
+    id: 'g1',
+    display: 'Engineering',
+    source: 'scim',
+    members: [
+      { loginId: 'alice@example.com', userId: 'U1', display: 'Alice', source: 'jit' },
+      { loginId: 'bob@example.com', userId: 'U2', display: 'Bob', source: 'scim' },
+    ],
+  },
 ];
 
 describe('Management group', () => {
@@ -98,6 +120,31 @@ describe('Management group', () => {
         response: httpResponse,
         data: mockGroups,
       });
+    });
+  });
+
+  describe('member source', () => {
+    it('should expose the source the server sent for each member', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => serverGroupsPayload,
+        clone: () => ({
+          json: () => Promise.resolve(serverGroupsPayload),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<Group[]> = await management.group.loadAllGroupMembers(
+        'tenant-id',
+        'g1',
+      );
+
+      expect(resp.data[0].source).toEqual('scim');
+      // a JIT member inside a SCIM-owned group is the case this field exists for
+      expect(resp.data[0].members[0].source).toEqual('jit');
+      expect(resp.data[0].members[0].loginId).toEqual('alice@example.com');
+      expect(resp.data[0].members[1].source).toEqual('scim');
     });
   });
 

@@ -522,11 +522,15 @@ export type Group = {
   ssoId?: string;
 };
 
-/** Represents a group member. It has loginId, userId and display. */
+/** Represents a group member, with its login id, user id, display name and source. */
 export type GroupMember = {
   loginId: string;
   userId: string;
   display: string;
+  /** Which side added this member to the group: "scim" when SCIM pushed it, or "jit" when an SSO
+   * assertion added it at login. A SCIM-owned group can hold JIT members, because an SSO assertion
+   * keeps its own membership so the user's idpGroups claim survives a token refresh. Read-only. */
+  source?: string;
 };
 
 export type Flow = {
