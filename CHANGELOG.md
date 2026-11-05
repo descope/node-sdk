@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.21.0](https://github.com/descope/node-sdk/compare/v2.20.0...v2.21.0) (2026-11-05)
+
+
+### Features
+
+* **mgmt:** add create third party application consent ([#829](https://github.com/descope/node-sdk/issues/829)) ([2cbe791](https://github.com/descope/node-sdk/commit/2cbe791eb182095f647a3ff6130f720f6e4abcba))
+* **mgmt:** allow updating management key roles ([#826](https://github.com/descope/node-sdk/issues/826)) ([419e5eb](https://github.com/descope/node-sdk/commit/419e5eb132f5ceec9ec98d2a6a2e65df472b1a3f))
+* **mgmt:** support client type on OIDC applications ([#822](https://github.com/descope/node-sdk/issues/822)) ([73eeeab](https://github.com/descope/node-sdk/commit/73eeeab9a9eaca5250cfba1cb3c554f423e4d1de))
+* **user:** add password and hashed password fields to create user options ([#738](https://github.com/descope/node-sdk/issues/738)) ([8737faf](https://github.com/descope/node-sdk/commit/8737faffdadd1b53d19acb68c31e2c8b72e489c4))
+
 ## [2.20.0](https://github.com/descope/node-sdk/compare/v2.19.0...v2.20.0) (2026-10-19)
 
 
