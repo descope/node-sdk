@@ -82,6 +82,15 @@ export const withCookie: SdkFnWrapper<{ refreshJwt?: string; cookies?: string[] 
     return { ...resp, data: { ...resp.data, refreshJwt, cookies } };
   };
 
+// Only the token's own tenant entries count, never inherited Object.prototype members
+// (Object.hasOwn requires Node 16.9, engines allows 16.0)
+function getTenantClaims(authInfo: AuthenticationInfo, tenant: string) {
+  const tenants = authInfo.token[authorizedTenantsClaimName];
+  return tenants && Object.prototype.hasOwnProperty.call(tenants, tenant)
+    ? tenants[tenant]
+    : undefined;
+}
+
 /**
  * Get the claim (used for permissions or roles) for a given tenant or top level if tenant is empty
  * @param authInfo The parsed authentication info from the JWT
@@ -94,9 +103,7 @@ export function getAuthorizationClaimItems(
   claim: string,
   tenant?: string,
 ): string[] {
-  const value = tenant
-    ? authInfo.token[authorizedTenantsClaimName]?.[tenant]?.[claim]
-    : authInfo.token[claim];
+  const value = tenant ? getTenantClaims(authInfo, tenant)?.[claim] : authInfo.token[claim];
   return Array.isArray(value) ? value : [];
 }
 
@@ -107,5 +114,5 @@ export function getAuthorizationClaimItems(
  * @returns true if user is associated with the tenant
  */
 export function isUserAssociatedWithTenant(authInfo: AuthenticationInfo, tenant: string): boolean {
-  return !!authInfo.token[authorizedTenantsClaimName]?.[tenant];
+  return !!getTenantClaims(authInfo, tenant);
 }
