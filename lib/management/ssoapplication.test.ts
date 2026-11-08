@@ -387,6 +387,54 @@ describe('Management SSOApplication', () => {
     });
   });
 
+  describe('SAML single logout options', () => {
+    const okResponse = {
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    };
+
+    it('should send the single logout options when set', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse);
+      await management.ssoApplication.updateSamlApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        singleLogoutEnabled: false,
+        spSingleLogoutUrl: 'https://dummy.com/slo',
+        spSingleLogoutBinding: 'soap',
+        singleLogoutPropagation: 'none',
+        singleLogoutScope: 'allSessions',
+      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.ssoApplication.samlUpdate,
+        expect.objectContaining({
+          singleLogoutEnabled: false,
+          spSingleLogoutUrl: 'https://dummy.com/slo',
+          spSingleLogoutBinding: 'soap',
+          singleLogoutPropagation: 'none',
+          singleLogoutScope: 'allSessions',
+        }),
+      );
+    });
+
+    it('should not send the single logout options when not set, so an update keeps them', async () => {
+      mockHttpClient.post.mockClear();
+      mockHttpClient.post.mockResolvedValue(okResponse);
+      await management.ssoApplication.updateSamlApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+      });
+      const body = JSON.stringify(mockHttpClient.post.mock.calls[0][1]);
+      expect(body).not.toContain('singleLogout');
+      expect(body).not.toContain('spSingleLogout');
+    });
+  });
+
   describe('createWsFedApplication', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {

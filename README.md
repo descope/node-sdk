@@ -867,6 +867,11 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   loginPageUrl: 'http://dummy.com/login',
   useMetadataInfo: true,
   metadataUrl: 'http://dummy.com/metadata',
+  // Optional SAML Single Logout (SLO): the service provider can log the user out with a signed
+  // LogoutRequest, and it is sent one when the user's session ends
+  singleLogoutEnabled: true,
+  singleLogoutPropagation: 'allApps', // 'allApps' or 'none'
+  singleLogoutScope: 'session', // 'session' or 'allSessions'
 });
 
 // Create WS-Fed SSO application

@@ -70,6 +70,23 @@ export type SamlApplicationOptions = {
    * SP-initiated flows use the algorithm from the SP's SAML request.
    * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
+  /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
+   * LogoutRequest, and it is sent a LogoutRequest when the user's session ends. Off by default.
+   * The single logout options are sent only when set, so an update that leaves them out keeps the
+   * application's current values. */
+  singleLogoutEnabled?: boolean;
+  /** The service provider's SingleLogoutService URL. Required when single logout is on and the
+   * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
+  spSingleLogoutUrl?: string;
+  /** The binding of `spSingleLogoutUrl`: "redirect" (the default), "post" or "soap" (server to server,
+   * requires an https URL). Empty takes it from the service provider's metadata. */
+  spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
+  /** What a logout started by the service provider reaches: "allApps" (the default) also logs the user
+   * out of the other applications in the session, "none" only ends the user's session. */
+  singleLogoutPropagation?: '' | 'allApps' | 'none';
+  /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
+   * the LogoutRequest names, "allSessions" every session of the user. */
+  singleLogoutScope?: '' | 'session' | 'allSessions';
 };
 
 /**
@@ -439,6 +456,12 @@ export type SSOApplicationSAMLSettings = {
    * SP-initiated flows use the algorithm from the SP's SAML request.
    * "sha256" means SHA-256; empty string means the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
+  /** SAML Single Logout (SLO) settings, see `SamlApplicationOptions` */
+  singleLogoutEnabled?: boolean;
+  spSingleLogoutUrl?: string;
+  spSingleLogoutBinding?: string;
+  singleLogoutPropagation?: string;
+  singleLogoutScope?: string;
 };
 
 /** Represents WS-Fed settings of an SSO application in a project. */
