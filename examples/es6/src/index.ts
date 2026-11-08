@@ -66,7 +66,7 @@ const returnOK = (res: Response, out: SdkResponse<ResponseData>) => {
 const generateCookie = (name: string, value: string, options?: Record<string, string | number>) =>
   `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
     options?.cookieMaxAge || ''
-  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`;
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; Secure; SameSite=Strict`;
 
 const returnCookies = <T extends ResponseData>(res: Response, out: SdkResponse<T>) => {
   if (out.ok) {
