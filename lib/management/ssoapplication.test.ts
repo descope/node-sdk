@@ -421,7 +421,7 @@ describe('Management SSOApplication', () => {
       );
     });
 
-    it('should not send the single logout options when not set, so an update keeps them', async () => {
+    it('should leave the single logout options out when not set, like the other options', async () => {
       mockHttpClient.post.mockClear();
       mockHttpClient.post.mockResolvedValue(okResponse);
       await management.ssoApplication.updateSamlApplication({

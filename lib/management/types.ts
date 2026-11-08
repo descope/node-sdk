@@ -71,9 +71,8 @@ export type SamlApplicationOptions = {
    * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
   /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
-   * LogoutRequest, and it is sent a LogoutRequest when the user's session ends. Off by default.
-   * The single logout options are sent only when set, so an update that leaves them out keeps the
-   * application's current values. */
+   * LogoutRequest, and it is sent a LogoutRequest when the user's session ends. Off by default: like
+   * the other options, an update that leaves it out turns it off. */
   singleLogoutEnabled?: boolean;
   /** The service provider's SingleLogoutService URL. Required when single logout is on and the
    * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
