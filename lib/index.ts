@@ -242,10 +242,10 @@ const nodeSdk = ({
         // static key: no fetching and no TTL
         if (!keys.has(kid)) keys = await fetchKeys();
       } else if (Date.now() - keysFetchedAt >= KEYS_TTL_MS || !keys.has(kid)) {
-        const cached = keys.has(kid) && Date.now() - keysFetchedAt < KEYS_MAX_AGE_MS;
-        // unknown kid or set past max age: fetch unless a fetch succeeded within the cooldown
-        // expired set: refresh unless a fetch attempt failed within the cooldown
-        const since = cached ? keysAttemptedAt : keysFetchedAt;
+        const expired = keysFetchedAt > 0 && Date.now() - keysFetchedAt >= KEYS_MAX_AGE_MS;
+        // unknown kid: fetch unless a fetch succeeded within the cooldown
+        // stale or expired set: retry unless a fetch attempt failed within the cooldown
+        const since = keys.has(kid) || expired ? keysAttemptedAt : keysFetchedAt;
         if (!keysFetch && Date.now() - since >= UNKNOWN_KID_COOLDOWN_MS) {
           keysFetch = refreshKeys().finally(() => {
             keysFetch = undefined;

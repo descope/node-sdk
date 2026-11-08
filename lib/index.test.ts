@@ -412,12 +412,30 @@ describe('sdk', () => {
         await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
 
         now += 1;
-        const calls = httpGet.mock.calls.length;
         await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
-        expect(httpGet).toHaveBeenCalledTimes(calls + 1);
+      });
+
+      it('should space fetch attempts 30 seconds apart once cached keys expire', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockRejectedValue(new Error('network down'));
+
+        now += 60 * 60 * 1000;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += COOLDOWN - 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        await expect(lookup('unknown-a')).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(3);
 
         httpGet.mockResolvedValue(keysResponse([publicKeys]));
+        now += COOLDOWN;
         await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(4);
       });
     });
   });
