@@ -35,6 +35,7 @@ import descopeErrors from './errors';
 import { DPoPJtiStore, verifyDPoPProof } from './dpop';
 
 const KEYS_TTL_MS = 10 * 60 * 1000;
+const KEYS_MAX_AGE_MS = 60 * 60 * 1000;
 const UNKNOWN_KID_COOLDOWN_MS = 30 * 1000;
 
 declare const BUILD_VERSION: string;
@@ -241,9 +242,10 @@ const nodeSdk = ({
         // static key: no fetching and no TTL
         if (!keys.has(kid)) keys = await fetchKeys();
       } else if (Date.now() - keysFetchedAt >= KEYS_TTL_MS || !keys.has(kid)) {
-        // unknown kid: fetch unless a fetch succeeded within the cooldown
+        const cached = keys.has(kid) && Date.now() - keysFetchedAt < KEYS_MAX_AGE_MS;
+        // unknown kid or set past max age: fetch unless a fetch succeeded within the cooldown
         // expired set: refresh unless a fetch attempt failed within the cooldown
-        const since = keys.has(kid) ? keysAttemptedAt : keysFetchedAt;
+        const since = cached ? keysAttemptedAt : keysFetchedAt;
         if (!keysFetch && Date.now() - since >= UNKNOWN_KID_COOLDOWN_MS) {
           keysFetch = refreshKeys().finally(() => {
             keysFetch = undefined;
@@ -252,7 +254,9 @@ const nodeSdk = ({
         await keysFetch;
       }
 
-      const key = keys.get(kid);
+      // fetched keys are not used past their max age, even if the refresh failed
+      const key =
+        publicKey || Date.now() - keysFetchedAt < KEYS_MAX_AGE_MS ? keys.get(kid) : undefined;
       if (!key) throw Error('failed to fetch matching key');
 
       return key;

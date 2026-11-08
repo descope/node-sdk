@@ -403,6 +403,22 @@ describe('sdk', () => {
         await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
         expect(httpGet).toHaveBeenCalledTimes(3);
       });
+
+      it('should stop using cached keys an hour after the last successful fetch', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockRejectedValue(new Error('network down'));
+
+        now += 60 * 60 * 1000 - 1;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+
+        now += 1;
+        const calls = httpGet.mock.calls.length;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(calls + 1);
+
+        httpGet.mockResolvedValue(keysResponse([publicKeys]));
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+      });
     });
   });
 
