@@ -127,9 +127,10 @@ describe('sdk', () => {
     publicKeys.alg = 'ES384';
     publicKeys.kid = '0ad99869f2d4e57f3f71c68300ba84fa';
     publicKeys.use = 'sig';
-    jest
-      .spyOn(sdk.httpClient, 'get')
-      .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
+    jest.spyOn(sdk.httpClient, 'get').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ keys: [publicKeys] }),
+    } as Response);
   });
   afterEach(() => {
     jest.clearAllMocks();
@@ -258,9 +259,10 @@ describe('sdk', () => {
         logger,
       });
 
-      jest
-        .spyOn(newSdk.httpClient, 'get')
-        .mockResolvedValue({ json: () => Promise.resolve({ keys: [publicKeys] }) } as Response);
+      jest.spyOn(newSdk.httpClient, 'get').mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ keys: [publicKeys] }),
+      } as Response);
 
       await newSdk.getKey({ kid: publicKeys.kid } as JWTHeaderParameters);
       await newSdk.getKey({ kid: publicKeys.kid } as JWTHeaderParameters);
@@ -272,6 +274,169 @@ describe('sdk', () => {
       await expect(sdk.getKey({ kid: '' } as JWTHeaderParameters)).rejects.toThrow(
         'header.kid must not be empty',
       );
+    });
+
+    describe('key cache refresh', () => {
+      const TTL = 10 * 60 * 1000;
+      const COOLDOWN = 30 * 1000;
+      let now: number;
+      let nowSpy: jest.SpyInstance;
+      let cacheSdk: typeof sdk;
+      let httpGet: jest.SpyInstance;
+      let secondKey: JWK;
+
+      const keysResponse = (keys: JWK[]) =>
+        ({ ok: true, json: () => Promise.resolve({ keys }) }) as Response;
+      const lookup = (kid: string) => cacheSdk.getKey({ kid } as JWTHeaderParameters);
+
+      beforeAll(async () => {
+        secondKey = await exportJWK((await generateKeyPair('ES384')).publicKey);
+        secondKey.alg = 'ES384';
+        secondKey.kid = 'second-key';
+      });
+
+      beforeEach(() => {
+        now = 1_700_000_000_000;
+        nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => now);
+        cacheSdk = createSdk({ projectId: 'project-id', logger });
+        httpGet = jest
+          .spyOn(cacheSdk.httpClient, 'get')
+          .mockResolvedValue(keysResponse([publicKeys]));
+      });
+
+      afterEach(() => nowSpy.mockRestore());
+
+      it('should refetch after the TTL and replace the cached set', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockResolvedValue(keysResponse([]));
+
+        now += TTL - 1;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(1);
+
+        now += 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+      });
+
+      it('should find a new key after the TTL even right after a failed unknown kid lookup', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockResolvedValue(keysResponse([publicKeys, secondKey]));
+
+        now += TTL;
+        await expect(lookup(secondKey.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(2);
+      });
+
+      it('should refetch an unknown kid at most once per cooldown', async () => {
+        await lookup(publicKeys.kid!);
+        expect(httpGet).toHaveBeenCalledTimes(1);
+
+        now += COOLDOWN - 1;
+        await expect(lookup('unknown-a')).rejects.toThrow('failed to fetch matching key');
+        await expect(lookup('unknown-b')).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(1);
+
+        now += 1;
+        await expect(lookup('unknown-a')).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+        await expect(lookup('unknown-b')).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+      });
+
+      it('should retry an unknown kid right after a failed fetch', async () => {
+        httpGet.mockRejectedValueOnce(new Error('network down'));
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += COOLDOWN;
+        httpGet.mockRejectedValueOnce(new Error('network down'));
+        await expect(lookup(secondKey.kid!)).rejects.toThrow('failed to fetch matching key');
+        httpGet.mockResolvedValue(keysResponse([publicKeys, secondKey]));
+        await expect(lookup(secondKey.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(4);
+      });
+
+      it('should not resolve inherited object members as keys', async () => {
+        await expect(lookup('__proto__')).rejects.toThrow('failed to fetch matching key');
+        await expect(lookup('constructor')).rejects.toThrow('failed to fetch matching key');
+      });
+
+      it('should share one fetch between concurrent lookups', async () => {
+        const results = await Promise.allSettled([
+          lookup('unknown-a'),
+          lookup('unknown-b'),
+          lookup(publicKeys.kid!),
+        ]);
+
+        expect(results.map((r) => r.status)).toEqual(['rejected', 'rejected', 'fulfilled']);
+        expect(httpGet).toHaveBeenCalledTimes(1);
+      });
+
+      it.each([
+        ['a network error', () => httpGet.mockRejectedValue(new Error('network down'))],
+        [
+          'a non-2xx response',
+          () => httpGet.mockResolvedValue({ ok: false, status: 503, json: () => ({}) } as Response),
+        ],
+        [
+          'a malformed body',
+          () =>
+            httpGet.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) } as Response),
+        ],
+      ])('should keep the cached keys when a refresh fails with %s', async (_, failFetch) => {
+        await lookup(publicKeys.kid!);
+        failFetch();
+
+        now += TTL;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        // a failed refresh is not retried for cached keys within the cooldown
+        now += COOLDOWN - 1;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += 1;
+        httpGet.mockResolvedValue(keysResponse([]));
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(3);
+      });
+
+      it('should stop using cached keys an hour after the last successful fetch', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockRejectedValue(new Error('network down'));
+
+        now += 60 * 60 * 1000 - 1;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+
+        now += 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+      });
+
+      it('should space fetch attempts 30 seconds apart once cached keys expire', async () => {
+        await lookup(publicKeys.kid!);
+        httpGet.mockRejectedValue(new Error('network down'));
+
+        now += 60 * 60 * 1000;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += COOLDOWN - 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        await expect(lookup('unknown-a')).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(2);
+
+        now += 1;
+        await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
+        expect(httpGet).toHaveBeenCalledTimes(3);
+
+        httpGet.mockResolvedValue(keysResponse([publicKeys]));
+        now += COOLDOWN;
+        await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
+        expect(httpGet).toHaveBeenCalledTimes(4);
+      });
     });
   });
 

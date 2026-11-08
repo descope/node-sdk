@@ -34,6 +34,10 @@ import {
 import descopeErrors from './errors';
 import { DPoPJtiStore, verifyDPoPProof } from './dpop';
 
+const KEYS_TTL_MS = 10 * 60 * 1000;
+const KEYS_MAX_AGE_MS = 60 * 60 * 1000;
+const UNKNOWN_KID_COOLDOWN_MS = 30 * 1000;
+
 declare const BUILD_VERSION: string;
 
 // Extend the type wrapped by withCookie
@@ -91,7 +95,10 @@ const nodeSdk = ({
 
   const { projectId, logger } = config;
 
-  const keys: Record<string, KeyLike | Uint8Array> = {};
+  let keys = new Map<string, KeyLike | Uint8Array>();
+  let keysFetchedAt = 0; // last successful fetch
+  let keysAttemptedAt = 0; // last fetch attempt
+  let keysFetch: Promise<void> | undefined;
 
   /** Fetch the public keys (JWKs) from Descope for the configured project */
   const fetchKeys = async () => {
@@ -99,28 +106,33 @@ const nodeSdk = ({
       try {
         const parsedKey = JSON.parse(publicKey);
         const key = await importJWK(parsedKey);
-        return {
-          [parsedKey.kid]: key,
-        };
+        return new Map([[parsedKey.kid, key]]);
       } catch (e) {
         logger?.error('Failed to parse the provided public key', e);
         throw new Error(`Failed to parse public key. Error: ${e}`);
       }
     }
 
-    const keysWrapper = await coreSdk.httpClient
-      .get(`v2/keys/${projectId}`)
-      .then((resp) => resp.json());
-    const publicKeys: JWK[] = keysWrapper.keys;
-    if (!Array.isArray(publicKeys)) return {};
+    const resp = await coreSdk.httpClient.get(`v2/keys/${projectId}`);
+    if (!resp.ok) throw Error(`failed to fetch public keys, status ${resp.status}`);
+    const publicKeys: JWK[] = (await resp.json())?.keys;
+    if (!Array.isArray(publicKeys)) throw Error('failed to fetch public keys, invalid response');
     const kidJwksPairs = await Promise.all(
-      publicKeys.map(async (key) => [key.kid, await importJWK(key)]),
+      publicKeys.map(async (key) => [key.kid, await importJWK(key)] as const),
     );
 
-    return kidJwksPairs.reduce(
-      (acc, [kid, jwk]) => (kid ? { ...acc, [kid.toString()]: jwk } : acc),
-      {},
-    );
+    return new Map(kidJwksPairs.filter(([kid]) => kid) as [string, KeyLike | Uint8Array][]);
+  };
+
+  /** Replace the cached keys with a fresh set, keeping the current set if the fetch fails */
+  const refreshKeys = async () => {
+    keysAttemptedAt = Date.now();
+    try {
+      keys = await fetchKeys();
+      keysFetchedAt = Date.now();
+    } catch (e) {
+      logger?.error('Failed to fetch public keys', e);
+    }
   };
 
   // Rate limit tier from the license handshake. Populated asynchronously on init
@@ -224,15 +236,30 @@ const nodeSdk = ({
     /** Get the key that can validate the given JWT KID in the header. Can retrieve the public key from local cache or from Descope. */
     async getKey(header: JWTHeaderParameters): Promise<KeyLike | Uint8Array> {
       if (!header?.kid) throw Error('header.kid must not be empty');
+      const { kid } = header;
 
-      if (keys[header.kid]) return keys[header.kid];
+      if (publicKey) {
+        // static key: no fetching and no TTL
+        if (!keys.has(kid)) keys = await fetchKeys();
+      } else if (Date.now() - keysFetchedAt >= KEYS_TTL_MS || !keys.has(kid)) {
+        const expired = keysFetchedAt > 0 && Date.now() - keysFetchedAt >= KEYS_MAX_AGE_MS;
+        // unknown kid: fetch unless a fetch succeeded within the cooldown
+        // stale or expired set: retry unless a fetch attempt failed within the cooldown
+        const since = keys.has(kid) || expired ? keysAttemptedAt : keysFetchedAt;
+        if (!keysFetch && Date.now() - since >= UNKNOWN_KID_COOLDOWN_MS) {
+          keysFetch = refreshKeys().finally(() => {
+            keysFetch = undefined;
+          });
+        }
+        await keysFetch;
+      }
 
-      // do we need to fetch once or every time?
-      Object.assign(keys, await fetchKeys());
+      // fetched keys are not used past their max age, even if the refresh failed
+      const key =
+        publicKey || Date.now() - keysFetchedAt < KEYS_MAX_AGE_MS ? keys.get(kid) : undefined;
+      if (!key) throw Error('failed to fetch matching key');
 
-      if (!keys[header.kid]) throw Error('failed to fetch matching key');
-
-      return keys[header.kid];
+      return key;
     },
 
     /**
