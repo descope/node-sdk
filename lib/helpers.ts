@@ -12,7 +12,7 @@ import { AuthenticationInfo } from './types';
 const generateCookie = (name: string, value: string, options?: Record<string, string | number>) =>
   `${name}=${value}; Domain=${options?.cookieDomain || ''}; Max-Age=${
     options?.cookieMaxAge || ''
-  }; Path=${options?.cookiePath || '/'}; HttpOnly; SameSite=Strict`;
+  }; Path=${options?.cookiePath || '/'}; HttpOnly; Secure; SameSite=Strict`;
 
 /**
  * Parse the cookie string and return the value of the cookie

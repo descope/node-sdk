@@ -668,7 +668,7 @@ describe('sdk', () => {
             data: {
               ...data,
               cookies: [
-                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; SameSite=Strict`,
+                `${refreshTokenCookieName}=${data.refreshJwt}; Domain=; Max-Age=; Path=/; HttpOnly; Secure; SameSite=Strict`,
               ],
             },
           }),
