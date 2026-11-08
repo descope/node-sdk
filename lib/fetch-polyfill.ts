@@ -2,12 +2,12 @@ import { fetch as crossFetch, Headers } from 'cross-fetch';
 
 globalThis.Headers ??= Headers;
 
-// node-fetch response buffer size, bounded to limit memory use on large responses
-const highWaterMarkBytes = 1024 * 1024; // 1MB
+const highWaterMarkMb = 1024 * 1024 * 30; // 30MB
 
-// Requests that get no response within this time are aborted
+// Requests without a caller-provided signal that get no response within this time are aborted
 const DEFAULT_TIMEOUT_MS = 30000;
 
+// we are increasing the response buffer size due to an issue where node-fetch hangs when response is too big
 const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
   // we can get Request on the first arg, or RequestInfo on the second arg
   // we want to make sure we are setting the "highWaterMark" so we are doing it on both args
@@ -15,31 +15,27 @@ const patchedFetch = (...args: Parameters<typeof crossFetch>) => {
     // Updated to only apply highWaterMark to objects, as it can't be applied to strings (it breaks it)
     if (arg && typeof arg === 'object') {
       // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unused-expressions
-      (arg as any).highWaterMark ??= highWaterMarkBytes;
+      (arg as any).highWaterMark ??= highWaterMarkMb;
     }
   });
 
   return crossFetch(...args);
 };
 
-/** Abort the request after DEFAULT_TIMEOUT_MS, while still honoring a caller-provided signal */
+/** Abort the request after DEFAULT_TIMEOUT_MS unless the caller manages its own signal */
 const withTimeout =
   (fetchFn: typeof globalThis.fetch) =>
   (
     input: Parameters<typeof globalThis.fetch>[0],
     init?: Parameters<typeof globalThis.fetch>[1],
   ) => {
+    if (init?.signal) return fetchFn(input, init);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-    const userSignal = init?.signal;
-    if (userSignal?.aborted) controller.abort();
-    else userSignal?.addEventListener('abort', () => controller.abort(), { once: true });
-
     return fetchFn(input, { ...init, signal: controller.signal })
       .catch((error) => {
-        if (error?.name === 'AbortError' && !userSignal?.aborted) {
-          throw new Error('Request timeout exceeded');
-        }
+        if (error?.name === 'AbortError') throw new Error('Request timeout exceeded');
         throw error;
       })
       .finally(() => clearTimeout(timeoutId));

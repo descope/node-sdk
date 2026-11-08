@@ -43,13 +43,26 @@ describe('fetch-polyfill', () => {
     await expect(res).rejects.toThrow('Request timeout exceeded');
   });
 
-  it('passes a caller abort through without reporting a timeout', async () => {
+  it('leaves a request with a caller signal to the caller deadline', async () => {
+    jest.useFakeTimers();
     fetchMock.mockImplementation(hangingFetch);
     const controller = new AbortController();
+    let settled = false;
 
     const res = polyfillFetch('https://example.com', { signal: controller.signal });
-    controller.abort();
+    res.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      },
+    );
+    jest.advanceTimersByTime(60000);
+    await Promise.resolve();
+    expect(settled).toBe(false);
 
+    controller.abort();
     await expect(res).rejects.toMatchObject({ name: 'AbortError', message: 'aborted' });
   });
 
