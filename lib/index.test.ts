@@ -308,7 +308,7 @@ describe('sdk', () => {
 
       it('should refetch after the TTL and replace the cached set', async () => {
         await lookup(publicKeys.kid!);
-        httpGet.mockResolvedValue(keysResponse([]));
+        httpGet.mockResolvedValue(keysResponse([secondKey]));
 
         now += TTL - 1;
         await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
@@ -385,21 +385,23 @@ describe('sdk', () => {
           () =>
             httpGet.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) } as Response),
         ],
+        ['an empty key list', () => httpGet.mockResolvedValue(keysResponse([]))],
       ])('should keep the cached keys when a refresh fails with %s', async (_, failFetch) => {
+        logger.warn.mockClear();
         await lookup(publicKeys.kid!);
         failFetch();
 
         now += TTL;
         await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
         expect(httpGet).toHaveBeenCalledTimes(2);
-
+        expect(logger.warn).toHaveBeenCalledWith('Failed to fetch public keys', expect.any(Error));
         // a failed refresh is not retried for cached keys within the cooldown
         now += COOLDOWN - 1;
         await expect(lookup(publicKeys.kid!)).resolves.toBeDefined();
         expect(httpGet).toHaveBeenCalledTimes(2);
 
         now += 1;
-        httpGet.mockResolvedValue(keysResponse([]));
+        httpGet.mockResolvedValue(keysResponse([secondKey]));
         await expect(lookup(publicKeys.kid!)).rejects.toThrow('failed to fetch matching key');
         expect(httpGet).toHaveBeenCalledTimes(3);
       });
