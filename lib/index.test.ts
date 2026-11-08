@@ -570,6 +570,21 @@ describe('sdk', () => {
       expect(sdk.validateTenantRoles(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
       expect(sdk.validateTenantPermissions(permTenantAuthInfo, 't2', [])).toStrictEqual(false);
     });
+    it.each(['__proto__', 'constructor', 'toString', 'hasOwnProperty'])(
+      'should not match inherited property %s as a tenant',
+      (tenant) => {
+        [[], ['foo']].forEach((items) => {
+          expect(sdk.validateTenantPermissions(permTenantAuthInfo, tenant, items)).toStrictEqual(
+            false,
+          );
+          expect(sdk.validateTenantRoles(permTenantAuthInfo, tenant, items)).toStrictEqual(false);
+          expect(sdk.getMatchedTenantPermissions(permTenantAuthInfo, tenant, items)).toStrictEqual(
+            [],
+          );
+          expect(sdk.getMatchedTenantRoles(permTenantAuthInfo, tenant, items)).toStrictEqual([]);
+        });
+      },
+    );
   });
 
   describe('getMatchedPermissionsRoles', () => {
