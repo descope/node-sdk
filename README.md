@@ -7,8 +7,8 @@ for a backend written in Node.js. You can read more on the [Descope Website](htt
 
 The SDK supports Node version 18 and above.
 
-The SDK uses the runtime's native `fetch` and requires no Node built-in modules, so it also runs
-on Cloudflare Workers and other edge runtimes.
+The SDK uses the runtime's native `fetch` instead of a Node HTTP client, so it also runs on
+Cloudflare Workers and other edge runtimes (Workers require the `nodejs_compat` flag for `crypto`/`Buffer`).
 
 ## Installing the SDK
 
