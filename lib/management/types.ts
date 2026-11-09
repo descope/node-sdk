@@ -76,9 +76,9 @@ export type SamlApplicationOptions = {
   defaultSignatureAlgorithm?: string;
   /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
    * LogoutRequest, and it is sent a LogoutRequest, naming the user by the application's NameID, when a
-   * logout reaches the user's applications (logout of all devices, an admin logout, or another
+   * logout reaches the user's applications (logout of all devices, a force logout when enabled for the project, or another
    * application's logout that propagates). That includes every SLO application the user can sign in to,
-   * not only ones the user used. A logout without a browser (logout of all devices, an admin logout)
+   * not only ones the user used. A logout without a browser (logout of all devices, a force logout)
    * reaches only applications with the "soap" binding. Off by default: like the other options, an update
    * that leaves it out turns it off. */
   singleLogoutEnabled?: boolean;
