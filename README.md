@@ -870,7 +870,7 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   // Optional SAML Single Logout (SLO): the service provider can log the user out with a signed
   // LogoutRequest, and it is sent one when a logout reaches the user's applications
   singleLogoutEnabled: true,
-  singleLogoutPropagation: 'allApps', // 'allApps' or 'none'
+  singleLogoutPropagation: 'allApps', // 'none' (default) or 'allApps'
   singleLogoutScope: 'session', // 'session' or 'allSessions'
 });
 

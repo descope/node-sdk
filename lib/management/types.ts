@@ -39,8 +39,8 @@ export type OidcApplicationOptions = {
    * `oidcSettings.clientType` shows which one it got. Update replaces the whole app, so pass
    * the app's current client type when updating. */
   clientType?: 'confidential' | 'public' | '';
-  /** How far a logout at the app's end-session endpoint reaches: "allApps" (the default) also logs the
-   * user out of their other applications, "none" only ends the user's sessions. Update replaces the
+  /** How far a logout at the app's end-session endpoint reaches: "none" (the default) only ends the
+   * user's sessions, "allApps" also logs the user out of their other applications. Update replaces the
    * whole app, so pass the current value when updating. */
   logoutPropagation?: '' | 'allApps' | 'none';
 };
@@ -88,8 +88,8 @@ export type SamlApplicationOptions = {
   /** The binding of `spSingleLogoutUrl`: "redirect" (the default), "post" or "soap" (server to server,
    * requires an https URL). Empty takes it from the service provider's metadata. */
   spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
-  /** What a logout started by the service provider reaches: "allApps" (the default) also logs the user
-   * out of their other applications, "none" only ends the user's session. */
+  /** What a logout started by the service provider reaches: "none" (the default) only ends the user's
+   * session, "allApps" also logs the user out of their other applications. */
   singleLogoutPropagation?: '' | 'allApps' | 'none';
   /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
    * the LogoutRequest names, "allSessions" every session of the user. */
@@ -436,7 +436,7 @@ export type SSOApplicationOIDCSettings = {
   forceAuthentication: boolean;
   /** The OAuth client type of the app: 'confidential', 'public', or empty for legacy apps. */
   clientType?: 'confidential' | 'public' | '';
-  /** How far a logout at the app's end-session endpoint reaches: "allApps" (the default) or "none". */
+  /** How far a logout at the app's end-session endpoint reaches: "none" (the default) or "allApps". */
   logoutPropagation?: '' | 'allApps' | 'none';
 };
 
