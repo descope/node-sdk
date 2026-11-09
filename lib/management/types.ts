@@ -78,8 +78,9 @@ export type SamlApplicationOptions = {
    * LogoutRequest, and it is sent a LogoutRequest, naming the user by the application's NameID, when a
    * logout reaches the user's applications (logout of all devices, an admin logout, or another
    * application's logout that propagates). That includes every SLO application the user can sign in to,
-   * not only ones the user used. Off by default: like the other options, an update that leaves it out
-   * turns it off. */
+   * not only ones the user used. A logout without a browser (logout of all devices, an admin logout)
+   * reaches only applications with the "soap" binding. Off by default: like the other options, an update
+   * that leaves it out turns it off. */
   singleLogoutEnabled?: boolean;
   /** The service provider's SingleLogoutService URL. Required when single logout is on and the
    * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
@@ -467,9 +468,9 @@ export type SSOApplicationSAMLSettings = {
   /** SAML Single Logout (SLO) settings, see `SamlApplicationOptions` */
   singleLogoutEnabled?: boolean;
   spSingleLogoutUrl?: string;
-  spSingleLogoutBinding?: string;
-  singleLogoutPropagation?: string;
-  singleLogoutScope?: string;
+  spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
+  singleLogoutPropagation?: '' | 'allApps' | 'none';
+  singleLogoutScope?: '' | 'session' | 'allSessions';
 };
 
 /** Represents WS-Fed settings of an SSO application in a project. */
