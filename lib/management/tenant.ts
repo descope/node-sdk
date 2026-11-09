@@ -21,6 +21,7 @@ const withTenant = (httpClient: HttpClient) => ({
     disabled?: boolean,
     parent?: string,
     roleInheritance?: '' | 'none' | 'userOnly',
+    enforceSSOExclusions?: string[],
   ): Promise<SdkResponse<CreateTenantResponse>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -28,6 +29,7 @@ const withTenant = (httpClient: HttpClient) => ({
         selfProvisioningDomains,
         customAttributes,
         enforceSSO,
+        enforceSSOExclusions,
         disabled,
         parent,
         roleInheritance,
@@ -42,6 +44,7 @@ const withTenant = (httpClient: HttpClient) => ({
     disabled?: boolean,
     parent?: string,
     roleInheritance?: '' | 'none' | 'userOnly',
+    enforceSSOExclusions?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.create, {
@@ -50,6 +53,7 @@ const withTenant = (httpClient: HttpClient) => ({
         selfProvisioningDomains,
         customAttributes,
         enforceSSO,
+        enforceSSOExclusions,
         disabled,
         parent,
         roleInheritance,
@@ -63,6 +67,7 @@ const withTenant = (httpClient: HttpClient) => ({
     enforceSSO?: boolean,
     disabled?: boolean,
     roleInheritance?: '' | 'none' | 'userOnly',
+    enforceSSOExclusions?: string[],
   ): Promise<SdkResponse<never>> =>
     transformResponse(
       httpClient.post(apiPaths.tenant.update, {
@@ -71,6 +76,7 @@ const withTenant = (httpClient: HttpClient) => ({
         selfProvisioningDomains,
         customAttributes,
         enforceSSO,
+        enforceSSOExclusions,
         disabled,
         roleInheritance,
       }),
