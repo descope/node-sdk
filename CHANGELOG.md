@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.21.1](https://github.com/descope/node-sdk/compare/v2.21.0...v2.21.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* keep cached signing keys when the key endpoint returns no keys ([#836](https://github.com/descope/node-sdk/issues/836)) ([6c00e49](https://github.com/descope/node-sdk/commit/6c00e496092423d019a5c9690c07b36901d73fd9))
+* only match tenants the token actually contains ([#833](https://github.com/descope/node-sdk/issues/833)) ([8153c94](https://github.com/descope/node-sdk/commit/8153c945425a43603dbad332c1f044f73bc56065))
+* refresh cached signing keys and limit unknown kid refetches ([#832](https://github.com/descope/node-sdk/issues/832)) ([abc5ab8](https://github.com/descope/node-sdk/commit/abc5ab8dcb77ad5c428976da652246da7eecf186))
+* set Secure on generated cookies and time out SDK requests ([#677](https://github.com/descope/node-sdk/issues/677)) ([3b3b87a](https://github.com/descope/node-sdk/commit/3b3b87ab4cf287e57d9846136682964862b72257))
+
 ## [2.21.0](https://github.com/descope/node-sdk/compare/v2.20.0...v2.21.0) (2026-11-05)
 
 
