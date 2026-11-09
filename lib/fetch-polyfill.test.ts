@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import type defaultPolyfillFetch from './fetch-polyfill';
 
 // a fetch that never responds and rejects only when its signal aborts
@@ -16,7 +17,7 @@ describe('fetch-polyfill', () => {
   let polyfillFetch: typeof defaultPolyfillFetch;
 
   beforeAll(() => {
-    // Node 16 has no global fetch; provide one so the module wraps it on every Node version
+    // stub the global fetch so the module wraps it
     globalThis.fetch = fetchMock;
     jest.isolateModules(() => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
@@ -73,5 +74,13 @@ describe('fetch-polyfill', () => {
 
     await expect(polyfillFetch('https://example.com')).resolves.toBe(response);
     expect(jest.getTimerCount()).toBe(0);
+  });
+
+  // requires `npm run build` before running the test
+  it('does not bundle node-only http clients into the build', () => {
+    const dist = readFileSync('./dist/index.esm.js', 'utf-8');
+    ['cross-fetch', 'node-fetch', 'node:http', 'node:https'].forEach((specifier) => {
+      expect(dist).not.toContain(specifier);
+    });
   });
 });
