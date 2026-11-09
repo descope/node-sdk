@@ -39,6 +39,10 @@ export type OidcApplicationOptions = {
    * `oidcSettings.clientType` shows which one it got. Update replaces the whole app, so pass
    * the app's current client type when updating. */
   clientType?: 'confidential' | 'public' | '';
+  /** How far a logout at the app's end-session endpoint reaches: "allApps" (the default) also logs the
+   * user out of their other applications, "none" only ends the user's sessions. Update replaces the
+   * whole app, so pass the current value when updating. */
+  logoutPropagation?: '' | 'allApps' | 'none';
 };
 
 /**
@@ -428,6 +432,8 @@ export type SSOApplicationOIDCSettings = {
   forceAuthentication: boolean;
   /** The OAuth client type of the app: 'confidential', 'public', or empty for legacy apps. */
   clientType?: 'confidential' | 'public' | '';
+  /** How far a logout at the app's end-session endpoint reaches: "allApps" (the default) or "none". */
+  logoutPropagation?: '' | 'allApps' | 'none';
 };
 
 /** Represents SAML settings of an SSO application in a project. */

@@ -129,6 +129,7 @@ describe('Management SSOApplication', () => {
         name: 'name',
         loginPageUrl: 'http://dummy.com',
         clientType: 'confidential',
+        logoutPropagation: 'none',
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcCreate, {
@@ -136,6 +137,7 @@ describe('Management SSOApplication', () => {
         loginPageUrl: 'http://dummy.com',
         enabled: true,
         clientType: 'confidential',
+        logoutPropagation: 'none',
       });
     });
   });
