@@ -75,8 +75,11 @@ export type SamlApplicationOptions = {
    * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
   /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
-   * LogoutRequest, and it is sent a LogoutRequest when the user's session ends. Off by default: like
-   * the other options, an update that leaves it out turns it off. */
+   * LogoutRequest, and it is sent a LogoutRequest, naming the user by the application's NameID, when a
+   * logout reaches the user's applications (logout of all devices, an admin logout, or another
+   * application's logout that propagates). That includes every SLO application the user can sign in to,
+   * not only ones the user used. Off by default: like the other options, an update that leaves it out
+   * turns it off. */
   singleLogoutEnabled?: boolean;
   /** The service provider's SingleLogoutService URL. Required when single logout is on and the
    * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
@@ -85,7 +88,7 @@ export type SamlApplicationOptions = {
    * requires an https URL). Empty takes it from the service provider's metadata. */
   spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
   /** What a logout started by the service provider reaches: "allApps" (the default) also logs the user
-   * out of the other applications in the session, "none" only ends the user's session. */
+   * out of their other applications, "none" only ends the user's session. */
   singleLogoutPropagation?: '' | 'allApps' | 'none';
   /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
    * the LogoutRequest names, "allSessions" every session of the user. */
