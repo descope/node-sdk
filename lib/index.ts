@@ -116,7 +116,8 @@ const nodeSdk = ({
     const resp = await coreSdk.httpClient.get(`v2/keys/${projectId}`);
     if (!resp.ok) throw Error(`failed to fetch public keys, status ${resp.status}`);
     const publicKeys: JWK[] = (await resp.json())?.keys;
-    if (!Array.isArray(publicKeys)) throw Error('failed to fetch public keys, invalid response');
+    if (!Array.isArray(publicKeys) || !publicKeys.length)
+      throw Error('failed to fetch public keys, invalid response');
     const kidJwksPairs = await Promise.all(
       publicKeys.map(async (key) => [key.kid, await importJWK(key)] as const),
     );
@@ -131,7 +132,7 @@ const nodeSdk = ({
       keys = await fetchKeys();
       keysFetchedAt = Date.now();
     } catch (e) {
-      logger?.error('Failed to fetch public keys', e);
+      logger?.warn?.('Failed to fetch public keys', e);
     }
   };
 
