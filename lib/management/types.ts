@@ -103,11 +103,12 @@ export type SamlApplicationOptions = {
    * only when every session of the user ended). */
   singleLogoutPropagation?: '' | 'allApps' | 'none';
   /** Which sessions a logout started by the service provider ends: "session" (the default) the sessions
-   * the LogoutRequest's SessionIndex values name, "allSessions" every session of the user. A LogoutRequest
-   * with no SessionIndex, or with one Descope didn't issue, ends the browser's Descope session when the
-   * browser has one for the user, else every session of the user its NameID names. One with several
-   * SessionIndex values that aren't all Descope's ends every session of the user. A visit to the logout
-   * URL without a LogoutRequest always ends every session of the user. */
+   * the LogoutRequest's SessionIndex values name, "allSessions" every session of the user. With
+   * "session", a LogoutRequest with no SessionIndex, or with one Descope didn't issue, ends the
+   * browser's Descope session when the browser has one for the user, else every session of the user
+   * its NameID names, and one with several SessionIndex values that aren't all Descope's ends every
+   * session of the user. A visit to the logout URL without a LogoutRequest always ends every session
+   * of the user. */
   singleLogoutScope?: '' | 'session' | 'allSessions';
   /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
    * user's devices) notifies this app: with single logout over the "soap" binding, it is sent a
