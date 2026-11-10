@@ -98,12 +98,15 @@ export type SamlApplicationOptions = {
    * service provider's metadata (SOAP when it offers an https SOAP endpoint, else HTTP-Redirect, else
    * HTTP-POST). Without a URL, an explicit binding takes the metadata endpoint with that binding. */
   spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
-  /** What a logout started by the service provider reaches: "none" (the default) only ends the user's
-   * session, "allApps" also logs the user out of their other applications (OIDC applications only when
-   * every session of the user ended). */
+  /** What a logout started by the service provider reaches: "none" (the default) none of the user's
+   * other applications, "allApps" also logs the user out of their other applications (OIDC applications
+   * only when every session of the user ended). */
   singleLogoutPropagation?: '' | 'allApps' | 'none';
-  /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
-   * the LogoutRequest names, "allSessions" every session of the user. */
+  /** Which sessions a logout started by the service provider ends: "session" (the default) the sessions
+   * the LogoutRequest's SessionIndex values name, "allSessions" every session of the user. A LogoutRequest
+   * whose SessionIndex Descope didn't issue ends the browser's Descope session, or every session of the user
+   * when the browser has none. A LogoutRequest that names the user only by NameID, and a visit to the logout
+   * URL without a LogoutRequest, always end every session of the user. */
   singleLogoutScope?: '' | 'session' | 'allSessions';
   /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
    * user's devices) notifies this app: with single logout over the "soap" binding, it is sent a
