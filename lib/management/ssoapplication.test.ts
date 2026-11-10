@@ -46,6 +46,12 @@ const mockSSOApplications = [
       forceAuthentication: false,
       idpLogoutUrl: 'http://dummyidp.com/logout',
       logoutRedirectUrl: 'http://dummy.com/logout',
+      singleLogoutEnabled: true,
+      spSingleLogoutUrl: 'https://dummy.com/slo',
+      spSingleLogoutBinding: 'soap',
+      singleLogoutPropagation: 'allApps',
+      singleLogoutScope: 'allSessions',
+      notifyOnForceLogout: true,
     },
     oidcSettings: null,
   },
@@ -63,6 +69,9 @@ const mockSSOApplications = [
       discoveryUrl: 'http://dummy/discovery',
       forceAuthentication: true,
       clientType: 'confidential',
+      logoutPropagation: 'allApps',
+      backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+      notifyOnForceLogout: true,
     },
   },
 ];
@@ -129,6 +138,9 @@ describe('Management SSOApplication', () => {
         name: 'name',
         loginPageUrl: 'http://dummy.com',
         clientType: 'confidential',
+        logoutPropagation: 'none',
+        backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+        notifyOnForceLogout: true,
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcCreate, {
@@ -136,6 +148,9 @@ describe('Management SSOApplication', () => {
         loginPageUrl: 'http://dummy.com',
         enabled: true,
         clientType: 'confidential',
+        logoutPropagation: 'none',
+        backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+        notifyOnForceLogout: true,
       });
     });
   });
@@ -243,6 +258,48 @@ describe('Management SSOApplication', () => {
     });
   });
 
+  describe('createSamlApplication single logout options', () => {
+    it('should send the single logout options when set', async () => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        json: () => mockSSOApplicationCreateResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockSSOApplicationCreateResponse),
+        }),
+        status: 200,
+      });
+
+      await management.ssoApplication.createSamlApplication({
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        useMetadataInfo: false,
+        entityId: 'ent1234',
+        acsUrl: 'https://dummy.com/acs',
+        singleLogoutEnabled: true,
+        spSingleLogoutUrl: 'https://dummy.com/slo',
+        spSingleLogoutBinding: 'soap',
+        singleLogoutPropagation: 'allApps',
+        singleLogoutScope: 'allSessions',
+        notifyOnForceLogout: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.samlCreate, {
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        enabled: true,
+        useMetadataInfo: false,
+        entityId: 'ent1234',
+        acsUrl: 'https://dummy.com/acs',
+        singleLogoutEnabled: true,
+        spSingleLogoutUrl: 'https://dummy.com/slo',
+        spSingleLogoutBinding: 'soap',
+        singleLogoutPropagation: 'allApps',
+        singleLogoutScope: 'allSessions',
+        notifyOnForceLogout: true,
+      });
+    });
+  });
+
   describe('updateOidcApplication', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
@@ -303,6 +360,35 @@ describe('Management SSOApplication', () => {
         name: 'name',
         loginPageUrl: 'http://dummy.com',
         clientType: 'public',
+      });
+    });
+
+    it('should send the back-channel logout URL and force logout flag when given', async () => {
+      mockHttpClient.post.mockResolvedValue({
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      });
+
+      await management.ssoApplication.updateOidcApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        logoutPropagation: 'allApps',
+        backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+        notifyOnForceLogout: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcUpdate, {
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        logoutPropagation: 'allApps',
+        backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+        notifyOnForceLogout: true,
       });
     });
 
@@ -384,6 +470,57 @@ describe('Management SSOApplication', () => {
         ok: true,
         response: httpResponse,
       });
+    });
+  });
+
+  describe('SAML single logout options', () => {
+    const okResponse = {
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    };
+
+    it('should send the single logout options when set', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse);
+      await management.ssoApplication.updateSamlApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+        singleLogoutEnabled: false,
+        spSingleLogoutUrl: 'https://dummy.com/slo',
+        spSingleLogoutBinding: 'soap',
+        singleLogoutPropagation: 'none',
+        singleLogoutScope: 'allSessions',
+        notifyOnForceLogout: true,
+      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        apiPaths.ssoApplication.samlUpdate,
+        expect.objectContaining({
+          singleLogoutEnabled: false,
+          spSingleLogoutUrl: 'https://dummy.com/slo',
+          spSingleLogoutBinding: 'soap',
+          singleLogoutPropagation: 'none',
+          singleLogoutScope: 'allSessions',
+          notifyOnForceLogout: true,
+        }),
+      );
+    });
+
+    it('should leave the single logout options out when not set, like the other options', async () => {
+      mockHttpClient.post.mockClear();
+      mockHttpClient.post.mockResolvedValue(okResponse);
+      await management.ssoApplication.updateSamlApplication({
+        id: 'app1',
+        name: 'name',
+        loginPageUrl: 'http://dummy.com',
+      });
+      const body = JSON.stringify(mockHttpClient.post.mock.calls[0][1]);
+      expect(body).not.toContain('singleLogout');
+      expect(body).not.toContain('spSingleLogout');
+      expect(body).not.toContain('notifyOnForceLogout');
     });
   });
 

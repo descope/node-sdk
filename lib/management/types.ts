@@ -39,6 +39,17 @@ export type OidcApplicationOptions = {
    * `oidcSettings.clientType` shows which one it got. Update replaces the whole app, so pass
    * the app's current client type when updating. */
   clientType?: 'confidential' | 'public' | '';
+  /** How far a logout at the app's end-session endpoint reaches: "none" (the default) only ends the
+   * user's sessions, "allApps" also logs the user out of their other applications. Update replaces the
+   * whole app, so pass the current value when updating. */
+  logoutPropagation?: '' | 'allApps' | 'none';
+  /** The app's OIDC back-channel logout URL: it is sent a logout token when a logout reaches the app.
+   * `notifyOnForceLogout` needs it. Like the other options, an update that leaves it out clears it. */
+  backChannelLogoutUrl?: string;
+  /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
+   * user's devices) notifies this app: with a back-channel logout URL, it is sent a logout token. Off
+   * by default: like the other options, an update that leaves it out turns it off. */
+  notifyOnForceLogout?: boolean;
 };
 
 /**
@@ -70,6 +81,39 @@ export type SamlApplicationOptions = {
    * SP-initiated flows use the algorithm from the SP's SAML request.
    * Use "sha256" for SHA-256; leave empty for the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
+  /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
+   * LogoutRequest, and it is sent a LogoutRequest, naming the user by the application's NameID, when a
+   * logout reaches the user's applications (the user's own logout of all devices, a force logout when
+   * the app's `notifyOnForceLogout` is on, or another application's logout that propagates). That
+   * includes every SLO application the user can sign in to, not only ones the user used. A logout
+   * without a browser (the user's own logout of all devices, a force logout) reaches only applications
+   * with the "soap" binding. Off by default: like the other options, an update that leaves it out turns
+   * it off. */
+  singleLogoutEnabled?: boolean;
+  /** The service provider's SingleLogoutService URL. Required when single logout is on and the
+   * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
+  spSingleLogoutUrl?: string;
+  /** The binding of `spSingleLogoutUrl`: "redirect", "post" or "soap" (server to server, requires an
+   * https URL). Empty is the default: with an SP Single Logout URL, HTTP-Redirect; without one, from the
+   * service provider's metadata (SOAP when it offers an https SOAP endpoint, else HTTP-Redirect, else
+   * HTTP-POST). Without a URL, an explicit binding takes the metadata endpoint with that binding. */
+  spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
+  /** What a logout started by the service provider reaches: "none" (the default) none of the user's
+   * other applications, "allApps" also logs the user out of their other applications (OIDC applications
+   * only when every session of the user ended). */
+  singleLogoutPropagation?: '' | 'allApps' | 'none';
+  /** Which sessions a logout started by the service provider ends: "session" (the default) the sessions
+   * the LogoutRequest's SessionIndex values name, "allSessions" every session of the user. With
+   * "session", a LogoutRequest with no SessionIndex, or with one Descope didn't issue, ends the
+   * browser's Descope session when the browser has one for the user, else every session of the user
+   * its NameID names, and one with several SessionIndex values that aren't all Descope's ends every
+   * session of the user. A visit to the logout URL without a LogoutRequest always ends every session
+   * of the user. */
+  singleLogoutScope?: '' | 'session' | 'allSessions';
+  /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
+   * user's devices) notifies this app: with single logout over the "soap" binding, it is sent a
+   * LogoutRequest. Off by default: like the other options, an update that leaves it out turns it off. */
+  notifyOnForceLogout?: boolean;
 };
 
 /**
@@ -412,6 +456,12 @@ export type SSOApplicationOIDCSettings = {
   forceAuthentication: boolean;
   /** The OAuth client type of the app: 'confidential', 'public', or empty for legacy apps. */
   clientType?: 'confidential' | 'public' | '';
+  /** How far a logout at the app's end-session endpoint reaches: "none" (the default) or "allApps". */
+  logoutPropagation?: '' | 'allApps' | 'none';
+  /** The app's OIDC back-channel logout URL, empty when not set. */
+  backChannelLogoutUrl?: string;
+  /** Whether a force logout of the user sends the app's back-channel logout URL a logout token. */
+  notifyOnForceLogout?: boolean;
 };
 
 /** Represents SAML settings of an SSO application in a project. */
@@ -439,6 +489,14 @@ export type SSOApplicationSAMLSettings = {
    * SP-initiated flows use the algorithm from the SP's SAML request.
    * "sha256" means SHA-256; empty string means the default (SHA-1). */
   defaultSignatureAlgorithm?: string;
+  /** SAML Single Logout (SLO) settings, see `SamlApplicationOptions` */
+  singleLogoutEnabled?: boolean;
+  spSingleLogoutUrl?: string;
+  spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
+  singleLogoutPropagation?: '' | 'allApps' | 'none';
+  singleLogoutScope?: '' | 'session' | 'allSessions';
+  /** Whether a force logout of the user sends the app a LogoutRequest (single logout over SOAP only). */
+  notifyOnForceLogout?: boolean;
 };
 
 /** Represents WS-Fed settings of an SSO application in a project. */

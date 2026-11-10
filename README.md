@@ -862,6 +862,9 @@ await descopeClient.management.ssoApplication.createOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
   clientType: 'confidential', // 'confidential' or 'public'; if omitted, the account's default is used (see oidcSettings.clientType on load)
+  // Optional: send the app's back-channel logout URL a logout token when the user is force logged out
+  backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
+  notifyOnForceLogout: true,
 });
 
 // Create SAML SSO application
@@ -870,6 +873,12 @@ await descopeClient.management.ssoApplication.createSamlApplication({
   loginPageUrl: 'http://dummy.com/login',
   useMetadataInfo: true,
   metadataUrl: 'http://dummy.com/metadata',
+  // Optional SAML Single Logout (SLO): the service provider can log the user out with a signed
+  // LogoutRequest, and it is sent one when a logout reaches the user's applications
+  singleLogoutEnabled: true,
+  singleLogoutPropagation: 'allApps', // 'none' (default) or 'allApps'
+  singleLogoutScope: 'session', // 'session' or 'allSessions'
+  notifyOnForceLogout: true, // also send it a LogoutRequest on a force logout (requires the 'soap' binding)
 });
 
 // Create WS-Fed SSO application
@@ -887,6 +896,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
   clientType: 'confidential', // pass the app's current client type
+  backChannelLogoutUrl: 'https://dummy.com/backchannel-logout', // an update without it clears it
 });
 
 // Update SAML SSO application.
