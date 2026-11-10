@@ -103,7 +103,7 @@
   },
   "dependencies": {
     "@descope/core-js-sdk": "^2.75.0",
-    "jose": "5.2.2",
+    "jose": "6.2.13",
     "tslib": "^2.0.0"
   }
 }
