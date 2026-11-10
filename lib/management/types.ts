@@ -43,6 +43,9 @@ export type OidcApplicationOptions = {
    * user's sessions, "allApps" also logs the user out of their other applications. Update replaces the
    * whole app, so pass the current value when updating. */
   logoutPropagation?: '' | 'allApps' | 'none';
+  /** The app's OIDC back-channel logout URL: it is sent a logout token when a logout reaches the app.
+   * `notifyOnForceLogout` needs it. Like the other options, an update that leaves it out clears it. */
+  backChannelLogoutUrl?: string;
   /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
    * user's devices) notifies this app: with a back-channel logout URL, it is sent a logout token. Off
    * by default: like the other options, an update that leaves it out turns it off. */
@@ -90,11 +93,14 @@ export type SamlApplicationOptions = {
   /** The service provider's SingleLogoutService URL. Required when single logout is on and the
    * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
   spSingleLogoutUrl?: string;
-  /** The binding of `spSingleLogoutUrl`: "redirect" (the default), "post" or "soap" (server to server,
-   * requires an https URL). Empty takes it from the service provider's metadata. */
+  /** The binding of `spSingleLogoutUrl`: "redirect", "post" or "soap" (server to server, requires an
+   * https URL). Empty is the default: with an SP Single Logout URL, HTTP-Redirect; without one, from the
+   * service provider's metadata (SOAP when it offers an https SOAP endpoint, else HTTP-Redirect, else
+   * HTTP-POST). Without a URL, an explicit binding takes the metadata endpoint with that binding. */
   spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
   /** What a logout started by the service provider reaches: "none" (the default) only ends the user's
-   * session, "allApps" also logs the user out of their other applications. */
+   * session, "allApps" also logs the user out of their other applications (OIDC applications only when
+   * every session of the user ended). */
   singleLogoutPropagation?: '' | 'allApps' | 'none';
   /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
    * the LogoutRequest names, "allSessions" every session of the user. */
@@ -447,6 +453,8 @@ export type SSOApplicationOIDCSettings = {
   clientType?: 'confidential' | 'public' | '';
   /** How far a logout at the app's end-session endpoint reaches: "none" (the default) or "allApps". */
   logoutPropagation?: '' | 'allApps' | 'none';
+  /** The app's OIDC back-channel logout URL, empty when not set. */
+  backChannelLogoutUrl?: string;
   /** Whether a force logout of the user sends the app's back-channel logout URL a logout token. */
   notifyOnForceLogout?: boolean;
 };

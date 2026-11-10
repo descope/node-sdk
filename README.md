@@ -860,6 +860,7 @@ await descopeClient.management.ssoApplication.createOidcApplication({
   loginPageUrl: 'http://dummy.com/login',
   clientType: 'confidential', // 'confidential' or 'public'; if omitted, the account's default is used (see oidcSettings.clientType on load)
   // Optional: send the app's back-channel logout URL a logout token when the user is force logged out
+  backChannelLogoutUrl: 'https://dummy.com/backchannel-logout',
   notifyOnForceLogout: true,
 });
 
@@ -892,6 +893,7 @@ await descopeClient.management.ssoApplication.updateOidcApplication({
   name: 'My OIDC app name',
   loginPageUrl: 'http://dummy.com/login',
   clientType: 'confidential', // pass the app's current client type
+  backChannelLogoutUrl: 'https://dummy.com/backchannel-logout', // an update without it clears it
 });
 
 // Update SAML SSO application.
