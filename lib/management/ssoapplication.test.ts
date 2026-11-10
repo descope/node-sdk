@@ -46,6 +46,7 @@ const mockSSOApplications = [
       forceAuthentication: false,
       idpLogoutUrl: 'http://dummyidp.com/logout',
       logoutRedirectUrl: 'http://dummy.com/logout',
+      notifyOnForceLogout: true,
     },
     oidcSettings: null,
   },
@@ -63,6 +64,7 @@ const mockSSOApplications = [
       discoveryUrl: 'http://dummy/discovery',
       forceAuthentication: true,
       clientType: 'confidential',
+      notifyOnForceLogout: true,
     },
   },
 ];
@@ -130,6 +132,7 @@ describe('Management SSOApplication', () => {
         loginPageUrl: 'http://dummy.com',
         clientType: 'confidential',
         logoutPropagation: 'none',
+        notifyOnForceLogout: true,
       });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.ssoApplication.oidcCreate, {
@@ -138,6 +141,7 @@ describe('Management SSOApplication', () => {
         enabled: true,
         clientType: 'confidential',
         logoutPropagation: 'none',
+        notifyOnForceLogout: true,
       });
     });
   });
@@ -410,6 +414,7 @@ describe('Management SSOApplication', () => {
         spSingleLogoutBinding: 'soap',
         singleLogoutPropagation: 'none',
         singleLogoutScope: 'allSessions',
+        notifyOnForceLogout: true,
       });
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         apiPaths.ssoApplication.samlUpdate,
@@ -419,6 +424,7 @@ describe('Management SSOApplication', () => {
           spSingleLogoutBinding: 'soap',
           singleLogoutPropagation: 'none',
           singleLogoutScope: 'allSessions',
+          notifyOnForceLogout: true,
         }),
       );
     });
@@ -434,6 +440,7 @@ describe('Management SSOApplication', () => {
       const body = JSON.stringify(mockHttpClient.post.mock.calls[0][1]);
       expect(body).not.toContain('singleLogout');
       expect(body).not.toContain('spSingleLogout');
+      expect(body).not.toContain('notifyOnForceLogout');
     });
   });
 

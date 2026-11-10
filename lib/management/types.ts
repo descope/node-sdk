@@ -43,6 +43,10 @@ export type OidcApplicationOptions = {
    * user's sessions, "allApps" also logs the user out of their other applications. Update replaces the
    * whole app, so pass the current value when updating. */
   logoutPropagation?: '' | 'allApps' | 'none';
+  /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
+   * user's devices) notifies this app: with a back-channel logout URL, it is sent a logout token. Off
+   * by default: like the other options, an update that leaves it out turns it off. */
+  notifyOnForceLogout?: boolean;
 };
 
 /**
@@ -76,11 +80,11 @@ export type SamlApplicationOptions = {
   defaultSignatureAlgorithm?: string;
   /** SAML Single Logout (SLO). When on, the service provider can log the user out with a signed
    * LogoutRequest, and it is sent a LogoutRequest, naming the user by the application's NameID, when a
-   * logout reaches the user's applications (logout of all devices, a force logout when enabled for the project, or another
-   * application's logout that propagates). That includes every SLO application the user can sign in to,
-   * not only ones the user used. A logout without a browser (logout of all devices, a force logout)
-   * reaches only applications with the "soap" binding. Off by default: like the other options, an update
-   * that leaves it out turns it off. */
+   * logout reaches the user's applications (logout of all devices, a force logout when the app's
+   * `notifyOnForceLogout` is on, or another application's logout that propagates). That includes every
+   * SLO application the user can sign in to, not only ones the user used. A logout without a browser
+   * (logout of all devices, a force logout) reaches only applications with the "soap" binding. Off by
+   * default: like the other options, an update that leaves it out turns it off. */
   singleLogoutEnabled?: boolean;
   /** The service provider's SingleLogoutService URL. Required when single logout is on and the
    * application is not configured by metadata URL; empty takes it from the service provider's metadata. */
@@ -94,6 +98,10 @@ export type SamlApplicationOptions = {
   /** Which sessions a logout started by the service provider ends: "session" (the default) only the one
    * the LogoutRequest names, "allSessions" every session of the user. */
   singleLogoutScope?: '' | 'session' | 'allSessions';
+  /** Whether a force logout of the user (the Console's, or the management API's logout of all of a
+   * user's devices) notifies this app: with single logout over the "soap" binding, it is sent a
+   * LogoutRequest. Off by default: like the other options, an update that leaves it out turns it off. */
+  notifyOnForceLogout?: boolean;
 };
 
 /**
@@ -438,6 +446,8 @@ export type SSOApplicationOIDCSettings = {
   clientType?: 'confidential' | 'public' | '';
   /** How far a logout at the app's end-session endpoint reaches: "none" (the default) or "allApps". */
   logoutPropagation?: '' | 'allApps' | 'none';
+  /** Whether a force logout of the user sends the app's back-channel logout URL a logout token. */
+  notifyOnForceLogout?: boolean;
 };
 
 /** Represents SAML settings of an SSO application in a project. */
@@ -471,6 +481,8 @@ export type SSOApplicationSAMLSettings = {
   spSingleLogoutBinding?: '' | 'redirect' | 'post' | 'soap';
   singleLogoutPropagation?: '' | 'allApps' | 'none';
   singleLogoutScope?: '' | 'session' | 'allSessions';
+  /** Whether a force logout of the user sends the app a LogoutRequest (single logout over SOAP only). */
+  notifyOnForceLogout?: boolean;
 };
 
 /** Represents WS-Fed settings of an SSO application in a project. */
