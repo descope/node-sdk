@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.22.0](https://github.com/descope/node-sdk/compare/v2.21.1...v2.22.0) (2026-11-11)
+
+
+### Features
+
+* **fetch:** use native global fetch instead of cross-fetch for workers ([#777](https://github.com/descope/node-sdk/issues/777)) ([f4505cf](https://github.com/descope/node-sdk/commit/f4505cf68c117e24c04baf59d088ea0b4b2e440e))
+* **mgmt:** log out sessions by creation time ([#828](https://github.com/descope/node-sdk/issues/828)) ([da8a32f](https://github.com/descope/node-sdk/commit/da8a32fe0450bccab377058fde414c82cc05a1be))
+* **ssoapplication:** add SAML single logout and OIDC logout propagation options ([#834](https://github.com/descope/node-sdk/issues/834)) ([e1c4fd9](https://github.com/descope/node-sdk/commit/e1c4fd90a1bdd6a47eae2043f3ec245363ea3b33))
+
+
+### Bug Fixes
+
+* **dpop:** hash ath with WebCrypto so validateDPoP runs on Edge ([#820](https://github.com/descope/node-sdk/issues/820)) ([3835986](https://github.com/descope/node-sdk/commit/383598676d46369bf2ddeb1a49f4dd4316c54309))
+
 ## [2.21.1](https://github.com/descope/node-sdk/compare/v2.21.0...v2.21.1) (2026-11-09)
 
 
