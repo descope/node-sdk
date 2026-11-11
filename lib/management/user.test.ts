@@ -1132,6 +1132,217 @@ describe('Management User', () => {
     });
   });
 
+  describe('logoutSessionsCreatedBetween', () => {
+    const mockRange = {
+      id: 'range-id',
+      after: '2026-01-01T00:00:00Z',
+      before: '2026-01-02T00:00:00Z',
+      sessionTypes: ['web'],
+    };
+
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRange,
+        clone: () => ({
+          json: () => Promise.resolve(mockRange),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        before: new Date('2026-01-02T00:00:00Z'),
+        after: new Date('2026-01-01T00:00:00Z'),
+        sessionTypes: ['web'],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.logoutSessions, {
+        sessionsCreatedBefore: '2026-01-02T00:00:00.000Z',
+        sessionsCreatedAfter: '2026-01-01T00:00:00.000Z',
+        sessionTypes: ['web'],
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {
+          id: 'range-id',
+          after: new Date('2026-01-01T00:00:00Z'),
+          before: new Date('2026-01-02T00:00:00Z'),
+          sessionTypes: ['web'],
+        },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should omit after from the request when not given', async () => {
+      const openEndedRange = {
+        id: 'range-id',
+        after: '1970-01-01T00:00:00Z',
+        before: mockRange.before,
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => openEndedRange,
+        clone: () => ({
+          json: () => Promise.resolve(openEndedRange),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        before: new Date('2026-01-02T00:00:00Z'),
+      });
+
+      const body = mockHttpClient.post.mock.calls[0][1];
+      expect(body).toStrictEqual({ sessionsCreatedBefore: '2026-01-02T00:00:00.000Z' });
+      expect(body).not.toHaveProperty('sessionsCreatedAfter');
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {
+          id: 'range-id',
+          after: new Date(0),
+          before: new Date('2026-01-02T00:00:00Z'),
+          sessionTypes: [],
+        },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+    it('should omit before from the request when not given', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => mockRange,
+        clone: () => ({
+          json: () => Promise.resolve(mockRange),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.logoutSessionsCreatedBetween({
+        after: new Date('2026-01-01T00:00:00Z'),
+      });
+
+      const body = mockHttpClient.post.mock.calls[0][1];
+      expect(body).toStrictEqual({ sessionsCreatedAfter: '2026-01-01T00:00:00.000Z' });
+      expect(body).not.toHaveProperty('sessionsCreatedBefore');
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {
+          id: 'range-id',
+          after: new Date('2026-01-01T00:00:00Z'),
+          before: new Date('2026-01-02T00:00:00Z'),
+          sessionTypes: ['web'],
+        },
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should reject when neither before nor after is given', async () => {
+      await expect(management.user.logoutSessionsCreatedBetween({})).rejects.toThrow(
+        'at least one of before or after is required',
+      );
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('listLogoutSessionRanges', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const mockResponse = {
+        ranges: [
+          {
+            id: 'range-id',
+            after: '1970-01-01T00:00:00Z',
+            before: '2026-01-02T00:00:00Z',
+            sessionTypes: ['web'],
+          },
+        ],
+      };
+      const httpResponse = {
+        ok: true,
+        json: () => mockResponse,
+        clone: () => ({
+          json: () => Promise.resolve(mockResponse),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp = await management.user.listLogoutSessionRanges();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.listLogoutSessionRanges, {});
+
+      expect(resp).toEqual({
+        code: 200,
+        data: [
+          {
+            id: 'range-id',
+            after: new Date(0),
+            before: new Date('2026-01-02T00:00:00Z'),
+            sessionTypes: ['web'],
+          },
+        ],
+        ok: true,
+        response: httpResponse,
+      });
+    });
+  });
+
+  describe('deleteLogoutSessionRange', () => {
+    it('should send the correct request and receive correct response', async () => {
+      const httpResponse = {
+        ok: true,
+        json: () => {},
+        clone: () => ({
+          json: () => Promise.resolve({}),
+        }),
+        status: 200,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.user.deleteLogoutSessionRange('range-id');
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(apiPaths.user.deleteLogoutSessionRange, {
+        id: 'range-id',
+      });
+
+      expect(resp).toEqual({
+        code: 200,
+        data: {},
+        ok: true,
+        response: httpResponse,
+      });
+    });
+
+    it('should return the error for an unknown range', async () => {
+      const mockError = { errorCode: 'E000000', errorDescription: 'Not found' };
+      const httpResponse = {
+        ok: false,
+        json: () => mockError,
+        clone: () => ({
+          json: () => Promise.resolve(mockError),
+        }),
+        status: 404,
+      };
+      mockHttpClient.post.mockResolvedValue(httpResponse);
+
+      const resp: SdkResponse<never> = await management.user.deleteLogoutSessionRange('unknown');
+
+      expect(resp).toEqual({
+        code: 404,
+        error: mockError,
+        ok: false,
+        response: httpResponse,
+      });
+    });
+  });
+
   describe('deleteAllTestUsers', () => {
     it('should send the correct request and receive correct response', async () => {
       const httpResponse = {
