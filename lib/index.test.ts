@@ -864,6 +864,34 @@ describe('sdk', () => {
           }),
         );
       });
+
+      it('should keep multiple Set-Cookie headers as separate cookies', async () => {
+        const data = { sessionJwt: 'sessionJwt' };
+        const sessionCookie =
+          'DS=sessionJwt; Path=/; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly';
+        const refreshCookie = `${refreshTokenCookieName}=refreshJwt; Path=/; Expires=Wed, 21 Oct 2026 07:28:00 GMT; HttpOnly`;
+        const headers = new Headers();
+        headers.append('set-cookie', sessionCookie);
+        headers.append('set-cookie', refreshCookie);
+        jest.spyOn(sdk.httpClient, 'post').mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(data),
+          headers,
+          clone() {
+            return this;
+          },
+        } as Response);
+
+        await expect(get(sdk, 'password.signIn')('1', '2')).resolves.toEqual(
+          expect.objectContaining({
+            data: {
+              refreshJwt: 'refreshJwt',
+              sessionJwt: 'sessionJwt',
+              cookies: [sessionCookie, refreshCookie],
+            },
+          }),
+        );
+      });
     });
   });
 
