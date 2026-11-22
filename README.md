@@ -1271,6 +1271,25 @@ await descopeClient.management.sso.configureSAMLSettings(
   'my-sso-id', // ssoId: omit for the tenant's default SSO configuration
 );
 
+// SAML single logout can be turned on per SSO configuration (off by default): a logout that asks for
+// it also signs the user out at the IdP. Set it up in the IdP with Descope's SP signing certificate
+// and single logout URL, read from the load response's saml.spSingleLogoutUrl. idpSingleLogoutUrl is
+// the IdP's SingleLogoutService URL (HTTP-Redirect binding); with configureSAMLByMetadata it can be
+// left empty to take it from the IdP metadata. Omit either field to keep the stored value; pass false
+// or an empty string to clear it.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  {
+    idpUrl,
+    entityId,
+    idpCert,
+    singleLogoutEnabled: true,
+    idpSingleLogoutUrl: 'https://idp.com/slo',
+  },
+  redirectURL,
+  domains,
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';

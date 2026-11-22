@@ -789,6 +789,18 @@ export type SSOSAMLSettingsResponse = {
   lastSuccessTestTime?: number;
   /** True when Descope sends the SAML AuthnRequest to this IdP unsigned */
   disableSignRequest?: boolean;
+  /** True when SAML single logout is on for this configuration */
+  singleLogoutEnabled?: boolean;
+  /**
+   * The IdP's SingleLogoutService URL set on the configuration. Empty when it is taken from the IdP
+   * metadata.
+   */
+  idpSingleLogoutUrl?: string;
+  /**
+   * Descope's single logout URL for this configuration (read-only), to set as the Single Logout URL
+   * in the IdP.
+   */
+  spSingleLogoutUrl?: string;
 };
 
 export type SSOSettings = {
@@ -909,6 +921,18 @@ export type SSOSAMLSettings = {
    * whatever is stored; pass false to turn JIT back on.
    */
   jitDisabled?: boolean;
+  /**
+   * Turn on SAML single logout for this SSO configuration: a logout that asks for it also signs the
+   * user out at the IdP. The IdP must have single logout set up with Descope's single logout URL
+   * (`spSingleLogoutUrl` on the load response) and SP signing certificate. Off by default. Leave it
+   * out to keep whatever is stored; pass false to turn it off.
+   */
+  singleLogoutEnabled?: boolean;
+  /**
+   * The IdP's SingleLogoutService URL (HTTP-Redirect binding). Leave it out to keep whatever is
+   * stored; pass an empty string to clear it, so it is taken from the IdP metadata.
+   */
+  idpSingleLogoutUrl?: string;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -942,6 +966,18 @@ export type SSOSAMLByMetadataSettings = {
    * whatever is stored; pass false to turn JIT back on.
    */
   jitDisabled?: boolean;
+  /**
+   * Turn on SAML single logout for this SSO configuration: a logout that asks for it also signs the
+   * user out at the IdP. The IdP must have single logout set up with Descope's single logout URL
+   * (`spSingleLogoutUrl` on the load response) and SP signing certificate. Off by default. Leave it
+   * out to keep whatever is stored; pass false to turn it off.
+   */
+  singleLogoutEnabled?: boolean;
+  /**
+   * The IdP's SingleLogoutService URL (HTTP-Redirect binding). Leave it out to keep whatever is
+   * stored; pass an empty string to clear it, so it is taken from the IdP metadata.
+   */
+  idpSingleLogoutUrl?: string;
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
