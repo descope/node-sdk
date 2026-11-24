@@ -960,6 +960,116 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('acceptedAudiences on the SAML settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    });
+
+    const saves = {
+      saml: {
+        path: apiPaths.sso.saml.configure,
+        send: (acceptedAudiences?: string[]) =>
+          management.sso.configureSAMLSettings(
+            't1',
+            {
+              idpUrl: 'https://idp.example.com/sso',
+              entityId: 'entity-id',
+              idpCert: 'cert',
+              ...(acceptedAudiences !== undefined ? { acceptedAudiences } : {}),
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+      'saml metadata': {
+        path: apiPaths.sso.saml.metadata,
+        send: (acceptedAudiences?: string[]) =>
+          management.sso.configureSAMLByMetadata(
+            't1',
+            {
+              idpMetadataUrl: 'https://idp.example.com/metadata',
+              ...(acceptedAudiences !== undefined ? { acceptedAudiences } : {}),
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+    };
+
+    describe.each(Object.entries(saves))('%s', (_, { path, send }) => {
+      // Any list replaces the stored values. The empty list needs the flag most: without it the
+      // server keeps the stored values, so they could never be cleared.
+      it.each([[['https://previous-sp.example.com', '']], [[]]])(
+        'should send %j with replaceAcceptedAudiences',
+        async (acceptedAudiences) => {
+          mockHttpClient.post.mockResolvedValue(okResponse());
+
+          await send(acceptedAudiences);
+
+          expect(mockHttpClient.post).toHaveBeenCalledWith(
+            path,
+            expect.objectContaining({
+              settings: expect.objectContaining({
+                acceptedAudiences,
+                replaceAcceptedAudiences: true,
+              }),
+              ssoId: 'conf1',
+            }),
+          );
+        },
+      );
+
+      // Left out, neither field may be sent, so an ordinary settings save keeps what is stored.
+      it('should omit both fields when the caller says nothing', async () => {
+        mockHttpClient.post.mockResolvedValue(okResponse());
+
+        await send();
+
+        const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+        expect(sent.settings).not.toHaveProperty('acceptedAudiences');
+        expect(sent.settings).not.toHaveProperty('replaceAcceptedAudiences');
+      });
+    });
+
+    it('should not add the flag to the caller settings object', async () => {
+      mockHttpClient.post.mockResolvedValue(okResponse());
+      const settings = {
+        idpUrl: 'https://idp.example.com/sso',
+        entityId: 'entity-id',
+        idpCert: 'cert',
+        acceptedAudiences: [],
+      };
+
+      await management.sso.configureSAMLSettings('t1', settings);
+
+      expect(settings).not.toHaveProperty('replaceAcceptedAudiences');
+    });
+
+    it('should decode acceptedAudiences off a load response', async () => {
+      const loaded = {
+        ssoId: 'conf1',
+        saml: { acceptedAudiences: ['https://previous-sp.example.com', ''] },
+      };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.saml.acceptedAudiences).toEqual(['https://previous-sp.example.com', '']);
+    });
+  });
+
   describe('single logout on the SAML settings', () => {
     const okResponse = () => ({
       ok: true,

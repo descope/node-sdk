@@ -1271,6 +1271,19 @@ await descopeClient.management.sso.configureSAMLSettings(
   'my-sso-id', // ssoId: omit for the tenant's default SSO configuration
 );
 
+// Accepted audiences let a SAML assertion carry one of these audience values in place of the tenant's
+// SP entity ID, for an IdP that sends a different audience and can't be changed. Each value must match
+// exactly (surrounding whitespace is ignored); an empty string accepts an empty audience. Up to 20
+// values, on both configureSAMLSettings and configureSAMLByMetadata. Omit acceptedAudiences to keep the
+// stored values; pass an array to replace them, or an empty array to clear them. Read them back from
+// the load response's saml.acceptedAudiences.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, acceptedAudiences: ['https://previous-sp.example.com'] },
+  redirectURL,
+  domains,
+);
+
 // SAML single logout can be turned on per SSO configuration (off by default): a logout that asks for
 // it also signs the user out at the IdP. Set it up in the IdP with Descope's SP signing certificate
 // and single logout URL, read from the load response's saml.spSingleLogoutUrl. idpSingleLogoutUrl is
