@@ -1271,6 +1271,19 @@ await descopeClient.management.sso.configureSAMLSettings(
   'my-sso-id', // ssoId: omit for the tenant's default SSO configuration
 );
 
+// Accepted audiences let a SAML assertion carry one of these audience values in place of the tenant's
+// SP entity ID, for an IdP that sends a different audience and can't be changed. Each value must match
+// exactly (surrounding whitespace is ignored); an empty string accepts an empty audience. Up to 20
+// values, on both configureSAMLSettings and configureSAMLByMetadata. Omit acceptedAudiences to keep the
+// stored values; pass an array to replace them, or an empty array to clear them. Read them back from
+// the load response's saml.acceptedAudiences.
+await descopeClient.management.sso.configureSAMLSettings(
+  tenantID,
+  { idpUrl, entityId, idpCert, acceptedAudiences: ['https://previous-sp.example.com'] },
+  redirectURL,
+  domains,
+);
+
 // In case SSO is configured to work with OIDC use the following
 // You can pass ssoId in case using multi SSO and you want to configure specific SSO configuration
 const name = 'some-name';

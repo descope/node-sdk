@@ -789,6 +789,11 @@ export type SSOSAMLSettingsResponse = {
   lastSuccessTestTime?: number;
   /** True when Descope sends the SAML AuthnRequest to this IdP unsigned */
   disableSignRequest?: boolean;
+  /**
+   * Audience values a SAML assertion from this IdP may carry in place of the SP entity ID. Empty or
+   * absent when none are set.
+   */
+  acceptedAudiences?: string[];
 };
 
 export type SSOSettings = {
@@ -909,6 +914,14 @@ export type SSOSAMLSettings = {
    * whatever is stored; pass false to turn JIT back on.
    */
   jitDisabled?: boolean;
+  /**
+   * Audience values a SAML assertion from this IdP may carry in place of the SP entity ID, for an IdP
+   * that sends a different audience and can't be changed. Each value must match the assertion's
+   * audience exactly (surrounding whitespace is ignored), and an empty string accepts an empty
+   * audience. Up to 20 values of up to 1000 characters each. Leave it out to keep the stored values;
+   * pass an array to replace them, or an empty array to clear them.
+   */
+  acceptedAudiences?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
@@ -942,6 +955,14 @@ export type SSOSAMLByMetadataSettings = {
    * whatever is stored; pass false to turn JIT back on.
    */
   jitDisabled?: boolean;
+  /**
+   * Audience values a SAML assertion from this IdP may carry in place of the SP entity ID, for an IdP
+   * that sends a different audience and can't be changed. Each value must match the assertion's
+   * audience exactly (surrounding whitespace is ignored), and an empty string accepts an empty
+   * audience. Up to 20 values of up to 1000 characters each. Leave it out to keep the stored values;
+   * pass an array to replace them, or an empty array to clear them.
+   */
+  acceptedAudiences?: string[];
 
   // NOTICE - the following fields should be overridden only in case of SSO migration, otherwise, do not modify these fields
   spACSUrl?: string;
