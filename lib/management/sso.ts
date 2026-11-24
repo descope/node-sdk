@@ -70,6 +70,16 @@ function withReplaceDefaultSSORoles<T extends { defaultSSORoles?: string[] }>(bo
   return body;
 }
 
+// An empty acceptedAudiences on its own keeps the stored values, so every list the caller passes is
+// flagged with replaceAcceptedAudiences: it then replaces what is stored, and an empty list clears it.
+// Both fields are left out when the caller passes none, so an ordinary settings save keeps them.
+function withReplaceAcceptedAudiences<T extends { acceptedAudiences?: string[] }>(body: T): T {
+  if (Array.isArray(body.acceptedAudiences)) {
+    return { ...body, replaceAcceptedAudiences: true };
+  }
+  return body;
+}
+
 const withSSOSettings = (httpClient: HttpClient) => ({
   /**
    * @deprecated  Use loadSettings instead
@@ -203,7 +213,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.configure, {
         tenantId,
-        settings: withReplaceDefaultSSORoles(settings),
+        settings: withReplaceAcceptedAudiences(withReplaceDefaultSSORoles(settings)),
         redirectUrl,
         domains,
         ...(ssoId ? { ssoId } : {}),
@@ -219,7 +229,7 @@ const withSSOSettings = (httpClient: HttpClient) => ({
     transformResponse(
       httpClient.post(apiPaths.sso.saml.metadata, {
         tenantId,
-        settings: withReplaceDefaultSSORoles(settings),
+        settings: withReplaceAcceptedAudiences(withReplaceDefaultSSORoles(settings)),
         redirectUrl,
         domains,
         ...(ssoId ? { ssoId } : {}),
