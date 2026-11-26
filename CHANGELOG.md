@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.23.0](https://github.com/descope/node-sdk/compare/v2.22.0...v2.23.0) (2026-11-26)
+
+
+### Features
+
+* **sso:** accepted audiences on tenant SAML SSO settings ([#840](https://github.com/descope/node-sdk/issues/840)) ([bd37ad1](https://github.com/descope/node-sdk/commit/bd37ad1d4da9e5cc6263e2d74166b2976831001b))
+* **sso:** SAML single logout settings for tenant SSO ([#839](https://github.com/descope/node-sdk/issues/839)) ([9487e65](https://github.com/descope/node-sdk/commit/9487e65ca09f7d1334665c216186ed6a28daf316))
+
 ## [2.22.0](https://github.com/descope/node-sdk/compare/v2.21.1...v2.22.0) (2026-11-11)
 
 
