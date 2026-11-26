@@ -1070,6 +1070,107 @@ describe('Management SSO', () => {
     });
   });
 
+  describe('single logout on the SAML settings', () => {
+    const okResponse = () => ({
+      ok: true,
+      json: () => {},
+      clone: () => ({
+        json: () => Promise.resolve({}),
+      }),
+      status: 200,
+    });
+
+    type SingleLogout = { singleLogoutEnabled?: boolean; idpSingleLogoutUrl?: string };
+
+    const saves = {
+      saml: {
+        path: apiPaths.sso.saml.configure,
+        send: (slo: SingleLogout) =>
+          management.sso.configureSAMLSettings(
+            't1',
+            {
+              idpUrl: 'https://idp.example.com/sso',
+              entityId: 'entity-id',
+              idpCert: 'cert',
+              ...slo,
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+      'saml metadata': {
+        path: apiPaths.sso.saml.metadata,
+        send: (slo: SingleLogout) =>
+          management.sso.configureSAMLByMetadata(
+            't1',
+            {
+              idpMetadataUrl: 'https://idp.example.com/metadata',
+              ...slo,
+            },
+            '',
+            [],
+            'conf1',
+          ),
+      },
+    };
+
+    describe.each(Object.entries(saves))('%s', (_, { path, send }) => {
+      // false and the empty URL have to be sent rather than dropped as falsy values, or single logout
+      // could never be turned off and a stored IdP single logout URL could never be cleared.
+      it.each([
+        { singleLogoutEnabled: true, idpSingleLogoutUrl: 'https://idp.example.com/slo' },
+        { singleLogoutEnabled: false, idpSingleLogoutUrl: '' },
+      ])('should send %o', async (slo) => {
+        mockHttpClient.post.mockResolvedValue(okResponse());
+
+        await send(slo);
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(
+          path,
+          expect.objectContaining({
+            settings: expect.objectContaining(slo),
+            ssoId: 'conf1',
+          }),
+        );
+      });
+
+      // Left out they must not be sent at all, so an ordinary settings save keeps what is stored.
+      it('should omit them when the caller says nothing', async () => {
+        mockHttpClient.post.mockResolvedValue(okResponse());
+
+        await send({});
+
+        const sent = mockHttpClient.post.mock.calls[0][1] as { settings: object };
+        expect(sent.settings).not.toHaveProperty('singleLogoutEnabled');
+        expect(sent.settings).not.toHaveProperty('idpSingleLogoutUrl');
+      });
+    });
+
+    it('should decode the single logout settings off a load response', async () => {
+      const loaded = {
+        ssoId: 'conf1',
+        saml: {
+          singleLogoutEnabled: true,
+          idpSingleLogoutUrl: 'https://idp.example.com/slo',
+          spSingleLogoutUrl: 'https://api.descope.com/v1/auth/saml/slo',
+        },
+      };
+      mockHttpClient.get.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(loaded),
+        clone: () => ({ json: () => Promise.resolve(loaded) }),
+        status: 200,
+      });
+
+      const resp = await management.sso.loadSettings('t1', 'conf1');
+
+      expect(resp.data.saml.singleLogoutEnabled).toBe(true);
+      expect(resp.data.saml.idpSingleLogoutUrl).toBe('https://idp.example.com/slo');
+      expect(resp.data.saml.spSingleLogoutUrl).toBe('https://api.descope.com/v1/auth/saml/slo');
+    });
+  });
+
   describe('newSettings', () => {
     it('should send the correct request and receive correct response', async () => {
       const mockResponse = {
