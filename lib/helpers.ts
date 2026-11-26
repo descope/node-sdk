@@ -26,6 +26,19 @@ export const getCookieValue = (cookie: string | null | undefined, name: string) 
 };
 
 /**
+ * Get every Set-Cookie header as a separate entry. Headers.get() joins repeated
+ * Set-Cookie headers with a comma, which cannot be split reliably (Expires contains commas).
+ */
+const getSetCookies = (headers?: Headers): string[] => {
+  if (!headers) return [];
+  // getSetCookie is missing from older TS lib typings and older runtimes
+  const { getSetCookie } = headers as Headers & { getSetCookie?: () => string[] };
+  if (typeof getSetCookie === 'function') return getSetCookie.call(headers);
+  const combined = headers.get('set-cookie');
+  return combined ? [combined] : [];
+};
+
+/**
  * True if the JWT `iss` claim belongs to the configured Descope project.
  * Accepts a plain project ID, a URL whose last path segment is the project ID,
  * or a URL where the project ID is followed by more path segments (e.g. MCP server tokens).
@@ -68,12 +81,12 @@ export const withCookie: SdkFnWrapper<{ refreshJwt?: string; cookies?: string[] 
     const cookies: string[] = [];
 
     if (!refreshJwt) {
-      if (resp.response?.headers.get('set-cookie')) {
-        refreshJwt = getCookieValue(
-          resp.response?.headers.get('set-cookie'),
-          refreshTokenCookieName,
-        );
-        cookies.push(resp.response?.headers.get('set-cookie')!);
+      const setCookies = getSetCookies(resp.response?.headers);
+      if (setCookies.length) {
+        refreshJwt = setCookies
+          .map((setCookie) => getCookieValue(setCookie, refreshTokenCookieName))
+          .find(Boolean);
+        cookies.push(...setCookies);
       }
     } else {
       cookies.push(generateCookie(refreshTokenCookieName, refreshJwt, rest));
